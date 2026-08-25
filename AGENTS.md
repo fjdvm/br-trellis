@@ -21,6 +21,21 @@ export default function Page() {
 - HelloWorld contents should be in components/features/hello-world.tsx
 - always use shadcn ui install if needed
 
+## Agent skills
+
+### Issue tracker
+
+Issues and specs live as GitHub issues managed via `gh`. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Canonical triage roles mapped 1-to-1 to repo labels (`needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`). See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context repo using `CONTEXT.md` and `docs/adr/`. See `docs/agents/domain.md`.
+
+
 
 
 
