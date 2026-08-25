@@ -10,6 +10,16 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { crmClient } from "@/lib/api/crm-client";
 import type { ContactDetail } from "@/types/contact";
 
@@ -23,11 +33,13 @@ export function ContactDetailPage({ contactId }: ContactDetailPageProps) {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
   const [editName, setEditName] = useState("");
   const [editEmail, setEditEmail] = useState("");
   const [editPhone, setEditPhone] = useState("");
   const [isSaving, setIsSaving] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showSaveDialog, setShowSaveDialog] = useState(false);
 
   useEffect(() => {
     let isCurrent = true;
@@ -58,7 +70,8 @@ export function ContactDetailPage({ contactId }: ContactDetailPageProps) {
     };
   }, [contactId]);
 
-  async function handleSave() {
+  async function handleSaveConfirmed() {
+    setShowSaveDialog(false);
     setIsSaving(true);
     try {
       const updated = await crmClient.contacts.update(contactId, {
@@ -75,7 +88,8 @@ export function ContactDetailPage({ contactId }: ContactDetailPageProps) {
     }
   }
 
-  async function handleDelete() {
+  async function handleDeleteConfirmed() {
+    setShowDeleteDialog(false);
     setIsDeleting(true);
     try {
       await crmClient.contacts.delete(contactId);
@@ -118,7 +132,7 @@ export function ContactDetailPage({ contactId }: ContactDetailPageProps) {
           <Button
             variant="destructive"
             size="sm"
-            onClick={handleDelete}
+            onClick={() => setShowDeleteDialog(true)}
             disabled={isDeleting}
           >
             <Trash2 className="w-4 h-4" />
@@ -171,7 +185,11 @@ export function ContactDetailPage({ contactId }: ContactDetailPageProps) {
                     onChange={(e) => setEditPhone(e.target.value)}
                   />
                 </div>
-                <Button onClick={handleSave} disabled={isSaving} className="w-full">
+                <Button
+                  onClick={() => setShowSaveDialog(true)}
+                  disabled={isSaving}
+                  className="w-full"
+                >
                   {isSaving ? "Saving…" : "Save Changes"}
                 </Button>
               </div>
@@ -266,6 +284,42 @@ export function ContactDetailPage({ contactId }: ContactDetailPageProps) {
           )}
         </CardContent>
       </Card>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Contact</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete {contact.name ?? "this contact"}? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction variant="destructive" onClick={handleDeleteConfirmed}>
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Save Confirmation Dialog */}
+      <AlertDialog open={showSaveDialog} onOpenChange={setShowSaveDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Save Changes</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to update this contact&apos;s information?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleSaveConfirmed}>
+              Save
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
