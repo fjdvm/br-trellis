@@ -9,24 +9,24 @@ const badgeVariants = cva(
     variants: {
       variant: {
         default:
-          "border-transparent bg-primary text-primary-foreground shadow-sm",
+          "border-transparent bg-violet-100 text-violet-700",
         secondary:
-          "border-transparent bg-secondary text-secondary-foreground",
+          "border-transparent bg-slate-100 text-slate-700",
         destructive:
-          "border-transparent bg-badge-destructive text-badge-destructive-foreground",
-        outline: "text-foreground border-border bg-muted/40",
+          "border-transparent bg-rose-100 text-rose-700",
+        outline: "border-border bg-sky-50 text-sky-700",
         success:
-          "border-transparent bg-badge-success text-badge-success-foreground",
+          "border-transparent bg-emerald-100 text-emerald-700",
         warning:
-          "border-transparent bg-badge-warning text-badge-warning-foreground",
+          "border-transparent bg-amber-100 text-amber-700",
         info:
-          "border-transparent bg-badge-info text-badge-info-foreground",
+          "border-transparent bg-cyan-100 text-cyan-700",
         purple:
-          "border-transparent bg-badge-purple text-badge-purple-foreground",
+          "border-transparent bg-purple-100 text-purple-700",
         indigo:
-          "border-transparent bg-badge-indigo text-badge-indigo-foreground",
+          "border-transparent bg-indigo-100 text-indigo-700",
         notification:
-          "border-transparent bg-badge-notification text-badge-notification-foreground shadow-sm",
+          "border-transparent bg-pink-100 text-pink-700",
       },
     },
     defaultVariants: {
