@@ -10,7 +10,11 @@
     "build:web": "cd apps/web-crms && npm run build",
     "test:api": "cd apps/api-crms/Tests && dotnet test",
     "test:web": "cd apps/web-crms && npm test",
-    "test": "concurrently \"npm run test:api\" \"npm run test:web\""
+    "test": "concurrently \"npm run test:api\" \"npm run test:web\"",
+    "db:migrate": "cd apps/api-crms && dotnet ef database update",
+    "db:migration:add": "cd apps/api-crms && dotnet ef migrations add",
+    "db:migration:remove": "cd apps/api-crms && dotnet ef migrations remove",
+    "db:migration:list": "cd apps/api-crms && dotnet ef migrations list"
   },
   "devDependencies": {
     "concurrently": "9.1.2"
