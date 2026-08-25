@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 export function PendingReviewPage() {
   return (
     <div className="w-full min-h-full py-xl px-lg md:px-xl space-y-2xl max-w-7xl mx-auto">
-      <div>
+      <div className="hidden sm:block">
         <Link href="/dashboard">
           <Button variant="ghost" size="sm">
             <ArrowLeft className="w-4 h-4 mr-2" /> Back to Dashboard
