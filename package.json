@@ -1,0 +1,18 @@
+{
+  "name": "trellis",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently -n api,web -c blue,green \"npm run dev:api\" \"npm run dev:web\"",
+    "dev:api": "cd apps/api-crms && dotnet run",
+    "dev:web": "cd apps/web-crms && npm run dev",
+    "build:api": "cd apps/api-crms && dotnet build",
+    "build:web": "cd apps/web-crms && npm run build",
+    "test:api": "cd apps/api-crms/Tests && dotnet test",
+    "test:web": "cd apps/web-crms && npm test",
+    "test": "concurrently \"npm run test:api\" \"npm run test:web\""
+  },
+  "devDependencies": {
+    "concurrently": "9.1.2"
+  }
+}
