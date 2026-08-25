@@ -37,6 +37,7 @@ export type Account = AccountItem;
 
 export const mainNavItems: NavItem[] = [
   { name: "Dashboard", href: "/", icon: LayoutDashboard },
+  { name: "Contacts", href: "/contacts", icon: Users },
 ];
 
 export const settingsNavItem: NavItem = {
