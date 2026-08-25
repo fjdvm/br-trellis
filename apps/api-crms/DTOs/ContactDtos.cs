@@ -68,3 +68,8 @@ public sealed record CreateContactDto(
     string? Name,
     string? Email,
     string? Phone);
+
+public sealed record UpdateContactDto(
+    string? Name,
+    string? Email,
+    string? Phone);

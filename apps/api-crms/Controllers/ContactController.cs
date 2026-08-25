@@ -44,4 +44,23 @@ public sealed class ContactController(
         await customFieldService.UpdateValueAsync(id, update, cancellationToken);
         return NoContent();
     }
+
+    [HttpPut("{id:guid}")]
+    public async Task<ActionResult<ContactDetailDto>> UpdateContact(
+        Guid id,
+        UpdateContactDto input,
+        CancellationToken cancellationToken)
+    {
+        var contact = await contactService.UpdateContactAsync(id, input, cancellationToken);
+        return contact is null ? NotFound() : Ok(contact);
+    }
+
+    [HttpDelete("{id:guid}")]
+    public async Task<IActionResult> DeleteContact(
+        Guid id,
+        CancellationToken cancellationToken)
+    {
+        var deleted = await contactService.DeleteContactAsync(id, cancellationToken);
+        return deleted ? NoContent() : NotFound();
+    }
 }

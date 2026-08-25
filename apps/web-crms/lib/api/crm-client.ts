@@ -95,6 +95,15 @@ export const crmClient = {
         method: "POST",
         body: JSON.stringify(body),
       }),
+    update: (id: string, body: { name?: string; email?: string; phone?: string }) =>
+      request<ContactDetail>(`/api/v1/contacts/${id}`, {
+        method: "PUT",
+        body: JSON.stringify(body),
+      }),
+    delete: (id: string) =>
+      request<void>(`/api/v1/contacts/${id}`, {
+        method: "DELETE",
+      }),
     listPendingReview: () =>
       request<PendingReviewContactType[]>(`/api/v1/contact-identity/pending-review`),
   },
