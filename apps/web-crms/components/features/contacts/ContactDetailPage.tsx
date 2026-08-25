@@ -21,6 +21,11 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { crmClient } from "@/lib/api/crm-client";
+import {
+  validateContactFields,
+  hasErrors,
+  type ContactFieldErrors,
+} from "@/lib/validators/contact-validators";
 import type { ContactDetail } from "@/types/contact";
 
 interface ContactDetailPageProps {
@@ -40,6 +45,7 @@ export function ContactDetailPage({ contactId }: ContactDetailPageProps) {
   const [isDeleting, setIsDeleting] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showSaveDialog, setShowSaveDialog] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<ContactFieldErrors>({});
 
   useEffect(() => {
     let isCurrent = true;
@@ -165,32 +171,45 @@ export function ContactDetailPage({ contactId }: ContactDetailPageProps) {
             {isEditing ? (
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="edit-name">Name</Label>
+                  <Label htmlFor="edit-name">Name *</Label>
                   <Input
                     id="edit-name"
                     value={editName}
-                    onChange={(e) => setEditName(e.target.value)}
+                    onChange={(e) => { setEditName(e.target.value); setFieldErrors((prev) => ({ ...prev, name: undefined })); }}
+                    aria-invalid={!!fieldErrors.name}
+                    className={fieldErrors.name ? "border-destructive" : ""}
                   />
+                  {fieldErrors.name && <p className="text-xs text-destructive">{fieldErrors.name}</p>}
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="edit-email">Email</Label>
+                  <Label htmlFor="edit-email">Email *</Label>
                   <Input
                     id="edit-email"
                     type="email"
                     value={editEmail}
-                    onChange={(e) => setEditEmail(e.target.value)}
+                    onChange={(e) => { setEditEmail(e.target.value); setFieldErrors((prev) => ({ ...prev, email: undefined })); }}
+                    aria-invalid={!!fieldErrors.email}
+                    className={fieldErrors.email ? "border-destructive" : ""}
                   />
+                  {fieldErrors.email && <p className="text-xs text-destructive">{fieldErrors.email}</p>}
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="edit-phone">Phone</Label>
                   <Input
                     id="edit-phone"
                     value={editPhone}
-                    onChange={(e) => setEditPhone(e.target.value)}
+                    onChange={(e) => { setEditPhone(e.target.value); setFieldErrors((prev) => ({ ...prev, phone: undefined })); }}
+                    aria-invalid={!!fieldErrors.phone}
+                    className={fieldErrors.phone ? "border-destructive" : ""}
                   />
+                  {fieldErrors.phone && <p className="text-xs text-destructive">{fieldErrors.phone}</p>}
                 </div>
                 <Button
-                  onClick={() => setShowSaveDialog(true)}
+                  onClick={() => {
+                    const errors = validateContactFields({ name: editName, email: editEmail, phone: editPhone });
+                    setFieldErrors(errors);
+                    if (!hasErrors(errors)) setShowSaveDialog(true);
+                  }}
                   disabled={isSaving}
                   className="w-full"
                 >

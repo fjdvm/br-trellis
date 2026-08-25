@@ -24,6 +24,11 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { crmClient } from "@/lib/api/crm-client";
+import {
+  validateContactFields,
+  hasErrors,
+  type ContactFieldErrors,
+} from "@/lib/validators/contact-validators";
 import { Loader2, Plus } from "lucide-react";
 
 interface AddContactSheetProps {
@@ -35,12 +40,16 @@ export function AddContactSheet({ onCreated }: AddContactSheetProps) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<ContactFieldErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    const errors = validateContactFields({ name, email, phone });
+    setFieldErrors(errors);
+    if (hasErrors(errors)) return;
     setShowConfirmDialog(true);
   }
 
@@ -51,13 +60,14 @@ export function AddContactSheet({ onCreated }: AddContactSheetProps) {
 
     try {
       await crmClient.contacts.create({
-        name: name || undefined,
-        email: email || undefined,
-        phone: phone || undefined,
+        name: name.trim() || undefined,
+        email: email.trim() || undefined,
+        phone: phone.trim() || undefined,
       });
       setName("");
       setEmail("");
       setPhone("");
+      setFieldErrors({});
       setOpen(false);
       onCreated?.();
     } catch (err) {
@@ -80,7 +90,7 @@ export function AddContactSheet({ onCreated }: AddContactSheetProps) {
           <SheetHeader className="pb-4">
             <SheetTitle>Add Contact</SheetTitle>
             <SheetDescription>
-              Create a new contact manually. At least one field is recommended.
+              Create a new contact manually. Name and email are required.
             </SheetDescription>
           </SheetHeader>
 
@@ -90,24 +100,30 @@ export function AddContactSheet({ onCreated }: AddContactSheetProps) {
           >
             <div className="flex flex-col gap-4">
               <div className="space-y-2">
-                <Label htmlFor="contact-name">Name</Label>
+                <Label htmlFor="contact-name">Name *</Label>
                 <Input
                   id="contact-name"
                   placeholder="Full name"
                   value={name}
-                  onChange={(e) => setName(e.target.value)}
+                  onChange={(e) => { setName(e.target.value); setFieldErrors((prev) => ({ ...prev, name: undefined })); }}
                   autoFocus
+                  aria-invalid={!!fieldErrors.name}
+                  className={fieldErrors.name ? "border-destructive" : ""}
                 />
+                {fieldErrors.name && <p className="text-xs text-destructive">{fieldErrors.name}</p>}
               </div>
               <div className="space-y-2">
-                <Label htmlFor="contact-email">Email</Label>
+                <Label htmlFor="contact-email">Email *</Label>
                 <Input
                   id="contact-email"
                   type="email"
                   placeholder="email@example.com"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => { setEmail(e.target.value); setFieldErrors((prev) => ({ ...prev, email: undefined })); }}
+                  aria-invalid={!!fieldErrors.email}
+                  className={fieldErrors.email ? "border-destructive" : ""}
                 />
+                {fieldErrors.email && <p className="text-xs text-destructive">{fieldErrors.email}</p>}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="contact-phone">Phone</Label>
@@ -115,8 +131,11 @@ export function AddContactSheet({ onCreated }: AddContactSheetProps) {
                   id="contact-phone"
                   placeholder="+1 555-0100"
                   value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
+                  onChange={(e) => { setPhone(e.target.value); setFieldErrors((prev) => ({ ...prev, phone: undefined })); }}
+                  aria-invalid={!!fieldErrors.phone}
+                  className={fieldErrors.phone ? "border-destructive" : ""}
                 />
+                {fieldErrors.phone && <p className="text-xs text-destructive">{fieldErrors.phone}</p>}
               </div>
             </div>
 
@@ -132,14 +151,13 @@ export function AddContactSheet({ onCreated }: AddContactSheetProps) {
         </SheetContent>
       </Sheet>
 
-      {/* Create Confirmation Dialog */}
       <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Create Contact</AlertDialogTitle>
             <AlertDialogDescription>
               Are you sure you want to create a new contact
-              {name ? ` "${name}"` : ""}?
+              {name ? ` "${name.trim()}"` : ""}?
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
