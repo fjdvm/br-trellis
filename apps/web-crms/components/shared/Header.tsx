@@ -35,16 +35,20 @@ function getBreadcrumbItems(pathname: string) {
   if (segments[0] === "contacts") {
     if (segments.length === 1) {
       items.push({ label: "Contacts", isCurrent: true });
-    } else {
+    } else if (segments[1] === "pending-review") {
       items.push({ label: "Contacts", href: "/contacts" });
-      items.push({ label: "Detail", isCurrent: true });
+      items.push({ label: "Pending Review", isCurrent: true });
+    } else {
+      items.push({ label: "Contacts", isCurrent: true });
     }
   } else if (segments[0] === "customers") {
     if (segments.length === 1) {
       items.push({ label: "Contacts", isCurrent: true });
-    } else {
+    } else if (segments[1] === "pending-review") {
       items.push({ label: "Contacts", href: "/contacts" });
-      items.push({ label: "Detail", isCurrent: true });
+      items.push({ label: "Pending Review", isCurrent: true });
+    } else {
+      items.push({ label: "Contacts", isCurrent: true });
     }
   } else {
     const pageName = segments[0].charAt(0).toUpperCase() + segments[0].slice(1);
