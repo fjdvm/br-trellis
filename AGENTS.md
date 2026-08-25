@@ -1,5 +1,14 @@
 # Agents Rules
 
+## Tech stack
+- use typescript - no any type
+- use react
+- use nextjs
+- use tailwindcss
+- use shadcn ui always
+- use sqlite for now - postgres later
+- use c# .net
+
 ## Code rules
 - use prettier
 - code files should not exceed ~250 lines, if it does, it should be split into smaller files
