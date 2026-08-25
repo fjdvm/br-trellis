@@ -1,6 +1,13 @@
+using api_crms.CustomerIdentity.Persistence;
+using Microsoft.EntityFrameworkCore;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+var connectionString = builder.Configuration.GetConnectionString("CrmsDatabase")
+    ?? throw new InvalidOperationException("Connection string 'CrmsDatabase' is required.");
+
+builder.Services.AddDbContext<CustomerIdentityDbContext>(options =>
+    options.UseSqlite(connectionString));
 
 builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi

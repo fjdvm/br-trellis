@@ -28,6 +28,11 @@ node_modules
 *.njsproj
 *.sln
 *.sw?
+
+# .NET build and local database artifacts
+bin/
+obj/
+*.db
 !.env.example
 .agents/
 .kiro/

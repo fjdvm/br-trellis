@@ -1,0 +1,6 @@
+<Solution>
+  <Folder Name="/apps/">
+    <Project Path="apps/api-crms.Tests/api-crms.Tests.csproj" />
+    <Project Path="apps/api-crms/api-crms.csproj" />
+  </Folder>
+</Solution>
