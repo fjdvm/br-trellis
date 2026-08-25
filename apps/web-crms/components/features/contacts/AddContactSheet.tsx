@@ -8,6 +8,7 @@ import {
   Sheet,
   SheetContent,
   SheetDescription,
+  SheetFooter,
   SheetHeader,
   SheetTitle,
   SheetTrigger,
@@ -57,46 +58,57 @@ export function AddContactSheet({ onCreated }: AddContactSheetProps) {
           <Plus className="w-4 h-4 mr-2" /> Add Contact
         </Button>
       </SheetTrigger>
-      <SheetContent>
-        <SheetHeader>
+      <SheetContent className="flex flex-col h-full">
+        <SheetHeader className="pb-4">
           <SheetTitle>Add Contact</SheetTitle>
           <SheetDescription>
             Create a new contact manually. At least one field is recommended.
           </SheetDescription>
         </SheetHeader>
-        <form onSubmit={handleSubmit} className="space-y-lg mt-lg px-1">
-          <div className="space-y-sm">
-            <Label htmlFor="contact-name">Name</Label>
-            <Input
-              id="contact-name"
-              placeholder="Full name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            />
+
+        <form
+          onSubmit={handleSubmit}
+          className="flex flex-col flex-1 gap-6 overflow-y-auto"
+        >
+          <div className="flex flex-col gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="contact-name">Name</Label>
+              <Input
+                id="contact-name"
+                placeholder="Full name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                autoFocus
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="contact-email">Email</Label>
+              <Input
+                id="contact-email"
+                type="email"
+                placeholder="email@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="contact-phone">Phone</Label>
+              <Input
+                id="contact-phone"
+                placeholder="+1 555-0100"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+              />
+            </div>
           </div>
-          <div className="space-y-sm">
-            <Label htmlFor="contact-email">Email</Label>
-            <Input
-              id="contact-email"
-              type="email"
-              placeholder="email@example.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-          </div>
-          <div className="space-y-sm">
-            <Label htmlFor="contact-phone">Phone</Label>
-            <Input
-              id="contact-phone"
-              placeholder="+1 555-0100"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-            />
-          </div>
+
           {error && <p className="text-sm text-destructive">{error}</p>}
-          <Button type="submit" className="w-full" disabled={isSubmitting}>
-            {isSubmitting ? "Creating…" : "Create Contact"}
-          </Button>
+
+          <SheetFooter className="mt-auto pt-4 border-t border-border">
+            <Button type="submit" className="w-full" disabled={isSubmitting}>
+              {isSubmitting ? "Creating…" : "Create Contact"}
+            </Button>
+          </SheetFooter>
         </form>
       </SheetContent>
     </Sheet>
