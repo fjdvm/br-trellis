@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Building2, Clock, Pencil, Trash2 } from "lucide-react";
+import { ArrowLeft, Building2, Clock, Loader2, Pencil, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -101,7 +101,11 @@ export function ContactDetailPage({ contactId }: ContactDetailPageProps) {
   }
 
   if (isLoading) {
-    return <div className="p-xl text-muted-foreground">Loading contact…</div>;
+    return (
+      <div className="flex items-center justify-center py-xl">
+        <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+      </div>
+    );
   }
 
   if (error && !contact) {
@@ -135,7 +139,7 @@ export function ContactDetailPage({ contactId }: ContactDetailPageProps) {
             onClick={() => setShowDeleteDialog(true)}
             disabled={isDeleting}
           >
-            <Trash2 className="w-4 h-4" />
+            {isDeleting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
             <span className="ml-1">{isDeleting ? "Deleting…" : "Delete"}</span>
           </Button>
         </div>
@@ -190,6 +194,7 @@ export function ContactDetailPage({ contactId }: ContactDetailPageProps) {
                   disabled={isSaving}
                   className="w-full"
                 >
+                  {isSaving && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
                   {isSaving ? "Saving…" : "Save Changes"}
                 </Button>
               </div>

@@ -24,7 +24,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { crmClient } from "@/lib/api/crm-client";
-import { Plus } from "lucide-react";
+import { Loader2, Plus } from "lucide-react";
 
 interface AddContactSheetProps {
   onCreated?: () => void;
@@ -124,6 +124,7 @@ export function AddContactSheet({ onCreated }: AddContactSheetProps) {
 
             <SheetFooter className="mt-auto pt-4 border-t border-border">
               <Button type="submit" className="w-full" disabled={isSubmitting}>
+                {isSubmitting && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
                 {isSubmitting ? "Creating…" : "Create Contact"}
               </Button>
             </SheetFooter>

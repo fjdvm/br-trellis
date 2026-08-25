@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import { Search } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -13,40 +13,14 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { crmClient } from "@/lib/api/crm-client";
 import type { ContactListItem } from "@/types/contact";
 
-export function ContactListTable() {
-  const [contacts, setContacts] = useState<ContactListItem[]>([]);
-  const [error, setError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+interface ContactListTableProps {
+  contacts: ContactListItem[];
+}
+
+export function ContactListTable({ contacts }: ContactListTableProps) {
   const [search, setSearch] = useState("");
-
-  useEffect(() => {
-    let isCurrent = true;
-
-    async function loadContacts() {
-      try {
-        const result = await crmClient.contacts.list();
-        if (isCurrent) {
-          setContacts(result);
-        }
-      } catch (loadError) {
-        if (isCurrent) {
-          setError(loadError instanceof Error ? loadError.message : "Unable to load contacts.");
-        }
-      } finally {
-        if (isCurrent) {
-          setIsLoading(false);
-        }
-      }
-    }
-
-    void loadContacts();
-    return () => {
-      isCurrent = false;
-    };
-  }, []);
 
   const filteredContacts = useMemo(() => {
     if (!search.trim()) return contacts;
@@ -60,12 +34,8 @@ export function ContactListTable() {
     );
   }, [contacts, search]);
 
-  if (isLoading) {
-    return <div className="p-xl text-muted-foreground">Loading contacts…</div>;
-  }
-
-  if (error) {
-    return <div className="p-xl text-destructive">{error}</div>;
+  if (contacts.length === 0) {
+    return <div className="p-xl text-muted-foreground">No contacts found.</div>;
   }
 
   return (
@@ -81,9 +51,7 @@ export function ContactListTable() {
       </div>
 
       {filteredContacts.length === 0 ? (
-        <div className="p-xl text-muted-foreground">
-          {contacts.length === 0 ? "No contacts found." : "No contacts match your search."}
-        </div>
+        <div className="p-xl text-muted-foreground">No contacts match your search.</div>
       ) : (
         <Table className="table-fixed w-full">
           <TableHeader>
