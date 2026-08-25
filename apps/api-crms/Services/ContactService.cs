@@ -1,10 +1,14 @@
+using api_crms.Data;
 using api_crms.DTOs;
 using api_crms.Interfaces;
 using api_crms.Mappers;
+using api_crms.Models;
 
 namespace api_crms.Services;
 
-public sealed class ContactService(IContactRepository contactRepository) : IContactService
+public sealed class ContactService(
+    IContactRepository contactRepository,
+    AppDbContext dbContext) : IContactService
 {
     public async Task<IReadOnlyList<ContactListItemDto>> ListContactsAsync(
         CancellationToken cancellationToken)
@@ -19,5 +23,24 @@ public sealed class ContactService(IContactRepository contactRepository) : ICont
     {
         var contact = await contactRepository.GetContactByIdAsync(id, cancellationToken);
         return contact is null ? null : ContactMapper.ToDetail(contact);
+    }
+
+    public async Task<ContactDetailDto> CreateContactAsync(
+        CreateContactDto input,
+        CancellationToken cancellationToken)
+    {
+        var contact = new Contact
+        {
+            Id = Guid.NewGuid(),
+            CreatedAt = DateTimeOffset.UtcNow,
+            Name = string.IsNullOrWhiteSpace(input.Name) ? null : input.Name.Trim(),
+            Email = string.IsNullOrWhiteSpace(input.Email) ? null : input.Email.Trim(),
+            Phone = string.IsNullOrWhiteSpace(input.Phone) ? null : input.Phone.Trim(),
+        };
+
+        dbContext.Contacts.Add(contact);
+        await dbContext.SaveChangesAsync(cancellationToken);
+
+        return ContactMapper.ToDetail(contact);
     }
 }

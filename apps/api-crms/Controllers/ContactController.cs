@@ -26,6 +26,15 @@ public sealed class ContactController(
         return contact is null ? NotFound() : Ok(contact);
     }
 
+    [HttpPost]
+    public async Task<ActionResult<ContactDetailDto>> CreateContact(
+        CreateContactDto input,
+        CancellationToken cancellationToken)
+    {
+        var contact = await contactService.CreateContactAsync(input, cancellationToken);
+        return CreatedAtAction(nameof(GetContact), new { id = contact.Id }, contact);
+    }
+
     [HttpPut("{id:guid}/custom-fields")]
     public async Task<IActionResult> UpdateCustomFieldValue(
         Guid id,

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { ContactTabs } from "@/components/features/contacts/ContactTabs";
 import { ContactListTable } from "@/components/features/contacts/ContactListTable";
+import { AddContactSheet } from "@/components/features/contacts/AddContactSheet";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
@@ -25,6 +26,7 @@ export function ContactListPage() {
             View unified contact profiles and the source systems they are known from.
           </p>
         </div>
+        <AddContactSheet onCreated={() => window.location.reload()} />
       </div>
 
       <ContactTabs active="contacts" />

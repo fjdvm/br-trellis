@@ -63,3 +63,8 @@ public sealed record CustomFieldValueUpdateDto(
     DateTimeOffset? DateValue,
     bool? BoolValue,
     Guid? OptionId);
+
+public sealed record CreateContactDto(
+    string? Name,
+    string? Email,
+    string? Phone);

@@ -90,6 +90,11 @@ export const crmClient = {
       request<ContactListItem[]>(`/api/v1/contacts`),
     getById: (id: string) =>
       request<ContactDetail>(`/api/v1/contacts/${id}`),
+    create: (body: { name?: string; email?: string; phone?: string }) =>
+      request<ContactDetail>(`/api/v1/contacts`, {
+        method: "POST",
+        body: JSON.stringify(body),
+      }),
     listPendingReview: () =>
       request<PendingReviewContactType[]>(`/api/v1/contact-identity/pending-review`),
   },
