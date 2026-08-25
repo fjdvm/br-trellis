@@ -1,11 +1,13 @@
 using api_crms.CustomerIdentity.Persistence;
-using Microsoft.EntityFrameworkCore;
+using api_crms.DTOs;
+using api_crms.Interfaces;
+using api_crms.Mappers;
 
 namespace api_crms.CustomerIdentity;
 
 public sealed class CustomerIdentityService(
-    CustomerIdentityDbContext dbContext,
-    CustomerIdentityOptions options)
+    ICustomerIdentityRepository customerIdentityRepository,
+    CustomerIdentityOptions options) : ICustomerIdentityService
 {
     public async Task<ResolveOrCreateCustomerResult> ResolveOrCreateCustomerAsync(
         ResolveOrCreateCustomerCommand command,
@@ -13,14 +15,8 @@ public sealed class CustomerIdentityService(
     {
         var sourceSystem = RequireValue(command.SourceSystem, nameof(command.SourceSystem));
         var sourceId = RequireValue(command.SourceId, nameof(command.SourceId));
-
-        var existingReference = await dbContext.SourceReferences
-            .AsNoTracking()
-            .SingleOrDefaultAsync(reference =>
-                reference.DeletedAt == null &&
-                reference.SourceSystem == sourceSystem &&
-                reference.SourceId == sourceId,
-                cancellationToken);
+        var existingReference = await customerIdentityRepository.FindActiveSourceReferenceAsync(
+            sourceSystem, sourceId, cancellationToken);
 
         if (existingReference is not null)
         {
@@ -29,47 +25,53 @@ public sealed class CustomerIdentityService(
 
         var email = NormalizeEmail(command.Email);
         var phone = NormalizePhone(command.Phone);
-        var matchedCustomers = await FindMatchingCustomersAsync(email, phone, cancellationToken);
+        var name = NormalizeOptional(command.Name);
+        var matchedCustomers = await FindMatchingCustomersAsync(email, phone, name, cancellationToken);
 
-        if (matchedCustomers.Count == 1 &&
-            matchedCustomers[0].Confidence >= options.AutoAcceptThreshold)
+        if (matchedCustomers is [var matchedCustomer] &&
+            matchedCustomer.Confidence >= options.AutoAcceptThreshold)
         {
-            var matchedCustomer = matchedCustomers[0];
-            dbContext.SourceReferences.Add(CreateLinkedSourceReference(
-                matchedCustomer.CustomerId,
-                sourceSystem,
-                sourceId,
-                matchedCustomer.Confidence));
-            var concurrentCustomerId = await SaveChangesOrGetConcurrentCustomerIdAsync(
-                sourceSystem,
-                sourceId,
-                cancellationToken);
-            if (concurrentCustomerId is not null)
-            {
-                return new ResolveOrCreateCustomerResult(concurrentCustomerId.Value, false);
-            }
-
-            return new ResolveOrCreateCustomerResult(matchedCustomer.CustomerId, false);
+            customerIdentityRepository.AddSourceReference(CreateSourceReference(
+                matchedCustomer.CustomerId, sourceSystem, sourceId, matchedCustomer.Confidence,
+                SourceReferenceStatus.Linked));
+            var concurrentCustomerId = await customerIdentityRepository
+                .SaveChangesOrGetConcurrentCustomerIdAsync(sourceSystem, sourceId, cancellationToken);
+            return new ResolveOrCreateCustomerResult(
+                concurrentCustomerId ?? matchedCustomer.CustomerId, false);
         }
 
+        var reviewCandidates = matchedCustomers
+            .Where(match => match.Confidence >= options.NoiseFloor)
+            .ToList();
         var customer = new Customer
         {
             Id = Guid.NewGuid(),
             CreatedAt = DateTimeOffset.UtcNow,
-            Name = NormalizeOptional(command.Name),
+            Name = name,
             Email = email,
             Phone = phone,
         };
-        dbContext.Customers.Add(customer);
-        dbContext.SourceReferences.Add(CreateLinkedSourceReference(
+        var sourceReference = CreateSourceReference(
             customer.Id,
             sourceSystem,
             sourceId,
-            null));
-        var concurrentCreatedCustomerId = await SaveChangesOrGetConcurrentCustomerIdAsync(
-            sourceSystem,
-            sourceId,
-            cancellationToken);
+            reviewCandidates.Count == 0 ? null : reviewCandidates.Max(match => match.Confidence),
+            reviewCandidates.Count == 0
+                ? SourceReferenceStatus.Linked
+                : SourceReferenceStatus.PendingReview);
+        customerIdentityRepository.AddCustomer(customer);
+        customerIdentityRepository.AddSourceReference(sourceReference);
+        customerIdentityRepository.AddIdentityMatchCandidates(reviewCandidates.Select(match =>
+            new IdentityMatchCandidate
+            {
+                Id = Guid.NewGuid(),
+                SourceReferenceId = sourceReference.Id,
+                CandidateCustomerId = match.CustomerId,
+                ConfidenceScore = match.Confidence,
+                CreatedAt = DateTimeOffset.UtcNow,
+            }));
+        var concurrentCreatedCustomerId = await customerIdentityRepository
+            .SaveChangesOrGetConcurrentCustomerIdAsync(sourceSystem, sourceId, cancellationToken);
         if (concurrentCreatedCustomerId is not null)
         {
             return new ResolveOrCreateCustomerResult(concurrentCreatedCustomerId.Value, false);
@@ -78,58 +80,39 @@ public sealed class CustomerIdentityService(
         return new ResolveOrCreateCustomerResult(customer.Id, true);
     }
 
-    private async Task<Guid?> SaveChangesOrGetConcurrentCustomerIdAsync(
-        string sourceSystem,
-        string sourceId,
-        CancellationToken cancellationToken)
+    public async Task<IReadOnlyList<PendingReviewCustomer>> ListPendingReviewCustomersAsync(
+        CancellationToken cancellationToken = default)
     {
-        try
-        {
-            await dbContext.SaveChangesAsync(cancellationToken);
-            return null;
-        }
-        catch (DbUpdateException)
-        {
-            dbContext.ChangeTracker.Clear();
-            return await dbContext.SourceReferences
-                .AsNoTracking()
-                .Where(reference =>
-                    reference.DeletedAt == null &&
-                    reference.SourceSystem == sourceSystem &&
-                    reference.SourceId == sourceId)
-                .Select(reference => (Guid?)reference.CustomerId)
-                .SingleOrDefaultAsync(cancellationToken);
-        }
+        var pendingReferences = await customerIdentityRepository
+            .ListPendingReviewSourceReferencesAsync(cancellationToken);
+        return PendingReviewCustomerMapper.ToReadModel(pendingReferences);
     }
 
     private async Task<List<CustomerMatch>> FindMatchingCustomersAsync(
         string? email,
         string? phone,
+        string? name,
         CancellationToken cancellationToken)
     {
-        if (email is null && phone is null)
+        if (email is null && phone is null && name is null)
         {
             return [];
         }
 
-        var customers = await dbContext.Customers
-            .AsNoTracking()
-            .Where(customer => customer.DeletedAt == null)
-            .ToListAsync(cancellationToken);
-
-        return customers
-            .Select(customer => new CustomerMatch(
+        var customers = await customerIdentityRepository.ListActiveCustomersAsync(cancellationToken);
+        return customers.Select(customer => new CustomerMatch(
                 customer.Id,
-                CalculateConfidence(customer, email, phone)))
+                CalculateConfidence(customer, email, phone, name)))
             .Where(match => match.Confidence > 0m)
             .ToList();
     }
 
-    private static SourceReference CreateLinkedSourceReference(
+    private static SourceReference CreateSourceReference(
         Guid customerId,
         string sourceSystem,
         string sourceId,
-        decimal? confidence)
+        decimal? confidence,
+        SourceReferenceStatus status)
     {
         return new SourceReference
         {
@@ -138,16 +121,24 @@ public sealed class CustomerIdentityService(
             SourceSystem = sourceSystem,
             SourceId = sourceId,
             MatchConfidence = confidence,
-            Status = SourceReferenceStatus.Linked,
+            Status = status,
             CreatedAt = DateTimeOffset.UtcNow,
         };
     }
 
-    private static decimal CalculateConfidence(Customer customer, string? email, string? phone)
+    private static decimal CalculateConfidence(
+        Customer customer,
+        string? email,
+        string? phone,
+        string? name)
     {
-        var emailMatches = email is not null && NormalizeEmail(customer.Email) == email;
-        var phoneMatches = phone is not null && NormalizePhone(customer.Phone) == phone;
-        return emailMatches || phoneMatches ? 1m : 0m;
+        if ((email is not null && NormalizeEmail(customer.Email) == email) ||
+            (phone is not null && NormalizePhone(customer.Phone) == phone))
+        {
+            return 1m;
+        }
+
+        return name is not null && NormalizeName(customer.Name) == NormalizeName(name) ? 0.5m : 0m;
     }
 
     private static string RequireValue(string value, string parameterName)
@@ -162,16 +153,13 @@ public sealed class CustomerIdentityService(
         return string.IsNullOrWhiteSpace(value) ? null : value.Trim();
     }
 
-    private static string? NormalizeEmail(string? email)
-    {
-        return NormalizeOptional(email)?.ToLowerInvariant();
-    }
+    private static string? NormalizeEmail(string? email) => NormalizeOptional(email)?.ToLowerInvariant();
+
+    private static string? NormalizeName(string? name) => NormalizeOptional(name)?.ToLowerInvariant();
 
     private static string? NormalizePhone(string? phone)
     {
-        var digits = NormalizeOptional(phone)?
-            .Where(char.IsDigit)
-            .ToArray();
+        var digits = NormalizeOptional(phone)?.Where(char.IsDigit).ToArray();
         return digits is null or { Length: 0 } ? null : new string(digits);
     }
 

@@ -1,11 +1,11 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { CustomerIdentityTabs } from "@/components/features/customers/CustomerIdentityTabs";
-import { CustomerListTable } from "@/components/features/customers/CustomerListTable";
+import { PendingReviewTable } from "@/components/features/customers/PendingReviewTable";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
-export function CustomerListPage() {
+export function PendingReviewPage() {
   return (
     <div className="w-full min-h-full py-xl px-lg md:px-xl space-y-2xl max-w-7xl mx-auto">
       <div>
@@ -16,25 +16,24 @@ export function CustomerListPage() {
         </Link>
       </div>
 
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-md">
+      <div className="space-y-md">
         <div className="space-y-sm">
           <h1 className="text-headline-md font-bold tracking-tight text-foreground">
             Customers
           </h1>
           <p className="text-body-md text-muted-foreground">
-            View unified customer profiles and the source systems they are known from.
+            Review possible duplicate Customer identities without interrupting ingest.
           </p>
         </div>
+        <CustomerIdentityTabs active="pending-review" />
       </div>
 
-      <CustomerIdentityTabs active="customers" />
-
       <Card className="shadow-none border-border flex flex-col">
-        <CardHeader className="pb-md p-lg flex flex-col sm:flex-row sm:items-center sm:justify-between gap-md">
-          <CardTitle className="text-title-lg font-bold">Customer registry</CardTitle>
+        <CardHeader className="pb-md p-lg">
+          <CardTitle className="text-title-lg font-bold">Pending identity matches</CardTitle>
         </CardHeader>
         <CardContent className="py-md pt-0 overflow-x-auto">
-          <CustomerListTable />
+          <PendingReviewTable />
         </CardContent>
       </Card>
     </div>

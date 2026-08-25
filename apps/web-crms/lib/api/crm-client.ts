@@ -10,6 +10,7 @@ import {
   OrderHistory,
   PaginatedResponse,
   CustomerIdentityListItem,
+  PendingReviewCustomer,
 } from "@/types/customer";
 import { Message } from "@/types/message";
 import {
@@ -76,6 +77,8 @@ export const crmClient = {
   customerIdentity: {
     listCustomers: () =>
       request<CustomerIdentityListItem[]>(`/api/v1/customer-identity/customers`),
+    listPendingReviewCustomers: () =>
+      request<PendingReviewCustomer[]>(`/api/v1/customer-identity/pending-review`),
   },
   orders: {
     listByCustomer: (customerId: string) =>

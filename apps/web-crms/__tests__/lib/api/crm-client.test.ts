@@ -158,3 +158,16 @@ describe("crmClient.customerIdentity.listCustomers", () => {
     );
   });
 });
+
+describe("crmClient.customerIdentity.listPendingReviewCustomers", () => {
+  it("calls the versioned pending-review endpoint", async () => {
+    mockFetch(200, []);
+
+    await crmClient.customerIdentity.listPendingReviewCustomers();
+
+    expect(fetch).toHaveBeenCalledWith(
+      `${BASE}/api/v1/customer-identity/pending-review`,
+      expect.any(Object)
+    );
+  });
+});

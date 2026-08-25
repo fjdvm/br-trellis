@@ -23,9 +23,11 @@ public sealed class CustomerIdentityDatabaseTests : IDisposable
 
         Assert.Contains("customer", tableNames);
         Assert.Contains("source_reference", tableNames);
+        Assert.Contains("identity_match_candidate", tableNames);
 
         var customerColumns = await GetColumnNames(context, "customer");
         var sourceReferenceColumns = await GetColumnNames(context, "source_reference");
+        var candidateColumns = await GetColumnNames(context, "identity_match_candidate");
         var sourceReferenceIndexes = await context.Database
             .SqlQuery<string>($"SELECT name AS Value FROM pragma_index_list('source_reference')")
             .ToListAsync();
@@ -39,6 +41,14 @@ public sealed class CustomerIdentityDatabaseTests : IDisposable
             "source_id",
             "match_confidence",
             "status",
+            "created_at",
+            "deleted_at");
+        AssertRequiredColumns(
+            candidateColumns,
+            "id",
+            "source_reference_id",
+            "candidate_customer_id",
+            "confidence_score",
             "created_at",
             "deleted_at");
         Assert.Contains("IX_source_reference_source_system_source_id", sourceReferenceIndexes);

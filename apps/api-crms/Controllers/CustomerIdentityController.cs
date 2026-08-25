@@ -1,5 +1,7 @@
 using api_crms.CustomerIdentity;
 using api_crms.CustomerIdentity.Persistence;
+using api_crms.DTOs;
+using api_crms.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -8,7 +10,7 @@ namespace api_crms.Controllers;
 [ApiController]
 [Route("api/v1/customer-identity")]
 public sealed class CustomerIdentityController(
-    CustomerIdentityService customerIdentityService,
+    ICustomerIdentityService customerIdentityService,
     CustomerIdentityDbContext dbContext) : ControllerBase
 {
     [HttpGet("health")]
@@ -26,6 +28,13 @@ public sealed class CustomerIdentityController(
             command,
             cancellationToken);
         return Ok(result);
+    }
+
+    [HttpGet("pending-review")]
+    public async Task<ActionResult<IReadOnlyList<PendingReviewCustomer>>> ListPendingReviewCustomers(
+        CancellationToken cancellationToken)
+    {
+        return Ok(await customerIdentityService.ListPendingReviewCustomersAsync(cancellationToken));
     }
 
     [HttpGet("customers")]

@@ -1,5 +1,7 @@
 using api_crms.CustomerIdentity;
 using api_crms.CustomerIdentity.Persistence;
+using api_crms.Interfaces;
+using api_crms.Repositories;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -14,8 +16,11 @@ builder.Services.AddSingleton(new CustomerIdentityOptions
     AutoAcceptThreshold = builder.Configuration.GetValue<decimal?>(
         "CustomerIdentity:AutoAcceptThreshold")
         ?? CustomerIdentityOptions.DefaultAutoAcceptThreshold,
+    NoiseFloor = builder.Configuration.GetValue<decimal?>("CustomerIdentity:NoiseFloor")
+        ?? CustomerIdentityOptions.DefaultNoiseFloor,
 });
-builder.Services.AddScoped<CustomerIdentityService>();
+builder.Services.AddScoped<ICustomerIdentityRepository, CustomerIdentityRepository>();
+builder.Services.AddScoped<ICustomerIdentityService, CustomerIdentityService>();
 
 builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi

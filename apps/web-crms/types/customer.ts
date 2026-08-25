@@ -86,3 +86,20 @@ export interface CustomerIdentityListItem {
   phone: string | null;
   sourceReferences: CustomerIdentitySourceReference[];
 }
+
+export interface PendingReviewCustomerDetails {
+  id: string;
+  name: string | null;
+  email: string | null;
+  phone: string | null;
+}
+
+export interface PendingReviewCandidate {
+  customer: PendingReviewCustomerDetails;
+  confidenceScore: number;
+}
+
+export interface PendingReviewCustomer {
+  customer: PendingReviewCustomerDetails;
+  candidates: PendingReviewCandidate[];
+}

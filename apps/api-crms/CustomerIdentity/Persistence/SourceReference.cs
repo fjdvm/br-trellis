@@ -19,6 +19,9 @@ public sealed class SourceReference
     public DateTimeOffset? DeletedAt { get; set; }
 
     public Customer Customer { get; set; } = null!;
+
+    public ICollection<IdentityMatchCandidate> IdentityMatchCandidates { get; } =
+        new List<IdentityMatchCandidate>();
 }
 
 public enum SourceReferenceStatus
