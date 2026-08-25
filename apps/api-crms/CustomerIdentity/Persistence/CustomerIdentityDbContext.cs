@@ -41,6 +41,7 @@ public sealed class CustomerIdentityDbContext(DbContextOptions<CustomerIdentityD
                         : SourceReferenceStatus.PendingReview);
             sourceReference.Property(entity => entity.CreatedAt).HasColumnName("created_at");
             sourceReference.Property(entity => entity.DeletedAt).HasColumnName("deleted_at");
+            sourceReference.HasIndex(entity => new { entity.SourceSystem, entity.SourceId }).IsUnique();
 
             sourceReference.HasOne(entity => entity.Customer)
                 .WithMany(entity => entity.SourceReferences)

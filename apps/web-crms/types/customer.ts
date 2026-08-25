@@ -73,3 +73,16 @@ export interface UpdateCustomerTypeInput {
 export interface UpdateCustomerNotesInput {
   notes: string;
 }
+
+export interface CustomerIdentitySourceReference {
+  sourceSystem: string;
+  sourceId: string;
+}
+
+export interface CustomerIdentityListItem {
+  id: string;
+  name: string | null;
+  email: string | null;
+  phone: string | null;
+  sourceReferences: CustomerIdentitySourceReference[];
+}

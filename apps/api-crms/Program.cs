@@ -1,3 +1,4 @@
+using api_crms.CustomerIdentity;
 using api_crms.CustomerIdentity.Persistence;
 using Microsoft.EntityFrameworkCore;
 
@@ -8,6 +9,13 @@ var connectionString = builder.Configuration.GetConnectionString("CrmsDatabase")
 
 builder.Services.AddDbContext<CustomerIdentityDbContext>(options =>
     options.UseSqlite(connectionString));
+builder.Services.AddSingleton(new CustomerIdentityOptions
+{
+    AutoAcceptThreshold = builder.Configuration.GetValue<decimal?>(
+        "CustomerIdentity:AutoAcceptThreshold")
+        ?? CustomerIdentityOptions.DefaultAutoAcceptThreshold,
+});
+builder.Services.AddScoped<CustomerIdentityService>();
 
 builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi

@@ -26,6 +26,9 @@ public sealed class CustomerIdentityDatabaseTests : IDisposable
 
         var customerColumns = await GetColumnNames(context, "customer");
         var sourceReferenceColumns = await GetColumnNames(context, "source_reference");
+        var sourceReferenceIndexes = await context.Database
+            .SqlQuery<string>($"SELECT name AS Value FROM pragma_index_list('source_reference')")
+            .ToListAsync();
 
         AssertRequiredColumns(customerColumns, "id", "created_at", "name", "email", "phone", "deleted_at");
         AssertRequiredColumns(
@@ -38,6 +41,7 @@ public sealed class CustomerIdentityDatabaseTests : IDisposable
             "status",
             "created_at",
             "deleted_at");
+        Assert.Contains("IX_source_reference_source_system_source_id", sourceReferenceIndexes);
 
         var customer = new Customer
         {

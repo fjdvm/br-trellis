@@ -1,3 +1,4 @@
+import { request } from "@/lib/api/request";
 import {
   Customer,
   CustomerListItem,
@@ -8,6 +9,7 @@ import {
   MarketingInteraction,
   OrderHistory,
   PaginatedResponse,
+  CustomerIdentityListItem,
 } from "@/types/customer";
 import { Message } from "@/types/message";
 import {
@@ -26,78 +28,6 @@ import {
   CreateTicketInput,
   PaginatedTicketResponse,
 } from "@/types/ticket";
-
-const CRM_BASE = process.env.NEXT_PUBLIC_CRM_API_URL ?? "https://localhost:5005";
-
-// Client-side requests use the Next.js rewrite proxy to avoid browser cert issues.
-// The proxy maps /api/crm/* → CRM_BASE/api/v1/*
-// Server-side requests go directly to the CRM API.
-function getBaseUrl(path: string): string {
-  if (typeof window !== "undefined") {
-    // Client-side: use rewrite proxy (strips /api/v1 prefix, uses /api/crm instead)
-    if (path.startsWith("/api/v1/")) {
-      return "";  // Use relative URL — path will be rewritten to /api/crm/...
-    }
-  }
-  return CRM_BASE;
-}
-
-function rewritePath(path: string): string {
-  if (typeof window !== "undefined" && path.startsWith("/api/v1/")) {
-    return "/api/crm/" + path.slice("/api/v1/".length);
-  }
-  return path;
-}
-
-async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const base = getBaseUrl(path);
-  const finalPath = rewritePath(path);
-  const url = `${base}${finalPath}`;
-  const headers: Record<string, string> = { ...(init?.headers as Record<string, string>) };
-
-  if (!(init?.body instanceof FormData)) {
-    headers["Content-Type"] = "application/json";
-  }
-
-  let token: string | undefined;
-  if (typeof window === "undefined") {
-    const { getAccessToken } = await import("@/lib/api/session");
-    token = await getAccessToken();
-  } else {
-    // We do NOT attach the token on the client side because it goes to the Next.js proxy
-    // which injects it automatically from the HTTP-only session cookie.
-    // Attaching the massive JWT here causes the Next.js Node server to throw a 431 error.
-    token = undefined;
-  }
-
-  if (token) {
-    headers["Authorization"] = `Bearer ${token}`;
-  }
-
-  const response = await fetch(url, {
-    ...init,
-    headers,
-  });
-
-  if (!response.ok) {
-    let errorMessage = `API request failed with status ${response.status}`;
-    try {
-      const errorData = await response.json();
-      if (errorData?.message) {
-        errorMessage = errorData.message;
-      }
-    } catch {
-      // Ignore JSON parse errors for non-JSON responses
-    }
-    throw new Error(errorMessage);
-  }
-
-  if (response.status === 204) {
-    return undefined as unknown as T;
-  }
-
-  return response.json();
-}
 
 export const crmClient = {
   customers: {
@@ -142,6 +72,10 @@ export const crmClient = {
         method: "POST",
         body: JSON.stringify(body),
       }),
+  },
+  customerIdentity: {
+    listCustomers: () =>
+      request<CustomerIdentityListItem[]>(`/api/v1/customer-identity/customers`),
   },
   orders: {
     listByCustomer: (customerId: string) =>

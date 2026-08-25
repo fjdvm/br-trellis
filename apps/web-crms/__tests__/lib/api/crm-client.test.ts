@@ -145,3 +145,16 @@ describe("crmClient.customers.updateType", () => {
     );
   });
 });
+
+describe("crmClient.customerIdentity.listCustomers", () => {
+  it("calls the versioned customer identity customer-list endpoint", async () => {
+    mockFetch(200, []);
+
+    await crmClient.customerIdentity.listCustomers();
+
+    expect(fetch).toHaveBeenCalledWith(
+      `${BASE}/api/v1/customer-identity/customers`,
+      expect.any(Object)
+    );
+  });
+});
