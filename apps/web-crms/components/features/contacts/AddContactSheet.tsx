@@ -54,8 +54,9 @@ export function AddContactSheet({ onCreated }: AddContactSheetProps) {
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
-        <Button size="sm">
-          <Plus className="w-4 h-4 mr-2" /> Add Contact
+        <Button size="sm" className="flex items-center justify-center">
+          <Plus className="w-4 h-4" />
+          <span>Add Contact</span>
         </Button>
       </SheetTrigger>
       <SheetContent className="flex flex-col h-full">
