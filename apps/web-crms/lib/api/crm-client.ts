@@ -12,6 +12,11 @@ import {
   CustomerIdentityListItem,
   PendingReviewCustomer,
 } from "@/types/customer";
+import {
+  ContactListItem,
+  ContactDetail,
+  PendingReviewContact as PendingReviewContactType,
+} from "@/types/contact";
 import { Message } from "@/types/message";
 import {
   Campaign,
@@ -79,6 +84,14 @@ export const crmClient = {
       request<CustomerIdentityListItem[]>(`/api/v1/customer-identity/customers`),
     listPendingReviewCustomers: () =>
       request<PendingReviewCustomer[]>(`/api/v1/customer-identity/pending-review`),
+  },
+  contacts: {
+    list: () =>
+      request<ContactListItem[]>(`/api/v1/contacts`),
+    getById: (id: string) =>
+      request<ContactDetail>(`/api/v1/contacts/${id}`),
+    listPendingReview: () =>
+      request<PendingReviewContactType[]>(`/api/v1/contact-identity/pending-review`),
   },
   orders: {
     listByCustomer: (customerId: string) =>

@@ -80,7 +80,8 @@ export function Sidebar() {
 
     let modName = "";
     if (item.href === "/" || item.href === "/dashboard") modName = "Dashboard";
-    else if (item.href.startsWith("/customers")) modName = "Customer Profiles";
+    else if (item.href.startsWith("/customers")) modName = "Contact Profiles";
+    else if (item.href.startsWith("/contacts")) modName = "Contact Profiles";
     else if (item.href.startsWith("/conversations")) modName = "Conversations";
     else if (item.href.startsWith("/tickets")) modName = "Tickets";
     else if (item.href.startsWith("/campaigns")) modName = "Campaigns";

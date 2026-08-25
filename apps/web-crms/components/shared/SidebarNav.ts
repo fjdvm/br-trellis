@@ -50,7 +50,7 @@ export const navItems: NavItem[] = [...mainNavItems];
 export const systems: SystemItem[] = [
   {
     fullName: "Customer Relationship Management",
-    desc: "Customer profiles, tickets & marketing",
+    desc: "Contact profiles, tickets & marketing",
     icon: Building2,
     active: true,
   },

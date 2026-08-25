@@ -29,14 +29,21 @@ function getBreadcrumbItems(pathname: string) {
   }
 
   const items: Array<{ label: string; href?: string; isCurrent?: boolean }> = [
-    { label: "CRM", href: "/customers" },
+    { label: "CRM", href: "/contacts" },
   ];
 
-  if (segments[0] === "customers") {
+  if (segments[0] === "contacts") {
     if (segments.length === 1) {
-      items.push({ label: "Customers", isCurrent: true });
+      items.push({ label: "Contacts", isCurrent: true });
     } else {
-      items.push({ label: "Customers", href: "/customers" });
+      items.push({ label: "Contacts", href: "/contacts" });
+      items.push({ label: "Detail", isCurrent: true });
+    }
+  } else if (segments[0] === "customers") {
+    if (segments.length === 1) {
+      items.push({ label: "Contacts", isCurrent: true });
+    } else {
+      items.push({ label: "Contacts", href: "/contacts" });
       items.push({ label: "Detail", isCurrent: true });
     }
   } else {
