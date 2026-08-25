@@ -58,13 +58,13 @@ export function ContactListTable() {
   }
 
   return (
-    <Table>
+    <Table className="table-fixed w-full">
       <TableHeader>
         <TableRow>
-          <TableHead>Contact</TableHead>
-          <TableHead>Email / Phone</TableHead>
-          <TableHead>Company</TableHead>
-          <TableHead>Known sources</TableHead>
+          <TableHead className="w-1/4">Contact</TableHead>
+          <TableHead className="w-1/4">Email / Phone</TableHead>
+          <TableHead className="w-1/4">Company</TableHead>
+          <TableHead className="w-1/4">Known sources</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
