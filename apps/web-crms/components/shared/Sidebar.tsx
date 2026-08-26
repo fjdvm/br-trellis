@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ChevronsUpDown, Check, ChevronDown, X } from "lucide-react";
+import { ChevronsUpDown, Check, ChevronRight, X } from "lucide-react";
 import { useSession } from "next-auth/react";
 import {
   SidebarHeader,
@@ -207,9 +207,9 @@ export function Sidebar() {
                     >
                       <GroupIcon className="w-4 h-4 shrink-0" />
                       <span className="flex-1 text-left">{group.name}</span>
-                      <ChevronDown
+                      <ChevronRight
                         className={`w-3 h-3 transition-transform ${
-                          isExpanded ? "rotate-180" : ""
+                          isExpanded ? "rotate-90" : ""
                         }`}
                       />
                     </button>
