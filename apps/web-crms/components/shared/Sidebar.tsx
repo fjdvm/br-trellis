@@ -199,9 +199,9 @@ export function Sidebar() {
                           [group.name]: !isExpanded,
                         }))
                       }
-                      className={`w-full flex items-center gap-sm px-sm py-sm rounded-lg text-sm transition-colors hover:bg-sidebar-accent ${
+                      className={`w-full flex items-center gap-sm px-sm py-sm rounded-lg text-base font-semibold transition-colors hover:bg-sidebar-accent ${
                         hasActiveChild
-                          ? "text-sidebar-foreground font-medium"
+                          ? "text-sidebar-foreground"
                           : "text-muted-foreground"
                       }`}
                     >
