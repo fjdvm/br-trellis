@@ -248,11 +248,7 @@ export function Sidebar() {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button
-                  className={`w-full flex items-center gap-sm px-sm py-sm rounded-lg text-sm transition-colors hover:bg-sidebar-accent ${
-                    isSettingsActive
-                      ? "text-sidebar-foreground font-medium"
-                      : "text-muted-foreground"
-                  }`}
+                  className="w-full flex items-center gap-sm px-sm py-sm rounded-lg text-sm text-foreground transition-colors hover:bg-sidebar-accent"
                 >
                   <SettingsIcon className="w-4 h-4 shrink-0" />
                   <span className="flex-1 text-left">Settings</span>
