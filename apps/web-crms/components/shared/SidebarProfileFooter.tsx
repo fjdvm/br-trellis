@@ -73,8 +73,8 @@ export function SidebarProfileFooter({
         </DropdownMenuTrigger>
 
         <DropdownMenuContent
-          className="w-64 bg-popover border-border text-popover-foreground z-[99999] shadow-xl p-sm !left-[106px]"
-          side="top"
+          className="w-64 bg-popover border-border text-popover-foreground z-[99999] shadow-xl p-sm"
+          side="right"
           align="start"
           sideOffset={4}
         >
