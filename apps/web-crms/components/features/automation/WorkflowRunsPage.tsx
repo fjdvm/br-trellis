@@ -4,20 +4,11 @@ import { useCallback, useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { DataTable, Column } from "@/components/shared/DataTable";
 import { crmClient } from "@/lib/api/crm-client";
 import type { WorkflowRunListItem } from "@/types/ecommerce";
 
-function getStatusVariant(
-  status: string
-): "default" | "outline" | "destructive" {
+function getStatusVariant(status: string): "default" | "outline" | "destructive" {
   switch (status) {
     case "Completed":
       return "outline";
@@ -26,6 +17,49 @@ function getStatusVariant(
     default:
       return "default";
   }
+}
+
+const columns: Column<WorkflowRunListItem>[] = [
+  {
+    header: "Workflow",
+    cell: (row) => <span className="font-medium">{row.workflowName}</span>,
+  },
+  {
+    header: "Entity",
+    cell: (row) => row.entityLabel ?? `${row.entityType} ${row.entityId.slice(0, 8)}`,
+  },
+  {
+    header: "Step Progress",
+    cell: (row) => `${row.currentStepIndex + 1} / ${row.totalSteps}`,
+  },
+  {
+    header: "Status",
+    cell: (row) => (
+      <Badge variant={getStatusVariant(row.status)}>{row.status}</Badge>
+    ),
+  },
+  {
+    header: "Started",
+    cell: (row) => new Date(row.startedAt).toLocaleDateString(),
+  },
+  {
+    header: "Next Due",
+    cell: (row) =>
+      row.nextStepDueAt ? new Date(row.nextStepDueAt).toLocaleDateString() : "\u2014",
+  },
+  {
+    header: "Completed",
+    cell: (row) =>
+      row.completedAt ? new Date(row.completedAt).toLocaleDateString() : "\u2014",
+  },
+];
+
+function searchRuns(run: WorkflowRunListItem, query: string): boolean {
+  return (
+    run.workflowName.toLowerCase().includes(query) ||
+    (run.entityLabel?.toLowerCase().includes(query) ?? false) ||
+    run.status.toLowerCase().includes(query)
+  );
 }
 
 export function WorkflowRunsPage() {
@@ -37,11 +71,8 @@ export function WorkflowRunsPage() {
     try {
       const result = await crmClient.workflowRuns.list();
       setRuns(result);
-      setError(null);
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Unable to load workflow runs."
-      );
+      setError(err instanceof Error ? err.message : "Unable to load runs.");
     } finally {
       setIsLoading(false);
     }
@@ -52,7 +83,7 @@ export function WorkflowRunsPage() {
   }, [loadRuns]);
 
   return (
-    <div className="w-full min-h-full py-xl px-lg md:px-xl space-y-2xl max-w-7xl mx-auto">
+    <div className="w-full min-h-full py-xl px-lg md:px-xl space-y-lg max-w-7xl mx-auto">
       <div className="space-y-sm">
         <h1 className="text-headline-md font-bold tracking-tight text-foreground">
           Workflow Runs
@@ -62,71 +93,26 @@ export function WorkflowRunsPage() {
         </p>
       </div>
 
-      <Card className="shadow-none border-border flex flex-col">
+      <Card className="shadow-none border-border">
         <CardHeader className="pb-md p-lg">
-          <CardTitle className="text-title-lg font-bold">
-            All Workflow Runs
-          </CardTitle>
+          <CardTitle className="text-title-lg font-bold">All Runs</CardTitle>
         </CardHeader>
-        <CardContent className="py-md pt-0 overflow-x-auto">
+        <CardContent className="p-lg pt-0">
           {isLoading ? (
             <div className="flex items-center justify-center py-xl">
               <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
             </div>
           ) : error ? (
             <div className="p-xl text-destructive">{error}</div>
-          ) : runs.length === 0 ? (
-            <div className="p-xl text-muted-foreground">
-              No workflow runs found.
-            </div>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Workflow</TableHead>
-                  <TableHead>Entity</TableHead>
-                  <TableHead>Step Progress</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Started</TableHead>
-                  <TableHead>Next Due</TableHead>
-                  <TableHead>Completed</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {runs.map((run) => (
-                  <TableRow key={run.id}>
-                    <TableCell className="font-medium">
-                      {run.workflowName}
-                    </TableCell>
-                    <TableCell>
-                      {run.entityLabel ??
-                        `${run.entityType} ${run.entityId}`}
-                    </TableCell>
-                    <TableCell>
-                      {run.currentStepIndex + 1} / {run.totalSteps}
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={getStatusVariant(run.status)}>
-                        {run.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      {new Date(run.startedAt).toLocaleDateString()}
-                    </TableCell>
-                    <TableCell>
-                      {run.nextStepDueAt
-                        ? new Date(run.nextStepDueAt).toLocaleDateString()
-                        : "—"}
-                    </TableCell>
-                    <TableCell>
-                      {run.completedAt
-                        ? new Date(run.completedAt).toLocaleDateString()
-                        : "—"}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+            <DataTable
+              data={runs}
+              columns={columns}
+              searchPlaceholder="Search workflow runs&#x2026;"
+              searchFn={searchRuns}
+              emptyMessage="No workflow runs found."
+              getRowKey={(row) => row.id}
+            />
           )}
         </CardContent>
       </Card>

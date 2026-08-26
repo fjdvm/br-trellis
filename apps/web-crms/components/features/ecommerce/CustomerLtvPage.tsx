@@ -3,14 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { DataTable, Column } from "@/components/shared/DataTable";
 import { request } from "@/lib/api/request";
 
 interface ContactLtvItem {
@@ -19,6 +12,36 @@ interface ContactLtvItem {
   email: string | null;
   phone: string | null;
   lifetimeValue: number;
+}
+
+function formatCurrency(value: number): string {
+  return `$${value.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+}
+
+const columns: Column<ContactLtvItem>[] = [
+  {
+    header: "Name",
+    cell: (row) => <span className="font-medium">{row.name ?? "Unnamed"}</span>,
+  },
+  {
+    header: "Email",
+    cell: (row) => (
+      <span className="text-muted-foreground">{row.email ?? "\u2014"}</span>
+    ),
+  },
+  {
+    header: "Lifetime Value",
+    cell: (row) => (
+      <span className="font-medium">{formatCurrency(row.lifetimeValue ?? 0)}</span>
+    ),
+  },
+];
+
+function searchContacts(contact: ContactLtvItem, query: string): boolean {
+  return (
+    (contact.name?.toLowerCase().includes(query) ?? false) ||
+    (contact.email?.toLowerCase().includes(query) ?? false)
+  );
 }
 
 export function CustomerLtvPage() {
@@ -30,11 +53,8 @@ export function CustomerLtvPage() {
     try {
       const result = await request<ContactLtvItem[]>(`/api/v1/contacts`);
       setContacts(result);
-      setError(null);
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Unable to load contact LTV data."
-      );
+      setError(err instanceof Error ? err.message : "Unable to load contacts.");
     } finally {
       setIsLoading(false);
     }
@@ -45,71 +65,41 @@ export function CustomerLtvPage() {
   }, [loadContacts]);
 
   const sortedContacts = useMemo(
-    () =>
-      [...contacts].sort(
-        (a, b) => (b.lifetimeValue ?? 0) - (a.lifetimeValue ?? 0)
-      ),
+    () => [...contacts].sort((a, b) => (b.lifetimeValue ?? 0) - (a.lifetimeValue ?? 0)),
     [contacts]
   );
 
-  const formatCurrency = (value: number | undefined): string => {
-    const amount = value ?? 0;
-    return `$${amount.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-  };
-
   return (
-    <div className="w-full min-h-full py-xl px-lg md:px-xl space-y-2xl max-w-7xl mx-auto">
+    <div className="w-full min-h-full py-xl px-lg md:px-xl space-y-lg max-w-7xl mx-auto">
       <div className="space-y-sm">
         <h1 className="text-headline-md font-bold tracking-tight text-foreground">
           Customer Lifetime Value
         </h1>
         <p className="text-body-md text-muted-foreground">
-          Contacts ranked by lifetime value.
+          Contacts ranked by lifetime value (completed orders net of refunds).
         </p>
       </div>
 
-      <Card className="shadow-none border-border flex flex-col">
+      <Card className="shadow-none border-border">
         <CardHeader className="pb-md p-lg">
-          <CardTitle className="text-title-lg font-bold">
-            LTV Rankings
-          </CardTitle>
+          <CardTitle className="text-title-lg font-bold">LTV Rankings</CardTitle>
         </CardHeader>
-        <CardContent className="py-md pt-0 overflow-x-auto">
+        <CardContent className="p-lg pt-0">
           {isLoading ? (
             <div className="flex items-center justify-center py-xl">
               <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
             </div>
           ) : error ? (
             <div className="p-xl text-destructive">{error}</div>
-          ) : sortedContacts.length === 0 ? (
-            <div className="p-xl text-muted-foreground">
-              No contacts found.
-            </div>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>LTV</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {sortedContacts.map((contact) => (
-                  <TableRow key={contact.id}>
-                    <TableCell className="font-medium">
-                      {contact.name ?? "Unnamed"}
-                    </TableCell>
-                    <TableCell className="text-muted-foreground">
-                      {contact.email ?? "—"}
-                    </TableCell>
-                    <TableCell className="font-medium">
-                      {formatCurrency(contact.lifetimeValue)}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+            <DataTable
+              data={sortedContacts}
+              columns={columns}
+              searchPlaceholder="Search contacts&#x2026;"
+              searchFn={searchContacts}
+              emptyMessage="No contacts found."
+              getRowKey={(row) => row.id}
+            />
           )}
         </CardContent>
       </Card>
