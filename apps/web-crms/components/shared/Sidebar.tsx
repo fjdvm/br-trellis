@@ -258,6 +258,7 @@ export function Sidebar() {
                 className="w-56 bg-popover border-border text-popover-foreground z-[99999] shadow-xl p-sm"
                 side="right"
                 align="end"
+                sideOffset={16}
               >
                 <DropdownMenuLabel className="text-xs text-muted-foreground font-semibold px-sm">
                   Settings

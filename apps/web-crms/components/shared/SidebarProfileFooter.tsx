@@ -62,7 +62,7 @@ export function SidebarProfileFooter({ activeAccount, onSelectAccount }: Sidebar
           </div>
         </DropdownMenuTrigger>
 
-        <DropdownMenuContent className="w-64 bg-popover border-border text-popover-foreground z-[99999] shadow-xl p-sm" side="right" align="end">
+        <DropdownMenuContent className="w-64 bg-popover border-border text-popover-foreground z-[99999] shadow-xl p-sm" side="right" align="end" sideOffset={16}>
           <div className="p-sm bg-muted/40 rounded-lg border border-border mb-sm flex items-center gap-sm">
             <Avatar className="w-10 h-10 border border-border shrink-0">
               <AvatarFallback className="text-xs bg-primary text-primary-foreground font-bold">
