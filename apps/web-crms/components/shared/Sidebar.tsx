@@ -256,8 +256,8 @@ export function Sidebar() {
               </DropdownMenuTrigger>
               <DropdownMenuContent
                 className="w-56 bg-popover border-border text-popover-foreground z-[99999] shadow-xl p-sm"
-                side="top"
-                align="center"
+                side="right"
+                align="end"
               >
                 <DropdownMenuLabel className="text-xs text-muted-foreground font-semibold px-sm">
                   Settings
