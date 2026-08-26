@@ -41,16 +41,35 @@ export interface ContactTimelineEntry {
   occurredAt: string;
 }
 
+export interface ContactOrderLineItem {
+  productId: string;
+  productName: string;
+  quantity: number;
+  unitPrice: number;
+}
+
+export interface ContactOrder {
+  id: string;
+  platformOrderId: string;
+  status: string;
+  total: number;
+  refundedAmount: number;
+  createdAt: string;
+  lineItems: ContactOrderLineItem[];
+}
+
 export interface ContactDetail {
   id: string;
   name: string | null;
   email: string | null;
   phone: string | null;
   sentimentScore: number | null;
+  lifetimeValue: number;
   company: ContactCompany | null;
   sourceReferences: ContactSourceReference[];
   customFields: ContactCustomFieldValue[];
   timelineEntries: ContactTimelineEntry[];
+  orders: ContactOrder[];
 }
 
 export interface PendingReviewContactDetails {

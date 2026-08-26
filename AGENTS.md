@@ -7,6 +7,7 @@
 - use github conventions for PRs (feat: add new feature, fix: fix bug, etc)
 - use github conventions for issues (feat: add new feature, fix: fix bug, etc)
 - no need to create a new branch, push directly to main
+- should be doing schema, api, and ui changes when implementing a feature
 
 ## Tech stack
 - use typescript - no any type
