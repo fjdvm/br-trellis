@@ -169,7 +169,7 @@ export function Sidebar() {
                   <SidebarMenuButton
                     asChild
                     isActive={isDashboardActive}
-                    className="w-full flex items-center gap-sm px-sm py-sm rounded-lg text-sm transition-colors"
+                    className="w-full flex items-center gap-sm px-sm py-sm rounded-lg text-sm text-foreground transition-colors"
                   >
                     <Link href={dashboardItem.href} onClick={handleNavClick}>
                       <DashboardIcon className="w-4 h-4 shrink-0" />
@@ -199,11 +199,7 @@ export function Sidebar() {
                           [group.name]: !isExpanded,
                         }))
                       }
-                      className={`w-full flex items-center gap-sm px-sm py-sm rounded-lg text-sm transition-colors hover:bg-sidebar-accent ${
-                        hasActiveChild
-                          ? "text-sidebar-foreground font-medium"
-                          : "text-muted-foreground"
-                      }`}
+                      className={`w-full flex items-center gap-sm px-sm py-sm rounded-lg text-sm text-foreground transition-colors hover:bg-sidebar-accent`}
                     >
                       <GroupIcon className="w-4 h-4 shrink-0" />
                       <span className="flex-1 text-left">{group.name}</span>
@@ -225,7 +221,7 @@ export function Sidebar() {
                                 <SidebarMenuButton
                                   asChild
                                   isActive={isChildActive}
-                                  className="w-full flex items-center gap-sm px-sm py-xs rounded-lg text-sm transition-colors"
+                                  className="w-full flex items-center gap-sm px-sm py-xs rounded-lg text-sm text-foreground transition-colors"
                                 >
                                   <Link
                                     href={child.href}
