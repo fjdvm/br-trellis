@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ChevronsUpDown, Check, X } from "lucide-react";
+import { ChevronsUpDown, Check, X, ChevronDown } from "lucide-react";
 import { useSession } from "next-auth/react";
 import {
   SidebarHeader,
@@ -26,7 +26,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { mainNavItems, settingsNavItem, systems } from "./SidebarNav";
+import { mainNavItems, settingsNavItem, systems, navGroups, NavGroup } from "./SidebarNav";
 import { SidebarProfileFooter } from "./SidebarProfileFooter";
 
 export function Sidebar() {
@@ -41,6 +41,7 @@ export function Sidebar() {
     return "admin";
   });
   const [mounted, setMounted] = useState(false);
+  const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({});
 
   React.useEffect(() => {
     setMounted(true);
@@ -190,6 +191,47 @@ export function Sidebar() {
                   );
                 })}
               </SidebarMenu>
+              {session?.isSuperUser && navGroups.map((group) => {
+                const GroupIcon = group.icon;
+                const isExpanded = expandedGroups[group.name] ?? false;
+                const hasActiveChild = group.children.some(child => pathname.startsWith(child.href));
+                return (
+                  <div key={group.name} className="mt-sm">
+                    <button
+                      onClick={() => setExpandedGroups(prev => ({ ...prev, [group.name]: !prev[group.name] }))}
+                      className={`w-full flex items-center gap-sm px-sm py-sm rounded-lg text-sm transition-colors hover:bg-sidebar-accent ${
+                        hasActiveChild ? 'text-sidebar-foreground font-medium' : 'text-muted-foreground'
+                      }`}
+                    >
+                      <GroupIcon className="w-4 h-4 shrink-0" />
+                      <span className="flex-1 text-left">{group.name}</span>
+                      <ChevronDown className={`w-3 h-3 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+                    </button>
+                    {(isExpanded || hasActiveChild) && (
+                      <SidebarMenu className="ml-md mt-xs">
+                        {group.children.map((child) => {
+                          const ChildIcon = child.icon;
+                          const isChildActive = pathname === child.href || pathname.startsWith(child.href + '/');
+                          return (
+                            <SidebarMenuItem key={child.name}>
+                              <SidebarMenuButton
+                                asChild
+                                isActive={isChildActive}
+                                className="w-full flex items-center gap-sm px-sm py-xs rounded-lg text-xs transition-colors"
+                              >
+                                <Link href={child.href} onClick={handleNavClick}>
+                                  <ChildIcon className="w-3.5 h-3.5 shrink-0" />
+                                  <span>{child.name}</span>
+                                </Link>
+                              </SidebarMenuButton>
+                            </SidebarMenuItem>
+                          );
+                        })}
+                      </SidebarMenu>
+                    )}
+                  </div>
+                );
+              })}
             </SidebarGroupContent>
           </SidebarGroup>
         </SidebarContent>

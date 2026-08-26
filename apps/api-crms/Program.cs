@@ -40,6 +40,16 @@ builder.Services.AddSingleton(new CartAbandonmentOptions
 builder.Services.AddScoped<ICartAbandonmentService, CartAbandonmentService>();
 builder.Services.AddScoped<IWorkflowService, WorkflowService>();
 
+// Ecommerce list/query endpoints
+builder.Services.AddScoped<IOrderRepository, OrderRepository>();
+builder.Services.AddScoped<IOrderService, OrderService>();
+builder.Services.AddScoped<IProductRepository, ProductRepository>();
+builder.Services.AddScoped<IProductService, ProductService>();
+builder.Services.AddScoped<ICartRepository, CartRepository>();
+builder.Services.AddScoped<ICartService, CartService>();
+builder.Services.AddScoped<IWorkflowRunRepository, WorkflowRunRepository>();
+builder.Services.AddScoped<IWorkflowRunQueryService, WorkflowRunQueryService>();
+
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 

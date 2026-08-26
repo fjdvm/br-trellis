@@ -10,6 +10,8 @@ import {
   Users2,
   CreditCard,
   Truck,
+  Package,
+  Zap,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
@@ -47,6 +49,32 @@ export const settingsNavItem: NavItem = {
 };
 
 export const navItems: NavItem[] = [...mainNavItems];
+
+export interface NavGroup {
+  name: string;
+  icon: LucideIcon;
+  children: NavItem[];
+}
+
+export const navGroups: NavGroup[] = [
+  {
+    name: "Ecommerce",
+    icon: ShoppingCart,
+    children: [
+      { name: "Orders", href: "/ecommerce/orders", icon: CreditCard },
+      { name: "Products", href: "/ecommerce/products", icon: Package },
+      { name: "Abandoned Carts", href: "/ecommerce/abandoned-carts", icon: ShoppingCart },
+      { name: "Customer LTV", href: "/ecommerce/ltv", icon: Users2 },
+    ],
+  },
+  {
+    name: "Automation",
+    icon: Zap,
+    children: [
+      { name: "Workflows", href: "/automation/workflows", icon: Zap },
+    ],
+  },
+];
 
 export const systems: SystemItem[] = [
   {

@@ -34,6 +34,12 @@ import {
   CreateTicketInput,
   PaginatedTicketResponse,
 } from "@/types/ticket";
+import {
+  OrderListItem,
+  ProductListItem,
+  CartListItem,
+  WorkflowRunListItem,
+} from "@/types/ecommerce";
 
 export const crmClient = {
   customers: {
@@ -220,6 +226,32 @@ export const crmClient = {
         method: "POST",
         body: formData,
       });
+    },
+  },
+  ecommerceOrders: {
+    list: () =>
+      request<OrderListItem[]>(`/api/v1/orders`),
+  },
+  ecommerceProducts: {
+    list: () =>
+      request<ProductListItem[]>(`/api/v1/products`),
+  },
+  ecommerceCarts: {
+    list: (status?: string) => {
+      let url = `/api/v1/carts`;
+      if (status) {
+        url += `?status=${encodeURIComponent(status)}`;
+      }
+      return request<CartListItem[]>(url);
+    },
+  },
+  workflowRuns: {
+    list: (entityId?: string) => {
+      let url = `/api/v1/workflow-runs`;
+      if (entityId) {
+        url += `?entityId=${encodeURIComponent(entityId)}`;
+      }
+      return request<WorkflowRunListItem[]>(url);
     },
   },
 };
