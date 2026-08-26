@@ -25,7 +25,7 @@ export function ComingSoonPage({ title, description }: ComingSoonPageProps) {
             <p className="text-body-md font-medium text-foreground">
               Coming Soon
             </p>
-            <p className="text-sm text-muted-foreground mt-xs max-w-md">
+            <p className="text-sm text-muted-foreground mt-xs">
               This section is under development. Check back later.
             </p>
           </div>

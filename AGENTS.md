@@ -10,6 +10,7 @@
 - should be doing schema, api, and ui changes when implementing a feature, when creating a spec, or tickets
 - always migrate database in api-crm when touching/modifying the schema, etc. that relates to the api-crm
 - make sure you are following tracer bullets, SOLID principles, and the rest of the rules
+- always create a seed data for every new feature
 
 ## Tech stack
 - use typescript - no any type
