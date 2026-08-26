@@ -213,7 +213,7 @@ export function ContactDetailPage({ contactId }: ContactDetailPageProps) {
                 </Button>
               </div>
             ) : (
-              <div className="grid grid-cols-2 gap-md text-sm">
+              <div className="grid grid-cols-2 gap-md text-base">
                 <div className="text-muted-foreground">Name</div>
                 <div>{contact.name ?? "—"}</div>
                 <div className="text-muted-foreground">Email</div>
@@ -230,7 +230,7 @@ export function ContactDetailPage({ contactId }: ContactDetailPageProps) {
             {contact.company && (
               <>
                 <Separator />
-                <div className="flex items-center gap-sm text-sm">
+                <div className="flex items-center gap-sm text-base">
                   <Building2 className="w-4 h-4 text-muted-foreground" />
                   <span className="text-muted-foreground">Company:</span>
                   <span className="font-medium">{contact.company.name}</span>
@@ -242,7 +242,7 @@ export function ContactDetailPage({ contactId }: ContactDetailPageProps) {
               <>
                 <Separator />
                 <div className="space-y-sm">
-                  <div className="text-sm text-muted-foreground">Known sources</div>
+                  <div className="text-base text-muted-foreground">Known sources</div>
                   <div className="flex flex-wrap gap-sm">
                     {contact.sourceReferences.map((ref) => (
                       <Badge key={`${ref.sourceSystem}:${ref.sourceId}`} variant="outline">
@@ -262,9 +262,9 @@ export function ContactDetailPage({ contactId }: ContactDetailPageProps) {
           </CardHeader>
           <CardContent>
             {contact.customFields.length === 0 ? (
-              <div className="text-sm text-muted-foreground">No custom fields defined.</div>
+              <div className="text-base text-muted-foreground">No custom fields defined.</div>
             ) : (
-              <div className="grid grid-cols-2 gap-md text-sm">
+              <div className="grid grid-cols-2 gap-md text-base">
                 {contact.customFields.map((field) => (
                   <div key={field.definitionId} className="contents">
                     <div className="text-muted-foreground">{field.name}</div>
@@ -285,7 +285,7 @@ export function ContactDetailPage({ contactId }: ContactDetailPageProps) {
           {!contact.orders || contact.orders.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-xl text-center">
               <ShoppingBag className="w-10 h-10 text-muted-foreground mb-md" />
-              <p className="text-sm text-muted-foreground">
+              <p className="text-base text-muted-foreground">
                 No orders yet. Order data synced from the ecommerce platform will appear here.
               </p>
             </div>
@@ -295,16 +295,16 @@ export function ContactDetailPage({ contactId }: ContactDetailPageProps) {
                 <div key={order.id} className="border border-border rounded-lg p-md space-y-sm">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-sm">
-                      <span className="font-medium text-sm">#{order.platformOrderId}</span>
+                      <span className="font-medium text-base">#{order.platformOrderId}</span>
                       <Badge variant={order.status === "Refunded" ? "destructive" : "outline"}>
                         {order.status}
                       </Badge>
                     </div>
-                    <div className="text-sm text-muted-foreground">
+                    <div className="text-base text-muted-foreground">
                       {new Date(order.createdAt).toLocaleDateString()}
                     </div>
                   </div>
-                  <div className="text-sm">
+                  <div className="text-base">
                     <span className="font-medium">${order.total.toFixed(2)}</span>
                     {order.refundedAmount > 0 && (
                       <span className="text-destructive ml-2">
@@ -313,7 +313,7 @@ export function ContactDetailPage({ contactId }: ContactDetailPageProps) {
                     )}
                   </div>
                   {order.lineItems.length > 0 && (
-                    <div className="text-xs text-muted-foreground space-y-xs">
+                    <div className="text-sm text-muted-foreground space-y-xs">
                       {order.lineItems.map((item, idx) => (
                         <div key={idx}>
                           {item.quantity}× {item.productName} @ ${item.unitPrice.toFixed(2)}
@@ -336,7 +336,7 @@ export function ContactDetailPage({ contactId }: ContactDetailPageProps) {
           {contact.timelineEntries.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-xl text-center">
               <Clock className="w-10 h-10 text-muted-foreground mb-md" />
-              <p className="text-sm text-muted-foreground">
+              <p className="text-base text-muted-foreground">
                 No activity recorded yet. Events from connected modules will appear here.
               </p>
             </div>
@@ -345,8 +345,8 @@ export function ContactDetailPage({ contactId }: ContactDetailPageProps) {
               {contact.timelineEntries.map((entry) => (
                 <div key={entry.id} className="flex items-start gap-md border-l-2 border-border pl-md">
                   <div className="flex-1">
-                    <div className="text-sm font-medium">{entry.summary}</div>
-                    <div className="text-xs text-muted-foreground">
+                    <div className="text-base font-medium">{entry.summary}</div>
+                    <div className="text-sm text-muted-foreground">
                       {entry.sourceModule} · {entry.entryType} · {new Date(entry.occurredAt).toLocaleDateString()}
                     </div>
                   </div>

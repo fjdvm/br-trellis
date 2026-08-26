@@ -1,76 +1,80 @@
 # Agents Rules
 
-## Conventions
-- check the PRD and add check what's already done
-- use github conventions for naming (feature/bug/chore/etc)
-- use github conventions for commits (feat: add new feature, fix: fix bug, etc)
-- use github conventions for PRs (feat: add new feature, fix: fix bug, etc)
-- use github conventions for issues (feat: add new feature, fix: fix bug, etc)
-- no need to create a new branch, push directly to main
-- should be doing schema, api, and ui changes when implementing a feature, when creating a spec, or tickets
-- always migrate database in api-crm when touching/modifying the schema, etc. that relates to the api-crm
-- make sure you are following tracer bullets, SOLID principles, and the rest of the rules
-- always create a seed data for every new feature
+---
 
-## Tech stack
-- use typescript - no any type
-- use react
-- use nextjs
-- use tailwindcss
-- use shadcn ui always
-- use sqlite for now - postgres later
-- use c# .net
-- use EF Core
+## 1. Conventions
 
-## Code rules
-- use prettier
-- code files should not exceed ~250 lines, if it does, it should be split into smaller files
-- for fronend, always look at the .design-ref/ directory for the designs. strictly follow the layout, but for the themes and ui, use what we have.
-- don't change the header and sidebar
-- the .design-ref/ directory is just a basis for layout and designs.
-- the issues and requirements are still the source of truth, but the designs are just a guideline.
+- Check the PRD and verify what's already done before starting work.
+- Use GitHub conventions for branch naming (`feature/`, `bug/`, `chore/`, etc.).
+- Use GitHub conventions for commits (`feat:`, `fix:`, `chore:`, etc.).
+- Use GitHub conventions for PRs and issues.
+- No need to create a new branch — push directly to main.
+- When implementing a feature, creating a spec, or tickets: always include schema, API, and UI changes together.
+- Always migrate the database in `api-crm` when touching/modifying schema that relates to it.
+- Follow tracer bullets, SOLID principles, and the rest of these rules.
+- Always create seed data for every new feature.
+- After implementing each issue, close it and create a test issue for that feature.
 
-## Nextjs Pages
-pages in nextjs should only have this kinds of codes:
+---
 
-```js
-import { useEffect } from 'react'
-import { useRouter } from 'next/router'
+## 2. Tech Stack
 
+- TypeScript — no `any` type
+- React
+- Next.js
+- Tailwind CSS
+- shadcn/ui (always)
+- SQLite for now — Postgres later
+- C# .NET
+- EF Core
+
+---
+
+## 3. Code Rules
+
+- Use Prettier for formatting.
+- Code files should not exceed ~250 lines. If it does, split into smaller files.
+- For frontend, always look at the `.design-ref/` directory for designs. Strictly follow the layout, but for themes and UI, use what we have.
+- Don't change the header and sidebar.
+- The `.design-ref/` directory is just a basis for layout and designs.
+- Issues and requirements are the source of truth; designs are just a guideline.
+
+---
+
+## 4. UI / Styling Rules
+
+- Use `text-base` (not `text-sm`) as the default text size inside tables and detail page containers across all pages.
+- Only use `text-sm` for secondary/metadata text (e.g., timestamps, line item details). Never use `text-xs` for primary content.
+- Keep font sizes consistent across all pages — if a table or container card uses `text-base` in one page, all pages should match.
+
+---
+
+## 5. Next.js Pages
+
+Pages should only contain minimal code — delegate to feature components:
+
+```tsx
 export default function Page() {
   return <HelloWorld />
 }
 ```
 
-## Nextjs Components
+---
 
-- HelloWorld contents should be in components/features/hello-world.tsx
-- always use shadcn ui install if needed
+## 6. Next.js Components
 
-## Agent skills
+- Feature component contents go in `components/features/hello-world.tsx`.
+- Always use `shadcn/ui` — install components as needed.
 
-### Issue tracker
+---
 
-Issues and specs live as GitHub issues managed via `gh`. See `docs/agents/issue-tracker.md`.
-
-### Triage labels
-
-Canonical triage roles mapped 1-to-1 to repo labels (`needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`). See `docs/agents/triage-labels.md`.
-
-### Domain docs
-
-Single-context repo using `CONTEXT.md` and `docs/adr/`. See `docs/agents/domain.md`.
-
-
-
-
-# Separation of Concerns — Project Rules
+## 7. Separation of Concerns (Backend)
 
 These rules define what belongs in each folder and how layers may depend on
 each other. Follow them when adding or modifying code so responsibilities
 stay isolated and testable.
 
-## Dependency direction (top depends on bottom, never reverse)
+### Dependency direction (top depends on bottom, never reverse)
 
 ```
 Controllers
@@ -88,87 +92,88 @@ Models
 any layer above `Data`. Nothing in `Models` or `Data` may reference
 `Controllers`, `Services`, or `DTOs`.
 
-## Folder responsibilities
+### Folder responsibilities
 
-### `Controllers/`
+#### `Controllers/`
 - HTTP concerns only: routing, model binding, status codes, `[Authorize]`.
 - No business logic, no direct `DbContext` or repository calls.
 - Talks only to `Services` via their `Interfaces`.
 - Accepts/returns `DTOs` — never exposes `Models` (EF entities) directly.
 - Keep methods thin: validate input shape → call service → map result → return.
 
-### `Services/`
+#### `Services/`
 - All business logic and orchestration lives here.
 - Depends on `Repositories` (via `Interfaces`), never on `DbContext` directly.
-- Uses `Validators` to check business rules, `Mappers` to convert
-  `Models` ↔ `DTOs`.
+- Uses `Validators` to check business rules, `Mappers` to convert `Models` ↔ `DTOs`.
 - One interface per service in `Interfaces/`, implementation here.
 - Should be unit-testable without a database (mock the repository interface).
 
-### `Repositories/`
-- Data access only: queries, inserts, updates, deletes via `Data`'s
-  `DbContext`.
+#### `Repositories/`
+- Data access only: queries, inserts, updates, deletes via `Data`'s `DbContext`.
 - No business rules, no DTO mapping, no HTTP awareness.
 - Returns `Models` (entities) or primitives — never `DTOs`.
 - One interface per repository in `Interfaces/`.
 
-### `Data/`
-- `DbContext`, entity configurations (`IEntityTypeConfiguration<T>`),
-  migrations, seed data.
+#### `Data/`
+- `DbContext`, entity configurations (`IEntityTypeConfiguration<T>`), migrations, seed data.
 - No logic beyond persistence concerns (constraints, indexes, relationships).
 
-### `Models/`
+#### `Models/`
 - Plain domain/EF entities. Properties and navigation only.
 - No dependencies on any other folder — must compile standalone.
 
-### `DTOs/`
+#### `DTOs/`
 - Shapes used at the API boundary (request/response contracts).
 - No behavior, no EF annotations, no references to `Models`.
 
-### `Mappers/`
+#### `Mappers/`
 - Pure `Model ↔ DTO` conversion functions (or AutoMapper profiles).
 - No business logic, no I/O.
 
-### `Validators/`
+#### `Validators/`
 - Input/business-rule validation (e.g., FluentValidation validators).
 - Validates `DTOs` on the way in; does not touch `Models` or the database.
 
-### `Interfaces/`
+#### `Interfaces/`
 - Contracts for `Services` and `Repositories` (`IXxxService`, `IXxxRepository`).
-- Controllers and Services depend on these, not on concrete classes —
-  keeps layers swappable and mockable.
+- Controllers and Services depend on these, not on concrete classes — keeps layers swappable and mockable.
 
-### `Enums/`
+#### `Enums/`
 - Shared enumerations only. No logic.
 
-### `Configurations/`
-- DI registration (`AddScoped`, `AddSingleton`, etc.), `IOptions<T>` classes,
-  middleware setup. Wired up from `Program.cs`.
+#### `Configurations/`
+- DI registration (`AddScoped`, `AddSingleton`, etc.), `IOptions<T>` classes, middleware setup.
+- Wired up from `Program.cs`.
 
-### `Helpers/`
+#### `Helpers/`
 - Small, stateless, generic utilities (e.g., string/date helpers).
-- Must not contain business rules — if a helper touches business logic,
-  it belongs in `Services` instead.
+- Must not contain business rules — if a helper touches business logic, it belongs in `Services` instead.
 
-### `Program.cs`
-- App bootstrap and middleware pipeline only. Delegates DI setup to
-  `Configurations/`.
+#### `Program.cs`
+- App bootstrap and middleware pipeline only. Delegates DI setup to `Configurations/`.
 
-## Enforcement rules for the AI
+### Enforcement rules
 
 1. **Never** let a `Controller` call a `Repository` or `DbContext` directly.
-2. **Never** let a `Repository` or `Model` reference a `DTO`, `Service`, or
-   `Controller`.
-3. **Always** introduce/extend an `Interfaces/` contract when adding a new
-   `Service` or `Repository` — don't inject concrete classes.
-4. **Always** map `Model → DTO` (and back) through `Mappers/`, not inline in
-   `Controllers` or `Services`.
-5. **Always** put new validation in `Validators/`, not inside `Controllers`
-   or `Services`.
-6. If a class needs to do two things from different layers (e.g., validate
-   *and* query the database), split it — don't merge responsibilities into
-   one file to save time.
-7. When unsure where new code belongs, ask: "Is this HTTP shape (Controller),
-   business rule (Service/Validator), data shape (DTO/Mapper), or data
-   access (Repository/Data)?" — place it there, not in `Helpers/` as a
-   catch-all.
+2. **Never** let a `Repository` or `Model` reference a `DTO`, `Service`, or `Controller`.
+3. **Always** introduce/extend an `Interfaces/` contract when adding a new `Service` or `Repository` — don't inject concrete classes.
+4. **Always** map `Model → DTO` (and back) through `Mappers/`, not inline in `Controllers` or `Services`.
+5. **Always** put new validation in `Validators/`, not inside `Controllers` or `Services`.
+6. If a class needs to do two things from different layers (e.g., validate *and* query the database), split it — don't merge responsibilities into one file to save time.
+7. When unsure where new code belongs, ask: "Is this HTTP shape (Controller), business rule (Service/Validator), data shape (DTO/Mapper), or data access (Repository/Data)?" — place it there, not in `Helpers/` as a catch-all.
+
+---
+
+## 8. Agent Skills
+
+### Issue tracker
+
+Issues and specs live as GitHub issues managed via `gh`. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Canonical triage roles mapped 1-to-1 to repo labels (`needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`). See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context repo using `CONTEXT.md` and `docs/adr/`. See `docs/agents/domain.md`.
