@@ -216,7 +216,6 @@ export function Sidebar() {
                     {isExpanded && (
                       <SidebarMenu className="ml-md mt-xs">
                         {group.children.map((child) => {
-                          const ChildIcon = child.icon;
                           const isChildActive =
                             pathname === child.href ||
                             pathname.startsWith(child.href + "/");
@@ -225,13 +224,12 @@ export function Sidebar() {
                               <SidebarMenuButton
                                 asChild
                                 isActive={isChildActive}
-                                className="w-full flex items-center gap-sm px-sm py-xs rounded-lg text-xs transition-colors"
+                                className="w-full flex items-center gap-sm px-sm py-xs rounded-lg text-sm transition-colors"
                               >
                                 <Link
                                   href={child.href}
                                   onClick={handleNavClick}
                                 >
-                                  <ChildIcon className="w-3.5 h-3.5 shrink-0" />
                                   <span>{child.name}</span>
                                 </Link>
                               </SidebarMenuButton>
