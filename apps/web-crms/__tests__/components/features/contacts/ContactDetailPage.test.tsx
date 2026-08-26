@@ -7,7 +7,14 @@ jest.mock("@/lib/api/crm-client", () => ({
     contacts: {
       getById: jest.fn(),
     },
+    companies: {
+      list: jest.fn().mockResolvedValue([]),
+    },
   },
+}));
+
+jest.mock("next/navigation", () => ({
+  useRouter: () => ({ push: jest.fn() }),
 }));
 
 describe("ContactDetailPage", () => {

@@ -26,6 +26,8 @@ builder.Services.AddScoped<IContactService, ContactService>();
 builder.Services.AddScoped<ICustomFieldService, CustomFieldService>();
 builder.Services.AddScoped<ISegmentRepository, SegmentRepository>();
 builder.Services.AddScoped<ISegmentService, SegmentService>();
+builder.Services.AddScoped<ICompanyRepository, CompanyRepository>();
+builder.Services.AddScoped<ICompanyService, CompanyService>();
 
 // Ecommerce services
 builder.Services.AddScoped<IEcommerceRepository, EcommerceRepository>();

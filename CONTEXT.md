@@ -12,10 +12,17 @@ lifecycle stage or Segment a Contact can belong to.
 
 ## Company
 
-A B2B organization that a Contact can be affiliated with. A Contact belongs
-to at most one Company at a time (the current affiliation, not a history of
-past employers). Company has no custom fields or segments of its own — it
-is a supporting entity for Contacts in the current model.
+An institutional buyer: an organization (e.g., a hotel) that multiple
+Contacts (e.g., its staff) place orders on behalf of. A Contact belongs to
+at most one Company at a time (the current affiliation, not a history of
+past employers). A Company has a BuyerType (Institutional or Individual)
+and an optional Primary Contact — the person to reach for that
+organization, who must themself be a Contact of that same Company. Company
+is a full CRUD record in its own right (create/edit/view/archive), same
+tier as Contact, though deliberately thinner: no custom fields, no
+Segments, no Timeline, no Orders of its own yet — Orders remain
+attributed to a Contact only (see Order) until a future round attributes
+them to a Company directly.
 
 ## Custom Field
 

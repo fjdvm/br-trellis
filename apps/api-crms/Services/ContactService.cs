@@ -29,6 +29,11 @@ public sealed class ContactService(
         CreateContactDto input,
         CancellationToken cancellationToken)
     {
+        if (input.CompanyId.HasValue)
+        {
+            await ValidateCompanyNotArchived(input.CompanyId.Value, cancellationToken);
+        }
+
         var contact = new Contact
         {
             Id = Guid.NewGuid(),
@@ -36,6 +41,7 @@ public sealed class ContactService(
             Name = string.IsNullOrWhiteSpace(input.Name) ? null : input.Name.Trim(),
             Email = string.IsNullOrWhiteSpace(input.Email) ? null : input.Email.Trim(),
             Phone = string.IsNullOrWhiteSpace(input.Phone) ? null : input.Phone.Trim(),
+            CompanyId = input.CompanyId,
         };
 
         dbContext.Contacts.Add(contact);
@@ -53,6 +59,12 @@ public sealed class ContactService(
         if (contact is null || contact.DeletedAt is not null)
         {
             return null;
+        }
+
+        if (input.CompanyId.HasValue)
+        {
+            await ValidateCompanyNotArchived(input.CompanyId.Value, cancellationToken);
+            contact.CompanyId = input.CompanyId.Value;
         }
 
         contact.Name = string.IsNullOrWhiteSpace(input.Name) ? contact.Name : input.Name.Trim();
@@ -76,5 +88,19 @@ public sealed class ContactService(
         contact.DeletedAt = DateTimeOffset.UtcNow;
         await dbContext.SaveChangesAsync(cancellationToken);
         return true;
+    }
+
+    private async Task ValidateCompanyNotArchived(Guid companyId, CancellationToken cancellationToken)
+    {
+        var company = await dbContext.Companies.FindAsync([companyId], cancellationToken);
+        if (company is null)
+        {
+            throw new ArgumentException("Company does not exist.");
+        }
+
+        if (company.DeletedAt is not null)
+        {
+            throw new ArgumentException("Cannot assign contact to an archived company.");
+        }
     }
 }

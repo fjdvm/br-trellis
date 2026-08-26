@@ -40,6 +40,12 @@ import {
   CartListItem,
   WorkflowRunListItem,
 } from "@/types/ecommerce";
+import {
+  CompanyListItem,
+  CompanyDetail,
+  CreateCompanyInput,
+  UpdateCompanyInput,
+} from "@/types/company";
 import { SegmentListItem, SegmentMember } from "@/types/segment";
 
 export const crmClient = {
@@ -97,12 +103,12 @@ export const crmClient = {
       request<ContactListItem[]>(`/api/v1/contacts`),
     getById: (id: string) =>
       request<ContactDetail>(`/api/v1/contacts/${id}`),
-    create: (body: { name?: string; email?: string; phone?: string }) =>
+    create: (body: { name?: string; email?: string; phone?: string; companyId?: string | null }) =>
       request<ContactDetail>(`/api/v1/contacts`, {
         method: "POST",
         body: JSON.stringify(body),
       }),
-    update: (id: string, body: { name?: string; email?: string; phone?: string }) =>
+    update: (id: string, body: { name?: string; email?: string; phone?: string; companyId?: string | null }) =>
       request<ContactDetail>(`/api/v1/contacts/${id}`, {
         method: "PUT",
         body: JSON.stringify(body),
@@ -260,5 +266,25 @@ export const crmClient = {
       request<SegmentListItem[]>(`/api/v1/segments`),
     getMembers: (id: string) =>
       request<SegmentMember[]>(`/api/v1/segments/${id}/members`),
+  },
+  companies: {
+    list: (includeArchived = false) =>
+      request<CompanyListItem[]>(`/api/v1/companies?includeArchived=${includeArchived}`),
+    getById: (id: string) =>
+      request<CompanyDetail>(`/api/v1/companies/${id}`),
+    create: (body: CreateCompanyInput) =>
+      request<CompanyDetail>(`/api/v1/companies`, {
+        method: "POST",
+        body: JSON.stringify(body),
+      }),
+    update: (id: string, body: UpdateCompanyInput) =>
+      request<CompanyDetail>(`/api/v1/companies/${id}`, {
+        method: "PUT",
+        body: JSON.stringify(body),
+      }),
+    archive: (id: string) =>
+      request<void>(`/api/v1/companies/${id}`, {
+        method: "DELETE",
+      }),
   },
 };

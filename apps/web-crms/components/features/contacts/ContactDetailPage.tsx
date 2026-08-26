@@ -27,6 +27,7 @@ import {
   type ContactFieldErrors,
 } from "@/lib/validators/contact-validators";
 import type { ContactDetail } from "@/types/contact";
+import type { CompanyListItem } from "@/types/company";
 
 interface ContactDetailPageProps {
   contactId: string;
@@ -41,11 +42,19 @@ export function ContactDetailPage({ contactId }: ContactDetailPageProps) {
   const [editName, setEditName] = useState("");
   const [editEmail, setEditEmail] = useState("");
   const [editPhone, setEditPhone] = useState("");
+  const [editCompanyId, setEditCompanyId] = useState<string>("");
+  const [companies, setCompanies] = useState<CompanyListItem[]>([]);
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showSaveDialog, setShowSaveDialog] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<ContactFieldErrors>({});
+
+  useEffect(() => {
+    if (isEditing && companies.length === 0) {
+      crmClient.companies.list(false).then(setCompanies).catch(() => {});
+    }
+  }, [isEditing, companies.length]);
 
   useEffect(() => {
     let isCurrent = true;
@@ -58,6 +67,7 @@ export function ContactDetailPage({ contactId }: ContactDetailPageProps) {
           setEditName(result.name ?? "");
           setEditEmail(result.email ?? "");
           setEditPhone(result.phone ?? "");
+          setEditCompanyId(result.company?.id ?? "");
         }
       } catch (loadError) {
         if (isCurrent) {
@@ -84,6 +94,7 @@ export function ContactDetailPage({ contactId }: ContactDetailPageProps) {
         name: editName || undefined,
         email: editEmail || undefined,
         phone: editPhone || undefined,
+        companyId: editCompanyId || undefined,
       });
       setContact(updated);
       setIsEditing(false);
@@ -198,6 +209,22 @@ export function ContactDetailPage({ contactId }: ContactDetailPageProps) {
                     className={fieldErrors.phone ? "border-destructive" : ""}
                   />
                   {fieldErrors.phone && <p className="text-xs text-destructive">{fieldErrors.phone}</p>}
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-company">Company</Label>
+                  <select
+                    id="edit-company"
+                    className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                    value={editCompanyId}
+                    onChange={(e) => setEditCompanyId(e.target.value)}
+                  >
+                    <option value="">None</option>
+                    {companies.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.name} ({c.buyerType})
+                      </option>
+                    ))}
+                  </select>
                 </div>
                 <Button
                   onClick={() => {

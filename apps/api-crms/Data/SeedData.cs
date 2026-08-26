@@ -17,18 +17,21 @@ public static class SeedData
         {
             Id = Guid.NewGuid(),
             Name = "Acme Corp",
+            BuyerType = Enums.BuyerType.Institutional,
             CreatedAt = DateTimeOffset.UtcNow,
         };
         var globex = new Company
         {
             Id = Guid.NewGuid(),
             Name = "Globex Industries",
+            BuyerType = Enums.BuyerType.Institutional,
             CreatedAt = DateTimeOffset.UtcNow,
         };
         var initech = new Company
         {
             Id = Guid.NewGuid(),
             Name = "Initech Solutions",
+            BuyerType = Enums.BuyerType.Individual,
             CreatedAt = DateTimeOffset.UtcNow,
         };
         dbContext.Companies.AddRange(acme, globex, initech);

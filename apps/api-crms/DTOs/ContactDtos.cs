@@ -85,9 +85,11 @@ public sealed record CustomFieldValueUpdateDto(
 public sealed record CreateContactDto(
     string? Name,
     string? Email,
-    string? Phone);
+    string? Phone,
+    Guid? CompanyId);
 
 public sealed record UpdateContactDto(
     string? Name,
     string? Email,
-    string? Phone);
+    string? Phone,
+    Guid? CompanyId);

@@ -151,8 +151,17 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
             company.HasKey(e => e.Id);
             company.Property(e => e.Id).HasColumnName("id");
             company.Property(e => e.Name).HasColumnName("name");
+            company.Property(e => e.BuyerType)
+                .HasColumnName("buyer_type")
+                .HasConversion<string>();
+            company.Property(e => e.PrimaryContactId).HasColumnName("primary_contact_id");
             company.Property(e => e.CreatedAt).HasColumnName("created_at");
             company.Property(e => e.DeletedAt).HasColumnName("deleted_at");
+
+            company.HasOne(e => e.PrimaryContact)
+                .WithMany()
+                .HasForeignKey(e => e.PrimaryContactId)
+                .OnDelete(DeleteBehavior.SetNull);
         });
     }
 

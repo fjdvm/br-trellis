@@ -1,5 +1,5 @@
-import { ComingSoonPage } from "@/components/shared/ComingSoonPage";
+import { CompanyListPage } from "@/components/features/contacts/CompanyListPage";
 
 export default function Page() {
-  return <ComingSoonPage title="Companies" description="Manage business organizations affiliated with contacts." />;
+  return <CompanyListPage />;
 }

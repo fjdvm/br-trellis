@@ -180,6 +180,92 @@ public sealed class ContactServiceTests : IDisposable
         File.Delete(_databasePath);
     }
 
+    [Fact]
+    public async Task CreateContact_with_active_company_succeeds()
+    {
+        await using var context = CreateContext();
+        var company = new Company
+        {
+            Id = Guid.NewGuid(),
+            Name = "Active Co",
+            CreatedAt = DateTimeOffset.UtcNow,
+        };
+        context.Companies.Add(company);
+        await context.SaveChangesAsync();
+
+        var service = new ContactService(new ContactRepository(context), context);
+        var result = await service.CreateContactAsync(
+            new CreateContactDto("Alice", "alice@test.com", null, company.Id),
+            CancellationToken.None);
+
+        Assert.NotNull(result);
+        Assert.Equal("Alice", result.Name);
+    }
+
+    [Fact]
+    public async Task CreateContact_with_archived_company_throws()
+    {
+        await using var context = CreateContext();
+        var company = new Company
+        {
+            Id = Guid.NewGuid(),
+            Name = "Archived Co",
+            CreatedAt = DateTimeOffset.UtcNow,
+            DeletedAt = DateTimeOffset.UtcNow,
+        };
+        context.Companies.Add(company);
+        await context.SaveChangesAsync();
+
+        var service = new ContactService(new ContactRepository(context), context);
+
+        await Assert.ThrowsAsync<ArgumentException>(
+            () => service.CreateContactAsync(
+                new CreateContactDto("Bob", "bob@test.com", null, company.Id),
+                CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task UpdateContact_with_archived_company_throws()
+    {
+        await using var context = CreateContext();
+        var company = new Company
+        {
+            Id = Guid.NewGuid(),
+            Name = "Archived Co",
+            CreatedAt = DateTimeOffset.UtcNow,
+            DeletedAt = DateTimeOffset.UtcNow,
+        };
+        context.Companies.Add(company);
+        var contact = new Contact
+        {
+            Id = Guid.NewGuid(),
+            Name = "Alice",
+            CreatedAt = DateTimeOffset.UtcNow,
+        };
+        context.Contacts.Add(contact);
+        await context.SaveChangesAsync();
+
+        var service = new ContactService(new ContactRepository(context), context);
+
+        await Assert.ThrowsAsync<ArgumentException>(
+            () => service.UpdateContactAsync(
+                contact.Id,
+                new UpdateContactDto(null, null, null, company.Id),
+                CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task CreateContact_with_nonexistent_company_throws()
+    {
+        await using var context = CreateContext();
+        var service = new ContactService(new ContactRepository(context), context);
+
+        await Assert.ThrowsAsync<ArgumentException>(
+            () => service.CreateContactAsync(
+                new CreateContactDto("Alice", "alice@test.com", null, Guid.NewGuid()),
+                CancellationToken.None));
+    }
+
     private AppDbContext CreateContext()
     {
         var options = new DbContextOptionsBuilder<AppDbContext>()

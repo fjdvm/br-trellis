@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -30,6 +30,7 @@ import {
   type ContactFieldErrors,
 } from "@/lib/validators/contact-validators";
 import { Loader2, Plus } from "lucide-react";
+import type { CompanyListItem } from "@/types/company";
 
 interface AddContactSheetProps {
   onCreated?: () => void;
@@ -40,10 +41,23 @@ export function AddContactSheet({ onCreated }: AddContactSheetProps) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
+  const [companyId, setCompanyId] = useState<string>("");
+  const [companies, setCompanies] = useState<CompanyListItem[]>([]);
+  const [companySearch, setCompanySearch] = useState("");
   const [fieldErrors, setFieldErrors] = useState<ContactFieldErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+
+  useEffect(() => {
+    if (open) {
+      crmClient.companies.list(false).then(setCompanies).catch(() => {});
+    }
+  }, [open]);
+
+  const filteredCompanies = companies.filter((c) =>
+    c.name.toLowerCase().includes(companySearch.toLowerCase())
+  );
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -63,10 +77,13 @@ export function AddContactSheet({ onCreated }: AddContactSheetProps) {
         name: name.trim() || undefined,
         email: email.trim() || undefined,
         phone: phone.trim() || undefined,
+        companyId: companyId || undefined,
       });
       setName("");
       setEmail("");
       setPhone("");
+      setCompanyId("");
+      setCompanySearch("");
       setFieldErrors({});
       setOpen(false);
       onCreated?.();
@@ -136,6 +153,28 @@ export function AddContactSheet({ onCreated }: AddContactSheetProps) {
                   className={fieldErrors.phone ? "border-destructive" : ""}
                 />
                 {fieldErrors.phone && <p className="text-xs text-destructive">{fieldErrors.phone}</p>}
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="contact-company">Company</Label>
+                <Input
+                  id="contact-company-search"
+                  placeholder="Search companies..."
+                  value={companySearch}
+                  onChange={(e) => setCompanySearch(e.target.value)}
+                />
+                <select
+                  id="contact-company"
+                  className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                  value={companyId}
+                  onChange={(e) => setCompanyId(e.target.value)}
+                >
+                  <option value="">None</option>
+                  {filteredCompanies.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name} ({c.buyerType})
+                    </option>
+                  ))}
+                </select>
               </div>
             </div>
 
