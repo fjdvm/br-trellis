@@ -255,10 +255,10 @@ export function Sidebar() {
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent
-                className="w-56 bg-popover border-border text-popover-foreground z-[99999] shadow-xl p-sm"
-                side="right"
-                align="end"
-                sideOffset={8}
+                className="w-56 bg-popover border-border text-popover-foreground z-[99999] shadow-xl p-sm !left-[96px]"
+                side="top"
+                align="start"
+                sideOffset={4}
               >
                 <DropdownMenuLabel className="text-xs text-muted-foreground font-semibold px-sm">
                   Settings
