@@ -214,29 +214,31 @@ export function Sidebar() {
                       />
                     </button>
                     {isExpanded && (
-                      <SidebarMenu className="ml-md mt-xs">
-                        {group.children.map((child) => {
-                          const isChildActive =
-                            pathname === child.href ||
-                            pathname.startsWith(child.href + "/");
-                          return (
-                            <SidebarMenuItem key={child.name}>
-                              <SidebarMenuButton
-                                asChild
-                                isActive={isChildActive}
-                                className="w-full flex items-center gap-sm px-sm py-xs rounded-lg text-sm transition-colors"
-                              >
-                                <Link
-                                  href={child.href}
-                                  onClick={handleNavClick}
+                      <div className="ml-[18px] mt-xs border-l-2 border-border pl-md">
+                        <SidebarMenu>
+                          {group.children.map((child) => {
+                            const isChildActive =
+                              pathname === child.href ||
+                              pathname.startsWith(child.href + "/");
+                            return (
+                              <SidebarMenuItem key={child.name}>
+                                <SidebarMenuButton
+                                  asChild
+                                  isActive={isChildActive}
+                                  className="w-full flex items-center gap-sm px-sm py-xs rounded-lg text-sm transition-colors"
                                 >
-                                  <span>{child.name}</span>
-                                </Link>
-                              </SidebarMenuButton>
-                            </SidebarMenuItem>
-                          );
-                        })}
-                      </SidebarMenu>
+                                  <Link
+                                    href={child.href}
+                                    onClick={handleNavClick}
+                                  >
+                                    <span>{child.name}</span>
+                                  </Link>
+                                </SidebarMenuButton>
+                              </SidebarMenuItem>
+                            );
+                          })}
+                        </SidebarMenu>
+                      </div>
                     )}
                   </div>
                 );
