@@ -13,6 +13,7 @@ public static class ContactMapper
             contact.Email,
             contact.Phone,
             contact.Company?.Name,
+            contact.LifetimeValue,
             contact.SourceReferences
                 .OrderBy(r => r.SourceSystem)
                 .Select(r => new ContactSourceReferenceDto(r.SourceSystem, r.SourceId))

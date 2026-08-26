@@ -20,6 +20,7 @@ public sealed record ContactListItemDto(
     string? Email,
     string? Phone,
     string? CompanyName,
+    decimal LifetimeValue,
     IReadOnlyList<ContactSourceReferenceDto> SourceReferences);
 
 public sealed record ContactSourceReferenceDto(string SourceSystem, string SourceId);

@@ -9,6 +9,7 @@ export interface ContactListItem {
   email: string | null;
   phone: string | null;
   companyName: string | null;
+  lifetimeValue: number;
   sourceReferences: ContactSourceReference[];
 }
 
