@@ -123,13 +123,8 @@ export function ContactDetailPage({ contactId }: ContactDetailPageProps) {
   }
 
   return (
-    <div className="w-full min-h-full py-xl px-lg md:px-xl space-y-2xl max-w-7xl mx-auto">
+    <div className="w-full min-h-full py-xl px-lg md:px-xl space-y-lg max-w-7xl mx-auto">
       <div className="flex items-center justify-between">
-        <Link href="/contacts" className="hidden sm:inline-flex">
-          <Button variant="ghost" size="sm">
-            <ArrowLeft className="w-4 h-4 mr-2" /> Back to Contacts
-          </Button>
-        </Link>
         <div className="flex items-center gap-2">
           <Button
             variant="outline"
