@@ -50,7 +50,6 @@ export function Sidebar() {
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>(
     {}
   );
-  const [settingsExpanded, setSettingsExpanded] = useState(false);
 
   React.useEffect(() => {
     setMounted(true);
@@ -250,46 +249,41 @@ export function Sidebar() {
 
         <SidebarFooter className="p-sm border-t border-border space-y-2">
           {showSettings && (
-            <div>
-              <button
-                onClick={() => setSettingsExpanded(!settingsExpanded)}
-                className={`w-full flex items-center gap-sm px-sm py-sm rounded-lg text-sm transition-colors hover:bg-sidebar-accent ${
-                  isSettingsActive
-                    ? "text-sidebar-foreground font-medium"
-                    : "text-muted-foreground"
-                }`}
-              >
-                <SettingsIcon className="w-4 h-4 shrink-0" />
-                <span className="flex-1 text-left">Settings</span>
-                <ChevronDown
-                  className={`w-3 h-3 transition-transform ${
-                    settingsExpanded || isSettingsActive ? "rotate-180" : ""
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  className={`w-full flex items-center gap-sm px-sm py-sm rounded-lg text-sm transition-colors hover:bg-sidebar-accent ${
+                    isSettingsActive
+                      ? "text-sidebar-foreground font-medium"
+                      : "text-muted-foreground"
                   }`}
-                />
-              </button>
-              {(settingsExpanded || isSettingsActive) && (
-                <SidebarMenu className="ml-md mt-xs">
-                  {settingsChildren.map((child) => {
-                    const ChildIcon = child.icon;
-                    const isChildActive = pathname === child.href;
-                    return (
-                      <SidebarMenuItem key={child.name}>
-                        <SidebarMenuButton
-                          asChild
-                          isActive={isChildActive}
-                          className="w-full flex items-center gap-sm px-sm py-xs rounded-lg text-xs transition-colors"
-                        >
-                          <Link href={child.href} onClick={handleNavClick}>
-                            <ChildIcon className="w-3.5 h-3.5 shrink-0" />
-                            <span>{child.name}</span>
-                          </Link>
-                        </SidebarMenuButton>
-                      </SidebarMenuItem>
-                    );
-                  })}
-                </SidebarMenu>
-              )}
-            </div>
+                >
+                  <SettingsIcon className="w-4 h-4 shrink-0" />
+                  <span className="flex-1 text-left">Settings</span>
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent
+                className="w-56 bg-popover border-border text-popover-foreground z-[99999] shadow-xl p-sm"
+                side="top"
+                align="start"
+              >
+                <DropdownMenuLabel className="text-xs text-muted-foreground font-semibold px-sm">
+                  Settings
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator className="bg-border" />
+                {settingsChildren.map((child) => {
+                  const ChildIcon = child.icon;
+                  return (
+                    <DropdownMenuItem key={child.name} asChild className="cursor-pointer text-xs font-medium gap-sm p-sm hover:bg-accent">
+                      <Link href={child.href} onClick={handleNavClick}>
+                        <ChildIcon className="w-3.5 h-3.5 text-muted-foreground" />
+                        <span>{child.name}</span>
+                      </Link>
+                    </DropdownMenuItem>
+                  );
+                })}
+              </DropdownMenuContent>
+            </DropdownMenu>
           )}
 
           <div className="pt-sm border-t border-border">
