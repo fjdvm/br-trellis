@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ChevronsUpDown, Check, X, ChevronDown } from "lucide-react";
+import { ChevronsUpDown, Check, ChevronDown, X } from "lucide-react";
 import { useSession } from "next-auth/react";
 import {
   SidebarHeader,
@@ -26,7 +26,13 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { mainNavItems, settingsNavItem, systems, navGroups, NavGroup } from "./SidebarNav";
+import {
+  dashboardItem,
+  navGroups,
+  settingsNavItem,
+  settingsChildren,
+  systems,
+} from "./SidebarNav";
 import { SidebarProfileFooter } from "./SidebarProfileFooter";
 
 export function Sidebar() {
@@ -41,11 +47,13 @@ export function Sidebar() {
     return "admin";
   });
   const [mounted, setMounted] = useState(false);
-  const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({});
+  const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>(
+    {}
+  );
+  const [settingsExpanded, setSettingsExpanded] = useState(false);
 
   React.useEffect(() => {
     setMounted(true);
-    // Initialize in localStorage if not set
     if (localStorage.getItem("activeAccount") === null) {
       localStorage.setItem("activeAccount", "admin");
     }
@@ -57,7 +65,6 @@ export function Sidebar() {
     window.dispatchEvent(new Event("storage"));
   };
 
-
   const isOpen = isMobile ? openMobile : open;
 
   const handleNavClick = () => {
@@ -66,30 +73,16 @@ export function Sidebar() {
     }
   };
 
-  // During SSR and initial hydration, render the sidebar so the server and
-  // client trees match. After mounting, respect the open/mobile state.
   if (mounted && !isOpen) {
     return null;
   }
 
+  const DashboardIcon = dashboardItem.icon;
+  const isDashboardActive =
+    pathname === dashboardItem.href || pathname === "/";
+
   const SettingsIcon = settingsNavItem.icon;
-  const isSettingsActive = pathname === settingsNavItem.href;
-
-  const allowedNavItems = mainNavItems.filter((item) => {
-    if (!session) return false;
-    if (session.isSuperUser) return true;
-
-    let modName = "";
-    if (item.href === "/" || item.href === "/dashboard") modName = "Dashboard";
-    else if (item.href.startsWith("/customers")) modName = "Contact Profiles";
-    else if (item.href.startsWith("/contacts")) modName = "Contact Profiles";
-    else if (item.href.startsWith("/conversations")) modName = "Conversations";
-    else if (item.href.startsWith("/tickets")) modName = "Tickets";
-    else if (item.href.startsWith("/campaigns")) modName = "Campaigns";
-
-    if (!modName) return true;
-    return !!session.permissions?.CRMS?.[modName]?.canRead;
-  });
+  const isSettingsActive = pathname.startsWith("/settings");
 
   const showSettings = !!session?.isSuperUser;
 
@@ -112,7 +105,7 @@ export function Sidebar() {
                       <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight text-sidebar-foreground truncate">
                         Bren Raphael&apos;s
                       </h1>
-                      <button className="text-xs font-semibold bg-violet-500 text-white px-sm py-xs rounded truncate mt-0.5 ">
+                      <button className="text-xs font-semibold bg-violet-500 text-white px-sm py-xs rounded truncate mt-0.5">
                         Customer Relationship Mgmt.
                       </button>
                     </div>
@@ -171,47 +164,63 @@ export function Sidebar() {
         <SidebarContent className="p-md overflow-y-auto">
           <SidebarGroup className="p-0">
             <SidebarGroupContent>
+              {/* Dashboard (standalone, no sub-tabs) */}
               <SidebarMenu>
-                {allowedNavItems.map((item) => {
-                  const Icon = item.icon;
-                  const isActive = pathname === item.href;
-                  return (
-                    <SidebarMenuItem key={item.name}>
-                      <SidebarMenuButton
-                        asChild
-                        isActive={isActive}
-                        className="w-full flex items-center gap-sm px-sm py-sm rounded-lg text-sm transition-colors"
-                      >
-                        <Link href={item.href} onClick={handleNavClick}>
-                          <Icon className="w-4 h-4 shrink-0" />
-                          <span>{item.name}</span>
-                        </Link>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  );
-                })}
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    asChild
+                    isActive={isDashboardActive}
+                    className="w-full flex items-center gap-sm px-sm py-sm rounded-lg text-sm transition-colors"
+                  >
+                    <Link href={dashboardItem.href} onClick={handleNavClick}>
+                      <DashboardIcon className="w-4 h-4 shrink-0" />
+                      <span>{dashboardItem.name}</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
               </SidebarMenu>
-              {session?.isSuperUser && navGroups.map((group) => {
+
+              {/* All nav groups */}
+              {navGroups.map((group) => {
                 const GroupIcon = group.icon;
-                const isExpanded = expandedGroups[group.name] ?? false;
-                const hasActiveChild = group.children.some(child => pathname.startsWith(child.href));
+                const hasActiveChild = group.children.some(
+                  (child) =>
+                    pathname === child.href ||
+                    pathname.startsWith(child.href + "/")
+                );
+                const isExpanded =
+                  expandedGroups[group.name] ?? hasActiveChild;
+
                 return (
-                  <div key={group.name} className="mt-sm">
+                  <div key={group.name} className="mt-xs">
                     <button
-                      onClick={() => setExpandedGroups(prev => ({ ...prev, [group.name]: !prev[group.name] }))}
+                      onClick={() =>
+                        setExpandedGroups((prev) => ({
+                          ...prev,
+                          [group.name]: !isExpanded,
+                        }))
+                      }
                       className={`w-full flex items-center gap-sm px-sm py-sm rounded-lg text-sm transition-colors hover:bg-sidebar-accent ${
-                        hasActiveChild ? 'text-sidebar-foreground font-medium' : 'text-muted-foreground'
+                        hasActiveChild
+                          ? "text-sidebar-foreground font-medium"
+                          : "text-muted-foreground"
                       }`}
                     >
                       <GroupIcon className="w-4 h-4 shrink-0" />
                       <span className="flex-1 text-left">{group.name}</span>
-                      <ChevronDown className={`w-3 h-3 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+                      <ChevronDown
+                        className={`w-3 h-3 transition-transform ${
+                          isExpanded ? "rotate-180" : ""
+                        }`}
+                      />
                     </button>
-                    {(isExpanded || hasActiveChild) && (
+                    {isExpanded && (
                       <SidebarMenu className="ml-md mt-xs">
                         {group.children.map((child) => {
                           const ChildIcon = child.icon;
-                          const isChildActive = pathname === child.href || pathname.startsWith(child.href + '/');
+                          const isChildActive =
+                            pathname === child.href ||
+                            pathname.startsWith(child.href + "/");
                           return (
                             <SidebarMenuItem key={child.name}>
                               <SidebarMenuButton
@@ -219,7 +228,10 @@ export function Sidebar() {
                                 isActive={isChildActive}
                                 className="w-full flex items-center gap-sm px-sm py-xs rounded-lg text-xs transition-colors"
                               >
-                                <Link href={child.href} onClick={handleNavClick}>
+                                <Link
+                                  href={child.href}
+                                  onClick={handleNavClick}
+                                >
                                   <ChildIcon className="w-3.5 h-3.5 shrink-0" />
                                   <span>{child.name}</span>
                                 </Link>
@@ -238,20 +250,46 @@ export function Sidebar() {
 
         <SidebarFooter className="p-sm border-t border-border space-y-2">
           {showSettings && (
-            <SidebarMenu>
-              <SidebarMenuItem key={settingsNavItem.name}>
-                <SidebarMenuButton
-                  asChild
-                  isActive={isSettingsActive}
-                  className="w-full flex items-center gap-sm px-sm py-sm rounded-lg text-sm transition-colors"
-                >
-                  <Link href={settingsNavItem.href} onClick={handleNavClick}>
-                    <SettingsIcon className="w-4 h-4 shrink-0" />
-                    <span>{settingsNavItem.name}</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            </SidebarMenu>
+            <div>
+              <button
+                onClick={() => setSettingsExpanded(!settingsExpanded)}
+                className={`w-full flex items-center gap-sm px-sm py-sm rounded-lg text-sm transition-colors hover:bg-sidebar-accent ${
+                  isSettingsActive
+                    ? "text-sidebar-foreground font-medium"
+                    : "text-muted-foreground"
+                }`}
+              >
+                <SettingsIcon className="w-4 h-4 shrink-0" />
+                <span className="flex-1 text-left">Settings</span>
+                <ChevronDown
+                  className={`w-3 h-3 transition-transform ${
+                    settingsExpanded || isSettingsActive ? "rotate-180" : ""
+                  }`}
+                />
+              </button>
+              {(settingsExpanded || isSettingsActive) && (
+                <SidebarMenu className="ml-md mt-xs">
+                  {settingsChildren.map((child) => {
+                    const ChildIcon = child.icon;
+                    const isChildActive = pathname === child.href;
+                    return (
+                      <SidebarMenuItem key={child.name}>
+                        <SidebarMenuButton
+                          asChild
+                          isActive={isChildActive}
+                          className="w-full flex items-center gap-sm px-sm py-xs rounded-lg text-xs transition-colors"
+                        >
+                          <Link href={child.href} onClick={handleNavClick}>
+                            <ChildIcon className="w-3.5 h-3.5 shrink-0" />
+                            <span>{child.name}</span>
+                          </Link>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    );
+                  })}
+                </SidebarMenu>
+              )}
+            </div>
           )}
 
           <div className="pt-sm border-t border-border">

@@ -1,17 +1,36 @@
 import {
   LayoutDashboard,
   Users,
-  MessageSquare,
-  Ticket,
-  Megaphone,
-  Settings,
   Building2,
+  ListFilter,
+  AlertTriangle,
   ShoppingCart,
-  Users2,
   CreditCard,
-  Truck,
   Package,
+  MessageSquare,
+  Inbox,
+  Ticket,
+  UserCheck,
+  FileText,
+  SmilePlus,
+  Flag,
+  Star,
+  Megaphone,
+  Calendar,
+  Send,
+  MessageCircle,
   Zap,
+  GitBranch,
+  ClipboardList,
+  BarChart3,
+  PieChart,
+  TrendingUp,
+  Settings,
+  Users2,
+  Link2,
+  Puzzle,
+  Layers,
+  Truck,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
@@ -19,6 +38,12 @@ export interface NavItem {
   name: string;
   href: string;
   icon: LucideIcon;
+}
+
+export interface NavGroup {
+  name: string;
+  icon: LucideIcon;
+  children: NavItem[];
 }
 
 export interface SystemItem {
@@ -37,10 +62,12 @@ export interface AccountItem {
 
 export type Account = AccountItem;
 
-export const mainNavItems: NavItem[] = [
-  { name: "Dashboard", href: "/", icon: LayoutDashboard },
-  { name: "Contacts", href: "/contacts", icon: Users },
-];
+// Dashboard is a standalone item (no sub-tabs)
+export const dashboardItem: NavItem = {
+  name: "Dashboard",
+  href: "/dashboard",
+  icon: LayoutDashboard,
+};
 
 export const settingsNavItem: NavItem = {
   name: "Settings",
@@ -48,15 +75,22 @@ export const settingsNavItem: NavItem = {
   icon: Settings,
 };
 
+// Legacy exports for backward compatibility
+export const mainNavItems: NavItem[] = [dashboardItem];
 export const navItems: NavItem[] = [...mainNavItems];
 
-export interface NavGroup {
-  name: string;
-  icon: LucideIcon;
-  children: NavItem[];
-}
-
+// Full sidebar structure with all 9 sections
 export const navGroups: NavGroup[] = [
+  {
+    name: "Contacts",
+    icon: Users,
+    children: [
+      { name: "All Contacts", href: "/contacts", icon: Users },
+      { name: "Companies", href: "/contacts/companies", icon: Building2 },
+      { name: "Lists/Segments", href: "/contacts/segments", icon: ListFilter },
+      { name: "At-Risk Customers", href: "/contacts/at-risk", icon: AlertTriangle },
+    ],
+  },
   {
     name: "Ecommerce",
     icon: ShoppingCart,
@@ -64,16 +98,61 @@ export const navGroups: NavGroup[] = [
       { name: "Orders", href: "/ecommerce/orders", icon: CreditCard },
       { name: "Products", href: "/ecommerce/products", icon: Package },
       { name: "Abandoned Carts", href: "/ecommerce/abandoned-carts", icon: ShoppingCart },
-      { name: "Customer LTV", href: "/ecommerce/ltv", icon: Users2 },
+      { name: "Customer LTV", href: "/ecommerce/ltv", icon: TrendingUp },
+    ],
+  },
+  {
+    name: "Conversations",
+    icon: MessageSquare,
+    children: [
+      { name: "Inbox", href: "/conversations/inbox", icon: Inbox },
+      { name: "Tickets", href: "/conversations/tickets", icon: Ticket },
+      { name: "My Assigned", href: "/conversations/assigned", icon: UserCheck },
+      { name: "Canned Replies", href: "/conversations/canned-replies", icon: FileText },
+    ],
+  },
+  {
+    name: "Sentiment",
+    icon: SmilePlus,
+    children: [
+      { name: "Sentiment Overview", href: "/sentiment/overview", icon: SmilePlus },
+      { name: "Flagged/Negative Feed", href: "/sentiment/flagged", icon: Flag },
+      { name: "Reviews & Feedback", href: "/sentiment/reviews", icon: Star },
+    ],
+  },
+  {
+    name: "Content",
+    icon: Megaphone,
+    children: [
+      { name: "Calendar", href: "/content/calendar", icon: Calendar },
+      { name: "Published Posts", href: "/content/published", icon: Send },
+      { name: "Comment Sentiment", href: "/content/comments", icon: MessageCircle },
     ],
   },
   {
     name: "Automation",
     icon: Zap,
     children: [
-      { name: "Workflows", href: "/automation/workflows", icon: Zap },
+      { name: "Workflows", href: "/automation/workflows", icon: GitBranch },
+      { name: "Triggers/Events Log", href: "/automation/triggers", icon: ClipboardList },
     ],
   },
+  {
+    name: "Reports",
+    icon: BarChart3,
+    children: [
+      { name: "Custom Dashboards", href: "/reports/dashboards", icon: PieChart },
+      { name: "Revenue Attribution", href: "/reports/revenue", icon: TrendingUp },
+    ],
+  },
+];
+
+// Settings sub-items (rendered separately in footer)
+export const settingsChildren: NavItem[] = [
+  { name: "Team & Permissions", href: "/settings/team", icon: Users2 },
+  { name: "Ecommerce Sync", href: "/settings/ecommerce-sync", icon: Link2 },
+  { name: "Integrations", href: "/settings/integrations", icon: Puzzle },
+  { name: "Custom Properties", href: "/settings/custom-properties", icon: Layers },
 ];
 
 export const systems: SystemItem[] = [
