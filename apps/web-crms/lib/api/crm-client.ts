@@ -40,6 +40,7 @@ import {
   CartListItem,
   WorkflowRunListItem,
 } from "@/types/ecommerce";
+import { SegmentListItem, SegmentMember } from "@/types/segment";
 
 export const crmClient = {
   customers: {
@@ -253,5 +254,11 @@ export const crmClient = {
       }
       return request<WorkflowRunListItem[]>(url);
     },
+  },
+  segments: {
+    list: () =>
+      request<SegmentListItem[]>(`/api/v1/segments`),
+    getMembers: (id: string) =>
+      request<SegmentMember[]>(`/api/v1/segments/${id}/members`),
   },
 };

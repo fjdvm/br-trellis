@@ -1,9 +1,12 @@
 using System.Text.Json;
+using api_crms.Controllers;
 using api_crms.Data;
+using api_crms.DTOs;
 using api_crms.Enums;
 using api_crms.Models;
 using api_crms.Repositories;
 using api_crms.Services;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
 
@@ -443,6 +446,300 @@ public sealed class SegmentServiceTests : IDisposable
         // Only contact1 matches both conditions
         Assert.Single(members);
         Assert.Equal(contact1.Id, members[0].Id);
+    }
+
+    // --- ListSegmentsAsync tests ---
+
+    [Fact]
+    public async Task ListSegmentsAsync_returns_all_non_deleted_segments_with_correct_dto_shape()
+    {
+        await using var context = CreateContext();
+        var contact = new Contact { Id = Guid.NewGuid(), CreatedAt = DateTimeOffset.UtcNow, Name = "Alice", SentimentScore = -0.5m, LifetimeValue = 2000m };
+        context.Contacts.Add(contact);
+
+        // Dynamic segment
+        var rule = JsonSerializer.Serialize(new
+        {
+            MatchMode = "MatchAll",
+            Conditions = new[] { new { Field = "SentimentScore", Operator = "less_than", Value = "0" } }
+        });
+        var dynamicSegment = new Segment
+        {
+            Id = Guid.NewGuid(),
+            Name = "At-Risk Customers",
+            Type = SegmentType.Dynamic,
+            IsSystemDefined = true,
+            Rule = rule,
+            CreatedAt = DateTimeOffset.UtcNow,
+        };
+        context.Segments.Add(dynamicSegment);
+
+        // Static segment
+        var staticSegment = new Segment
+        {
+            Id = Guid.NewGuid(),
+            Name = "VIP List",
+            Type = SegmentType.Static,
+            IsSystemDefined = false,
+            CreatedAt = DateTimeOffset.UtcNow,
+        };
+        context.Segments.Add(staticSegment);
+        context.SegmentMemberships.Add(new SegmentMembership
+        {
+            SegmentId = staticSegment.Id,
+            ContactId = contact.Id,
+            CreatedAt = DateTimeOffset.UtcNow,
+        });
+
+        // Deleted segment — should not appear
+        var deletedSegment = new Segment
+        {
+            Id = Guid.NewGuid(),
+            Name = "Deleted",
+            Type = SegmentType.Dynamic,
+            CreatedAt = DateTimeOffset.UtcNow,
+            DeletedAt = DateTimeOffset.UtcNow,
+        };
+        context.Segments.Add(deletedSegment);
+        await context.SaveChangesAsync();
+
+        var service = CreateService(context);
+        var results = await service.ListSegmentsAsync(CancellationToken.None);
+
+        Assert.Equal(2, results.Count);
+
+        var atRisk = results.Single(s => s.Name == "At-Risk Customers");
+        Assert.Equal("Dynamic", atRisk.Type);
+        Assert.True(atRisk.IsSystemDefined);
+        Assert.NotNull(atRisk.Rule);
+        Assert.Equal("MatchAll", atRisk.Rule!.MatchMode);
+        Assert.Single(atRisk.Rule.Conditions);
+        Assert.Equal("SentimentScore", atRisk.Rule.Conditions[0].Field);
+        Assert.Equal("less_than", atRisk.Rule.Conditions[0].Operator);
+        Assert.Equal("0", atRisk.Rule.Conditions[0].Value);
+        Assert.Equal(1, atRisk.MemberCount); // Alice has -0.5 sentiment
+
+        var vip = results.Single(s => s.Name == "VIP List");
+        Assert.Equal("Static", vip.Type);
+        Assert.False(vip.IsSystemDefined);
+        Assert.Null(vip.Rule);
+        Assert.Equal(1, vip.MemberCount); // Alice is a static member
+    }
+
+    [Fact]
+    public async Task ListSegmentsAsync_computes_correct_member_count_for_dynamic_segment()
+    {
+        await using var context = CreateContext();
+        var c1 = new Contact { Id = Guid.NewGuid(), CreatedAt = DateTimeOffset.UtcNow, Name = "High", LifetimeValue = 5000m };
+        var c2 = new Contact { Id = Guid.NewGuid(), CreatedAt = DateTimeOffset.UtcNow, Name = "Low", LifetimeValue = 100m };
+        var c3 = new Contact { Id = Guid.NewGuid(), CreatedAt = DateTimeOffset.UtcNow, Name = "AlsoHigh", LifetimeValue = 3000m };
+        context.Contacts.AddRange(c1, c2, c3);
+
+        var rule = JsonSerializer.Serialize(new
+        {
+            MatchMode = "MatchAll",
+            Conditions = new[] { new { Field = "LifetimeValue", Operator = "greater_than", Value = "1000" } }
+        });
+        var segment = new Segment
+        {
+            Id = Guid.NewGuid(),
+            Name = "High Value",
+            Type = SegmentType.Dynamic,
+            Rule = rule,
+            CreatedAt = DateTimeOffset.UtcNow,
+        };
+        context.Segments.Add(segment);
+        await context.SaveChangesAsync();
+
+        var service = CreateService(context);
+        var results = await service.ListSegmentsAsync(CancellationToken.None);
+
+        var dto = Assert.Single(results);
+        Assert.Equal(2, dto.MemberCount); // c1 and c3 match
+    }
+
+    // --- GetSegmentMembersAsync tests ---
+
+    [Fact]
+    public async Task GetSegmentMembersAsync_returns_null_for_missing_segment()
+    {
+        await using var context = CreateContext();
+        var service = CreateService(context);
+
+        var result = await service.GetSegmentMembersAsync(Guid.NewGuid(), CancellationToken.None);
+
+        Assert.Null(result);
+    }
+
+    [Fact]
+    public async Task GetSegmentMembersAsync_returns_members_for_static_segment()
+    {
+        await using var context = CreateContext();
+        var contact = new Contact { Id = Guid.NewGuid(), CreatedAt = DateTimeOffset.UtcNow, Name = "Alice", Email = "alice@example.com", LifetimeValue = 500m };
+        context.Contacts.Add(contact);
+
+        var segment = new Segment
+        {
+            Id = Guid.NewGuid(),
+            Name = "VIP",
+            Type = SegmentType.Static,
+            CreatedAt = DateTimeOffset.UtcNow,
+        };
+        context.Segments.Add(segment);
+        context.SegmentMemberships.Add(new SegmentMembership
+        {
+            SegmentId = segment.Id,
+            ContactId = contact.Id,
+            CreatedAt = DateTimeOffset.UtcNow,
+        });
+        await context.SaveChangesAsync();
+
+        var service = CreateService(context);
+        var members = await service.GetSegmentMembersAsync(segment.Id, CancellationToken.None);
+
+        Assert.NotNull(members);
+        var member = Assert.Single(members);
+        Assert.Equal("Alice", member.Name);
+        Assert.Equal("alice@example.com", member.Email);
+        Assert.Equal(500m, member.LifetimeValue);
+    }
+
+    [Fact]
+    public async Task GetSegmentMembersAsync_returns_members_for_dynamic_segment()
+    {
+        await using var context = CreateContext();
+        var atRisk = new Contact { Id = Guid.NewGuid(), CreatedAt = DateTimeOffset.UtcNow, Name = "Risky", SentimentScore = -0.8m };
+        var healthy = new Contact { Id = Guid.NewGuid(), CreatedAt = DateTimeOffset.UtcNow, Name = "Healthy", SentimentScore = 0.5m };
+        context.Contacts.AddRange(atRisk, healthy);
+
+        var rule = JsonSerializer.Serialize(new
+        {
+            MatchMode = "MatchAll",
+            Conditions = new[] { new { Field = "SentimentScore", Operator = "less_than", Value = "0" } }
+        });
+        var segment = new Segment
+        {
+            Id = Guid.NewGuid(),
+            Name = "At-Risk",
+            Type = SegmentType.Dynamic,
+            Rule = rule,
+            CreatedAt = DateTimeOffset.UtcNow,
+        };
+        context.Segments.Add(segment);
+        await context.SaveChangesAsync();
+
+        var service = CreateService(context);
+        var members = await service.GetSegmentMembersAsync(segment.Id, CancellationToken.None);
+
+        Assert.NotNull(members);
+        var member = Assert.Single(members);
+        Assert.Equal("Risky", member.Name);
+    }
+
+    // --- Controller-level tests ---
+
+    [Fact]
+    public async Task SegmentController_ListSegments_returns_ok_with_items()
+    {
+        await using var context = CreateContext();
+        context.Segments.Add(new Segment
+        {
+            Id = Guid.NewGuid(),
+            Name = "Test Segment",
+            Type = SegmentType.Static,
+            CreatedAt = DateTimeOffset.UtcNow,
+        });
+        await context.SaveChangesAsync();
+
+        var service = CreateService(context);
+        var controller = new SegmentController(service);
+
+        var response = await controller.ListSegments(CancellationToken.None);
+
+        var result = Assert.IsType<OkObjectResult>(response.Result);
+        var items = Assert.IsAssignableFrom<IReadOnlyList<SegmentDto>>(result.Value);
+        Assert.Single(items);
+        Assert.Equal("Test Segment", items[0].Name);
+    }
+
+    [Fact]
+    public async Task SegmentController_GetSegmentMembers_returns_NotFound_for_missing_segment()
+    {
+        await using var context = CreateContext();
+        var service = CreateService(context);
+        var controller = new SegmentController(service);
+
+        var response = await controller.GetSegmentMembers(Guid.NewGuid(), CancellationToken.None);
+
+        Assert.IsType<NotFoundResult>(response.Result);
+    }
+
+    [Fact]
+    public async Task SegmentController_GetSegmentMembers_returns_ok_for_static_segment()
+    {
+        await using var context = CreateContext();
+        var contact = new Contact { Id = Guid.NewGuid(), CreatedAt = DateTimeOffset.UtcNow, Name = "Bob" };
+        context.Contacts.Add(contact);
+
+        var segment = new Segment
+        {
+            Id = Guid.NewGuid(),
+            Name = "Static Seg",
+            Type = SegmentType.Static,
+            CreatedAt = DateTimeOffset.UtcNow,
+        };
+        context.Segments.Add(segment);
+        context.SegmentMemberships.Add(new SegmentMembership
+        {
+            SegmentId = segment.Id,
+            ContactId = contact.Id,
+            CreatedAt = DateTimeOffset.UtcNow,
+        });
+        await context.SaveChangesAsync();
+
+        var service = CreateService(context);
+        var controller = new SegmentController(service);
+
+        var response = await controller.GetSegmentMembers(segment.Id, CancellationToken.None);
+
+        var result = Assert.IsType<OkObjectResult>(response.Result);
+        var members = Assert.IsAssignableFrom<IReadOnlyList<SegmentMemberDto>>(result.Value);
+        Assert.Single(members);
+        Assert.Equal("Bob", members[0].Name);
+    }
+
+    [Fact]
+    public async Task SegmentController_GetSegmentMembers_returns_ok_for_dynamic_segment()
+    {
+        await using var context = CreateContext();
+        var contact = new Contact { Id = Guid.NewGuid(), CreatedAt = DateTimeOffset.UtcNow, Name = "Risky", SentimentScore = -1m };
+        context.Contacts.Add(contact);
+
+        var rule = JsonSerializer.Serialize(new
+        {
+            MatchMode = "MatchAll",
+            Conditions = new[] { new { Field = "SentimentScore", Operator = "less_than", Value = "0" } }
+        });
+        var segment = new Segment
+        {
+            Id = Guid.NewGuid(),
+            Name = "Dynamic Seg",
+            Type = SegmentType.Dynamic,
+            Rule = rule,
+            CreatedAt = DateTimeOffset.UtcNow,
+        };
+        context.Segments.Add(segment);
+        await context.SaveChangesAsync();
+
+        var service = CreateService(context);
+        var controller = new SegmentController(service);
+
+        var response = await controller.GetSegmentMembers(segment.Id, CancellationToken.None);
+
+        var result = Assert.IsType<OkObjectResult>(response.Result);
+        var members = Assert.IsAssignableFrom<IReadOnlyList<SegmentMemberDto>>(result.Value);
+        Assert.Single(members);
+        Assert.Equal("Risky", members[0].Name);
     }
 
     private SegmentService CreateService(AppDbContext context)

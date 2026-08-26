@@ -5,7 +5,7 @@ public sealed record SegmentDto(
     string Name,
     string Type,
     bool IsSystemDefined,
-    string? Rule,
+    SegmentRuleDto? Rule,
     int MemberCount);
 
 public sealed record SegmentConditionDto(
@@ -16,3 +16,11 @@ public sealed record SegmentConditionDto(
 public sealed record SegmentRuleDto(
     string MatchMode,
     IReadOnlyList<SegmentConditionDto> Conditions);
+
+public sealed record SegmentMemberDto(
+    Guid Id,
+    string? Name,
+    string? Email,
+    string? Phone,
+    string? CompanyName,
+    decimal LifetimeValue);

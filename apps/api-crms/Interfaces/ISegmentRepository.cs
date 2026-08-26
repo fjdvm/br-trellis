@@ -6,6 +6,8 @@ public interface ISegmentRepository
 {
     Task<Segment?> GetByIdAsync(Guid id, CancellationToken cancellationToken);
 
+    Task<IReadOnlyList<Segment>> ListAsync(CancellationToken cancellationToken);
+
     Task<IReadOnlyList<Contact>> GetStaticMembersAsync(
         Guid segmentId,
         CancellationToken cancellationToken);

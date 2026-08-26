@@ -14,6 +14,14 @@ public sealed class SegmentRepository(AppDbContext dbContext) : ISegmentReposito
             .SingleOrDefaultAsync(cancellationToken);
     }
 
+    public async Task<IReadOnlyList<Segment>> ListAsync(CancellationToken cancellationToken)
+    {
+        return await dbContext.Segments.AsNoTracking()
+            .Where(s => s.DeletedAt == null)
+            .OrderBy(s => s.Name)
+            .ToListAsync(cancellationToken);
+    }
+
     public async Task<IReadOnlyList<Contact>> GetStaticMembersAsync(
         Guid segmentId,
         CancellationToken cancellationToken)

@@ -271,6 +271,15 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           // Settings is SuperAdmin/CEO only — non-super users get denied
           if (isAccessDeniedPage) return true;
           return Response.redirect(new URL("/access-denied", request.nextUrl));
+        } else if (pathname.startsWith("/ecommerce")) {
+          if (isAccessDeniedPage) return true;
+          return Response.redirect(new URL("/access-denied", request.nextUrl));
+        } else if (pathname.startsWith("/automation")) {
+          if (isAccessDeniedPage) return true;
+          return Response.redirect(new URL("/access-denied", request.nextUrl));
+        } else if (pathname.startsWith("/contacts/segments")) {
+          if (isAccessDeniedPage) return true;
+          return Response.redirect(new URL("/access-denied", request.nextUrl));
         }
 
         if (requiredModule) {

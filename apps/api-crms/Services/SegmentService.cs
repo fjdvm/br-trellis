@@ -1,6 +1,8 @@
 using System.Text.Json;
 using api_crms.Data;
+using api_crms.DTOs;
 using api_crms.Interfaces;
+using api_crms.Mappers;
 using api_crms.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -10,6 +12,35 @@ public sealed class SegmentService(
     ISegmentRepository segmentRepository,
     AppDbContext dbContext) : ISegmentService
 {
+    public async Task<IReadOnlyList<SegmentDto>> ListSegmentsAsync(
+        CancellationToken cancellationToken)
+    {
+        var segments = await segmentRepository.ListAsync(cancellationToken);
+        var results = new List<SegmentDto>(segments.Count);
+
+        foreach (var segment in segments)
+        {
+            var memberCount = await GetMemberCountAsync(segment, cancellationToken);
+            results.Add(SegmentMapper.ToDto(segment, memberCount));
+        }
+
+        return results;
+    }
+
+    public async Task<IReadOnlyList<SegmentMemberDto>?> GetSegmentMembersAsync(
+        Guid segmentId,
+        CancellationToken cancellationToken)
+    {
+        var segment = await segmentRepository.GetByIdAsync(segmentId, cancellationToken);
+        if (segment is null)
+        {
+            return null;
+        }
+
+        var contacts = await EvaluateSegmentAsync(segmentId, cancellationToken);
+        return SegmentMapper.ToMemberDtos(contacts);
+    }
+
     public async Task<IReadOnlyList<Contact>> EvaluateSegmentAsync(
         Guid segmentId,
         CancellationToken cancellationToken)
@@ -37,6 +68,7 @@ public sealed class SegmentService(
             .Where(c => c.DeletedAt == null)
             .Include(c => c.CustomFieldValues)
                 .ThenInclude(v => v.Definition)
+            .Include(c => c.Company)
             .ToListAsync(cancellationToken);
 
         // Pre-load product stock data if any condition references in_stock
@@ -68,6 +100,18 @@ public sealed class SegmentService(
         }
 
         await segmentRepository.DeleteAsync(segment, cancellationToken);
+    }
+
+    private async Task<int> GetMemberCountAsync(Segment segment, CancellationToken cancellationToken)
+    {
+        if (segment.Type == SegmentType.Static)
+        {
+            var members = await segmentRepository.GetStaticMembersAsync(segment.Id, cancellationToken);
+            return members.Count;
+        }
+
+        var evaluated = await EvaluateSegmentAsync(segment.Id, cancellationToken);
+        return evaluated.Count;
     }
 
     private static bool EvaluateRule(

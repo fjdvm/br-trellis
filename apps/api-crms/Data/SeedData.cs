@@ -314,6 +314,47 @@ public static class SeedData
             CreatedAt = DateTimeOffset.UtcNow,
         });
 
+        // VIP List — Static segment with manually assigned members
+        var vipSegment = new Segment
+        {
+            Id = Guid.NewGuid(),
+            Name = "VIP List",
+            Type = SegmentType.Static,
+            IsSystemDefined = false,
+            CreatedAt = DateTimeOffset.UtcNow,
+        };
+        dbContext.Segments.Add(vipSegment);
+        dbContext.SegmentMemberships.AddRange(
+            new SegmentMembership
+            {
+                SegmentId = vipSegment.Id,
+                ContactId = contacts[0].Id, // Maya Chen
+                CreatedAt = DateTimeOffset.UtcNow,
+            },
+            new SegmentMembership
+            {
+                SegmentId = vipSegment.Id,
+                ContactId = contacts[3].Id, // Marcus Johnson
+                CreatedAt = DateTimeOffset.UtcNow,
+            }
+        );
+
+        // High Value Customers — Dynamic segment on LifetimeValue
+        var highValueRule = JsonSerializer.Serialize(new
+        {
+            MatchMode = "MatchAll",
+            Conditions = new[] { new { Field = "LifetimeValue", Operator = "greater_than", Value = "1000" } }
+        });
+        dbContext.Segments.Add(new Segment
+        {
+            Id = Guid.NewGuid(),
+            Name = "High Value Customers",
+            Type = SegmentType.Dynamic,
+            IsSystemDefined = false,
+            Rule = highValueRule,
+            CreatedAt = DateTimeOffset.UtcNow,
+        });
+
         dbContext.SaveChanges();
 
         // Seed ecommerce data if not already present
