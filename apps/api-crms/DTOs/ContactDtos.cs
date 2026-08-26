@@ -30,10 +30,27 @@ public sealed record ContactDetailDto(
     string? Email,
     string? Phone,
     decimal? SentimentScore,
+    decimal LifetimeValue,
     ContactCompanyDto? Company,
     IReadOnlyList<ContactSourceReferenceDto> SourceReferences,
     IReadOnlyList<ContactCustomFieldValueDto> CustomFields,
-    IReadOnlyList<ContactTimelineEntryDto> TimelineEntries);
+    IReadOnlyList<ContactTimelineEntryDto> TimelineEntries,
+    IReadOnlyList<ContactOrderDto> Orders);
+
+public sealed record ContactOrderDto(
+    Guid Id,
+    string PlatformOrderId,
+    string Status,
+    decimal Total,
+    decimal RefundedAmount,
+    DateTimeOffset CreatedAt,
+    IReadOnlyList<ContactOrderLineItemDto> LineItems);
+
+public sealed record ContactOrderLineItemDto(
+    string ProductId,
+    string ProductName,
+    int Quantity,
+    decimal UnitPrice);
 
 public sealed record ContactCompanyDto(Guid Id, string Name);
 

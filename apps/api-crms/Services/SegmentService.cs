@@ -39,7 +39,15 @@ public sealed class SegmentService(
                 .ThenInclude(v => v.Definition)
             .ToListAsync(cancellationToken);
 
-        return contacts.Where(c => EvaluateRule(c, rule)).ToList();
+        // Pre-load product stock data if any condition references in_stock
+        Dictionary<Guid, bool>? contactInStockMap = null;
+        if (rule.Conditions.Any(c =>
+            c.Field.Equals("in_stock", StringComparison.OrdinalIgnoreCase)))
+        {
+            contactInStockMap = await BuildContactInStockMapAsync(cancellationToken);
+        }
+
+        return contacts.Where(c => EvaluateRule(c, rule, contactInStockMap)).ToList();
     }
 
     public Task<IReadOnlyList<Contact>> GetStaticMembersAsync(
@@ -62,18 +70,28 @@ public sealed class SegmentService(
         await segmentRepository.DeleteAsync(segment, cancellationToken);
     }
 
-    private static bool EvaluateRule(Contact contact, SegmentRule rule)
+    private static bool EvaluateRule(
+        Contact contact, SegmentRule rule, Dictionary<Guid, bool>? contactInStockMap)
     {
         if (rule.MatchMode == "MatchAll")
         {
-            return rule.Conditions.All(condition => EvaluateCondition(contact, condition));
+            return rule.Conditions.All(condition =>
+                EvaluateCondition(contact, condition, contactInStockMap));
         }
 
-        return rule.Conditions.Any(condition => EvaluateCondition(contact, condition));
+        return rule.Conditions.Any(condition =>
+            EvaluateCondition(contact, condition, contactInStockMap));
     }
 
-    private static bool EvaluateCondition(Contact contact, SegmentCondition condition)
+    private static bool EvaluateCondition(
+        Contact contact, SegmentCondition condition, Dictionary<Guid, bool>? contactInStockMap)
     {
+        // Special handling for in_stock condition
+        if (condition.Field.Equals("in_stock", StringComparison.OrdinalIgnoreCase))
+        {
+            return EvaluateInStockCondition(contact, condition, contactInStockMap);
+        }
+
         var fieldValue = GetFieldValue(contact, condition.Field);
         return condition.Operator switch
         {
@@ -88,6 +106,63 @@ public sealed class SegmentService(
         };
     }
 
+    private static bool EvaluateInStockCondition(
+        Contact contact, SegmentCondition condition, Dictionary<Guid, bool>? contactInStockMap)
+    {
+        if (contactInStockMap is null) return false;
+
+        var hasInStock = contactInStockMap.TryGetValue(contact.Id, out var allInStock);
+        var expectedValue = condition.Value.Equals("true", StringComparison.OrdinalIgnoreCase);
+
+        return condition.Operator switch
+        {
+            "equals" => hasInStock && allInStock == expectedValue,
+            "not_equals" => !hasInStock || allInStock != expectedValue,
+            _ => false,
+        };
+    }
+
+    /// <summary>
+    /// Builds a map of ContactId → whether ALL related products (via cart/order items) are in stock.
+    /// </summary>
+    private async Task<Dictionary<Guid, bool>> BuildContactInStockMapAsync(
+        CancellationToken cancellationToken)
+    {
+        var result = new Dictionary<Guid, bool>();
+
+        // Get product stock status
+        var products = await dbContext.Products.AsNoTracking()
+            .ToListAsync(cancellationToken);
+        var productStockMap = products.ToDictionary(p => p.PlatformProductId, p => p.InStock);
+
+        // Check cart items for each contact
+        var carts = await dbContext.Carts.AsNoTracking()
+            .Include(c => c.Items)
+            .Where(c => c.ContactId != null)
+            .ToListAsync(cancellationToken);
+
+        foreach (var cart in carts)
+        {
+            if (cart.ContactId is null) continue;
+            var contactId = cart.ContactId.Value;
+
+            var allItemsInStock = cart.Items.All(item =>
+                productStockMap.TryGetValue(item.ProductId, out var inStock) && inStock);
+
+            // If contact already has a false, keep it false (any out-of-stock fails the check)
+            if (result.TryGetValue(contactId, out var existing))
+            {
+                result[contactId] = existing && allItemsInStock;
+            }
+            else
+            {
+                result[contactId] = allItemsInStock;
+            }
+        }
+
+        return result;
+    }
+
     private static string? GetFieldValue(Contact contact, string field)
     {
         return field.ToLowerInvariant() switch
@@ -96,6 +171,7 @@ public sealed class SegmentService(
             "email" => contact.Email,
             "phone" => contact.Phone,
             "sentimentscore" => contact.SentimentScore?.ToString(),
+            "lifetimevalue" => contact.LifetimeValue.ToString(),
             _ => GetCustomFieldValue(contact, field),
         };
     }

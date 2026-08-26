@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+
+<html class="h-full bg-background antialiased" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Trellis CRM - Tickets</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;600;700&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-error-container": "#93000a",
+                        "primary": "#000000",
+                        "secondary-fixed": "#e2e2e3",
+                        "surface-dim": "#dad9e3",
+                        "surface-bright": "#fbf8ff",
+                        "tertiary-fixed": "#e8e2d9",
+                        "surface-variant": "#e3e1ec",
+                        "on-background": "#1a1b22",
+                        "on-error": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "surface-container-highest": "#e3e1ec",
+                        "surface-container-low": "#f4f2fd",
+                        "surface-container-high": "#e8e7f1",
+                        "error": "#ba1a1a",
+                        "outline": "#77767b",
+                        "tertiary-container": "#1d1b16",
+                        "tertiary-fixed-dim": "#cbc6bd",
+                        "on-secondary-fixed-variant": "#454748",
+                        "on-primary-fixed-variant": "#47464a",
+                        "on-secondary-fixed": "#1a1c1d",
+                        "on-primary": "#ffffff",
+                        "on-primary-fixed": "#1b1b1e",
+                        "outline-variant": "#c8c5cb",
+                        "secondary-container": "#dfdfe0",
+                        "on-surface-variant": "#47464b",
+                        "on-secondary": "#ffffff",
+                        "tertiary": "#000000",
+                        "inverse-primary": "#c8c5ca",
+                        "on-tertiary-fixed": "#1d1b16",
+                        "on-primary-container": "#858387",
+                        "on-surface": "#1a1b22",
+                        "background": "#fbf8ff",
+                        "on-secondary-container": "#616364",
+                        "surface-container": "#eeedf7",
+                        "secondary": "#5d5e60",
+                        "primary-container": "#1b1b1e",
+                        "primary-fixed-dim": "#c8c5ca",
+                        "on-tertiary-container": "#88837c",
+                        "on-tertiary-fixed-variant": "#494640",
+                        "on-tertiary": "#ffffff",
+                        "surface-tint": "#5f5e61",
+                        "primary-fixed": "#e4e1e6",
+                        "inverse-surface": "#2f3038",
+                        "surface-container-lowest": "#ffffff",
+                        "secondary-fixed-dim": "#c6c6c7",
+                        "inverse-on-surface": "#f1effa",
+                        "surface": "#fbf8ff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "stack-compact": "0.5rem",
+                        "stack-default": "0.75rem",
+                        "container-margin": "2rem",
+                        "base-unit": "4px",
+                        "section-gap": "1.5rem",
+                        "gutter": "1rem"
+                    },
+                    "fontFamily": {
+                        "headline-sm": ["Hanken Grotesk"],
+                        "body-md": ["Inter"],
+                        "headline-md": ["Hanken Grotesk"],
+                        "body-lg": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "label-md": ["Inter"],
+                        "headline-lg": ["Hanken Grotesk"]
+                    },
+                    "fontSize": {
+                        "headline-sm": ["18px", { "lineHeight": "24px", "fontWeight": "600" }],
+                        "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+                        "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "body-sm": ["13px", { "lineHeight": "18px", "fontWeight": "400" }],
+                        "label-sm": ["11px", { "lineHeight": "14px", "fontWeight": "600" }],
+                        "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.01em", "fontWeight": "500" }],
+                        "headline-lg": ["30px", { "lineHeight": "36px", "letterSpacing": "-0.02em", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background-color: theme('colors.outline-variant');
+            border-radius: 20px;
+        }
+    </style>
+</head>
+<body class="flex h-full overflow-hidden bg-background text-on-surface">
+<!-- SideNavBar -->
+<nav class="fixed left-0 top-0 h-full w-[240px] border-r border-outline-variant bg-surface-container-low flex flex-col p-stack-default gap-stack-compact z-20">
+<div class="flex items-center gap-3 px-3 py-4 mb-2">
+<div class="h-8 w-8 rounded bg-primary flex items-center justify-center text-on-primary">
+<span class="material-symbols-outlined text-lg" data-icon="square">square</span>
+</div>
+<div>
+<div class="font-headline-sm text-headline-sm font-bold text-primary tracking-tight">Trellis</div>
+<div class="font-label-sm text-label-sm text-on-surface-variant">Manufacturing CRM</div>
+</div>
+</div>
+<div class="flex-1 overflow-y-auto custom-scrollbar flex flex-col gap-1">
+<a class="flex items-center gap-3 px-3 py-2 bg-primary text-on-primary rounded-lg font-medium scale-[0.98] transition-transform duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="confirmation_number" style="font-variation-settings: 'FILL' 1;">confirmation_number</span>
+<span class="font-label-md text-label-md">Tickets</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-secondary-container/50 rounded-lg transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="group">group</span>
+<span class="font-label-md text-label-md">Customers</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-secondary-container/50 rounded-lg transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="domain">domain</span>
+<span class="font-label-md text-label-md">Companies</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-secondary-container/50 rounded-lg transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="shopping_cart">shopping_cart</span>
+<span class="font-label-md text-label-md">Orders</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-secondary-container/50 rounded-lg transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="description">description</span>
+<span class="font-label-md text-label-md">Contracts</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-secondary-container/50 rounded-lg transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="person_search">person_search</span>
+<span class="font-label-md text-label-md">Leads</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-secondary-container/50 rounded-lg transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="article">article</span>
+<span class="font-label-md text-label-md">Content</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-secondary-container/50 rounded-lg transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="verified_user">verified_user</span>
+<span class="font-label-md text-label-md">Approvals</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-secondary-container/50 rounded-lg transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="bar_chart">bar_chart</span>
+<span class="font-label-md text-label-md">Reports</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-secondary-container/50 rounded-lg transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="font-label-md text-label-md">Admin</span>
+</a>
+</div>
+<div class="mt-auto pt-4 border-t border-outline-variant">
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-secondary-container/50 rounded-lg transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="account_circle">account_circle</span>
+<span class="font-label-md text-label-md">User Profile</span>
+</a>
+</div>
+</nav>
+<!-- Main Content Area -->
+<main class="ml-[240px] flex-1 flex h-full overflow-hidden bg-background">
+<!-- Left Panel: Ticket List (40%) -->
+<div class="w-[40%] flex flex-col border-r border-outline-variant bg-surface-container-lowest z-10">
+<!-- Header & Search -->
+<div class="p-container-margin pb-stack-default border-b border-outline-variant">
+<h1 class="font-headline-md text-headline-md text-on-surface mb-stack-default">Tickets</h1>
+<div class="flex gap-stack-compact">
+<div class="relative flex-1">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-sm">search</span>
+<input class="w-full pl-9 pr-3 py-2 bg-surface-container-lowest border border-outline-variant rounded-lg font-body-sm text-body-sm text-on-surface focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary placeholder-on-surface-variant" placeholder="Search tickets..." type="text"/>
+</div>
+<button class="px-3 py-2 border border-outline-variant rounded-lg bg-surface-container-lowest text-on-surface hover:bg-surface-variant transition-colors flex items-center justify-center">
+<span class="material-symbols-outlined text-sm">filter_list</span>
+</button>
+</div>
+</div>
+<!-- List -->
+<div class="flex-1 overflow-y-auto custom-scrollbar">
+<!-- Ticket Row (Active) -->
+<div class="p-4 border-b border-outline-variant bg-surface-variant/50 cursor-pointer relative overflow-hidden">
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-primary"></div>
+<div class="flex justify-between items-start mb-1">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-error"></span>
+<span class="font-label-md text-label-md font-semibold text-on-surface">Acme Corp</span>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">10m ago</span>
+</div>
+<div class="font-body-md text-body-md text-on-surface font-medium mb-2 truncate">Late Delivery - Order #8892</div>
+<div class="flex items-center justify-between">
+<span class="inline-flex items-center px-2 py-0.5 rounded-full bg-error-container/30 text-on-error-container font-label-sm text-label-sm">Delivery</span>
+<img alt="Agent" class="w-6 h-6 rounded-full border border-outline-variant object-cover" data-alt="A small circular avatar of a professional support agent wearing a headset in a brightly lit modern office setting, professional lighting, monochrome with warm skin tones." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB2Mvp4gi0pubuyJ6rfSOdbNzuJi11emwA-4H5T_X3QBFzuDr09agCZ7SLItf9sxP585oANcHZnQvqPn0x4_44Bvs8U2Xkiv2olNMOPJ36PFNMYYCXRTaydJ8IfsNPOUPDsGlwPLcMHBB-xM70wnwBBlMR4noQr_vUf-V-2Kdzi7uVz26iIw5MGXAlViaJ7HOnSWWNrN2YcIeG9fHoZVb-f1H0CRrJxvhpG51EQ1ArvolRapp2kiuIA"/>
+</div>
+</div>
+<!-- Ticket Row (Inactive) -->
+<div class="p-4 border-b border-outline-variant hover:bg-surface-container-low transition-colors cursor-pointer group">
+<div class="flex justify-between items-start mb-1">
+<div class="flex items-center gap-2">
+<span class="font-label-md text-label-md text-on-surface font-medium">Globex Manufacturing</span>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">2h ago</span>
+</div>
+<div class="font-body-md text-body-md text-on-surface-variant mb-2 truncate group-hover:text-on-surface transition-colors">Quality Control Issue on Batch B</div>
+<div class="flex items-center justify-between">
+<span class="inline-flex items-center px-2 py-0.5 rounded-full bg-surface-dim/30 text-on-surface-variant font-label-sm text-label-sm border border-outline-variant/50">Quality</span>
+<div class="w-6 h-6 rounded-full bg-surface-container-high border border-outline-variant flex items-center justify-center text-on-surface-variant font-label-sm text-label-sm">JS</div>
+</div>
+</div>
+<!-- Ticket Row (Inactive) -->
+<div class="p-4 border-b border-outline-variant hover:bg-surface-container-low transition-colors cursor-pointer group">
+<div class="flex justify-between items-start mb-1">
+<div class="flex items-center gap-2">
+<span class="font-label-md text-label-md text-on-surface font-medium">Stark Industries</span>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Yesterday</span>
+</div>
+<div class="font-body-md text-body-md text-on-surface-variant mb-2 truncate group-hover:text-on-surface transition-colors">Invoice discrepancy for Q3 shipment</div>
+<div class="flex items-center justify-between">
+<span class="inline-flex items-center px-2 py-0.5 rounded-full bg-surface-dim/30 text-on-surface-variant font-label-sm text-label-sm border border-outline-variant/50">Billing</span>
+<div class="w-6 h-6 rounded-full bg-surface-container-high border border-outline-variant flex items-center justify-center text-on-surface-variant font-label-sm text-label-sm">AM</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Panel: Ticket Detail (60%) -->
+<div class="w-[60%] flex flex-col bg-surface-container-lowest h-full">
+<!-- Detail Header -->
+<div class="px-container-margin py-stack-default border-b border-outline-variant flex flex-col gap-stack-default bg-surface-container-lowest">
+<div class="flex justify-between items-start">
+<div class="flex gap-2 items-center mb-1">
+<span class="w-2 h-2 rounded-full bg-error"></span>
+<span class="inline-flex items-center px-2 py-0.5 rounded-full bg-error-container/30 text-on-error-container font-label-sm text-label-sm">Delivery</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">TKT-1042</span>
+</div>
+<button class="px-3 py-1.5 border border-outline-variant rounded bg-surface-container-lowest text-on-surface font-label-md text-label-md hover:bg-surface-variant transition-colors flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">swap_horiz</span> Reassign
+                    </button>
+</div>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Late Delivery - Order #8892</h2>
+<div class="flex gap-3">
+<div class="inline-flex items-center gap-1.5 px-2 py-1 rounded border border-outline-variant bg-surface-container-low font-label-sm text-label-sm text-on-surface cursor-pointer hover:bg-surface-variant transition-colors">
+<span class="material-symbols-outlined text-[14px]">inventory_2</span> Order #8892
+                    </div>
+</div>
+</div>
+<!-- Thread Area -->
+<div class="flex-1 overflow-y-auto custom-scrollbar p-container-margin bg-background flex flex-col gap-section-gap relative">
+<!-- Customer Summary Card -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-lg p-4">
+<div class="flex items-start gap-4">
+<div class="w-10 h-10 rounded bg-primary-container text-on-primary-container flex items-center justify-center font-headline-sm text-headline-sm">
+                            AC
+                        </div>
+<div>
+<div class="font-label-md text-label-md font-semibold text-on-surface">Acme Corp</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant mt-1">Tier 1 Customer • Total Spend: $2.4M • Region: NA East</div>
+<div class="mt-2 text-primary font-label-sm text-label-sm flex items-center gap-1 cursor-pointer">
+                                View full profile <span class="material-symbols-outlined text-[14px]">arrow_forward</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Messages -->
+<div class="flex flex-col gap-4">
+<!-- Customer Message -->
+<div class="flex flex-col items-start max-w-[85%]">
+<div class="flex items-center gap-2 mb-1 pl-1">
+<span class="font-label-md text-label-md font-semibold text-on-surface">Sarah Connor</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">via email • 10:42 AM</span>
+</div>
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl rounded-tl-sm p-4 text-on-surface font-body-md text-body-md shadow-sm">
+                            Hi Support team,<br/><br/>
+                            We were expecting shipment for Order #8892 yesterday. Our production line is waiting on these raw materials. Can we get an ETA on delivery ASAP?<br/><br/>
+                            Thanks,<br/>Sarah
+                        </div>
+</div>
+<!-- Agent Message -->
+<div class="flex flex-col items-end max-w-[85%] self-end">
+<div class="flex items-center gap-2 mb-1 pr-1">
+<span class="font-label-sm text-label-sm text-on-surface-variant">via web • 10:55 AM</span>
+<span class="font-label-md text-label-md font-semibold text-on-surface">You</span>
+</div>
+<div class="bg-primary text-on-primary rounded-xl rounded-tr-sm p-4 font-body-md text-body-md">
+                            Hi Sarah, looking into this right now. I see there was a delay at the transfer hub due to weather. Let me check if they have updated the estimated arrival time for the truck.
+                        </div>
+</div>
+</div>
+<!-- AI Suggestion Card -->
+<div class="mt-4 border border-dashed border-outline-variant bg-surface-container-low rounded-lg p-4 relative group">
+<div class="absolute -top-3 left-4 bg-surface-container-low px-2 flex items-center gap-1 text-on-surface-variant">
+<span class="material-symbols-outlined text-[16px] text-primary">auto_awesome</span>
+<span class="font-label-sm text-label-sm">AI Suggested Reply</span>
+</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant mt-2 mb-4 italic">
+                        "Hi Sarah, I've confirmed with dispatch. The truck cleared the weather delay and is currently en route. ETA is approximately 2:00 PM your time today. Apologies for the hold-up."
+                    </div>
+<div class="flex gap-2">
+<button class="px-3 py-1.5 bg-primary text-on-primary rounded font-label-md text-label-md hover:bg-primary/90 transition-colors">
+                            Use this reply
+                        </button>
+<button class="px-3 py-1.5 border border-outline-variant rounded bg-surface-container-lowest text-on-surface font-label-md text-label-md hover:bg-surface-variant transition-colors">
+                            Dismiss
+                        </button>
+</div>
+</div>
+</div>
+<!-- Composer (Pinned Bottom) -->
+<div class="p-container-margin border-t border-outline-variant bg-surface-container-lowest">
+<div class="border border-outline-variant rounded-lg bg-surface-container-lowest focus-within:ring-1 focus-within:ring-primary focus-within:border-primary transition-shadow">
+<textarea class="w-full bg-transparent border-none p-3 font-body-md text-body-md text-on-surface placeholder-on-surface-variant focus:ring-0 resize-none h-24" placeholder="Type a reply..."></textarea>
+<div class="flex justify-between items-center p-2 border-t border-outline-variant/50">
+<div class="flex gap-1">
+<button class="p-1.5 text-on-surface-variant hover:text-on-surface hover:bg-surface-variant rounded transition-colors">
+<span class="material-symbols-outlined text-[20px]">attach_file</span>
+</button>
+<button class="p-1.5 text-on-surface-variant hover:text-on-surface hover:bg-surface-variant rounded transition-colors">
+<span class="material-symbols-outlined text-[20px]">format_bold</span>
+</button>
+</div>
+<button class="px-4 py-2 bg-primary text-on-primary rounded-lg font-label-md text-label-md font-medium hover:opacity-90 transition-opacity flex items-center gap-2">
+                            Send <span class="material-symbols-outlined text-[16px]">send</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</main>
+</body></html>

@@ -14,6 +14,8 @@ public sealed class Contact
 
     public decimal? SentimentScore { get; set; }
 
+    public decimal LifetimeValue { get; set; }
+
     public Guid? CompanyId { get; set; }
 
     public DateTimeOffset? DeletedAt { get; set; }
@@ -25,4 +27,8 @@ public sealed class Contact
     public ICollection<CustomFieldValue> CustomFieldValues { get; } = new List<CustomFieldValue>();
 
     public ICollection<TimelineEntry> TimelineEntries { get; } = new List<TimelineEntry>();
+
+    public ICollection<Order> Orders { get; } = new List<Order>();
+
+    public ICollection<Cart> Carts { get; } = new List<Cart>();
 }

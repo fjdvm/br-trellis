@@ -39,7 +39,7 @@ public sealed class ContactServiceTests : IDisposable
         });
         await context.SaveChangesAsync();
 
-        var service = new ContactService(new ContactRepository(context));
+        var service = new ContactService(new ContactRepository(context), context);
         var result = await service.ListContactsAsync(CancellationToken.None);
 
         var item = Assert.Single(result);
@@ -81,7 +81,7 @@ public sealed class ContactServiceTests : IDisposable
         });
         await context.SaveChangesAsync();
 
-        var service = new ContactService(new ContactRepository(context));
+        var service = new ContactService(new ContactRepository(context), context);
         var detail = await service.GetContactByIdAsync(contact.Id, CancellationToken.None);
 
         Assert.NotNull(detail);
@@ -104,7 +104,7 @@ public sealed class ContactServiceTests : IDisposable
         });
         await context.SaveChangesAsync();
 
-        var service = new ContactService(new ContactRepository(context));
+        var service = new ContactService(new ContactRepository(context), context);
         var result = await service.GetContactByIdAsync(
             (await context.Contacts.FirstAsync()).Id,
             CancellationToken.None);
@@ -116,7 +116,7 @@ public sealed class ContactServiceTests : IDisposable
     public async Task ContactController_GetContact_returns_NotFound_for_missing_contact()
     {
         await using var context = CreateContext();
-        var service = new ContactService(new ContactRepository(context));
+        var service = new ContactService(new ContactRepository(context), context);
         var customFieldService = new CustomFieldService(context);
         var controller = new ContactController(service, customFieldService);
 
@@ -137,7 +137,7 @@ public sealed class ContactServiceTests : IDisposable
         });
         await context.SaveChangesAsync();
 
-        var service = new ContactService(new ContactRepository(context));
+        var service = new ContactService(new ContactRepository(context), context);
         var customFieldService = new CustomFieldService(context);
         var controller = new ContactController(service, customFieldService);
 

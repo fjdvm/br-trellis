@@ -27,6 +27,19 @@ builder.Services.AddScoped<ICustomFieldService, CustomFieldService>();
 builder.Services.AddScoped<ISegmentRepository, SegmentRepository>();
 builder.Services.AddScoped<ISegmentService, SegmentService>();
 
+// Ecommerce services
+builder.Services.AddScoped<IEcommerceRepository, EcommerceRepository>();
+builder.Services.AddScoped<IEcommerceIngestionService, EcommerceIngestionService>();
+builder.Services.AddSingleton(new CartAbandonmentOptions
+{
+    AbandonmentThreshold = TimeSpan.FromMinutes(
+        builder.Configuration.GetValue<double?>("Ecommerce:AbandonmentThresholdMinutes") ?? 60),
+    SweepInterval = TimeSpan.FromMinutes(
+        builder.Configuration.GetValue<double?>("Ecommerce:SweepIntervalMinutes") ?? 15),
+});
+builder.Services.AddScoped<ICartAbandonmentService, CartAbandonmentService>();
+builder.Services.AddScoped<IWorkflowService, WorkflowService>();
+
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 

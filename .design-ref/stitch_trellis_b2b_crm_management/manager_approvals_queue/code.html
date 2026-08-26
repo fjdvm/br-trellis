@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Approvals - Trellis</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;600&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                            "on-error-container": "#93000a",
+                            "primary": "#000000",
+                            "secondary-fixed": "#e2e2e3",
+                            "surface-dim": "#dad9e3",
+                            "surface-bright": "#fbf8ff",
+                            "tertiary-fixed": "#e8e2d9",
+                            "surface-variant": "#e3e1ec",
+                            "on-background": "#1a1b22",
+                            "on-error": "#ffffff",
+                            "error-container": "#ffdad6",
+                            "surface-container-highest": "#e3e1ec",
+                            "surface-container-low": "#f4f2fd",
+                            "surface-container-high": "#e8e7f1",
+                            "error": "#ba1a1a",
+                            "outline": "#77767b",
+                            "tertiary-container": "#1d1b16",
+                            "tertiary-fixed-dim": "#cbc6bd",
+                            "on-secondary-fixed-variant": "#454748",
+                            "on-primary-fixed-variant": "#47464a",
+                            "on-secondary-fixed": "#1a1c1d",
+                            "on-primary": "#ffffff",
+                            "on-primary-fixed": "#1b1b1e",
+                            "outline-variant": "#c8c5cb",
+                            "secondary-container": "#dfdfe0",
+                            "on-surface-variant": "#47464b",
+                            "on-secondary": "#ffffff",
+                            "tertiary": "#000000",
+                            "inverse-primary": "#c8c5ca",
+                            "on-tertiary-fixed": "#1d1b16",
+                            "on-primary-container": "#858387",
+                            "on-surface": "#1a1b22",
+                            "background": "#fbf8ff",
+                            "on-secondary-container": "#616364",
+                            "surface-container": "#eeedf7",
+                            "secondary": "#5d5e60",
+                            "primary-container": "#1b1b1e",
+                            "primary-fixed-dim": "#c8c5ca",
+                            "on-tertiary-container": "#88837c",
+                            "on-tertiary-fixed-variant": "#494640",
+                            "on-tertiary": "#ffffff",
+                            "surface-tint": "#5f5e61",
+                            "primary-fixed": "#e4e1e6",
+                            "inverse-surface": "#2f3038",
+                            "surface-container-lowest": "#ffffff",
+                            "secondary-fixed-dim": "#c6c6c7",
+                            "inverse-on-surface": "#f1effa",
+                            "surface": "#fbf8ff"
+                    },
+                    "borderRadius": {
+                            "DEFAULT": "0.25rem",
+                            "lg": "0.5rem",
+                            "xl": "0.75rem",
+                            "full": "9999px"
+                    },
+                    "spacing": {
+                            "stack-compact": "0.5rem",
+                            "stack-default": "0.75rem",
+                            "container-margin": "2rem",
+                            "base-unit": "4px",
+                            "section-gap": "1.5rem",
+                            "gutter": "1rem"
+                    },
+                    "fontFamily": {
+                            "headline-sm": ["Hanken Grotesk"],
+                            "body-md": ["Inter"],
+                            "headline-md": ["Hanken Grotesk"],
+                            "body-lg": ["Inter"],
+                            "body-sm": ["Inter"],
+                            "label-sm": ["Inter"],
+                            "label-md": ["Inter"],
+                            "headline-lg": ["Hanken Grotesk"]
+                    },
+                    "fontSize": {
+                            "headline-sm": ["18px", {"lineHeight": "24px", "fontWeight": "600"}],
+                            "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                            "headline-md": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                            "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                            "body-sm": ["13px", {"lineHeight": "18px", "fontWeight": "400"}],
+                            "label-sm": ["11px", {"lineHeight": "14px", "fontWeight": "600"}],
+                            "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.01em", "fontWeight": "500"}],
+                            "headline-lg": ["30px", {"lineHeight": "36px", "letterSpacing": "-0.02em", "fontWeight": "600"}]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md min-h-screen flex">
+<!-- SideNavBar Component -->
+<nav class="fixed left-0 top-0 h-full w-[240px] border-r border-outline-variant bg-surface-container-low hidden md:flex flex-col p-stack-default gap-stack-compact z-50">
+<!-- Header -->
+<div class="flex items-center gap-3 p-4 mb-4">
+<div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-on-primary">
+<span class="material-symbols-outlined text-sm">factory</span>
+</div>
+<div>
+<h1 class="font-headline-md text-headline-md font-bold text-primary tracking-tight">Trellis</h1>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Manufacturing CRM</p>
+</div>
+</div>
+<!-- Main Nav -->
+<div class="flex-1 overflow-y-auto space-y-1">
+<a class="flex items-center gap-3 p-3 text-on-surface-variant hover:bg-secondary-container/50 rounded-lg transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="confirmation_number">confirmation_number</span>
+<span class="font-label-md text-label-md">Tickets</span>
+</a>
+<a class="flex items-center gap-3 p-3 text-on-surface-variant hover:bg-secondary-container/50 rounded-lg transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="group">group</span>
+<span class="font-label-md text-label-md">Customers</span>
+</a>
+<a class="flex items-center gap-3 p-3 text-on-surface-variant hover:bg-secondary-container/50 rounded-lg transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="domain">domain</span>
+<span class="font-label-md text-label-md">Companies</span>
+</a>
+<a class="flex items-center gap-3 p-3 text-on-surface-variant hover:bg-secondary-container/50 rounded-lg transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="shopping_cart">shopping_cart</span>
+<span class="font-label-md text-label-md">Orders</span>
+</a>
+<a class="flex items-center gap-3 p-3 text-on-surface-variant hover:bg-secondary-container/50 rounded-lg transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="description">description</span>
+<span class="font-label-md text-label-md">Contracts</span>
+</a>
+<a class="flex items-center gap-3 p-3 text-on-surface-variant hover:bg-secondary-container/50 rounded-lg transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="person_search">person_search</span>
+<span class="font-label-md text-label-md">Leads</span>
+</a>
+<a class="flex items-center gap-3 p-3 text-on-surface-variant hover:bg-secondary-container/50 rounded-lg transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="article">article</span>
+<span class="font-label-md text-label-md">Content</span>
+</a>
+<a class="flex items-center gap-3 p-3 bg-primary text-on-primary rounded-lg font-medium transition-transform duration-150 active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined" data-icon="verified_user">verified_user</span>
+<span class="font-label-md text-label-md">Approvals</span>
+</a>
+<a class="flex items-center gap-3 p-3 text-on-surface-variant hover:bg-secondary-container/50 rounded-lg transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="bar_chart">bar_chart</span>
+<span class="font-label-md text-label-md">Reports</span>
+</a>
+<a class="flex items-center gap-3 p-3 text-on-surface-variant hover:bg-secondary-container/50 rounded-lg transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="font-label-md text-label-md">Admin</span>
+</a>
+</div>
+<!-- Footer -->
+<div class="mt-auto border-t border-outline-variant pt-4">
+<a class="flex items-center gap-3 p-3 text-on-surface-variant hover:bg-secondary-container/50 rounded-lg transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="account_circle">account_circle</span>
+<span class="font-label-md text-label-md">User Profile</span>
+</a>
+</div>
+</nav>
+<!-- Main Content Area -->
+<main class="flex-1 md:ml-[240px] p-container-margin h-screen overflow-y-auto">
+<div class="max-w-7xl mx-auto flex gap-6 h-full relative">
+<!-- Left Column: Queue List -->
+<div class="flex-1 flex flex-col min-h-0 bg-surface-container-lowest border border-outline-variant rounded-lg overflow-hidden flex-shrink-0" style="flex-basis: 60%;">
+<!-- Header & Filters -->
+<div class="p-6 border-b border-outline-variant flex flex-col gap-4 bg-surface">
+<div class="flex justify-between items-center">
+<h2 class="font-headline-lg text-headline-lg text-on-surface">Approvals Queue</h2>
+<div class="flex gap-2">
+<span class="bg-surface-variant text-on-surface-variant font-label-sm text-label-sm px-3 py-1 rounded-full">14 Pending</span>
+</div>
+</div>
+<div class="flex gap-4">
+<div class="relative flex-1">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline">search</span>
+<input class="w-full pl-10 pr-4 py-2 bg-surface-container-lowest border border-outline-variant rounded-DEFAULT font-body-sm text-body-sm focus:ring-1 focus:ring-primary focus:border-primary outline-none" placeholder="Search companies or requesters..." type="text"/>
+</div>
+<select class="bg-surface-container-lowest border border-outline-variant rounded-DEFAULT font-body-sm text-body-sm px-4 py-2 outline-none focus:ring-1 focus:ring-primary">
+<option>All Types</option>
+<option>Orders</option>
+<option>Contracts</option>
+</select>
+</div>
+</div>
+<!-- Table Container -->
+<div class="flex-1 overflow-auto">
+<table class="w-full text-left border-collapse">
+<thead class="bg-surface-container sticky top-0 z-10">
+<tr>
+<th class="p-4 font-label-md text-label-md text-on-surface-variant font-medium border-b border-outline-variant w-12"></th>
+<th class="p-4 font-label-md text-label-md text-on-surface-variant font-medium border-b border-outline-variant">Request</th>
+<th class="p-4 font-label-md text-label-md text-on-surface-variant font-medium border-b border-outline-variant">Amount</th>
+<th class="p-4 font-label-md text-label-md text-on-surface-variant font-medium border-b border-outline-variant">Requester</th>
+<th class="p-4 font-label-md text-label-md text-on-surface-variant font-medium border-b border-outline-variant">Date</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant">
+<!-- Active Row -->
+<tr class="hover:bg-surface-container-low cursor-pointer bg-surface-container-low transition-colors group">
+<td class="p-4">
+<span class="material-symbols-outlined text-error" data-icon="priority_high">priority_high</span>
+</td>
+<td class="p-4">
+<div class="flex flex-col">
+<span class="font-body-md text-body-md font-medium text-on-surface group-hover:text-primary transition-colors">Contract Renewal</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Apex Manufacturing Inc.</span>
+</div>
+</td>
+<td class="p-4">
+<div class="flex flex-col">
+<span class="font-body-md text-body-md font-medium text-on-surface">$245,000</span>
+<span class="font-label-sm text-label-sm text-error bg-error-container px-2 py-0.5 rounded-full w-fit mt-1">Tier 3 Threshold</span>
+</div>
+</td>
+<td class="p-4">
+<div class="flex items-center gap-2">
+<img class="w-8 h-8 rounded-full border border-outline-variant object-cover" data-alt="A small square profile photo of a professional woman in her 30s with dark hair, wearing a dark blazer over a light shirt. The background is a soft, out-of-focus modern office setting. The lighting is bright and even, matching the clean corporate aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCYEmrKXO1ivZLq6sUbOaErXL04haivGnUcdVf7wGRJYAMhu0_UTJrj6g25v4aReLllI7tgmT62q6QaZ5Sai-v1N0VmlP0fFCcfp8Xf-kpMVPtysSShHQFzWSVja9jzi81vqHYdoWyWYjyZncCsKKOHJ-NaO41hXnWrW4-MVzdl8EAQiBy1s42NfYUkagxAQTdUXF8Yex9PBiZIrdfd5DXPAgeRTBXtfV5eefgrXEgIBotrtc6Aevix"/>
+<span class="font-body-sm text-body-sm text-on-surface">Sarah Jenkins</span>
+</div>
+</td>
+<td class="p-4 font-body-sm text-body-sm text-on-surface-variant">
+                                    2 hours ago
+                                </td>
+</tr>
+<!-- Standard Rows -->
+<tr class="hover:bg-surface-container-low cursor-pointer transition-colors group">
+<td class="p-4"></td>
+<td class="p-4">
+<div class="flex flex-col">
+<span class="font-body-md text-body-md font-medium text-on-surface group-hover:text-primary transition-colors">Bulk Order Q3</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Global Logistics Corp</span>
+</div>
+</td>
+<td class="p-4">
+<div class="flex flex-col">
+<span class="font-body-md text-body-md font-medium text-on-surface">$89,400</span>
+<span class="font-label-sm text-label-sm text-secondary bg-surface-variant px-2 py-0.5 rounded-full w-fit mt-1">Standard</span>
+</div>
+</td>
+<td class="p-4">
+<div class="flex items-center gap-2">
+<div class="w-8 h-8 rounded-full bg-surface-container-highest border border-outline-variant flex items-center justify-center text-on-surface-variant font-label-md text-label-md">
+                                            MJ
+                                        </div>
+<span class="font-body-sm text-body-sm text-on-surface">Mark Johnson</span>
+</div>
+</td>
+<td class="p-4 font-body-sm text-body-sm text-on-surface-variant">
+                                    5 hours ago
+                                </td>
+</tr>
+<tr class="hover:bg-surface-container-low cursor-pointer transition-colors group">
+<td class="p-4"></td>
+<td class="p-4">
+<div class="flex flex-col">
+<span class="font-body-md text-body-md font-medium text-on-surface group-hover:text-primary transition-colors">Equipment Lease</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">TechFlow Systems</span>
+</div>
+</td>
+<td class="p-4">
+<div class="flex flex-col">
+<span class="font-body-md text-body-md font-medium text-on-surface">$12,500/mo</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant bg-surface-variant px-2 py-0.5 rounded-full w-fit mt-1">Non-standard terms</span>
+</div>
+</td>
+<td class="p-4">
+<div class="flex items-center gap-2">
+<img class="w-8 h-8 rounded-full border border-outline-variant object-cover" data-alt="A small square profile photo of a professional man in his 40s with short hair and glasses, wearing a neutral grey sweater. The background is a soft, out-of-focus modern office setting. The lighting is bright and even, matching the clean corporate aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBFLezzZaOgXrVeyftzVN-MNSQjbRJ8KeZXFdhV0_t_q9cg2Bcg8RV7sp2JsP0nZ22ac4hkx1MEHGlCSYnn1CND2S-OjV3tymyv_4Hcxeicz3s9vxvZ8BlYOJpRU-wnD9vC2vD8wVxp4iXLN2uPYcQ5_MG7Qsv0zQxmcvD-geVK7DV0S0c8FxHnbFtZH11oXZlyrqSJfYQPD6T_3g9Om0Jt_U7ZU0jkgi5M6rnaizw-VM_JT3DDDvi8"/>
+<span class="font-body-sm text-body-sm text-on-surface">David Chen</span>
+</div>
+</td>
+<td class="p-4 font-body-sm text-body-sm text-on-surface-variant">
+                                    1 day ago
+                                </td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- Right Column: Detail Panel -->
+<div class="flex-1 flex flex-col min-h-0 bg-surface-container-lowest border border-outline-variant rounded-lg shadow-sm" style="flex-basis: 40%;">
+<!-- Detail Header -->
+<div class="p-6 border-b border-outline-variant bg-surface">
+<div class="flex justify-between items-start mb-4">
+<div>
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider mb-1 block">Contract Approval</span>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Apex Manufacturing Inc.</h3>
+</div>
+<button class="text-on-surface-variant hover:text-on-surface transition-colors">
+<span class="material-symbols-outlined">more_horiz</span>
+</button>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div class="p-3 bg-surface-container-low rounded-DEFAULT border border-outline-variant">
+<span class="font-label-sm text-label-sm text-on-surface-variant block mb-1">Total Value</span>
+<span class="font-headline-sm text-headline-sm text-primary">$245,000</span>
+</div>
+<div class="p-3 bg-error-container/20 rounded-DEFAULT border border-error-container">
+<span class="font-label-sm text-label-sm text-error block mb-1">Threshold Trigger</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">&gt; $200k Requires VP Auth</span>
+</div>
+</div>
+</div>
+<!-- Detail Content -->
+<div class="flex-1 overflow-y-auto p-6 space-y-section-gap">
+<!-- Line Items -->
+<div>
+<h4 class="font-label-md text-label-md text-on-surface mb-3 flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">list_alt</span>
+                            Line Items
+                        </h4>
+<div class="border border-outline-variant rounded-DEFAULT overflow-hidden">
+<table class="w-full text-left">
+<thead class="bg-surface-container-low border-b border-outline-variant">
+<tr>
+<th class="p-3 font-label-sm text-label-sm text-on-surface-variant font-medium">Item</th>
+<th class="p-3 font-label-sm text-label-sm text-on-surface-variant font-medium text-right">Qty</th>
+<th class="p-3 font-label-sm text-label-sm text-on-surface-variant font-medium text-right">Total</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant font-body-sm text-body-sm">
+<tr>
+<td class="p-3 text-on-surface">Enterprise License Tier 3</td>
+<td class="p-3 text-on-surface-variant text-right">1</td>
+<td class="p-3 text-on-surface text-right">$120,000</td>
+</tr>
+<tr>
+<td class="p-3 text-on-surface">Implementation Services</td>
+<td class="p-3 text-on-surface-variant text-right">240h</td>
+<td class="p-3 text-on-surface text-right">$45,000</td>
+</tr>
+<tr>
+<td class="p-3 text-on-surface">Custom Hardware Integration</td>
+<td class="p-3 text-on-surface-variant text-right">1</td>
+<td class="p-3 text-on-surface text-right">$80,000</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- Requester Note -->
+<div>
+<h4 class="font-label-md text-label-md text-on-surface mb-3 flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">chat</span>
+                            Requester Note
+                        </h4>
+<div class="p-4 bg-surface-container-low rounded-DEFAULT border border-outline-variant italic font-body-md text-body-md text-on-surface-variant">
+                            "Client requested expedited hardware integration to meet their Q4 production goals. I've bundled this with the tier 3 license to secure the full $245k commit. Please review ASAP to maintain timeline."
+                        </div>
+</div>
+</div>
+<!-- Action Area -->
+<div class="p-6 border-t border-outline-variant bg-surface mt-auto">
+<div class="mb-4">
+<label class="block font-label-sm text-label-sm text-on-surface-variant mb-2">Required Comment</label>
+<textarea class="w-full p-3 bg-surface-container-lowest border border-outline-variant rounded-DEFAULT font-body-sm text-body-sm focus:ring-1 focus:ring-primary focus:border-primary outline-none resize-none h-24" placeholder="Enter justification for approval or rejection..."></textarea>
+</div>
+<div class="flex gap-3">
+<button class="flex-1 px-4 py-2 border border-error text-error font-label-md text-label-md rounded-DEFAULT hover:bg-error-container/20 transition-colors">
+                            Reject
+                        </button>
+<button class="flex-1 px-4 py-2 bg-primary text-on-primary font-label-md text-label-md rounded-DEFAULT hover:bg-primary/90 transition-colors">
+                            Approve
+                        </button>
+</div>
+</div>
+</div>
+</div>
+</main>
+</body></html>

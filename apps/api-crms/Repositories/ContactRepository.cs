@@ -30,6 +30,8 @@ public sealed class ContactRepository(AppDbContext dbContext) : IContactReposito
             .Include(contact => contact.CustomFieldValues)
                 .ThenInclude(v => v.Option)
             .Include(contact => contact.TimelineEntries)
+            .Include(contact => contact.Orders)
+                .ThenInclude(o => o.LineItems)
             .SingleOrDefaultAsync(cancellationToken);
     }
 }

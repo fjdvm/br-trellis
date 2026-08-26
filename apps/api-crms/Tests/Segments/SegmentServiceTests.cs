@@ -1,5 +1,6 @@
 using System.Text.Json;
 using api_crms.Data;
+using api_crms.Enums;
 using api_crms.Models;
 using api_crms.Repositories;
 using api_crms.Services;
@@ -235,6 +236,213 @@ public sealed class SegmentServiceTests : IDisposable
     public void Dispose()
     {
         File.Delete(_databasePath);
+    }
+
+    [Fact]
+    public async Task Dynamic_segment_evaluates_ltv_condition()
+    {
+        await using var context = CreateContext();
+        var highValue = new Contact { Id = Guid.NewGuid(), CreatedAt = DateTimeOffset.UtcNow, Name = "High", LifetimeValue = 5000m };
+        var lowValue = new Contact { Id = Guid.NewGuid(), CreatedAt = DateTimeOffset.UtcNow, Name = "Low", LifetimeValue = 50m };
+        context.Contacts.AddRange(highValue, lowValue);
+
+        var rule = JsonSerializer.Serialize(new
+        {
+            MatchMode = "MatchAll",
+            Conditions = new[]
+            {
+                new { Field = "LifetimeValue", Operator = "greater_than", Value = "1000" },
+            }
+        });
+        var segment = new Segment
+        {
+            Id = Guid.NewGuid(),
+            Name = "High Value Customers",
+            Type = SegmentType.Dynamic,
+            Rule = rule,
+            CreatedAt = DateTimeOffset.UtcNow,
+        };
+        context.Segments.Add(segment);
+        await context.SaveChangesAsync();
+
+        var service = CreateService(context);
+        var members = await service.EvaluateSegmentAsync(segment.Id, CancellationToken.None);
+
+        Assert.Single(members);
+        Assert.Equal(highValue.Id, members[0].Id);
+    }
+
+    [Fact]
+    public async Task Dynamic_segment_evaluates_in_stock_condition()
+    {
+        await using var context = CreateContext();
+        var contact1 = new Contact { Id = Guid.NewGuid(), CreatedAt = DateTimeOffset.UtcNow, Name = "InStock Buyer" };
+        var contact2 = new Contact { Id = Guid.NewGuid(), CreatedAt = DateTimeOffset.UtcNow, Name = "OutOfStock Buyer" };
+        context.Contacts.AddRange(contact1, contact2);
+
+        // Create products
+        var productInStock = new Product
+        {
+            Id = Guid.NewGuid(),
+            PlatformProductId = "prod-in-stock",
+            Name = "Available Widget",
+            Price = 25m,
+            InStock = true,
+            CreatedAt = DateTimeOffset.UtcNow,
+            UpdatedAt = DateTimeOffset.UtcNow,
+        };
+        var productOutOfStock = new Product
+        {
+            Id = Guid.NewGuid(),
+            PlatformProductId = "prod-out-of-stock",
+            Name = "Unavailable Widget",
+            Price = 30m,
+            InStock = false,
+            CreatedAt = DateTimeOffset.UtcNow,
+            UpdatedAt = DateTimeOffset.UtcNow,
+        };
+        context.Products.AddRange(productInStock, productOutOfStock);
+
+        // Contact1 has cart with in-stock product
+        var cart1 = new Cart
+        {
+            Id = Guid.NewGuid(),
+            PlatformCartId = "cart-in-stock",
+            ContactId = contact1.Id,
+            Status = CartStatus.Active,
+            LastActivityAt = DateTimeOffset.UtcNow,
+            CreatedAt = DateTimeOffset.UtcNow,
+            UpdatedAt = DateTimeOffset.UtcNow,
+        };
+        cart1.Items.Add(new CartItem
+        {
+            Id = Guid.NewGuid(),
+            CartId = cart1.Id,
+            ProductId = "prod-in-stock",
+            ProductName = "Available Widget",
+            Quantity = 1,
+            UnitPrice = 25m,
+        });
+        context.Carts.Add(cart1);
+
+        // Contact2 has cart with out-of-stock product
+        var cart2 = new Cart
+        {
+            Id = Guid.NewGuid(),
+            PlatformCartId = "cart-out-of-stock",
+            ContactId = contact2.Id,
+            Status = CartStatus.Active,
+            LastActivityAt = DateTimeOffset.UtcNow,
+            CreatedAt = DateTimeOffset.UtcNow,
+            UpdatedAt = DateTimeOffset.UtcNow,
+        };
+        cart2.Items.Add(new CartItem
+        {
+            Id = Guid.NewGuid(),
+            CartId = cart2.Id,
+            ProductId = "prod-out-of-stock",
+            ProductName = "Unavailable Widget",
+            Quantity = 1,
+            UnitPrice = 30m,
+        });
+        context.Carts.Add(cart2);
+
+        var rule = JsonSerializer.Serialize(new
+        {
+            MatchMode = "MatchAll",
+            Conditions = new[]
+            {
+                new { Field = "in_stock", Operator = "equals", Value = "true" },
+            }
+        });
+        var segment = new Segment
+        {
+            Id = Guid.NewGuid(),
+            Name = "Contacts with in-stock items",
+            Type = SegmentType.Dynamic,
+            Rule = rule,
+            CreatedAt = DateTimeOffset.UtcNow,
+        };
+        context.Segments.Add(segment);
+        await context.SaveChangesAsync();
+
+        var service = CreateService(context);
+        var members = await service.EvaluateSegmentAsync(segment.Id, CancellationToken.None);
+
+        Assert.Single(members);
+        Assert.Equal(contact1.Id, members[0].Id);
+    }
+
+    [Fact]
+    public async Task Dynamic_segment_ltv_and_in_stock_compose_with_match_all()
+    {
+        await using var context = CreateContext();
+        var contact1 = new Contact { Id = Guid.NewGuid(), CreatedAt = DateTimeOffset.UtcNow, Name = "High+InStock", LifetimeValue = 2000m };
+        var contact2 = new Contact { Id = Guid.NewGuid(), CreatedAt = DateTimeOffset.UtcNow, Name = "Low+InStock", LifetimeValue = 50m };
+        context.Contacts.AddRange(contact1, contact2);
+
+        context.Products.Add(new Product
+        {
+            Id = Guid.NewGuid(),
+            PlatformProductId = "prod-1",
+            Name = "Widget",
+            Price = 25m,
+            InStock = true,
+            CreatedAt = DateTimeOffset.UtcNow,
+            UpdatedAt = DateTimeOffset.UtcNow,
+        });
+
+        // Both contacts have carts with in-stock products
+        foreach (var contact in new[] { contact1, contact2 })
+        {
+            var cart = new Cart
+            {
+                Id = Guid.NewGuid(),
+                PlatformCartId = $"cart-{contact.Id}",
+                ContactId = contact.Id,
+                Status = CartStatus.Active,
+                LastActivityAt = DateTimeOffset.UtcNow,
+                CreatedAt = DateTimeOffset.UtcNow,
+                UpdatedAt = DateTimeOffset.UtcNow,
+            };
+            cart.Items.Add(new CartItem
+            {
+                Id = Guid.NewGuid(),
+                CartId = cart.Id,
+                ProductId = "prod-1",
+                ProductName = "Widget",
+                Quantity = 1,
+                UnitPrice = 25m,
+            });
+            context.Carts.Add(cart);
+        }
+
+        var rule = JsonSerializer.Serialize(new
+        {
+            MatchMode = "MatchAll",
+            Conditions = new[]
+            {
+                new { Field = "LifetimeValue", Operator = "greater_than", Value = "1000" },
+                new { Field = "in_stock", Operator = "equals", Value = "true" },
+            }
+        });
+        var segment = new Segment
+        {
+            Id = Guid.NewGuid(),
+            Name = "High value + in stock",
+            Type = SegmentType.Dynamic,
+            Rule = rule,
+            CreatedAt = DateTimeOffset.UtcNow,
+        };
+        context.Segments.Add(segment);
+        await context.SaveChangesAsync();
+
+        var service = CreateService(context);
+        var members = await service.EvaluateSegmentAsync(segment.Id, CancellationToken.None);
+
+        // Only contact1 matches both conditions
+        Assert.Single(members);
+        Assert.Equal(contact1.Id, members[0].Id);
     }
 
     private SegmentService CreateService(AppDbContext context)

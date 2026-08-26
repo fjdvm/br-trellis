@@ -28,6 +28,7 @@ public static class ContactMapper
             contact.Email,
             contact.Phone,
             contact.SentimentScore,
+            contact.LifetimeValue,
             contact.Company is null
                 ? null
                 : new ContactCompanyDto(contact.Company.Id, contact.Company.Name),
@@ -55,6 +56,21 @@ public static class ContactMapper
                     e.EntryType,
                     e.Summary,
                     e.OccurredAt))
+                .ToList(),
+            contact.Orders
+                .OrderByDescending(o => o.CreatedAt)
+                .Select(o => new ContactOrderDto(
+                    o.Id,
+                    o.PlatformOrderId,
+                    o.Status.ToString(),
+                    o.Total,
+                    o.RefundedAmount,
+                    o.CreatedAt,
+                    o.LineItems.Select(li => new ContactOrderLineItemDto(
+                        li.ProductId,
+                        li.ProductName,
+                        li.Quantity,
+                        li.UnitPrice)).ToList()))
                 .ToList()
         );
     }

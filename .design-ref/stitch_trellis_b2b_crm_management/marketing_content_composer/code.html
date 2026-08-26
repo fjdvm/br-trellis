@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+
+<html class="h-full" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Trellis - Content Marketing</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;600&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-error-container": "#93000a",
+                        "primary": "#000000",
+                        "secondary-fixed": "#e2e2e3",
+                        "surface-dim": "#dad9e3",
+                        "surface-bright": "#fbf8ff",
+                        "tertiary-fixed": "#e8e2d9",
+                        "surface-variant": "#e3e1ec",
+                        "on-background": "#1a1b22",
+                        "on-error": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "surface-container-highest": "#e3e1ec",
+                        "surface-container-low": "#f4f2fd",
+                        "surface-container-high": "#e8e7f1",
+                        "error": "#ba1a1a",
+                        "outline": "#77767b",
+                        "tertiary-container": "#1d1b16",
+                        "tertiary-fixed-dim": "#cbc6bd",
+                        "on-secondary-fixed-variant": "#454748",
+                        "on-primary-fixed-variant": "#47464a",
+                        "on-secondary-fixed": "#1a1c1d",
+                        "on-primary": "#ffffff",
+                        "on-primary-fixed": "#1b1b1e",
+                        "outline-variant": "#c8c5cb",
+                        "secondary-container": "#dfdfe0",
+                        "on-surface-variant": "#47464b",
+                        "on-secondary": "#ffffff",
+                        "tertiary": "#000000",
+                        "inverse-primary": "#c8c5ca",
+                        "on-tertiary-fixed": "#1d1b16",
+                        "on-primary-container": "#858387",
+                        "on-surface": "#1a1b22",
+                        "background": "#fbf8ff",
+                        "on-secondary-container": "#616364",
+                        "surface-container": "#eeedf7",
+                        "secondary": "#5d5e60",
+                        "primary-container": "#1b1b1e",
+                        "primary-fixed-dim": "#c8c5ca",
+                        "on-tertiary-container": "#88837c",
+                        "on-tertiary-fixed-variant": "#494640",
+                        "on-tertiary": "#ffffff",
+                        "surface-tint": "#5f5e61",
+                        "primary-fixed": "#e4e1e6",
+                        "inverse-surface": "#2f3038",
+                        "surface-container-lowest": "#ffffff",
+                        "secondary-fixed-dim": "#c6c6c7",
+                        "inverse-on-surface": "#f1effa",
+                        "surface": "#fbf8ff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "stack-compact": "0.5rem",
+                        "stack-default": "0.75rem",
+                        "container-margin": "2rem",
+                        "base-unit": "4px",
+                        "section-gap": "1.5rem",
+                        "gutter": "1rem"
+                    },
+                    "fontFamily": {
+                        "headline-sm": ["Hanken Grotesk"],
+                        "body-md": ["Inter"],
+                        "headline-md": ["Hanken Grotesk"],
+                        "body-lg": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "label-md": ["Inter"],
+                        "headline-lg": ["Hanken Grotesk"]
+                    },
+                    "fontSize": {
+                        "headline-sm": ["18px", {"lineHeight": "24px", "fontWeight": "600"}],
+                        "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "headline-md": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                        "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "body-sm": ["13px", {"lineHeight": "18px", "fontWeight": "400"}],
+                        "label-sm": ["11px", {"lineHeight": "14px", "fontWeight": "600"}],
+                        "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.01em", "fontWeight": "500"}],
+                        "headline-lg": ["30px", {"lineHeight": "36px", "letterSpacing": "-0.02em", "fontWeight": "600"}]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #dfdfe0; border-radius: 10px; }
+        body { background-color: #FAFAF9; }
+    </style>
+</head>
+<body class="h-full flex overflow-hidden bg-[#FAFAF9] text-on-surface font-body-md">
+<!-- SideNavBar (Active: Content) -->
+<nav class="hidden md:flex flex-col h-full p-stack-default gap-stack-compact w-[240px] border-r border-outline-variant bg-surface-container-low shrink-0 relative z-20">
+<div class="mb-section-gap px-2 py-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-lg bg-primary text-on-primary flex items-center justify-center font-bold font-headline-sm">T</div>
+<div>
+<h1 class="font-headline-md text-headline-md font-bold text-primary tracking-tight">Trellis</h1>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Manufacturing CRM</p>
+</div>
+</div>
+</div>
+<div class="flex flex-col gap-1 flex-1 overflow-y-auto custom-scrollbar pr-2">
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-secondary-container/50 rounded-lg transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">confirmation_number</span>
+<span class="font-label-md text-label-md">Tickets</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-secondary-container/50 rounded-lg transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">group</span>
+<span class="font-label-md text-label-md">Customers</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-secondary-container/50 rounded-lg transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">domain</span>
+<span class="font-label-md text-label-md">Companies</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-secondary-container/50 rounded-lg transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">shopping_cart</span>
+<span class="font-label-md text-label-md">Orders</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-secondary-container/50 rounded-lg transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">description</span>
+<span class="font-label-md text-label-md">Contracts</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-secondary-container/50 rounded-lg transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">person_search</span>
+<span class="font-label-md text-label-md">Leads</span>
+</a>
+<!-- ACTIVE TAB -->
+<a class="flex items-center gap-3 px-3 py-2 bg-primary text-on-primary rounded-lg font-medium transition-transform duration-150 active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">article</span>
+<span class="font-label-md text-label-md">Content</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-secondary-container/50 rounded-lg transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">verified_user</span>
+<span class="font-label-md text-label-md">Approvals</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-secondary-container/50 rounded-lg transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">bar_chart</span>
+<span class="font-label-md text-label-md">Reports</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-secondary-container/50 rounded-lg transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">settings</span>
+<span class="font-label-md text-label-md">Admin</span>
+</a>
+</div>
+<div class="mt-auto pt-4 border-t border-outline-variant">
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-secondary-container/50 rounded-lg transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">account_circle</span>
+<span class="font-label-md text-label-md">User Profile</span>
+</a>
+</div>
+</nav>
+<!-- Main Content Area -->
+<main class="flex-1 flex flex-col min-w-0 overflow-hidden relative">
+<!-- Top Header (Contextual) -->
+<header class="h-16 flex items-center justify-between px-container-margin border-b border-outline-variant bg-surface-container-lowest shrink-0">
+<div>
+<h2 class="font-headline-sm text-headline-sm text-primary">Content Hub</h2>
+</div>
+<div class="flex items-center gap-3">
+<button class="h-9 px-4 rounded-lg bg-surface-container-lowest border border-outline-variant text-on-surface font-label-md text-label-md hover:bg-surface-variant transition-colors flex items-center gap-2 shadow-sm shadow-black/5">
+<span class="material-symbols-outlined text-[18px]">filter_list</span>
+                    Filter
+                </button>
+<button class="h-9 px-4 rounded-lg bg-primary text-on-primary font-label-md text-label-md hover:bg-primary/90 transition-colors flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">add</span>
+                    New Campaign
+                </button>
+</div>
+</header>
+<!-- Split Layout Workspace -->
+<div class="flex-1 flex overflow-hidden">
+<!-- Left Panel: Post List -->
+<div class="w-1/3 min-w-[320px] max-w-[400px] border-r border-outline-variant bg-surface-container-lowest overflow-y-auto custom-scrollbar flex flex-col p-4 gap-3 relative z-10">
+<div class="sticky top-0 bg-surface-container-lowest pb-2 z-10 flex justify-between items-center mb-1">
+<span class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Scheduled &amp; Drafts</span>
+<span class="font-label-sm text-label-sm bg-surface-variant text-on-surface px-2 py-0.5 rounded-full">12 Total</span>
+</div>
+<!-- Post Card 1 (Active) -->
+<div class="p-3 rounded-lg border border-outline bg-surface-container-low cursor-pointer hover:border-outline transition-colors group">
+<div class="flex gap-3 mb-2">
+<div class="w-16 h-16 rounded border border-outline-variant shrink-0 bg-secondary-container overflow-hidden">
+<img class="w-full h-full object-cover grayscale opacity-80 group-hover:grayscale-0 transition-all duration-300" data-alt="A macro shot of a sleek industrial metal gear assembly with minimalist high-contrast lighting, pure white background, sharp focus." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBPAsVn9rYkD2H4Loiv22SI3Cj2v4ktIlnZmJV7x3FOcz25ug1cxvNMo_Jed4F8agCS4DUkrp3_KmGRhK-52CqaIjevJ6Yt1LrfABUCyL87F7aaFpps2jmsDUznj1gjS6AQU98qY7ff-9yp7Nh7T7gjlVK3BRKPzK3rg0WpbSKIN0pTv-ed1TFIPxq2UbMc5Ujg-LfvHqOSnGABVV1jH2iIAaTi5OSzaxWwQeVA2V0xrQfZki7uS1bZ"/>
+</div>
+<div class="flex-1 min-w-0">
+<h4 class="font-label-md text-label-md text-primary truncate mb-1">Q3 Supplier Update</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant line-clamp-2 leading-tight">Announcing our new automated routing for high-density logistics. Available starting Oct 1st.</p>
+</div>
+</div>
+<div class="flex items-center justify-between mt-3 pt-2 border-t border-outline-variant/50">
+<div class="flex gap-1.5">
+<span class="material-symbols-outlined text-[16px] text-[#1877F2]" title="Facebook">qr_code_2</span>
+<span class="material-symbols-outlined text-[16px] text-primary" title="X">close</span>
+<span class="material-symbols-outlined text-[16px] text-[#0077B5]" title="LinkedIn">work</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="font-label-sm text-label-sm text-on-surface-variant">Tomorrow, 9:00 AM</span>
+<div class="w-2 h-2 rounded-full bg-amber-400"></div>
+</div>
+</div>
+</div>
+<!-- Post Card 2 -->
+<div class="p-3 rounded-lg border border-outline-variant bg-surface-container-lowest cursor-pointer hover:border-outline transition-colors group">
+<div class="flex gap-3 mb-2">
+<div class="w-16 h-16 rounded border border-outline-variant shrink-0 bg-secondary-container overflow-hidden">
+<div class="w-full h-full bg-surface-variant flex items-center justify-center">
+<span class="material-symbols-outlined text-outline">image</span>
+</div>
+</div>
+<div class="flex-1 min-w-0">
+<h4 class="font-label-md text-label-md text-primary truncate mb-1">Sustainability Report</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant line-clamp-2 leading-tight">Drafting the highlights from our 2024 environmental impact review across facilities.</p>
+</div>
+</div>
+<div class="flex items-center justify-between mt-3 pt-2 border-t border-outline-variant/50">
+<div class="flex gap-1.5">
+<span class="material-symbols-outlined text-[16px] text-[#0077B5]" title="LinkedIn">work</span>
+<span class="material-symbols-outlined text-[16px] text-primary" title="Email">mail</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="font-label-sm text-label-sm text-on-surface-variant">Draft</span>
+<div class="w-2 h-2 rounded-full bg-outline-variant"></div>
+</div>
+</div>
+</div>
+<!-- Post Card 3 -->
+<div class="p-3 rounded-lg border border-outline-variant bg-surface-container-lowest cursor-pointer hover:border-outline transition-colors group">
+<div class="flex gap-3 mb-2">
+<div class="w-16 h-16 rounded border border-outline-variant shrink-0 bg-secondary-container overflow-hidden">
+<img class="w-full h-full object-cover grayscale opacity-80 group-hover:grayscale-0 transition-all duration-300" data-alt="A clean, minimalist workspace featuring a white ceramic coffee cup beside a printed logistics manifest on a stark white desk." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDX4Kj529GDgPkFhRX9YEHOgziZK3_iwR3c1JFjHXKRUPlDneu0C4FKjxR6rJV56WX8t5P-6cI_BbD7yJFtAtuBYAcLpBqcAi79DqGMXIoDoqcnSHTYC3aoHsLvDKG5vvhLg1EKc_MWwZaEvi6l4FtuLeJNBFNHxk3xVJNYrTIRxnH4KEw5znHZLLTKwI8It6V4T7vdjJnQAjGcXI8Xa9ih9f2Ey7ZKoMLu3O0ESeAFwCC-kT1uT24H"/>
+</div>
+<div class="flex-1 min-w-0">
+<h4 class="font-label-md text-label-md text-primary truncate mb-1">Holiday Schedule</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant line-clamp-2 leading-tight">Reminder: Distribution centers will operate on holiday hours next week.</p>
+</div>
+</div>
+<div class="flex items-center justify-between mt-3 pt-2 border-t border-outline-variant/50">
+<div class="flex gap-1.5">
+<span class="material-symbols-outlined text-[16px] text-[#1877F2]" title="Facebook">qr_code_2</span>
+<span class="material-symbols-outlined text-[16px] text-primary" title="X">close</span>
+<span class="material-symbols-outlined text-[16px] text-[#E1306C]" title="Instagram">photo_camera</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="font-label-sm text-label-sm text-on-surface-variant">Posted</span>
+<div class="w-2 h-2 rounded-full bg-emerald-500"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Panel: Composer Canvas -->
+<div class="flex-1 bg-[#FAFAF9] flex flex-col h-full overflow-hidden">
+<div class="flex-1 overflow-y-auto custom-scrollbar p-6 lg:p-10">
+<div class="max-w-4xl mx-auto space-y-8">
+<!-- Header / Controls -->
+<div class="flex items-start justify-between">
+<div>
+<h3 class="font-headline-md text-headline-md text-primary mb-1">Q3 Supplier Update</h3>
+<div class="flex items-center gap-2 text-on-surface-variant font-body-sm text-body-sm">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[16px]">campaign</span> Multichannel Campaign</span>
+<span>•</span>
+<span>Last edited 10m ago by You</span>
+</div>
+</div>
+<div class="flex gap-2">
+<button class="h-8 px-3 rounded-lg border border-outline-variant text-on-surface font-label-md text-label-md hover:bg-surface-variant transition-colors flex items-center gap-1 shadow-sm shadow-black/5 bg-white">
+<span class="material-symbols-outlined text-[16px]">history</span> History
+                                </button>
+</div>
+</div>
+<!-- Source Content (Draft) -->
+<div class="bg-white rounded-xl border border-outline-variant shadow-[0_2px_4px_-2px_rgba(0,0,0,0.02)] p-1 overflow-hidden">
+<div class="px-4 py-3 border-b border-outline-variant bg-surface-container-lowest flex justify-between items-center rounded-t-lg">
+<span class="font-label-md text-label-md text-primary font-semibold flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">edit_document</span>
+                                    Source Content (Seed)
+                                </span>
+<span class="font-label-sm text-label-sm px-2 py-1 bg-surface-variant rounded text-on-surface-variant">Auto-saves</span>
+</div>
+<textarea class="w-full h-32 p-4 border-0 focus:ring-0 resize-none font-body-md text-body-md text-on-surface bg-white" placeholder="Write your core message here... AI will adapt it for each selected platform.">Announcing our new automated routing for high-density logistics. Available starting Oct 1st. This update improves processing times by 22% across all Northeast distribution centers.</textarea>
+<div class="px-4 py-3 border-t border-outline-variant bg-surface-container-lowest flex justify-between items-center rounded-b-lg">
+<div class="flex gap-2">
+<button class="w-8 h-8 rounded border border-outline-variant flex items-center justify-center hover:bg-surface-variant text-on-surface-variant transition-colors bg-white" title="Add Image">
+<span class="material-symbols-outlined text-[18px]">image</span>
+</button>
+<button class="w-8 h-8 rounded border border-outline-variant flex items-center justify-center hover:bg-surface-variant text-on-surface-variant transition-colors bg-white" title="Add Link">
+<span class="material-symbols-outlined text-[18px]">link</span>
+</button>
+</div>
+<button class="h-8 px-4 bg-primary text-on-primary rounded font-label-md text-label-md hover:bg-primary/90 transition-colors flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px]">auto_awesome</span>
+                                    Generate Variants
+                                </button>
+</div>
+</div>
+<hr class="border-outline-variant"/>
+<!-- Platform Variants Header -->
+<div class="flex items-center justify-between">
+<h4 class="font-headline-sm text-headline-sm text-primary">Platform Variants</h4>
+<span class="font-label-sm text-label-sm text-on-surface-variant">1/3 Approved</span>
+</div>
+<!-- Variant Grid (Bento style) -->
+<div class="grid grid-cols-1 xl:grid-cols-2 gap-4">
+<!-- Facebook Card -->
+<div class="bg-white rounded-xl border border-outline-variant p-4 flex flex-col gap-3 relative shadow-[0_2px_4px_-2px_rgba(0,0,0,0.02)]">
+<div class="flex justify-between items-start">
+<div class="flex items-center gap-2">
+<div class="w-8 h-8 rounded bg-[#1877F2]/10 flex items-center justify-center text-[#1877F2]">
+<span class="material-symbols-outlined text-[18px]">qr_code_2</span>
+</div>
+<span class="font-label-md text-label-md text-primary font-semibold">Facebook</span>
+</div>
+<div class="px-2 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 font-label-sm text-label-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-[12px]">check_circle</span> Approved
+                                    </div>
+</div>
+<textarea class="w-full flex-1 min-h-[100px] p-3 rounded bg-surface-container-lowest border border-outline-variant focus:border-primary focus:ring-1 focus:ring-primary font-body-sm text-body-sm text-on-surface resize-none">Big news for our logistics partners! 🚚 Starting Oct 1st, our new automated routing system goes live for high-density shipping. Expect a 22% faster processing time across all Northeast DCs. Learn more at the link below. 👇</textarea>
+<div class="flex justify-end gap-2 pt-2 border-t border-outline-variant/50">
+<button class="h-7 px-3 rounded border border-outline-variant text-on-surface-variant font-label-sm text-label-sm hover:bg-surface-variant transition-colors bg-white">Edit</button>
+</div>
+</div>
+<!-- X (Twitter) Card -->
+<div class="bg-white rounded-xl border border-outline-variant p-4 flex flex-col gap-3 relative shadow-[0_2px_4px_-2px_rgba(0,0,0,0.02)] ring-1 ring-primary/10">
+<div class="flex justify-between items-start">
+<div class="flex items-center gap-2">
+<div class="w-8 h-8 rounded bg-primary/5 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[18px]">close</span>
+</div>
+<span class="font-label-md text-label-md text-primary font-semibold">X (Twitter)</span>
+</div>
+<div class="px-2 py-1 rounded-full bg-amber-50 text-amber-700 border border-amber-200 font-label-sm text-label-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-[12px]">pending</span> Review Required
+                                    </div>
+</div>
+<textarea class="w-full flex-1 min-h-[100px] p-3 rounded bg-surface-container-lowest border border-outline-variant focus:border-primary focus:ring-1 focus:ring-primary font-body-sm text-body-sm text-on-surface resize-none">Automated routing for high-density logistics is here. 📦 Available Oct 1st. Improving processing times by 22% across NE distribution centers. #Logistics #SupplyChainTech</textarea>
+<div class="flex justify-between items-center pt-2 border-t border-outline-variant/50">
+<span class="font-label-sm text-label-sm text-on-surface-variant">174 / 280</span>
+<div class="flex gap-2">
+<button class="h-7 px-3 rounded border border-outline-variant text-on-surface-variant font-label-sm text-label-sm hover:bg-surface-variant transition-colors bg-white">Reject</button>
+<button class="h-7 px-3 rounded border border-primary text-primary font-label-sm text-label-sm hover:bg-primary/5 transition-colors bg-white">Approve</button>
+</div>
+</div>
+</div>
+<!-- LinkedIn Card -->
+<div class="bg-white rounded-xl border border-outline-variant p-4 flex flex-col gap-3 relative shadow-[0_2px_4px_-2px_rgba(0,0,0,0.02)]">
+<div class="flex justify-between items-start">
+<div class="flex items-center gap-2">
+<div class="w-8 h-8 rounded bg-[#0077B5]/10 flex items-center justify-center text-[#0077B5]">
+<span class="material-symbols-outlined text-[18px]">work</span>
+</div>
+<span class="font-label-md text-label-md text-primary font-semibold">LinkedIn</span>
+</div>
+<div class="px-2 py-1 rounded-full bg-amber-50 text-amber-700 border border-amber-200 font-label-sm text-label-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-[12px]">pending</span> Review Required
+                                    </div>
+</div>
+<textarea class="w-full flex-1 min-h-[100px] p-3 rounded bg-surface-container-lowest border border-outline-variant focus:border-primary focus:ring-1 focus:ring-primary font-body-sm text-body-sm text-on-surface resize-none">We are excited to announce a significant upgrade to our logistics infrastructure. Starting October 1st, our new automated routing system will be implemented for all high-density shipments. This systemic update is projected to decrease processing times by 22% across all Northeast distribution centers, streamlining supply chain efficiency for our partners.</textarea>
+<div class="flex justify-end gap-2 pt-2 border-t border-outline-variant/50">
+<button class="h-7 px-3 rounded border border-outline-variant text-on-surface-variant font-label-sm text-label-sm hover:bg-surface-variant transition-colors bg-white">Reject</button>
+<button class="h-7 px-3 rounded border border-primary text-primary font-label-sm text-label-sm hover:bg-primary/5 transition-colors bg-white">Approve</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Footer Action Bar -->
+<div class="h-20 bg-white border-t border-outline-variant px-6 flex items-center justify-between shrink-0 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.02)] relative z-20">
+<div class="flex items-center gap-4">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider mb-1">Schedule For</span>
+<button class="flex items-center gap-2 px-3 py-1.5 border border-outline-variant rounded-lg bg-surface-container-lowest hover:bg-surface-variant transition-colors font-body-sm text-body-sm text-primary">
+<span class="material-symbols-outlined text-[18px]">calendar_today</span>
+                                Tomorrow, 9:00 AM
+                            </button>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<button class="h-10 px-5 rounded-lg border border-outline-variant text-on-surface font-label-md text-label-md hover:bg-surface-variant transition-colors bg-white shadow-sm shadow-black/5">
+                            Save as Draft
+                        </button>
+<button class="h-10 px-6 rounded-lg bg-primary text-on-primary font-label-md text-label-md hover:bg-primary/90 transition-colors shadow-sm shadow-black/10">
+                            Schedule Approved (1)
+                        </button>
+</div>
+</div>
+</div>
+</div>
+</main>
+</body></html>

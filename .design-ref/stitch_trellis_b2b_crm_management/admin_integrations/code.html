@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Admin: Settings &amp; Integrations - Trellis CRM</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-error-container": "#93000a",
+                        "primary": "#000000",
+                        "secondary-fixed": "#e2e2e3",
+                        "surface-dim": "#dad9e3",
+                        "surface-bright": "#fbf8ff",
+                        "tertiary-fixed": "#e8e2d9",
+                        "surface-variant": "#e3e1ec",
+                        "on-background": "#1a1b22",
+                        "on-error": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "surface-container-highest": "#e3e1ec",
+                        "surface-container-low": "#f4f2fd",
+                        "surface-container-high": "#e8e7f1",
+                        "error": "#ba1a1a",
+                        "outline": "#77767b",
+                        "tertiary-container": "#1d1b16",
+                        "tertiary-fixed-dim": "#cbc6bd",
+                        "on-secondary-fixed-variant": "#454748",
+                        "on-primary-fixed-variant": "#47464a",
+                        "on-secondary-fixed": "#1a1c1d",
+                        "on-primary": "#ffffff",
+                        "on-primary-fixed": "#1b1b1e",
+                        "outline-variant": "#c8c5cb",
+                        "secondary-container": "#dfdfe0",
+                        "on-surface-variant": "#47464b",
+                        "on-secondary": "#ffffff",
+                        "tertiary": "#000000",
+                        "inverse-primary": "#c8c5ca",
+                        "on-tertiary-fixed": "#1d1b16",
+                        "on-primary-container": "#858387",
+                        "on-surface": "#1a1b22",
+                        "background": "#fbf8ff",
+                        "on-secondary-container": "#616364",
+                        "surface-container": "#eeedf7",
+                        "secondary": "#5d5e60",
+                        "primary-container": "#1b1b1e",
+                        "primary-fixed-dim": "#c8c5ca",
+                        "on-tertiary-container": "#88837c",
+                        "on-tertiary-fixed-variant": "#494640",
+                        "on-tertiary": "#ffffff",
+                        "surface-tint": "#5f5e61",
+                        "primary-fixed": "#e4e1e6",
+                        "inverse-surface": "#2f3038",
+                        "surface-container-lowest": "#ffffff",
+                        "secondary-fixed-dim": "#c6c6c7",
+                        "inverse-on-surface": "#f1effa",
+                        "surface": "#fbf8ff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "stack-compact": "0.5rem",
+                        "stack-default": "0.75rem",
+                        "container-margin": "2rem",
+                        "base-unit": "4px",
+                        "section-gap": "1.5rem",
+                        "gutter": "1rem"
+                    },
+                    "fontFamily": {
+                        "headline-sm": ["Hanken Grotesk"],
+                        "body-md": ["Inter"],
+                        "headline-md": ["Hanken Grotesk"],
+                        "body-lg": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "label-md": ["Inter"],
+                        "headline-lg": ["Hanken Grotesk"]
+                    },
+                    "fontSize": {
+                        "headline-sm": ["18px", { "lineHeight": "24px", "fontWeight": "600" }],
+                        "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+                        "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "body-sm": ["13px", { "lineHeight": "18px", "fontWeight": "400" }],
+                        "label-sm": ["11px", { "lineHeight": "14px", "fontWeight": "600" }],
+                        "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.01em", "fontWeight": "500" }],
+                        "headline-lg": ["30px", { "lineHeight": "36px", "letterSpacing": "-0.02em", "fontWeight": "600" }]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body { background-color: #FAFAF9; } /* Enforcing design system canvas color */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid #E4E4E7;
+        }
+    </style>
+</head>
+<body class="flex h-screen overflow-hidden text-on-surface">
+<!-- SideNavBar -->
+<nav class="hidden md:flex flex-col h-full w-[240px] border-r border-outline-variant bg-surface-container-low p-stack-default gap-stack-compact flex-shrink-0 z-10">
+<div class="mb-section-gap px-2">
+<h1 class="font-headline-md text-headline-md font-bold text-primary tracking-tight">Trellis</h1>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Manufacturing CRM</p>
+</div>
+<ul class="flex flex-col gap-1 flex-grow overflow-y-auto">
+<li>
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-secondary-container/50 rounded-lg transition-colors duration-200" href="#">
+<span class="material-symbols-outlined font-label-md text-label-md">confirmation_number</span>
+<span class="font-label-md text-label-md">Tickets</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-secondary-container/50 rounded-lg transition-colors duration-200" href="#">
+<span class="material-symbols-outlined font-label-md text-label-md">group</span>
+<span class="font-label-md text-label-md">Customers</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-secondary-container/50 rounded-lg transition-colors duration-200" href="#">
+<span class="material-symbols-outlined font-label-md text-label-md">domain</span>
+<span class="font-label-md text-label-md">Companies</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-secondary-container/50 rounded-lg transition-colors duration-200" href="#">
+<span class="material-symbols-outlined font-label-md text-label-md">shopping_cart</span>
+<span class="font-label-md text-label-md">Orders</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-secondary-container/50 rounded-lg transition-colors duration-200" href="#">
+<span class="material-symbols-outlined font-label-md text-label-md">description</span>
+<span class="font-label-md text-label-md">Contracts</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-secondary-container/50 rounded-lg transition-colors duration-200" href="#">
+<span class="material-symbols-outlined font-label-md text-label-md">person_search</span>
+<span class="font-label-md text-label-md">Leads</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-secondary-container/50 rounded-lg transition-colors duration-200" href="#">
+<span class="material-symbols-outlined font-label-md text-label-md">article</span>
+<span class="font-label-md text-label-md">Content</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-secondary-container/50 rounded-lg transition-colors duration-200" href="#">
+<span class="material-symbols-outlined font-label-md text-label-md">verified_user</span>
+<span class="font-label-md text-label-md">Approvals</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-secondary-container/50 rounded-lg transition-colors duration-200" href="#">
+<span class="material-symbols-outlined font-label-md text-label-md">bar_chart</span>
+<span class="font-label-md text-label-md">Reports</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-3 py-2 bg-primary text-on-primary rounded-lg font-medium shadow-sm transition-transform duration-150 active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined font-label-md text-label-md" style="font-variation-settings: 'FILL' 1;">settings</span>
+<span class="font-label-md text-label-md">Admin</span>
+</a>
+</li>
+</ul>
+<div class="mt-auto pt-4 border-t border-outline-variant">
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-secondary-container/50 rounded-lg transition-colors duration-200" href="#">
+<span class="material-symbols-outlined font-label-md text-label-md">account_circle</span>
+<span class="font-label-md text-label-md">User Profile</span>
+</a>
+</div>
+</nav>
+<!-- Main Content Area -->
+<main class="flex-1 flex flex-col h-full overflow-hidden relative">
+<!-- Abstract Background Element -->
+<div class="absolute top-0 right-0 w-[600px] h-[600px] bg-gradient-to-br from-surface-container-high/20 to-transparent rounded-full blur-3xl -z-10 pointer-events-none transform translate-x-1/3 -translate-y-1/3"></div>
+<!-- Top Header (Mobile Nav & Title) -->
+<header class="flex md:hidden items-center justify-between p-4 border-b border-outline-variant bg-surface-container-lowest">
+<h1 class="font-headline-md text-headline-md font-bold text-primary tracking-tight">Trellis Settings</h1>
+<button class="p-2 rounded-md hover:bg-surface-container">
+<span class="material-symbols-outlined">menu</span>
+</button>
+</header>
+<div class="flex-1 flex flex-col md:flex-row overflow-hidden">
+<!-- Settings Sub-nav -->
+<aside class="w-full md:w-[280px] flex-shrink-0 border-b md:border-b-0 md:border-r border-outline-variant bg-surface-container-lowest/50 p-6 overflow-y-auto">
+<h2 class="font-headline-sm text-headline-sm text-primary mb-6">Settings</h2>
+<ul class="flex flex-row md:flex-col gap-2 overflow-x-auto md:overflow-visible pb-2 md:pb-0">
+<li>
+<a class="block px-4 py-2.5 rounded-lg font-label-md text-label-md text-on-surface-variant hover:bg-surface-container transition-colors whitespace-nowrap" href="#">
+                            Roles &amp; Permissions
+                        </a>
+</li>
+<li>
+<a class="block px-4 py-2.5 rounded-lg bg-surface-variant font-label-md text-label-md text-primary font-medium whitespace-nowrap" href="#">
+                            Integrations
+                        </a>
+</li>
+<li>
+<a class="block px-4 py-2.5 rounded-lg font-label-md text-label-md text-on-surface-variant hover:bg-surface-container transition-colors whitespace-nowrap" href="#">
+                            Approval Thresholds
+                        </a>
+</li>
+<li>
+<a class="block px-4 py-2.5 rounded-lg font-label-md text-label-md text-on-surface-variant hover:bg-surface-container transition-colors whitespace-nowrap" href="#">
+                            Platform Credentials
+                        </a>
+</li>
+</ul>
+</aside>
+<!-- Integrations Content Canvas -->
+<section class="flex-1 overflow-y-auto p-4 md:p-container-margin">
+<div class="max-w-5xl mx-auto">
+<div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+<div>
+<h3 class="font-headline-lg text-headline-lg text-primary mb-1">System Integrations</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">Manage connections to external services and internal platforms.</p>
+</div>
+<button class="bg-primary text-on-primary px-4 py-2 rounded-lg font-label-md text-label-md hover:bg-primary/90 transition-colors flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">add</span>
+                            New Connection
+                        </button>
+</div>
+<!-- Bento Grid for Integrations -->
+<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+<!-- POS Integration Card -->
+<div class="bg-surface-container-lowest border border-[1px] border-[#E4E4E7] rounded-lg p-6 flex flex-col hover:border-[#D4D4D8] transition-colors group relative overflow-hidden">
+<div class="flex justify-between items-start mb-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">point_of_sale</span>
+</div>
+<h4 class="font-headline-sm text-headline-sm">Retail POS</h4>
+</div>
+<span class="px-2.5 py-1 rounded-full bg-[#E8F5E9] text-[#1B5E20] font-label-sm text-label-sm border border-[#C8E6C9] flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-[#2E7D32]"></span>
+                                    Connected
+                                </span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-6 flex-grow">Synchronizes retail sales data and inventory deductions in real-time.</p>
+<div class="flex items-center justify-between mt-auto pt-4 border-t border-outline-variant/50">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-outline">Last Synced</span>
+<span class="font-body-sm text-body-sm">2 mins ago</span>
+</div>
+<button class="px-4 py-2 border border-outline-variant rounded-lg font-label-md text-label-md hover:bg-surface-container transition-colors">
+                                    Configure
+                                </button>
+</div>
+</div>
+<!-- Ecommerce Integration Card -->
+<div class="bg-surface-container-lowest border border-[1px] border-[#E4E4E7] rounded-lg p-6 flex flex-col hover:border-[#D4D4D8] transition-colors group relative overflow-hidden">
+<div class="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-surface-variant/40 to-transparent rounded-bl-full -z-10 pointer-events-none"></div>
+<div class="flex justify-between items-start mb-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">storefront</span>
+</div>
+<h4 class="font-headline-sm text-headline-sm">B2B Portal</h4>
+</div>
+<span class="px-2.5 py-1 rounded-full bg-[#FFF8E1] text-[#F57F17] font-label-sm text-label-sm border border-[#FFECB3] flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-[#FBC02D] animate-pulse"></span>
+                                    Polling
+                                </span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-6 flex-grow">Handles wholesale orders and customer account provisioning.</p>
+<div class="flex items-center justify-between mt-auto pt-4 border-t border-outline-variant/50">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-outline">Last Synced</span>
+<span class="font-body-sm text-body-sm">In progress...</span>
+</div>
+<button class="px-4 py-2 border border-outline-variant rounded-lg font-label-md text-label-md hover:bg-surface-container transition-colors">
+                                    Configure
+                                </button>
+</div>
+</div>
+<!-- SCMS Integration Card -->
+<div class="bg-surface-container-lowest border border-[1px] border-[#E4E4E7] rounded-lg p-6 flex flex-col hover:border-[#D4D4D8] transition-colors group relative overflow-hidden">
+<div class="flex justify-between items-start mb-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">forklift</span>
+</div>
+<h4 class="font-headline-sm text-headline-sm">Global SCMS</h4>
+</div>
+<span class="px-2.5 py-1 rounded-full bg-[#FFEBEE] text-[#B71C1C] font-label-sm text-label-sm border border-[#FFCDD2] flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">error</span>
+                                    Error
+                                </span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-6 flex-grow">Supply Chain Management System. Critical error detected in webhook payload.</p>
+<div class="flex items-center justify-between mt-auto pt-4 border-t border-outline-variant/50">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-outline">Last Synced</span>
+<span class="font-body-sm text-body-sm text-error">Failed at 10:42 AM</span>
+</div>
+<button class="px-4 py-2 border border-error text-error rounded-lg font-label-md text-label-md hover:bg-error-container transition-colors">
+                                    Review Logs
+                                </button>
+</div>
+</div>
+<!-- Auth Integration Card (Glassmorphism style attempt within flat constraints) -->
+<div class="glass-card rounded-lg p-6 flex flex-col group relative overflow-hidden xl:col-span-2">
+<div class="absolute inset-0 bg-gradient-to-r from-transparent to-surface-variant/10 -z-10"></div>
+<div class="flex justify-between items-start mb-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-primary text-on-primary flex items-center justify-center">
+<span class="material-symbols-outlined">admin_panel_settings</span>
+</div>
+<div>
+<h4 class="font-headline-sm text-headline-sm">Enterprise SSO</h4>
+<p class="font-label-sm text-label-sm text-on-surface-variant">SAML 2.0 / OIDC</p>
+</div>
+</div>
+<span class="px-2.5 py-1 rounded-full bg-[#E8F5E9] text-[#1B5E20] font-label-sm text-label-sm border border-[#C8E6C9] flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-[#2E7D32]"></span>
+                                    Active
+                                </span>
+</div>
+<div class="grid grid-cols-3 gap-4 mb-6 mt-4">
+<div>
+<span class="block font-label-sm text-label-sm text-outline mb-1">Provider</span>
+<span class="font-body-sm text-body-sm font-medium">Okta Identity</span>
+</div>
+<div>
+<span class="block font-label-sm text-label-sm text-outline mb-1">Session Timeout</span>
+<span class="font-body-sm text-body-sm font-medium">12 Hours</span>
+</div>
+<div>
+<span class="block font-label-sm text-label-sm text-outline mb-1">MFA Status</span>
+<span class="font-body-sm text-body-sm font-medium">Enforced</span>
+</div>
+</div>
+<div class="flex items-center justify-end mt-auto pt-4 border-t border-outline-variant/50 gap-3">
+<button class="px-4 py-2 text-on-surface-variant hover:bg-surface-container rounded-lg font-label-md text-label-md transition-colors">
+                                    Test Connection
+                                </button>
+<button class="px-4 py-2 border border-outline-variant rounded-lg font-label-md text-label-md hover:bg-surface-container transition-colors">
+                                    Configure
+                                </button>
+</div>
+</div>
+<!-- Audit Logs Integration Card -->
+<div class="bg-surface-container-lowest border border-[1px] border-[#E4E4E7] rounded-lg p-6 flex flex-col hover:border-[#D4D4D8] transition-colors group">
+<div class="flex justify-between items-start mb-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">policy</span>
+</div>
+<h4 class="font-headline-sm text-headline-sm">Compliance Logs</h4>
+</div>
+<span class="px-2.5 py-1 rounded-full bg-[#E8F5E9] text-[#1B5E20] font-label-sm text-label-sm border border-[#C8E6C9] flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-[#2E7D32]"></span>
+                                    Connected
+                                </span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-6 flex-grow">Streaming events to AWS CloudTrail for immutable auditing.</p>
+<div class="flex items-center justify-between mt-auto pt-4 border-t border-outline-variant/50">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-outline">Events/hr</span>
+<span class="font-body-sm text-body-sm">~4,500</span>
+</div>
+<button class="px-4 py-2 border border-outline-variant rounded-lg font-label-md text-label-md hover:bg-surface-container transition-colors">
+                                    Configure
+                                </button>
+</div>
+</div>
+</div>
+</div>
+</section>
+</div>
+</main>
+</body></html>

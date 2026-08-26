@@ -1,3 +1,4 @@
+using api_crms.Enums;
 using api_crms.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -25,6 +26,22 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
 
     public DbSet<TimelineEntry> TimelineEntries => Set<TimelineEntry>();
 
+    public DbSet<Order> Orders => Set<Order>();
+
+    public DbSet<OrderLineItem> OrderLineItems => Set<OrderLineItem>();
+
+    public DbSet<Cart> Carts => Set<Cart>();
+
+    public DbSet<CartItem> CartItems => Set<CartItem>();
+
+    public DbSet<Product> Products => Set<Product>();
+
+    public DbSet<ProcessedEvent> ProcessedEvents => Set<ProcessedEvent>();
+
+    public DbSet<Workflow> Workflows => Set<Workflow>();
+    public DbSet<WorkflowStep> WorkflowSteps => Set<WorkflowStep>();
+    public DbSet<WorkflowRun> WorkflowRuns => Set<WorkflowRun>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         ConfigureContact(modelBuilder);
@@ -37,6 +54,15 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
         ConfigureSegment(modelBuilder);
         ConfigureSegmentMembership(modelBuilder);
         ConfigureTimelineEntry(modelBuilder);
+        ConfigureOrder(modelBuilder);
+        ConfigureOrderLineItem(modelBuilder);
+        ConfigureCart(modelBuilder);
+        ConfigureCartItem(modelBuilder);
+        ConfigureProduct(modelBuilder);
+        ConfigureProcessedEvent(modelBuilder);
+        ConfigureWorkflow(modelBuilder);
+        ConfigureWorkflowStep(modelBuilder);
+        ConfigureWorkflowRun(modelBuilder);
     }
 
     private static void ConfigureContact(ModelBuilder modelBuilder)
@@ -51,6 +77,7 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
             contact.Property(e => e.Email).HasColumnName("email");
             contact.Property(e => e.Phone).HasColumnName("phone");
             contact.Property(e => e.SentimentScore).HasColumnName("sentiment_score");
+            contact.Property(e => e.LifetimeValue).HasColumnName("lifetime_value");
             contact.Property(e => e.CompanyId).HasColumnName("company_id");
             contact.Property(e => e.DeletedAt).HasColumnName("deleted_at");
 
@@ -256,6 +283,186 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
                 .OnDelete(DeleteBehavior.Cascade);
 
             entry.HasIndex(e => new { e.ContactId, e.OccurredAt });
+        });
+    }
+
+    private static void ConfigureOrder(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<Order>(order =>
+        {
+            order.ToTable("order");
+            order.HasKey(e => e.Id);
+            order.Property(e => e.Id).HasColumnName("id");
+            order.Property(e => e.PlatformOrderId).HasColumnName("platform_order_id");
+            order.Property(e => e.ContactId).HasColumnName("contact_id");
+            order.Property(e => e.Status)
+                .HasColumnName("status")
+                .HasConversion<string>();
+            order.Property(e => e.Total).HasColumnName("total");
+            order.Property(e => e.RefundedAmount).HasColumnName("refunded_amount");
+            order.Property(e => e.CreatedAt).HasColumnName("created_at");
+            order.Property(e => e.UpdatedAt).HasColumnName("updated_at");
+            order.HasIndex(e => e.PlatformOrderId).IsUnique();
+            order.HasIndex(e => e.ContactId);
+
+            order.HasOne(e => e.Contact)
+                .WithMany(e => e.Orders)
+                .HasForeignKey(e => e.ContactId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+    }
+
+    private static void ConfigureOrderLineItem(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<OrderLineItem>(item =>
+        {
+            item.ToTable("order_line_item");
+            item.HasKey(e => e.Id);
+            item.Property(e => e.Id).HasColumnName("id");
+            item.Property(e => e.OrderId).HasColumnName("order_id");
+            item.Property(e => e.ProductId).HasColumnName("product_id");
+            item.Property(e => e.ProductName).HasColumnName("product_name");
+            item.Property(e => e.Quantity).HasColumnName("quantity");
+            item.Property(e => e.UnitPrice).HasColumnName("unit_price");
+
+            item.HasOne(e => e.Order)
+                .WithMany(e => e.LineItems)
+                .HasForeignKey(e => e.OrderId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+    }
+
+    private static void ConfigureCart(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<Cart>(cart =>
+        {
+            cart.ToTable("cart");
+            cart.HasKey(e => e.Id);
+            cart.Property(e => e.Id).HasColumnName("id");
+            cart.Property(e => e.PlatformCartId).HasColumnName("platform_cart_id");
+            cart.Property(e => e.ContactId).HasColumnName("contact_id");
+            cart.Property(e => e.Status)
+                .HasColumnName("status")
+                .HasConversion<string>();
+            cart.Property(e => e.LastActivityAt).HasColumnName("last_activity_at");
+            cart.Property(e => e.CreatedAt).HasColumnName("created_at");
+            cart.Property(e => e.UpdatedAt).HasColumnName("updated_at");
+            cart.HasIndex(e => e.PlatformCartId).IsUnique();
+            cart.HasIndex(e => e.ContactId);
+
+            cart.HasOne(e => e.Contact)
+                .WithMany(e => e.Carts)
+                .HasForeignKey(e => e.ContactId)
+                .OnDelete(DeleteBehavior.SetNull);
+        });
+    }
+
+    private static void ConfigureCartItem(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<CartItem>(item =>
+        {
+            item.ToTable("cart_item");
+            item.HasKey(e => e.Id);
+            item.Property(e => e.Id).HasColumnName("id");
+            item.Property(e => e.CartId).HasColumnName("cart_id");
+            item.Property(e => e.ProductId).HasColumnName("product_id");
+            item.Property(e => e.ProductName).HasColumnName("product_name");
+            item.Property(e => e.Quantity).HasColumnName("quantity");
+            item.Property(e => e.UnitPrice).HasColumnName("unit_price");
+
+            item.HasOne(e => e.Cart)
+                .WithMany(e => e.Items)
+                .HasForeignKey(e => e.CartId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+    }
+
+    private static void ConfigureProduct(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<Product>(product =>
+        {
+            product.ToTable("product");
+            product.HasKey(e => e.Id);
+            product.Property(e => e.Id).HasColumnName("id");
+            product.Property(e => e.PlatformProductId).HasColumnName("platform_product_id");
+            product.Property(e => e.Name).HasColumnName("name");
+            product.Property(e => e.Price).HasColumnName("price");
+            product.Property(e => e.InStock).HasColumnName("in_stock");
+            product.Property(e => e.CreatedAt).HasColumnName("created_at");
+            product.Property(e => e.UpdatedAt).HasColumnName("updated_at");
+            product.HasIndex(e => e.PlatformProductId).IsUnique();
+        });
+    }
+
+    private static void ConfigureProcessedEvent(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<ProcessedEvent>(evt =>
+        {
+            evt.ToTable("processed_event");
+            evt.HasKey(e => e.EventId);
+            evt.Property(e => e.EventId).HasColumnName("event_id");
+            evt.Property(e => e.EventType).HasColumnName("event_type");
+            evt.Property(e => e.ProcessedAt).HasColumnName("processed_at");
+        });
+    }
+
+    private static void ConfigureWorkflow(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<Workflow>(workflow =>
+        {
+            workflow.ToTable("workflow");
+            workflow.HasKey(e => e.Id);
+            workflow.Property(e => e.Id).HasColumnName("id");
+            workflow.Property(e => e.Name).HasColumnName("name");
+            workflow.Property(e => e.TriggerType).HasColumnName("trigger_type");
+            workflow.Property(e => e.StopCondition).HasColumnName("stop_condition");
+            workflow.Property(e => e.CreatedAt).HasColumnName("created_at");
+        });
+    }
+
+    private static void ConfigureWorkflowStep(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<WorkflowStep>(step =>
+        {
+            step.ToTable("workflow_step");
+            step.HasKey(e => e.Id);
+            step.Property(e => e.Id).HasColumnName("id");
+            step.Property(e => e.WorkflowId).HasColumnName("workflow_id");
+            step.Property(e => e.StepOrder).HasColumnName("step_order");
+            step.Property(e => e.WaitDuration).HasColumnName("wait_duration");
+            step.Property(e => e.ActionType).HasColumnName("action_type");
+            step.Property(e => e.ActionConfig).HasColumnName("action_config");
+
+            step.HasOne(e => e.Workflow)
+                .WithMany(e => e.Steps)
+                .HasForeignKey(e => e.WorkflowId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+    }
+
+    private static void ConfigureWorkflowRun(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<WorkflowRun>(run =>
+        {
+            run.ToTable("workflow_run");
+            run.HasKey(e => e.Id);
+            run.Property(e => e.Id).HasColumnName("id");
+            run.Property(e => e.WorkflowId).HasColumnName("workflow_id");
+            run.Property(e => e.EntityId).HasColumnName("entity_id");
+            run.Property(e => e.EntityType).HasColumnName("entity_type");
+            run.Property(e => e.CurrentStepIndex).HasColumnName("current_step_index");
+            run.Property(e => e.Status)
+                .HasColumnName("status")
+                .HasConversion<string>();
+            run.Property(e => e.StartedAt).HasColumnName("started_at");
+            run.Property(e => e.NextStepDueAt).HasColumnName("next_step_due_at");
+            run.Property(e => e.CompletedAt).HasColumnName("completed_at");
+            run.HasIndex(e => new { e.Status, e.NextStepDueAt });
+
+            run.HasOne(e => e.Workflow)
+                .WithMany(e => e.Runs)
+                .HasForeignKey(e => e.WorkflowId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
     }
 }
