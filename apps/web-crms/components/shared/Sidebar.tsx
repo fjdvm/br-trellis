@@ -204,7 +204,7 @@ export function Sidebar() {
                       <GroupIcon className="w-4 h-4 shrink-0" />
                       <span className="flex-1 text-left">{group.name}</span>
                       <ChevronRight
-                        className={`w-3 h-3 transition-transform ${
+                        className={`w-4 h-4 transition-transform ${
                           isExpanded ? "rotate-90" : ""
                         }`}
                       />
