@@ -14,7 +14,7 @@
 - Follow tracer bullets, SOLID principles, and the rest of these rules.
 - Always create seed data for every new feature.
 - After implementing each issue, close it and create a test issue for that feature.
-- Always add github-bot as contributor: include `Co-authored-by: github-bot <github-bot@users.noreply.github.com>` in every commit message.
+- Always add github-actions[bot] as contributor: include `Co-authored-by: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>` in every commit message.
 
 ---
 

@@ -1,5 +1,5 @@
-import { AtRiskSegmentPage } from "@/components/features/contacts/AtRiskSegmentPage";
+import { SegmentsListPage } from "@/components/features/contacts/SegmentsListPage";
 
 export default function Page() {
-  return <AtRiskSegmentPage />;
+  return <SegmentsListPage preSelectedSegmentName="At-Risk Customers" />;
 }

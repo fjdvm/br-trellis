@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { ArrowLeft, Loader2, Users } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -16,7 +17,13 @@ import {
 import { crmClient } from "@/lib/api/crm-client";
 import type { SegmentListItem, SegmentMember } from "@/types/segment";
 
-export function SegmentsListPage() {
+interface SegmentsListPageProps {
+  /** When provided, auto-selects the first system-defined segment matching this name */
+  preSelectedSegmentName?: string;
+}
+
+export function SegmentsListPage({ preSelectedSegmentName }: SegmentsListPageProps = {}) {
+  const router = useRouter();
   const [segments, setSegments] = useState<SegmentListItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -27,23 +34,7 @@ export function SegmentsListPage() {
   const [isMembersLoading, setIsMembersLoading] = useState(false);
   const [membersError, setMembersError] = useState<string | null>(null);
 
-  const loadSegments = useCallback(async () => {
-    try {
-      const result = await crmClient.segments.list();
-      setSegments(result);
-      setError(null);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to load segments.");
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    void loadSegments();
-  }, [loadSegments]);
-
-  const handleViewMembers = useCallback(async (segment: SegmentListItem) => {
+  const loadMembersForSegment = useCallback(async (segment: SegmentListItem) => {
     setSelectedSegment(segment);
     setIsMembersLoading(true);
     setMembersError(null);
@@ -57,26 +48,64 @@ export function SegmentsListPage() {
     }
   }, []);
 
+  const loadSegments = useCallback(async () => {
+    try {
+      const result = await crmClient.segments.list();
+      setSegments(result);
+      setError(null);
+
+      // If preSelectedSegmentName is provided, auto-select that segment
+      if (preSelectedSegmentName) {
+        const target = result.find(
+          (s) => s.name === preSelectedSegmentName && s.isSystemDefined
+        );
+        if (target) {
+          void loadMembersForSegment(target);
+        } else {
+          setError(`Segment "${preSelectedSegmentName}" not found.`);
+        }
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unable to load segments.");
+    } finally {
+      setIsLoading(false);
+    }
+  }, [preSelectedSegmentName, loadMembersForSegment]);
+
+  useEffect(() => {
+    void loadSegments();
+  }, [loadSegments]);
+
+  const handleViewMembers = useCallback(async (segment: SegmentListItem) => {
+    void loadMembersForSegment(segment);
+  }, [loadMembersForSegment]);
+
   const handleBackToList = useCallback(() => {
     setSelectedSegment(null);
     setMembers([]);
     setMembersError(null);
   }, []);
 
+  const handleMemberClick = useCallback((member: SegmentMember) => {
+    router.push(`/contacts/${member.id}`);
+  }, [router]);
+
   // Membership view
   if (selectedSegment) {
     return (
       <div className="w-full min-h-full py-xl px-lg md:px-xl space-y-lg max-w-7xl mx-auto">
         <div className="space-y-sm">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleBackToList}
-            className="gap-1 -ml-2"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Back to Segments
-          </Button>
+          {!preSelectedSegmentName && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleBackToList}
+              className="gap-1 -ml-2"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Back to Segments
+            </Button>
+          )}
           <h1 className="text-headline-md font-bold tracking-tight text-foreground">
             {selectedSegment.name}
           </h1>
@@ -111,7 +140,11 @@ export function SegmentsListPage() {
                   </TableHeader>
                   <TableBody>
                     {members.map((member) => (
-                      <TableRow key={member.id}>
+                      <TableRow
+                        key={member.id}
+                        className="cursor-pointer hover:bg-muted/50"
+                        onClick={() => handleMemberClick(member)}
+                      >
                         <TableCell className="text-base font-medium">
                           {member.name ?? "Unnamed contact"}
                         </TableCell>

@@ -1,6 +1,15 @@
 import { render, screen } from "@testing-library/react";
-import { AtRiskSegmentPage } from "@/components/features/contacts/AtRiskSegmentPage";
+import userEvent from "@testing-library/user-event";
+import { SegmentsListPage } from "@/components/features/contacts/SegmentsListPage";
 import { crmClient } from "@/lib/api/crm-client";
+
+const mockPush = jest.fn();
+
+jest.mock("next/navigation", () => ({
+  useRouter: () => ({
+    push: mockPush,
+  }),
+}));
 
 jest.mock("@/lib/api/crm-client", () => ({
   crmClient: {
@@ -11,7 +20,7 @@ jest.mock("@/lib/api/crm-client", () => ({
   },
 }));
 
-describe("AtRiskSegmentPage", () => {
+describe("At-Risk Customers via SegmentsListPage (preSelectedSegmentName)", () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
@@ -52,7 +61,7 @@ describe("AtRiskSegmentPage", () => {
       },
     ]);
 
-    render(<AtRiskSegmentPage />);
+    render(<SegmentsListPage preSelectedSegmentName="At-Risk Customers" />);
 
     // Should render real segment data, not "coming soon"
     expect(await screen.findByText("Sofia Nakamura")).toBeInTheDocument();
@@ -65,10 +74,74 @@ describe("AtRiskSegmentPage", () => {
   it("shows error when At-Risk segment is not found", async () => {
     jest.mocked(crmClient.segments.list).mockResolvedValue([]);
 
-    render(<AtRiskSegmentPage />);
+    render(<SegmentsListPage preSelectedSegmentName="At-Risk Customers" />);
 
     expect(
-      await screen.findByText("At-Risk Customers segment not found.")
+      await screen.findByText('Segment "At-Risk Customers" not found.')
     ).toBeInTheDocument();
+  });
+
+  it("navigates to contact detail when clicking a member row", async () => {
+    const user = userEvent.setup();
+
+    jest.mocked(crmClient.segments.list).mockResolvedValue([
+      {
+        id: "seg-at-risk",
+        name: "At-Risk Customers",
+        type: "Dynamic",
+        isSystemDefined: true,
+        rule: null,
+        memberCount: 1,
+      },
+    ]);
+
+    jest.mocked(crmClient.segments.getMembers).mockResolvedValue([
+      {
+        id: "ct-1",
+        name: "Sofia Nakamura",
+        email: "sofia@test.com",
+        phone: "+1 555-0103",
+        companyName: "Initech",
+        lifetimeValue: 0,
+      },
+    ]);
+
+    render(<SegmentsListPage preSelectedSegmentName="At-Risk Customers" />);
+
+    // Wait for member to appear
+    const memberRow = await screen.findByText("Sofia Nakamura");
+    // Click the row (click on the table row containing the member name)
+    await user.click(memberRow.closest("tr")!);
+
+    expect(mockPush).toHaveBeenCalledWith("/contacts/ct-1");
+  });
+
+  it("does not show Back to Segments button when preSelectedSegmentName is set", async () => {
+    jest.mocked(crmClient.segments.list).mockResolvedValue([
+      {
+        id: "seg-at-risk",
+        name: "At-Risk Customers",
+        type: "Dynamic",
+        isSystemDefined: true,
+        rule: null,
+        memberCount: 1,
+      },
+    ]);
+
+    jest.mocked(crmClient.segments.getMembers).mockResolvedValue([
+      {
+        id: "ct-1",
+        name: "Sofia Nakamura",
+        email: "sofia@test.com",
+        phone: null,
+        companyName: null,
+        lifetimeValue: 100,
+      },
+    ]);
+
+    render(<SegmentsListPage preSelectedSegmentName="At-Risk Customers" />);
+
+    await screen.findByText("Sofia Nakamura");
+    expect(screen.queryByText("Back to Segments")).not.toBeInTheDocument();
   });
 });
