@@ -35,7 +35,7 @@
 ## 3. Code Rules
 
 - Use Prettier for formatting.
-- Code files should not exceed ~250 lines. If it does, split into smaller files.
+- Code files should not exceed ~300 lines. If it does, split into smaller files.
 - For frontend, always look at the `.design-ref/` directory for designs. Strictly follow the layout, but for themes and UI, use what we have.
 - Don't change the header and sidebar.
 - The `.design-ref/` directory is just a basis for layout and designs.

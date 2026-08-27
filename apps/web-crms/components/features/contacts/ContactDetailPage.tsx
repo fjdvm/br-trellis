@@ -1,14 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Building2, Clock, Loader2, Pencil, ShoppingBag, Trash2 } from "lucide-react";
+import { Building2, Loader2, Pencil, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import {
   AlertDialog,
@@ -23,13 +20,12 @@ import {
 import { crmClient } from "@/lib/api/crm-client";
 import { BackButton } from "@/components/shared/BackButton";
 import { formatName, formatEmail } from "@/lib/format-display";
-import {
-  validateContactFields,
-  hasErrors,
-  type ContactFieldErrors,
-} from "@/lib/validators/contact-validators";
+import type { ContactFieldErrors } from "@/lib/validators/contact-validators";
 import type { ContactDetail } from "@/types/contact";
 import type { CompanyListItem } from "@/types/company";
+import { ContactEditForm } from "./ContactEditForm";
+import { ContactOrdersCard } from "./ContactOrdersCard";
+import { ContactTimelineCard } from "./ContactTimelineCard";
 
 interface ContactDetailPageProps {
   contactId: string;
@@ -177,70 +173,21 @@ export function ContactDetailPage({ contactId }: ContactDetailPageProps) {
           </CardHeader>
           <CardContent className="space-y-md">
             {isEditing ? (
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="edit-name">Name *</Label>
-                  <Input
-                    id="edit-name"
-                    value={editName}
-                    onChange={(e) => { setEditName(e.target.value); setFieldErrors((prev) => ({ ...prev, name: undefined })); }}
-                    aria-invalid={!!fieldErrors.name}
-                    className={fieldErrors.name ? "border-destructive" : ""}
-                  />
-                  {fieldErrors.name && <p className="text-xs text-destructive">{fieldErrors.name}</p>}
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="edit-email">Email *</Label>
-                  <Input
-                    id="edit-email"
-                    type="email"
-                    value={editEmail}
-                    onChange={(e) => { setEditEmail(e.target.value); setFieldErrors((prev) => ({ ...prev, email: undefined })); }}
-                    aria-invalid={!!fieldErrors.email}
-                    className={fieldErrors.email ? "border-destructive" : ""}
-                  />
-                  {fieldErrors.email && <p className="text-xs text-destructive">{fieldErrors.email}</p>}
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="edit-phone">Phone</Label>
-                  <Input
-                    id="edit-phone"
-                    value={editPhone}
-                    onChange={(e) => { setEditPhone(e.target.value); setFieldErrors((prev) => ({ ...prev, phone: undefined })); }}
-                    aria-invalid={!!fieldErrors.phone}
-                    className={fieldErrors.phone ? "border-destructive" : ""}
-                  />
-                  {fieldErrors.phone && <p className="text-xs text-destructive">{fieldErrors.phone}</p>}
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="edit-company">Company</Label>
-                  <select
-                    id="edit-company"
-                    className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                    value={editCompanyId}
-                    onChange={(e) => setEditCompanyId(e.target.value)}
-                  >
-                    <option value="">None</option>
-                    {companies.map((c) => (
-                      <option key={c.id} value={c.id}>
-                        {c.name} ({c.buyerType})
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <Button
-                  onClick={() => {
-                    const errors = validateContactFields({ name: editName, email: editEmail, phone: editPhone });
-                    setFieldErrors(errors);
-                    if (!hasErrors(errors)) setShowSaveDialog(true);
-                  }}
-                  disabled={isSaving}
-                  className="w-full"
-                >
-                  {isSaving && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
-                  {isSaving ? "Saving…" : "Save Changes"}
-                </Button>
-              </div>
+              <ContactEditForm
+                editName={editName}
+                editEmail={editEmail}
+                editPhone={editPhone}
+                editCompanyId={editCompanyId}
+                companies={companies}
+                isSaving={isSaving}
+                fieldErrors={fieldErrors}
+                onNameChange={setEditName}
+                onEmailChange={setEditEmail}
+                onPhoneChange={setEditPhone}
+                onCompanyChange={setEditCompanyId}
+                onFieldErrorsChange={setFieldErrors}
+                onSaveRequest={() => setShowSaveDialog(true)}
+              />
             ) : (
               <div className="grid grid-cols-2 gap-md text-base">
                 <div className="text-muted-foreground">Name</div>
@@ -306,85 +253,8 @@ export function ContactDetailPage({ contactId }: ContactDetailPageProps) {
         </Card>
       </div>
 
-      <Card className="shadow-none border-border">
-        <CardHeader className="pb-md p-lg">
-          <CardTitle className="text-title-lg font-bold">Orders</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {!contact.orders || contact.orders.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-xl text-center">
-              <ShoppingBag className="w-10 h-10 text-muted-foreground mb-md" />
-              <p className="text-base text-muted-foreground">
-                No orders yet. Order data synced from the ecommerce platform will appear here.
-              </p>
-            </div>
-          ) : (
-            <div className="space-y-md">
-              {contact.orders.map((order) => (
-                <div key={order.id} className="border border-border rounded-lg p-md space-y-sm">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-sm">
-                      <span className="font-medium text-base">#{order.platformOrderId}</span>
-                      <Badge variant={order.status === "Refunded" ? "destructive" : "outline"}>
-                        {order.status}
-                      </Badge>
-                    </div>
-                    <div className="text-base text-muted-foreground">
-                      {new Date(order.createdAt).toLocaleDateString()}
-                    </div>
-                  </div>
-                  <div className="text-base">
-                    <span className="font-medium">${order.total.toFixed(2)}</span>
-                    {order.refundedAmount > 0 && (
-                      <span className="text-destructive ml-2">
-                        (−${order.refundedAmount.toFixed(2)} refunded)
-                      </span>
-                    )}
-                  </div>
-                  {order.lineItems.length > 0 && (
-                    <div className="text-sm text-muted-foreground space-y-xs">
-                      {order.lineItems.map((item, idx) => (
-                        <div key={idx}>
-                          {item.quantity}× {item.productName} @ ${item.unitPrice.toFixed(2)}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      <Card className="shadow-none border-border">
-        <CardHeader className="pb-md p-lg">
-          <CardTitle className="text-title-lg font-bold">Activity Timeline</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {contact.timelineEntries.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-xl text-center">
-              <Clock className="w-10 h-10 text-muted-foreground mb-md" />
-              <p className="text-base text-muted-foreground">
-                No activity recorded yet. Events from connected modules will appear here.
-              </p>
-            </div>
-          ) : (
-            <div className="space-y-md">
-              {contact.timelineEntries.map((entry) => (
-                <div key={entry.id} className="flex items-start gap-md border-l-2 border-border pl-md">
-                  <div className="flex-1">
-                    <div className="text-base font-medium">{entry.summary}</div>
-                    <div className="text-sm text-muted-foreground">
-                      {entry.sourceModule} · {entry.entryType} · {new Date(entry.occurredAt).toLocaleDateString()}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+      <ContactOrdersCard orders={contact.orders} />
+      <ContactTimelineCard entries={contact.timelineEntries} />
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
