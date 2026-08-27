@@ -1,7 +1,10 @@
+using api_crms.Authorization;
 using api_crms.Data;
 using api_crms.Interfaces;
 using api_crms.Repositories;
 using api_crms.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -63,6 +66,31 @@ builder.Services.AddCors(options =>
     });
 });
 
+// JWT Bearer Authentication — validates tokens issued by internal-auth-service
+var jwtAuthority = Environment.GetEnvironmentVariable("JWT_AUTHORITY") ?? "https://localhost:5001";
+var jwtAudience = Environment.GetEnvironmentVariable("JWT_AUDIENCE") ?? "crms-client";
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.Authority = jwtAuthority;
+        options.Audience = jwtAudience;
+        options.RequireHttpsMetadata = !builder.Environment.IsDevelopment();
+        options.TokenValidationParameters.ValidateAudience = false;
+    });
+
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy(CrmPermissionPolicies.EcommerceCanRead, policy =>
+        policy.RequireAuthenticatedUser()
+              .AddRequirements(new CrmPermissionRequirement("Ecommerce", "canRead")));
+
+    options.AddPolicy(CrmPermissionPolicies.AutomationCanRead, policy =>
+        policy.RequireAuthenticatedUser()
+              .AddRequirements(new CrmPermissionRequirement("Automation", "canRead")));
+});
+builder.Services.AddSingleton<IAuthorizationHandler, CrmPermissionAuthorizationHandler>();
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
@@ -79,8 +107,11 @@ app.UseHttpsRedirection();
 
 app.UseCors();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
 
 app.Run();
+
+public partial class Program { }
