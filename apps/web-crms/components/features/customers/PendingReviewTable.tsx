@@ -11,6 +11,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { crmClient } from "@/lib/api/crm-client";
+import { formatName } from "@/lib/format-display";
 import type { PendingReviewCustomer } from "@/types/customer";
 
 export function PendingReviewTable() {
@@ -70,10 +71,10 @@ export function PendingReviewTable() {
           review.candidates.map((candidate) => (
             <TableRow key={`${review.customer.id}:${candidate.customer.id}`}>
               <TableCell className="font-medium">
-                {review.customer.name ?? "Unnamed customer"}
+                {formatName(review.customer.name) ?? "Unnamed customer"}
               </TableCell>
               <TableCell>
-                <div className="font-medium">{candidate.customer.name ?? "Unnamed customer"}</div>
+                <div className="font-medium">{formatName(candidate.customer.name) ?? "Unnamed customer"}</div>
                 <div className="text-muted-foreground text-sm">
                   {candidate.customer.email ?? candidate.customer.phone ?? "—"}
                 </div>

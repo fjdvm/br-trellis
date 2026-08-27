@@ -11,6 +11,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { crmClient } from "@/lib/api/crm-client";
+import { formatName } from "@/lib/format-display";
 import type { CustomerIdentityListItem } from "@/types/customer";
 
 export function CustomerListTable() {
@@ -69,7 +70,7 @@ export function CustomerListTable() {
         {customers.map((customer) => (
           <TableRow key={customer.id}>
             <TableCell className="font-medium">
-              {customer.name ?? "Unnamed customer"}
+              {formatName(customer.name) ?? "Unnamed customer"}
             </TableCell>
             <TableCell className="text-muted-foreground">
               {customer.email ?? customer.phone ?? "—"}

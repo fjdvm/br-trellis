@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { crmClient } from "@/lib/api/crm-client";
 import { BackButton } from "@/components/shared/BackButton";
+import { formatName } from "@/lib/format-display";
 import {
   validateContactFields,
   hasErrors,
@@ -161,7 +162,7 @@ export function ContactDetailPage({ contactId }: ContactDetailPageProps) {
 
       <div className="space-y-sm">
         <h1 className="text-headline-md font-bold tracking-tight text-foreground">
-          {contact.name ?? "Unnamed contact"}
+          {formatName(contact.name) ?? "Unnamed contact"}
         </h1>
         <p className="text-body-md text-muted-foreground">
           {contact.email ?? "No email"} · {contact.phone ?? "No phone"}

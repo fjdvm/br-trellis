@@ -14,6 +14,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { crmClient } from "@/lib/api/crm-client";
+import { formatName } from "@/lib/format-display";
 import type { CompanyListItem } from "@/types/company";
 import Link from "next/link";
 
@@ -100,7 +101,7 @@ export function CompanyListPage() {
                         href={`/contacts/companies/${company.id}`}
                         className="hover:underline text-primary"
                       >
-                        {company.name}
+                        {formatName(company.name)}
                       </Link>
                     </TableCell>
                     <TableCell className="text-base">

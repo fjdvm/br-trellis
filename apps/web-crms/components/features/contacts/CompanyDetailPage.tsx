@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { crmClient } from "@/lib/api/crm-client";
 import { BackButton } from "@/components/shared/BackButton";
+import { formatName } from "@/lib/format-display";
 import type { CompanyDetail } from "@/types/company";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -131,7 +132,7 @@ export function CompanyDetailPage({ companyId }: CompanyDetailPageProps) {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-headline-md font-bold tracking-tight text-foreground">
-              {company.name}
+              {formatName(company.name)}
             </h1>
             <div className="flex items-center gap-2 mt-1">
               <Badge variant="secondary">{company.buyerType}</Badge>
@@ -216,7 +217,7 @@ export function CompanyDetailPage({ companyId }: CompanyDetailPageProps) {
           <CardContent className="p-lg pt-0">
             <div className="text-base">
               <p className="font-medium">
-                {company.primaryContact.name ?? "—"}
+                {formatName(company.primaryContact.name) ?? "—"}
               </p>
               <p className="text-muted-foreground">
                 {company.primaryContact.email ?? "—"}
@@ -257,7 +258,7 @@ export function CompanyDetailPage({ companyId }: CompanyDetailPageProps) {
                         href={`/contacts/${contact.id}`}
                         className="hover:underline text-primary"
                       >
-                        {contact.name ?? "—"}
+                        {formatName(contact.name) ?? "—"}
                       </Link>
                     </TableCell>
                     <TableCell className="text-base">

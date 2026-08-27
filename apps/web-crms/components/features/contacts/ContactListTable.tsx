@@ -14,6 +14,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { formatName } from "@/lib/format-display";
 import type { ContactListItem } from "@/types/contact";
 
 const PAGE_SIZE = 20;
@@ -86,7 +87,7 @@ export function ContactListTable({ contacts }: ContactListTableProps) {
                   <TableRow key={contact.id}>
                     <TableCell className="font-medium">
                       <Link href={`/contacts/${contact.id}`} className="hover:underline">
-                        {contact.name ?? "Unnamed contact"}
+                        {formatName(contact.name) ?? "Unnamed contact"}
                       </Link>
                     </TableCell>
                     <TableCell className="text-muted-foreground">

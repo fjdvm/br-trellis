@@ -98,7 +98,7 @@ describe("ContactDetailPage", () => {
 
     render(<ContactDetailPage contactId="contact-3" />);
 
-    expect(await screen.findByRole("heading", { name: "NoCompany Contact" })).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "Nocompany Contact" })).toBeInTheDocument();
     // Company section should not be present
     expect(screen.queryByText("Company:")).not.toBeInTheDocument();
   });
