@@ -191,7 +191,7 @@ export function ContactDetailPage({ contactId }: ContactDetailPageProps) {
             ) : (
               <div className="grid grid-cols-2 gap-md text-base">
                 <div className="text-muted-foreground">Name</div>
-                <div>{contact.name ?? "—"}</div>
+                <div>{formatName(contact.name) ?? "—"}</div>
                 <div className="text-muted-foreground">Email</div>
                 <div>{formatEmail(contact.email) ?? "—"}</div>
                 <div className="text-muted-foreground">Phone</div>
