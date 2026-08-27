@@ -302,7 +302,7 @@ export function Sidebar() {
             </DropdownMenu>
           )}
 
-          <div className="pt-sm border-t border-border">
+          <div className={showSettings ? "pt-sm border-t border-border" : ""}>
             <SidebarProfileFooter
               activeAccount={activeAccount}
               onSelectAccount={setActiveAccount}
