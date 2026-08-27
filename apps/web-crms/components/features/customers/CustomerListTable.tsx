@@ -11,7 +11,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { crmClient } from "@/lib/api/crm-client";
-import { formatName } from "@/lib/format-display";
+import { formatName, formatEmail } from "@/lib/format-display";
 import type { CustomerIdentityListItem } from "@/types/customer";
 
 export function CustomerListTable() {
@@ -73,7 +73,7 @@ export function CustomerListTable() {
               {formatName(customer.name) ?? "Unnamed customer"}
             </TableCell>
             <TableCell className="text-muted-foreground">
-              {customer.email ?? customer.phone ?? "—"}
+              {formatEmail(customer.email) ?? customer.phone ?? "—"}
             </TableCell>
             <TableCell>
               <div className="flex flex-wrap gap-sm">

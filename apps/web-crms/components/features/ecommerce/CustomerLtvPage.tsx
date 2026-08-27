@@ -5,7 +5,7 @@ import { Loader2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DataTable, Column } from "@/components/shared/DataTable";
 import { request } from "@/lib/api/request";
-import { formatName } from "@/lib/format-display";
+import { formatName, formatEmail } from "@/lib/format-display";
 
 interface ContactLtvItem {
   id: string;
@@ -29,7 +29,7 @@ const columns: Column<ContactLtvItem>[] = [
     header: "Email",
     className: "min-w-[200px]",
     cell: (row) => (
-      <span className="text-muted-foreground">{row.email ?? "\u2014"}</span>
+      <span className="text-muted-foreground">{formatEmail(row.email) ?? "\u2014"}</span>
     ),
   },
   {

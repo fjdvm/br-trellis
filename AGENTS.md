@@ -43,7 +43,7 @@
 - Always normalize data on input and format consistently on output:
   - **Input (backend):** Trim whitespace from all string fields. Lowercase emails. Normalize phone numbers to a consistent format. Apply normalization in Services or Validators before persisting.
   - **Input (frontend):** Trim form field values before submitting to the API.
-  - **Output (display):** Format currency with 2 decimal places and `$` prefix. Format dates consistently (e.g., `toLocaleDateString()`). Display names with proper casing (use `formatName()` from `lib/format-display.ts` to title-case all person and company names). Show `"—"` for null/empty values.
+  - **Output (display):** Format currency with 2 decimal places and `$` prefix. Format dates consistently (e.g., `toLocaleDateString()`). Display names with proper casing (use `formatName()` from `lib/format-display.ts` to title-case all person and company names). Display emails in lowercase (use `formatEmail()` from `lib/format-display.ts`). Show `"—"` for null/empty values.
 
 ---
 

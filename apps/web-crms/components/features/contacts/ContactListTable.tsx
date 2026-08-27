@@ -14,7 +14,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { formatName } from "@/lib/format-display";
+import { formatName, formatEmail } from "@/lib/format-display";
 import type { ContactListItem } from "@/types/contact";
 
 const PAGE_SIZE = 20;
@@ -91,7 +91,7 @@ export function ContactListTable({ contacts }: ContactListTableProps) {
                       </Link>
                     </TableCell>
                     <TableCell className="text-muted-foreground">
-                      {contact.email ?? contact.phone ?? "—"}
+                      {formatEmail(contact.email) ?? contact.phone ?? "—"}
                     </TableCell>
                     <TableCell className="text-muted-foreground">
                       {contact.companyName ?? "—"}

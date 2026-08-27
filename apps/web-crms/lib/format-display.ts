@@ -15,6 +15,15 @@ export function formatName(name: string | null | undefined): string | null | und
 }
 
 /**
+ * Formats an email to lowercase for display consistency.
+ * Returns null/undefined unchanged so null-coalescing still works.
+ */
+export function formatEmail(email: string | null | undefined): string | null | undefined {
+  if (!email) return email;
+  return email.toLowerCase();
+}
+
+/**
  * Formats a display value: trims and title-cases the text.
  * Returns "—" for null, undefined, or whitespace-only values.
  */

@@ -11,7 +11,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { crmClient } from "@/lib/api/crm-client";
-import { formatName } from "@/lib/format-display";
+import { formatName, formatEmail } from "@/lib/format-display";
 import type { PendingReviewContact } from "@/types/contact";
 
 export function PendingReviewTable() {
@@ -76,7 +76,7 @@ export function PendingReviewTable() {
               <TableCell>
                 <div className="font-medium">{formatName(candidate.contact.name) ?? "Unnamed contact"}</div>
                 <div className="text-muted-foreground text-sm">
-                  {candidate.contact.email ?? candidate.contact.phone ?? "—"}
+                  {formatEmail(candidate.contact.email) ?? candidate.contact.phone ?? "—"}
                 </div>
               </TableCell>
               <TableCell>

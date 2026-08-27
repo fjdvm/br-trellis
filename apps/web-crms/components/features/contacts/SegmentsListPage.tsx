@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/table";
 import { crmClient } from "@/lib/api/crm-client";
 import { BackButton } from "@/components/shared/BackButton";
-import { formatName } from "@/lib/format-display";
+import { formatName, formatEmail } from "@/lib/format-display";
 import type { SegmentListItem, SegmentMember } from "@/types/segment";
 
 interface SegmentsListPageProps {
@@ -153,7 +153,7 @@ export function SegmentsListPage({ preSelectedSegmentName }: SegmentsListPagePro
                           {formatName(member.name) ?? "Unnamed contact"}
                         </TableCell>
                         <TableCell className="text-base text-muted-foreground">
-                          {member.email ?? "—"}
+                          {formatEmail(member.email) ?? "—"}
                         </TableCell>
                         <TableCell className="text-base text-muted-foreground">
                           {member.phone ?? "—"}

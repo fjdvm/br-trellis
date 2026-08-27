@@ -27,7 +27,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { crmClient } from "@/lib/api/crm-client";
 import { BackButton } from "@/components/shared/BackButton";
-import { formatName } from "@/lib/format-display";
+import { formatName, formatEmail } from "@/lib/format-display";
 import type { CompanyDetail } from "@/types/company";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -220,7 +220,7 @@ export function CompanyDetailPage({ companyId }: CompanyDetailPageProps) {
                 {formatName(company.primaryContact.name) ?? "—"}
               </p>
               <p className="text-muted-foreground">
-                {company.primaryContact.email ?? "—"}
+                {formatEmail(company.primaryContact.email) ?? "—"}
               </p>
             </div>
           </CardContent>
@@ -262,7 +262,7 @@ export function CompanyDetailPage({ companyId }: CompanyDetailPageProps) {
                       </Link>
                     </TableCell>
                     <TableCell className="text-base">
-                      {contact.email ?? "—"}
+                      {formatEmail(contact.email) ?? "—"}
                     </TableCell>
                     <TableCell className="text-base">
                       {contact.phone ?? "—"}

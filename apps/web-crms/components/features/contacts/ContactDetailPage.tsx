@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { crmClient } from "@/lib/api/crm-client";
 import { BackButton } from "@/components/shared/BackButton";
-import { formatName } from "@/lib/format-display";
+import { formatName, formatEmail } from "@/lib/format-display";
 import {
   validateContactFields,
   hasErrors,
@@ -165,7 +165,7 @@ export function ContactDetailPage({ contactId }: ContactDetailPageProps) {
           {formatName(contact.name) ?? "Unnamed contact"}
         </h1>
         <p className="text-body-md text-muted-foreground">
-          {contact.email ?? "No email"} · {contact.phone ?? "No phone"}
+          {formatEmail(contact.email) ?? "No email"} · {contact.phone ?? "No phone"}
         </p>
       </div>
 
