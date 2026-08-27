@@ -84,8 +84,9 @@ export function CompanyListPage() {
               No companies found.
             </div>
           ) : (
-            <Table>
-              <TableHeader>
+            <div className="max-h-[600px] overflow-y-auto border border-border rounded-lg">
+              <Table>
+              <TableHeader className="sticky top-0 bg-background z-10">
                 <TableRow>
                   <TableHead className="min-w-[160px]">Name</TableHead>
                   <TableHead className="min-w-[120px]">Buyer Type</TableHead>
@@ -116,7 +117,8 @@ export function CompanyListPage() {
                   </TableRow>
                 ))}
               </TableBody>
-            </Table>
+              </Table>
+            </div>
           )}
         </CardContent>
       </Card>

@@ -53,6 +53,7 @@
 - Only use `text-sm` for secondary/metadata text (e.g., timestamps, line item details). Never use `text-xs` for primary content.
 - Keep font sizes consistent across all pages — if a table or container card uses `text-base` in one page, all pages should match.
 - Every table column must have a `min-w-[Xpx]` class on its `<TableHead>` to prevent content from overlapping on mobile screens. Do not use `table-fixed` with percentage widths — let columns expand naturally and rely on the shared Table component's `overflow-auto` wrapper for horizontal scrolling.
+- Wrap all tables and long-content containers in a scrollable wrapper (`max-h-[600px] overflow-y-auto border border-border rounded-lg`) instead of letting them expand the page infinitely. Use sticky headers (`sticky top-0 bg-background z-10` on `<TableHeader>`) so column labels remain visible while scrolling.
 
 ---
 

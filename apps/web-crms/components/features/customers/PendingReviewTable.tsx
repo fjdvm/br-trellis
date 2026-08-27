@@ -58,8 +58,9 @@ export function PendingReviewTable() {
   }
 
   return (
-    <Table>
-      <TableHeader>
+    <div className="max-h-[600px] overflow-y-auto border border-border rounded-lg">
+      <Table>
+        <TableHeader className="sticky top-0 bg-background z-10">
         <TableRow>
           <TableHead className="min-w-[180px]">New Customer</TableHead>
           <TableHead className="min-w-[200px]">Possible existing Customer</TableHead>
@@ -88,6 +89,7 @@ export function PendingReviewTable() {
           ))
         )}
       </TableBody>
-    </Table>
+      </Table>
+    </div>
   );
 }

@@ -58,8 +58,9 @@ export function CustomerListTable() {
   }
 
   return (
-    <Table>
-      <TableHeader>
+    <div className="max-h-[600px] overflow-y-auto border border-border rounded-lg">
+      <Table>
+        <TableHeader className="sticky top-0 bg-background z-10">
         <TableRow>
           <TableHead className="min-w-[160px]">Customer</TableHead>
           <TableHead className="min-w-[180px]">Contact</TableHead>
@@ -90,6 +91,7 @@ export function CustomerListTable() {
           </TableRow>
         ))}
       </TableBody>
-    </Table>
+      </Table>
+    </div>
   );
 }

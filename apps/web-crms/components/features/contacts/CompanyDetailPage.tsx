@@ -241,8 +241,9 @@ export function CompanyDetailPage({ companyId }: CompanyDetailPageProps) {
               No contacts assigned to this company.
             </div>
           ) : (
-            <Table>
-              <TableHeader>
+            <div className="max-h-[600px] overflow-y-auto border border-border rounded-lg">
+              <Table>
+                <TableHeader className="sticky top-0 bg-background z-10">
                 <TableRow>
                   <TableHead className="min-w-[140px]">Name</TableHead>
                   <TableHead className="min-w-[180px]">Email</TableHead>
@@ -273,7 +274,8 @@ export function CompanyDetailPage({ companyId }: CompanyDetailPageProps) {
                   </TableRow>
                 ))}
               </TableBody>
-            </Table>
+              </Table>
+            </div>
           )}
         </CardContent>
       </Card>
