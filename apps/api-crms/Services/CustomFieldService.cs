@@ -52,7 +52,7 @@ public sealed class CustomFieldService(AppDbContext dbContext) : ICustomFieldSer
             dbContext.CustomFieldValues.Add(existing);
         }
 
-        existing.TextValue = update.TextValue;
+        existing.TextValue = update.TextValue?.Trim();
         existing.NumberValue = update.NumberValue;
         existing.DateValue = update.DateValue;
         existing.BoolValue = update.BoolValue;

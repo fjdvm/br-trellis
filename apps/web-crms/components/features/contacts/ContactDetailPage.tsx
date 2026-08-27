@@ -92,9 +92,9 @@ export function ContactDetailPage({ contactId }: ContactDetailPageProps) {
     setIsSaving(true);
     try {
       const updated = await crmClient.contacts.update(contactId, {
-        name: editName || undefined,
-        email: editEmail || undefined,
-        phone: editPhone || undefined,
+        name: editName.trim() || undefined,
+        email: editEmail.trim() || undefined,
+        phone: editPhone.trim() || undefined,
         companyId: editCompanyId || undefined,
       });
       setContact(updated);

@@ -40,6 +40,10 @@
 - Don't change the header and sidebar.
 - The `.design-ref/` directory is just a basis for layout and designs.
 - Issues and requirements are the source of truth; designs are just a guideline.
+- Always normalize data on input and format consistently on output:
+  - **Input (backend):** Trim whitespace from all string fields. Lowercase emails. Normalize phone numbers to a consistent format. Apply normalization in Services or Validators before persisting.
+  - **Input (frontend):** Trim form field values before submitting to the API.
+  - **Output (display):** Format currency with 2 decimal places and `$` prefix. Format dates consistently (e.g., `toLocaleDateString()`). Display names with proper casing. Show `"—"` for null/empty values.
 
 ---
 

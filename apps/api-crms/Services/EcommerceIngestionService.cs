@@ -81,7 +81,7 @@ public sealed class EcommerceIngestionService(
                     Id = Guid.NewGuid(),
                     OrderId = order.Id,
                     ProductId = item.ProductId,
-                    ProductName = item.ProductName,
+                    ProductName = item.ProductName?.Trim() ?? string.Empty,
                     Quantity = item.Quantity,
                     UnitPrice = item.UnitPrice,
                 });
@@ -122,7 +122,7 @@ public sealed class EcommerceIngestionService(
                     Id = Guid.NewGuid(),
                     OrderId = order.Id,
                     ProductId = item.ProductId,
-                    ProductName = item.ProductName,
+                    ProductName = item.ProductName?.Trim() ?? string.Empty,
                     Quantity = item.Quantity,
                     UnitPrice = item.UnitPrice,
                 });
@@ -160,7 +160,7 @@ public sealed class EcommerceIngestionService(
         {
             Id = Guid.NewGuid(),
             ProductId = item.ProductId,
-            ProductName = item.ProductName,
+            ProductName = item.ProductName?.Trim() ?? string.Empty,
             Quantity = item.Quantity,
             UnitPrice = item.UnitPrice,
         }).ToList();
@@ -178,7 +178,7 @@ public sealed class EcommerceIngestionService(
             Id = Guid.NewGuid(),
             PlatformProductId = data.ProductId
                 ?? throw new InvalidOperationException("ProductId is required."),
-            Name = data.Name ?? string.Empty,
+            Name = (data.Name ?? string.Empty).Trim(),
             Price = data.Price ?? 0m,
             InStock = data.InStock ?? false,
             CreatedAt = now,

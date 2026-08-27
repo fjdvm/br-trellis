@@ -39,8 +39,8 @@ public sealed class ContactService(
             Id = Guid.NewGuid(),
             CreatedAt = DateTimeOffset.UtcNow,
             Name = string.IsNullOrWhiteSpace(input.Name) ? null : input.Name.Trim(),
-            Email = string.IsNullOrWhiteSpace(input.Email) ? null : input.Email.Trim(),
-            Phone = string.IsNullOrWhiteSpace(input.Phone) ? null : input.Phone.Trim(),
+            Email = string.IsNullOrWhiteSpace(input.Email) ? null : input.Email.Trim().ToLowerInvariant(),
+            Phone = NormalizePhone(input.Phone),
             CompanyId = input.CompanyId,
         };
 
@@ -68,8 +68,8 @@ public sealed class ContactService(
         }
 
         contact.Name = string.IsNullOrWhiteSpace(input.Name) ? contact.Name : input.Name.Trim();
-        contact.Email = string.IsNullOrWhiteSpace(input.Email) ? contact.Email : input.Email.Trim();
-        contact.Phone = string.IsNullOrWhiteSpace(input.Phone) ? contact.Phone : input.Phone.Trim();
+        contact.Email = string.IsNullOrWhiteSpace(input.Email) ? contact.Email : input.Email.Trim().ToLowerInvariant();
+        contact.Phone = string.IsNullOrWhiteSpace(input.Phone) ? contact.Phone : NormalizePhone(input.Phone);
 
         await dbContext.SaveChangesAsync(cancellationToken);
 
@@ -88,6 +88,13 @@ public sealed class ContactService(
         contact.DeletedAt = DateTimeOffset.UtcNow;
         await dbContext.SaveChangesAsync(cancellationToken);
         return true;
+    }
+
+    private static string? NormalizePhone(string? phone)
+    {
+        if (string.IsNullOrWhiteSpace(phone)) return null;
+        var digits = phone.Trim().Where(char.IsDigit).ToArray();
+        return digits.Length == 0 ? null : new string(digits);
     }
 
     private async Task ValidateCompanyNotArchived(Guid companyId, CancellationToken cancellationToken)

@@ -80,7 +80,7 @@ export function CompanyDetailPage({ companyId }: CompanyDetailPageProps) {
     setIsSaving(true);
     try {
       const updated = await crmClient.companies.update(company.id, {
-        name: editName,
+        name: editName.trim(),
         buyerType: editBuyerType,
       });
       setCompany(updated);
@@ -267,7 +267,7 @@ export function CompanyDetailPage({ companyId }: CompanyDetailPageProps) {
                       {contact.phone ?? "—"}
                     </TableCell>
                     <TableCell className="text-base text-right">
-                      ${contact.lifetimeValue.toLocaleString()}
+                      ${contact.lifetimeValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </TableCell>
                   </TableRow>
                 ))}
