@@ -85,6 +85,29 @@ export function Sidebar() {
 
   const showSettings = !!session?.isSuperUser;
 
+  // Map nav group names to their AppModule permission names in internal-auth-service.
+  // SuperUsers bypass this filter entirely (they see everything).
+  // Groups without a mapping are always shown (no permission check yet).
+  const navGroupToModule: Record<string, string> = {
+    Contacts: "Customer Profiles",
+    Ecommerce: "Ecommerce",
+    Conversations: "Conversations",
+    Automation: "Automation",
+  };
+
+  const crmsPerms = session?.permissions?.CRMS as Record<string, Record<string, boolean>> | undefined;
+  const isSuperUser = !!session?.isSuperUser;
+
+  const allowedNavGroups = navGroups.filter((group) => {
+    if (isSuperUser) return true;
+    const moduleName = navGroupToModule[group.name];
+    if (!moduleName) return true; // No permission mapping → always visible
+    return crmsPerms?.[moduleName]?.canRead === true;
+  });
+
+  // Dashboard is gated on the "Dashboard" module permission (unless superuser)
+  const showDashboard = isSuperUser || crmsPerms?.["Dashboard"]?.canRead === true;
+
   return (
     <>
       {isMobile && (
@@ -164,6 +187,7 @@ export function Sidebar() {
           <SidebarGroup className="p-0">
             <SidebarGroupContent>
               {/* Dashboard (standalone, no sub-tabs) */}
+              {showDashboard && (
               <SidebarMenu>
                 <SidebarMenuItem>
                   <SidebarMenuButton
@@ -178,9 +202,10 @@ export function Sidebar() {
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               </SidebarMenu>
+              )}
 
-              {/* All nav groups */}
-              {navGroups.map((group) => {
+              {/* All nav groups (filtered by permissions) */}
+              {allowedNavGroups.map((group) => {
                 const GroupIcon = group.icon;
                 const hasActiveChild = group.children.some(
                   (child) =>
