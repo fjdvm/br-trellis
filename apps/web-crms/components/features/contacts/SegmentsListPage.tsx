@@ -15,6 +15,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { crmClient } from "@/lib/api/crm-client";
+import { BackButton } from "@/components/shared/BackButton";
 import type { SegmentListItem, SegmentMember } from "@/types/segment";
 
 interface SegmentsListPageProps {
@@ -95,7 +96,9 @@ export function SegmentsListPage({ preSelectedSegmentName }: SegmentsListPagePro
     return (
       <div className="w-full min-h-full py-xl px-lg md:px-xl space-y-lg max-w-7xl mx-auto">
         <div className="space-y-sm">
-          {!preSelectedSegmentName && (
+          {preSelectedSegmentName ? (
+            <BackButton fallbackHref="/contacts/segments" />
+          ) : (
             <Button
               variant="ghost"
               size="sm"

@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { ArrowLeft, Archive, Loader2, Pencil, Users } from "lucide-react";
+import { Archive, Loader2, Pencil, Users } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -26,6 +26,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { crmClient } from "@/lib/api/crm-client";
+import { BackButton } from "@/components/shared/BackButton";
 import type { CompanyDetail } from "@/types/company";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -125,13 +126,7 @@ export function CompanyDetailPage({ companyId }: CompanyDetailPageProps) {
   return (
     <div className="w-full min-h-full py-xl px-lg md:px-xl space-y-lg max-w-7xl mx-auto">
       <div className="space-y-sm">
-        <Link
-          href="/contacts/companies"
-          className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground -ml-1"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Back to Companies
-        </Link>
+        <BackButton fallbackHref="/contacts/companies" />
 
         <div className="flex items-center justify-between">
           <div>

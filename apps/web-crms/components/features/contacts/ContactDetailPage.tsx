@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Building2, Clock, Loader2, Pencil, ShoppingBag, Trash2 } from "lucide-react";
+import { Building2, Clock, Loader2, Pencil, ShoppingBag, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -21,6 +21,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { crmClient } from "@/lib/api/crm-client";
+import { BackButton } from "@/components/shared/BackButton";
 import {
   validateContactFields,
   hasErrors,
@@ -135,6 +136,7 @@ export function ContactDetailPage({ contactId }: ContactDetailPageProps) {
 
   return (
     <div className="w-full min-h-full py-xl px-lg md:px-xl space-y-lg max-w-7xl mx-auto">
+      <BackButton fallbackHref="/contacts" />
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Button
