@@ -253,7 +253,11 @@ export function CompanyDetailPage({ companyId }: CompanyDetailPageProps) {
               </TableHeader>
               <TableBody>
                 {company.contacts.map((contact) => (
-                  <TableRow key={contact.id}>
+                  <TableRow
+                    key={contact.id}
+                    className="cursor-pointer hover:bg-muted/50"
+                    onClick={() => router.push(`/contacts/${contact.id}`)}
+                  >
                     <TableCell className="text-base font-medium">
                       <Link
                         href={`/contacts/${contact.id}`}

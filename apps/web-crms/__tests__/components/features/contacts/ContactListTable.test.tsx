@@ -2,6 +2,12 @@ import { render, screen } from "@testing-library/react";
 import { ContactListTable } from "@/components/features/contacts/ContactListTable";
 import { crmClient } from "@/lib/api/crm-client";
 
+jest.mock("next/navigation", () => ({
+  useRouter: () => ({
+    push: jest.fn(),
+  }),
+}));
+
 jest.mock("@/lib/api/crm-client", () => ({
   crmClient: {
     contacts: {

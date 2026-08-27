@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { ChevronLeft, ChevronRight, Search } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -24,6 +25,7 @@ interface ContactListTableProps {
 }
 
 export function ContactListTable({ contacts }: ContactListTableProps) {
+  const router = useRouter();
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
 
@@ -84,7 +86,11 @@ export function ContactListTable({ contacts }: ContactListTableProps) {
               </TableHeader>
               <TableBody>
                 {paginatedContacts.map((contact) => (
-                  <TableRow key={contact.id}>
+                  <TableRow
+                    key={contact.id}
+                    className="cursor-pointer hover:bg-muted/50"
+                    onClick={() => router.push(`/contacts/${contact.id}`)}
+                  >
                     <TableCell className="font-medium">
                       <Link href={`/contacts/${contact.id}`} className="hover:underline">
                         {formatName(contact.name) ?? "Unnamed contact"}

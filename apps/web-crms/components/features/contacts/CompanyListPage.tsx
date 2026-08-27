@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Building2, Loader2, Plus } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -19,6 +20,7 @@ import type { CompanyListItem } from "@/types/company";
 import Link from "next/link";
 
 export function CompanyListPage() {
+  const router = useRouter();
   const [companies, setCompanies] = useState<CompanyListItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -96,7 +98,11 @@ export function CompanyListPage() {
               </TableHeader>
               <TableBody>
                 {companies.map((company) => (
-                  <TableRow key={company.id}>
+                  <TableRow
+                    key={company.id}
+                    className="cursor-pointer hover:bg-muted/50"
+                    onClick={() => router.push(`/contacts/companies/${company.id}`)}
+                  >
                     <TableCell className="text-base font-medium">
                       <Link
                         href={`/contacts/companies/${company.id}`}
