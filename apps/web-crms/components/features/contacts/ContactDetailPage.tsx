@@ -193,7 +193,7 @@ export function ContactDetailPage({ contactId }: ContactDetailPageProps) {
                 <div className="text-muted-foreground">Name</div>
                 <div>{contact.name ?? "—"}</div>
                 <div className="text-muted-foreground">Email</div>
-                <div>{contact.email ?? "—"}</div>
+                <div>{formatEmail(contact.email) ?? "—"}</div>
                 <div className="text-muted-foreground">Phone</div>
                 <div>{contact.phone ?? "—"}</div>
                 <div className="text-muted-foreground">Sentiment Score</div>
