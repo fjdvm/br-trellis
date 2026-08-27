@@ -5,7 +5,6 @@ import { usePathname } from "next/navigation";
 import { SidebarProvider, useSidebar } from "@/components/ui/sidebar";
 import { Sidebar } from "./Sidebar";
 import { Header } from "./Header";
-import { MobileNav } from "./MobileNav";
 import { AskSentraCXPanel } from "@/components/features/dashboard/ask-sentracx-panel";
 
 function MainContent({ children }: { children: React.ReactNode }) {
@@ -48,9 +47,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
         {/* Content Area Container */}
         <MainContent>{children}</MainContent>
-
-        {/* Mobile Navigation Shell */}
-        <MobileNav />
       </div>
 
       {/* Floating AI Chat — placed outside all layout containers to avoid
