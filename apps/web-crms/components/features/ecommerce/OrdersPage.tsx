@@ -11,14 +11,17 @@ import type { OrderListItem } from "@/types/ecommerce";
 const columns: Column<OrderListItem>[] = [
   {
     header: "Order ID",
+    className: "min-w-[140px]",
     cell: (row) => <span className="font-medium">{row.platformOrderId}</span>,
   },
   {
     header: "Customer",
+    className: "min-w-[160px]",
     cell: (row) => row.contactName ?? row.contactEmail ?? "\u2014",
   },
   {
     header: "Status",
+    className: "min-w-[100px]",
     cell: (row) => (
       <Badge variant={row.status === "Refunded" ? "destructive" : "outline"}>
         {row.status}
@@ -27,19 +30,23 @@ const columns: Column<OrderListItem>[] = [
   },
   {
     header: "Total",
+    className: "min-w-[90px]",
     cell: (row) => `$${row.total.toFixed(2)}`,
   },
   {
     header: "Refund",
+    className: "min-w-[90px]",
     cell: (row) =>
       row.refundedAmount > 0 ? `$${row.refundedAmount.toFixed(2)}` : "\u2014",
   },
   {
     header: "Date",
+    className: "min-w-[110px]",
     cell: (row) => new Date(row.createdAt).toLocaleDateString(),
   },
   {
     header: "Items",
+    className: "min-w-[70px]",
     cell: (row) => String(row.lineItemCount),
   },
 ];

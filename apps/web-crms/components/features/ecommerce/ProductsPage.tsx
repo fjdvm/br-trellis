@@ -11,18 +11,22 @@ import type { ProductListItem } from "@/types/ecommerce";
 const columns: Column<ProductListItem>[] = [
   {
     header: "Product ID",
+    className: "min-w-[130px]",
     cell: (row) => <span className="font-medium">{row.platformProductId}</span>,
   },
   {
     header: "Name",
+    className: "min-w-[160px]",
     cell: (row) => row.name,
   },
   {
     header: "Price",
+    className: "min-w-[90px]",
     cell: (row) => `$${row.price.toFixed(2)}`,
   },
   {
     header: "Stock Status",
+    className: "min-w-[120px]",
     cell: (row) => (
       <Badge variant={row.inStock ? "default" : "destructive"}>
         {row.inStock ? "In Stock" : "Out of Stock"}
@@ -31,6 +35,7 @@ const columns: Column<ProductListItem>[] = [
   },
   {
     header: "Last Updated",
+    className: "min-w-[120px]",
     cell: (row) => new Date(row.updatedAt).toLocaleDateString(),
   },
 ];

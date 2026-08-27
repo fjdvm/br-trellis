@@ -83,7 +83,7 @@ export function DataTable<T>({
       ) : (
         <>
           <div className="max-h-[600px] overflow-y-auto border border-border rounded-lg">
-            <Table className="table-fixed w-full">
+            <Table>
               <TableHeader className="sticky top-0 bg-background z-10">
                 <TableRow>
                   {columns.map((col) => (

@@ -11,26 +11,32 @@ import type { CartListItem } from "@/types/ecommerce";
 const columns: Column<CartListItem>[] = [
   {
     header: "Cart ID",
+    className: "min-w-[130px]",
     cell: (row) => <span className="font-medium">{row.platformCartId}</span>,
   },
   {
     header: "Customer",
+    className: "min-w-[160px]",
     cell: (row) => row.contactName ?? row.contactEmail ?? "\u2014",
   },
   {
     header: "Items",
+    className: "min-w-[70px]",
     cell: (row) => String(row.itemCount),
   },
   {
     header: "Total",
+    className: "min-w-[90px]",
     cell: (row) => `$${row.itemsTotal.toFixed(2)}`,
   },
   {
     header: "Last Activity",
+    className: "min-w-[120px]",
     cell: (row) => new Date(row.lastActivityAt).toLocaleDateString(),
   },
   {
     header: "Recovery Status",
+    className: "min-w-[160px]",
     cell: (row) =>
       row.workflowRun ? (
         <span className="flex items-center gap-2">

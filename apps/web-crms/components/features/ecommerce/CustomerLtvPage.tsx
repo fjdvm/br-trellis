@@ -21,16 +21,19 @@ function formatCurrency(value: number): string {
 const columns: Column<ContactLtvItem>[] = [
   {
     header: "Name",
+    className: "min-w-[160px]",
     cell: (row) => <span className="font-medium">{row.name ?? "Unnamed"}</span>,
   },
   {
     header: "Email",
+    className: "min-w-[200px]",
     cell: (row) => (
       <span className="text-muted-foreground">{row.email ?? "\u2014"}</span>
     ),
   },
   {
     header: "Lifetime Value",
+    className: "min-w-[140px]",
     cell: (row) => (
       <span className="font-medium">{formatCurrency(row.lifetimeValue ?? 0)}</span>
     ),
