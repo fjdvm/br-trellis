@@ -243,10 +243,10 @@ export function CompanyDetailPage({ companyId }: CompanyDetailPageProps) {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Phone</TableHead>
-                  <TableHead className="text-right">LTV</TableHead>
+                  <TableHead className="min-w-[140px]">Name</TableHead>
+                  <TableHead className="min-w-[180px]">Email</TableHead>
+                  <TableHead className="min-w-[130px]">Phone</TableHead>
+                  <TableHead className="min-w-[100px] text-right">LTV</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>

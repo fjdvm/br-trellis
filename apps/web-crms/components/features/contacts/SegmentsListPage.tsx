@@ -132,13 +132,13 @@ export function SegmentsListPage({ preSelectedSegmentName }: SegmentsListPagePro
               <div className="p-xl text-muted-foreground">No members in this segment.</div>
             ) : (
               <div className="max-h-[600px] overflow-y-auto border border-border rounded-lg">
-                <Table className="table-fixed w-full">
+                <Table>
                   <TableHeader className="sticky top-0 bg-background z-10">
                     <TableRow>
-                      <TableHead className="w-1/4">Name</TableHead>
-                      <TableHead className="w-1/4">Email</TableHead>
-                      <TableHead className="w-1/4">Phone</TableHead>
-                      <TableHead className="w-1/4">Lifetime Value</TableHead>
+                      <TableHead className="min-w-[160px]">Name</TableHead>
+                      <TableHead className="min-w-[180px]">Email</TableHead>
+                      <TableHead className="min-w-[140px]">Phone</TableHead>
+                      <TableHead className="min-w-[140px]">Lifetime Value</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -199,14 +199,14 @@ export function SegmentsListPage({ preSelectedSegmentName }: SegmentsListPagePro
             <div className="p-xl text-muted-foreground">No segments found.</div>
           ) : (
             <div className="max-h-[600px] overflow-y-auto border border-border rounded-lg">
-              <Table className="table-fixed w-full">
+              <Table>
                 <TableHeader className="sticky top-0 bg-background z-10">
                   <TableRow>
-                    <TableHead className="w-1/5">Name</TableHead>
-                    <TableHead className="w-1/6">Type</TableHead>
-                    <TableHead className="w-2/5">Rule</TableHead>
-                    <TableHead className="w-1/6">Members</TableHead>
-                    <TableHead className="w-1/10" />
+                    <TableHead className="min-w-[160px]">Name</TableHead>
+                    <TableHead className="min-w-[100px]">Type</TableHead>
+                    <TableHead className="min-w-[200px]">Rule</TableHead>
+                    <TableHead className="min-w-[100px]">Members</TableHead>
+                    <TableHead className="min-w-[60px]" />
                   </TableRow>
                 </TableHeader>
                 <TableBody>

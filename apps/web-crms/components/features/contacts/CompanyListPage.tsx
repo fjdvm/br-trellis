@@ -86,10 +86,10 @@ export function CompanyListPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Buyer Type</TableHead>
-                  <TableHead className="text-right">Members</TableHead>
-                  <TableHead>Created</TableHead>
+                  <TableHead className="min-w-[160px]">Name</TableHead>
+                  <TableHead className="min-w-[120px]">Buyer Type</TableHead>
+                  <TableHead className="min-w-[100px] text-right">Members</TableHead>
+                  <TableHead className="min-w-[120px]">Created</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>

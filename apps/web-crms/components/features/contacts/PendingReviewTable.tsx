@@ -60,9 +60,9 @@ export function PendingReviewTable() {
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead>New Contact</TableHead>
-          <TableHead>Possible existing Contact</TableHead>
-          <TableHead>Confidence</TableHead>
+          <TableHead className="min-w-[180px]">New Contact</TableHead>
+          <TableHead className="min-w-[200px]">Possible existing Contact</TableHead>
+          <TableHead className="min-w-[120px]">Confidence</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>

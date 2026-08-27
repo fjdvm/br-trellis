@@ -60,9 +60,9 @@ export function CustomerListTable() {
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead>Customer</TableHead>
-          <TableHead>Contact</TableHead>
-          <TableHead>Known sources</TableHead>
+          <TableHead className="min-w-[160px]">Customer</TableHead>
+          <TableHead className="min-w-[180px]">Contact</TableHead>
+          <TableHead className="min-w-[160px]">Known sources</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>

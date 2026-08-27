@@ -72,13 +72,13 @@ export function ContactListTable({ contacts }: ContactListTableProps) {
       ) : (
         <>
           <div className="max-h-[600px] overflow-y-auto border border-border rounded-lg">
-            <Table className="table-fixed w-full">
+            <Table>
               <TableHeader className="sticky top-0 bg-background z-10">
                 <TableRow>
-                  <TableHead className="w-1/4">Contact</TableHead>
-                  <TableHead className="w-1/4">Email / Phone</TableHead>
-                  <TableHead className="w-1/4">Company</TableHead>
-                  <TableHead className="w-1/4">Known sources</TableHead>
+                  <TableHead className="min-w-[160px]">Contact</TableHead>
+                  <TableHead className="min-w-[180px]">Email / Phone</TableHead>
+                  <TableHead className="min-w-[140px]">Company</TableHead>
+                  <TableHead className="min-w-[160px]">Known sources</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
