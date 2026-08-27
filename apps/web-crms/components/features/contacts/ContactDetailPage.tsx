@@ -138,32 +138,31 @@ export function ContactDetailPage({ contactId }: ContactDetailPageProps) {
   return (
     <div className="w-full min-h-full py-xl px-lg md:px-xl space-y-lg max-w-7xl mx-auto">
       <BackButton fallbackHref="/contacts" />
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setIsEditing(!isEditing)}
-          >
-            <Pencil className="w-4 h-4" />
-            <span className="ml-1">{isEditing ? "Cancel" : "Edit"}</span>
-          </Button>
-          <Button
-            variant="destructive"
-            size="sm"
-            onClick={() => setShowDeleteDialog(true)}
-            disabled={isDeleting}
-          >
-            {isDeleting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
-            <span className="ml-1">{isDeleting ? "Deleting…" : "Delete"}</span>
-          </Button>
-        </div>
-      </div>
-
       <div className="space-y-sm">
-        <h1 className="text-headline-md font-bold tracking-tight text-foreground">
-          {formatName(contact.name) ?? "Unnamed contact"}
-        </h1>
+        <div className="flex items-center justify-between">
+          <h1 className="text-headline-md font-bold tracking-tight text-foreground">
+            {formatName(contact.name) ?? "Unnamed contact"}
+          </h1>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsEditing(!isEditing)}
+            >
+              <Pencil className="w-4 h-4" />
+              <span className="ml-1">{isEditing ? "Cancel" : "Edit"}</span>
+            </Button>
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={() => setShowDeleteDialog(true)}
+              disabled={isDeleting}
+            >
+              {isDeleting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+              <span className="ml-1">{isDeleting ? "Deleting…" : "Delete"}</span>
+            </Button>
+          </div>
+        </div>
         <p className="text-body-md text-muted-foreground">
           {formatEmail(contact.email) ?? "No email"} · {contact.phone ?? "No phone"}
         </p>
