@@ -81,4 +81,115 @@ public sealed class TicketService(
         var full = await ticketRepository.GetTicketByIdAsync(ticket.Id, cancellationToken);
         return TicketMapper.ToDetail(full!);
     }
+
+    public async Task<TicketDetailDto?> ClaimTicketAsync(
+        Guid id,
+        ClaimTicketDto input,
+        CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(input.StaffId))
+        {
+            throw new ArgumentException("Staff identity is required to claim a ticket.");
+        }
+
+        var ticket = await dbContext.Tickets.FindAsync([id], cancellationToken);
+        if (ticket is null)
+        {
+            return null;
+        }
+
+        var claimable = ticket.Status == TicketStatus.Unclaimed
+            || (ticket.Status == TicketStatus.Ongoing && ticket.AssignedToId is null);
+        if (!claimable)
+        {
+            throw new InvalidOperationException(
+                $"Ticket cannot be claimed from status '{ticket.Status}'"
+                + (ticket.AssignedToId is not null ? " while assigned to another agent." : "."));
+        }
+
+        ticket.AssignedToId = input.StaffId.Trim();
+        ticket.AssignedToName = input.StaffName?.Trim();
+        ticket.AssignedToEmail = input.StaffEmail?.Trim().ToLowerInvariant();
+        ticket.Status = TicketStatus.Claimed;
+        ticket.UpdatedAt = DateTimeOffset.UtcNow;
+
+        await dbContext.SaveChangesAsync(cancellationToken);
+
+        var full = await ticketRepository.GetTicketByIdAsync(id, cancellationToken);
+        return TicketMapper.ToDetail(full!);
+    }
+
+    public async Task<TicketDetailDto?> UnclaimTicketAsync(
+        Guid id,
+        CancellationToken cancellationToken)
+    {
+        var ticket = await dbContext.Tickets.FindAsync([id], cancellationToken);
+        if (ticket is null)
+        {
+            return null;
+        }
+
+        if (ticket.Status is not (TicketStatus.Claimed or TicketStatus.Ongoing))
+        {
+            throw new InvalidOperationException(
+                $"Ticket cannot be unclaimed from status '{ticket.Status}'.");
+        }
+
+        ticket.AssignedToId = null;
+        ticket.AssignedToName = null;
+        ticket.AssignedToEmail = null;
+        ticket.Status = TicketStatus.Unclaimed;
+        ticket.UpdatedAt = DateTimeOffset.UtcNow;
+
+        await dbContext.SaveChangesAsync(cancellationToken);
+
+        var full = await ticketRepository.GetTicketByIdAsync(id, cancellationToken);
+        return TicketMapper.ToDetail(full!);
+    }
+
+    public async Task<TicketDetailDto?> ChangeStatusAsync(
+        Guid id,
+        ChangeTicketStatusDto input,
+        CancellationToken cancellationToken)
+    {
+        if (!Enum.TryParse<TicketStatus>(input.Status, ignoreCase: true, out var target))
+        {
+            throw new ArgumentException($"Invalid Status: '{input.Status}'.");
+        }
+
+        var ticket = await dbContext.Tickets.FindAsync([id], cancellationToken);
+        if (ticket is null)
+        {
+            return null;
+        }
+
+        if (!IsValidTransition(ticket.Status, target))
+        {
+            throw new InvalidOperationException(
+                $"Invalid status transition: '{ticket.Status}' → '{target}'.");
+        }
+
+        ticket.Status = target;
+        ticket.UpdatedAt = DateTimeOffset.UtcNow;
+
+        await dbContext.SaveChangesAsync(cancellationToken);
+
+        var full = await ticketRepository.GetTicketByIdAsync(id, cancellationToken);
+        return TicketMapper.ToDetail(full!);
+    }
+
+    private static bool IsValidTransition(TicketStatus from, TicketStatus to)
+    {
+        // Completed and Canceled are terminal.
+        return (from, to) switch
+        {
+            (TicketStatus.Unclaimed, TicketStatus.Claimed) => true,
+            (TicketStatus.Claimed, TicketStatus.Ongoing) => true,
+            (TicketStatus.Ongoing, TicketStatus.Completed) => true,
+            (TicketStatus.Unclaimed, TicketStatus.Canceled) => true,
+            (TicketStatus.Claimed, TicketStatus.Canceled) => true,
+            (TicketStatus.Ongoing, TicketStatus.Canceled) => true,
+            _ => false,
+        };
+    }
 }

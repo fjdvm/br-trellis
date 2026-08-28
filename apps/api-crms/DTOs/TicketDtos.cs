@@ -34,3 +34,11 @@ public sealed record TicketDetailDto(
 public sealed record CreateTicketDto(
     string Subject,
     Guid? ContactId);
+
+public sealed record ClaimTicketDto(
+    string StaffId,
+    string StaffName,
+    string StaffEmail);
+
+public sealed record ChangeTicketStatusDto(
+    string Status);

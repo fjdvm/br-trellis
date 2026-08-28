@@ -12,4 +12,10 @@ public interface ITicketService
     Task<TicketDetailDto?> GetTicketByIdAsync(Guid id, CancellationToken cancellationToken);
 
     Task<TicketDetailDto> CreateTicketAsync(CreateTicketDto input, CancellationToken cancellationToken);
+
+    Task<TicketDetailDto?> ClaimTicketAsync(Guid id, ClaimTicketDto input, CancellationToken cancellationToken);
+
+    Task<TicketDetailDto?> UnclaimTicketAsync(Guid id, CancellationToken cancellationToken);
+
+    Task<TicketDetailDto?> ChangeStatusAsync(Guid id, ChangeTicketStatusDto input, CancellationToken cancellationToken);
 }

@@ -48,4 +48,62 @@ public sealed class TicketController(ITicketService ticketService) : ControllerB
             return BadRequest(ex.Message);
         }
     }
+
+    [HttpPost("{id:guid}/claim")]
+    public async Task<ActionResult<TicketDetailDto>> ClaimTicket(
+        Guid id,
+        ClaimTicketDto input,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var ticket = await ticketService.ClaimTicketAsync(id, input, cancellationToken);
+            return ticket is null ? NotFound() : Ok(ticket);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
+
+    [HttpPost("{id:guid}/unclaim")]
+    public async Task<ActionResult<TicketDetailDto>> UnclaimTicket(
+        Guid id,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var ticket = await ticketService.UnclaimTicketAsync(id, cancellationToken);
+            return ticket is null ? NotFound() : Ok(ticket);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
+
+    [HttpPost("{id:guid}/status")]
+    public async Task<ActionResult<TicketDetailDto>> ChangeStatus(
+        Guid id,
+        ChangeTicketStatusDto input,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var ticket = await ticketService.ChangeStatusAsync(id, input, cancellationToken);
+            return ticket is null ? NotFound() : Ok(ticket);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
 }
