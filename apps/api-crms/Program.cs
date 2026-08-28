@@ -60,6 +60,8 @@ builder.Services.AddScoped<IWorkflowRunQueryService, WorkflowRunQueryService>();
 // Conversations (Tickets / Messages) services
 builder.Services.AddScoped<ITicketRepository, TicketRepository>();
 builder.Services.AddScoped<ITicketService, TicketService>();
+builder.Services.AddScoped<IMessageRepository, MessageRepository>();
+builder.Services.AddScoped<IMessageService, MessageService>();
 
 builder.Services.AddControllers();
 builder.Services.AddOpenApi(options =>
