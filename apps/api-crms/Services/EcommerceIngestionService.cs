@@ -25,6 +25,8 @@ public sealed class EcommerceIngestionService(
             return false; // Already processed (dedup)
         }
 
+        await using var transaction = await ecommerceRepository.BeginTransactionAsync(cancellationToken);
+
         var webhookPayload = JsonSerializer.Deserialize<EcommerceWebhookPayload>(payload, JsonOptions)
             ?? throw new InvalidOperationException("Invalid webhook payload.");
 
@@ -50,6 +52,9 @@ public sealed class EcommerceIngestionService(
         }
 
         await ecommerceRepository.MarkEventProcessedAsync(eventId, eventType, cancellationToken);
+        await ecommerceRepository.UpdateSyncStatusAsync(cancellationToken);
+
+        await transaction.CommitAsync(cancellationToken);
         return true;
     }
 

@@ -3,11 +3,17 @@ using api_crms.Enums;
 using api_crms.Interfaces;
 using api_crms.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace api_crms.Repositories;
 
 public sealed class EcommerceRepository(AppDbContext dbContext) : IEcommerceRepository
 {
+    public async Task<IDbContextTransaction> BeginTransactionAsync(CancellationToken cancellationToken)
+    {
+        return await dbContext.Database.BeginTransactionAsync(cancellationToken);
+    }
+
     public async Task<bool> HasProcessedEventAsync(string eventId, CancellationToken cancellationToken)
     {
         return await dbContext.ProcessedEvents
@@ -153,6 +159,32 @@ public sealed class EcommerceRepository(AppDbContext dbContext) : IEcommerceRepo
     {
         dbContext.TimelineEntries.Add(entry);
         await dbContext.SaveChangesAsync(cancellationToken);
+    }
+
+    public async Task UpdateSyncStatusAsync(CancellationToken cancellationToken)
+    {
+        var now = DateTimeOffset.UtcNow;
+        var status = await dbContext.EcommerceSyncStatuses.FindAsync([1], cancellationToken);
+        if (status is null)
+        {
+            status = new EcommerceSyncStatus
+            {
+                Id = 1,
+                FirstEventReceivedAt = now,
+                LastEventReceivedAt = now,
+            };
+            dbContext.EcommerceSyncStatuses.Add(status);
+        }
+        else
+        {
+            status.LastEventReceivedAt = now;
+        }
+        await dbContext.SaveChangesAsync(cancellationToken);
+    }
+
+    public async Task<EcommerceSyncStatus?> GetSyncStatusAsync(CancellationToken cancellationToken)
+    {
+        return await dbContext.EcommerceSyncStatuses.FindAsync([1], cancellationToken);
     }
 
     public async Task SaveChangesAsync(CancellationToken cancellationToken)

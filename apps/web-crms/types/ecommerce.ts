@@ -56,3 +56,13 @@ export interface WorkflowRunListItem {
   nextStepDueAt: string;
   completedAt: string | null;
 }
+
+export type EcommerceSyncStatusState = "never_connected" | "healthy" | "stale";
+
+export interface EcommerceSyncStatus {
+  status: EcommerceSyncStatusState;
+  firstEventReceivedAt: string | null;
+  lastEventReceivedAt: string | null;
+  webhookSecretConfigured: boolean;
+  maskedWebhookSecret: string | null;
+}

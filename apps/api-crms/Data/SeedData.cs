@@ -665,6 +665,14 @@ public static class SeedData
             new ProcessedEvent { EventId = "seed-evt-004", EventType = "cart.updated", ProcessedAt = DateTimeOffset.UtcNow.AddDays(-2) }
         );
 
+        // Seed ecommerce sync status — reflects that events have been received (healthy state)
+        dbContext.EcommerceSyncStatuses.Add(new EcommerceSyncStatus
+        {
+            Id = 1,
+            FirstEventReceivedAt = DateTimeOffset.UtcNow.AddDays(-25),
+            LastEventReceivedAt = DateTimeOffset.UtcNow.AddHours(-6),
+        });
+
         dbContext.SaveChanges();
     }
 

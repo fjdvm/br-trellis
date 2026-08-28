@@ -42,6 +42,8 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
     public DbSet<WorkflowStep> WorkflowSteps => Set<WorkflowStep>();
     public DbSet<WorkflowRun> WorkflowRuns => Set<WorkflowRun>();
 
+    public DbSet<EcommerceSyncStatus> EcommerceSyncStatuses => Set<EcommerceSyncStatus>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         ConfigureContact(modelBuilder);
@@ -63,6 +65,7 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
         ConfigureWorkflow(modelBuilder);
         ConfigureWorkflowStep(modelBuilder);
         ConfigureWorkflowRun(modelBuilder);
+        ConfigureEcommerceSyncStatus(modelBuilder);
     }
 
     private static void ConfigureContact(ModelBuilder modelBuilder)
@@ -472,6 +475,18 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
                 .WithMany(e => e.Runs)
                 .HasForeignKey(e => e.WorkflowId)
                 .OnDelete(DeleteBehavior.Cascade);
+        });
+    }
+
+    private static void ConfigureEcommerceSyncStatus(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<EcommerceSyncStatus>(status =>
+        {
+            status.ToTable("ecommerce_sync_status");
+            status.HasKey(e => e.Id);
+            status.Property(e => e.Id).HasColumnName("id");
+            status.Property(e => e.FirstEventReceivedAt).HasColumnName("first_event_received_at");
+            status.Property(e => e.LastEventReceivedAt).HasColumnName("last_event_received_at");
         });
     }
 }

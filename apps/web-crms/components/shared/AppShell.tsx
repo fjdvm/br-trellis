@@ -6,6 +6,7 @@ import { SidebarProvider, useSidebar } from "@/components/ui/sidebar";
 import { Sidebar } from "./Sidebar";
 import { Header } from "./Header";
 import { AskSentraCXPanel } from "@/components/features/dashboard/ask-sentracx-panel";
+import { EcommerceSyncStatusProvider } from "@/hooks/useEcommerceSyncStatus";
 
 function MainContent({ children }: { children: React.ReactNode }) {
   const { open } = useSidebar();
@@ -41,19 +42,21 @@ function MainContent({ children }: { children: React.ReactNode }) {
 export function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <SidebarProvider defaultOpen={true}>
-      <div className="flex min-h-screen w-full bg-background text-foreground relative">
-        {/* Sidebar Shell */}
-        <Sidebar />
+      <EcommerceSyncStatusProvider>
+        <div className="flex min-h-screen w-full bg-background text-foreground relative">
+          {/* Sidebar Shell */}
+          <Sidebar />
 
-        {/* Content Area Container */}
-        <MainContent>{children}</MainContent>
-      </div>
+          {/* Content Area Container */}
+          <MainContent>{children}</MainContent>
+        </div>
 
-      {/* Floating AI Chat — placed outside all layout containers to avoid
-          transform/transition containment breaking fixed positioning on md+ screens */}
-      <Suspense fallback={null}>
-        <AskSentraCXPanel />
-      </Suspense>
+        {/* Floating AI Chat — placed outside all layout containers to avoid
+            transform/transition containment breaking fixed positioning on md+ screens */}
+        <Suspense fallback={null}>
+          <AskSentraCXPanel />
+        </Suspense>
+      </EcommerceSyncStatusProvider>
     </SidebarProvider>
   );
 }

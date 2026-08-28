@@ -34,6 +34,7 @@ import {
   systems,
 } from "./SidebarNav";
 import { SidebarProfileFooter } from "./SidebarProfileFooter";
+import { useEcommerceSyncStatus } from "@/hooks/useEcommerceSyncStatus";
 
 export function Sidebar() {
   const pathname = usePathname();
@@ -97,6 +98,9 @@ export function Sidebar() {
 
   const crmsPerms = session?.permissions?.CRMS as Record<string, Record<string, boolean>> | undefined;
   const isSuperUser = !!session?.isSuperUser;
+
+  const { status: ecommerceSyncState, isLoading: syncStatusLoading } = useEcommerceSyncStatus();
+  const isEcommerceDisabled = !syncStatusLoading && ecommerceSyncState === "never_connected";
 
   const allowedNavGroups = navGroups.filter((group) => {
     if (isSuperUser) return true;
@@ -214,27 +218,39 @@ export function Sidebar() {
                 );
                 const isExpanded =
                   expandedGroups[group.name] ?? hasActiveChild;
+                const isDisabled = group.name === "Ecommerce" && isEcommerceDisabled;
 
                 return (
                   <div key={group.name} className="mt-xs">
                     <button
-                      onClick={() =>
+                      onClick={() => {
+                        if (isDisabled) return;
                         setExpandedGroups((prev) => ({
                           ...prev,
                           [group.name]: !isExpanded,
-                        }))
-                      }
-                      className={`w-full flex items-center gap-sm px-sm py-sm rounded-lg text-sm text-foreground transition-colors hover:bg-sidebar-accent`}
+                        }));
+                      }}
+                      className={`w-full flex items-center gap-sm px-sm py-sm rounded-lg text-sm transition-colors ${
+                        isDisabled
+                          ? "text-muted-foreground/50 cursor-not-allowed"
+                          : "text-foreground hover:bg-sidebar-accent"
+                      }`}
                     >
-                      <GroupIcon className="w-4 h-4 shrink-0" />
+                      <GroupIcon className={`w-4 h-4 shrink-0 ${isDisabled ? "opacity-50" : ""}`} />
                       <span className="flex-1 text-left">{group.name}</span>
-                      <ChevronRight
-                        className={`w-4 h-4 transition-transform ${
-                          isExpanded ? "rotate-90" : ""
-                        }`}
-                      />
+                      {isDisabled ? (
+                        <span className="text-[10px] text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
+                          Not connected
+                        </span>
+                      ) : (
+                        <ChevronRight
+                          className={`w-4 h-4 transition-transform ${
+                            isExpanded ? "rotate-90" : ""
+                          }`}
+                        />
+                      )}
                     </button>
-                    {isExpanded && (
+                    {!isDisabled && isExpanded && (
                       <div className="ml-[18px] mt-xs border-l-2 border-border pl-md">
                         <SidebarMenu>
                           {group.children.map((child) => {

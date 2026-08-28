@@ -1,5 +1,5 @@
-import { ComingSoonPage } from "@/components/shared/ComingSoonPage";
+import { EcommerceSyncPage } from "@/components/features/settings/EcommerceSyncPage";
 
 export default function Page() {
-  return <ComingSoonPage title="Ecommerce Sync" description="Configure connections to your ecommerce platform." />;
+  return <EcommerceSyncPage />;
 }

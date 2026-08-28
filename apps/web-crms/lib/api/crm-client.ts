@@ -39,6 +39,7 @@ import {
   ProductListItem,
   CartListItem,
   WorkflowRunListItem,
+  EcommerceSyncStatus,
 } from "@/types/ecommerce";
 import {
   CompanyListItem,
@@ -286,5 +287,9 @@ export const crmClient = {
       request<void>(`/api/v1/companies/${id}`, {
         method: "DELETE",
       }),
+  },
+  ecommerceSyncStatus: {
+    get: () =>
+      request<EcommerceSyncStatus>(`/api/v1/ecommerce/sync-status`),
   },
 };

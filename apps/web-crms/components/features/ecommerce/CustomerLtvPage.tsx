@@ -6,6 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DataTable, Column } from "@/components/shared/DataTable";
 import { request } from "@/lib/api/request";
 import { formatName, formatEmail } from "@/lib/format-display";
+import { useEcommerceSyncStatus } from "@/hooks/useEcommerceSyncStatus";
+import { EcommerceConnectPrompt } from "./EcommerceConnectPrompt";
 
 interface ContactLtvItem {
   id: string;
@@ -49,6 +51,7 @@ function searchContacts(contact: ContactLtvItem, query: string): boolean {
 }
 
 export function CustomerLtvPage() {
+  const { status: syncState, isLoading: syncLoading } = useEcommerceSyncStatus();
   const [contacts, setContacts] = useState<ContactLtvItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -72,6 +75,10 @@ export function CustomerLtvPage() {
     () => [...contacts].sort((a, b) => (b.lifetimeValue ?? 0) - (a.lifetimeValue ?? 0)),
     [contacts]
   );
+
+  if (!syncLoading && syncState === "never_connected") {
+    return <EcommerceConnectPrompt />;
+  }
 
   return (
     <div className="w-full min-h-full py-xl px-lg md:px-xl space-y-lg max-w-7xl mx-auto">

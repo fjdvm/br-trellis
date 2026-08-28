@@ -35,6 +35,7 @@ builder.Services.AddScoped<ICompanyService, CompanyService>();
 // Ecommerce services
 builder.Services.AddScoped<IEcommerceRepository, EcommerceRepository>();
 builder.Services.AddScoped<IEcommerceIngestionService, EcommerceIngestionService>();
+builder.Services.AddScoped<IEcommerceSyncStatusService, EcommerceSyncStatusService>();
 builder.Services.AddSingleton(new CartAbandonmentOptions
 {
     AbandonmentThreshold = TimeSpan.FromMinutes(

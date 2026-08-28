@@ -261,6 +261,120 @@ public sealed class EcommerceIngestionServiceTests : IDisposable
         Assert.Equal(0m, contact.LifetimeValue);
     }
 
+    [Fact]
+    public async Task Unknown_event_type_throws_and_leaves_zero_rows()
+    {
+        await using var context = CreateContext();
+        var contactId = await SeedContactAsync(context);
+        var service = CreateService(context);
+
+        var payload = JsonSerializer.Serialize(new
+        {
+            EventId = "evt-bad",
+            EventType = "unknown.type",
+            Data = new
+            {
+                ContactId = contactId.ToString(),
+                OccurredAt = DateTimeOffset.UtcNow.ToString("O"),
+            },
+        });
+
+        await Assert.ThrowsAsync<InvalidOperationException>(
+            () => service.ProcessEventAsync("evt-bad", "unknown.type", payload));
+
+        // Nothing was persisted — transaction was rolled back
+        Assert.Equal(0, await context.Orders.CountAsync());
+        Assert.Equal(0, await context.ProcessedEvents.CountAsync());
+        Assert.Equal(0, await context.TimelineEntries.CountAsync());
+        Assert.Null(await context.EcommerceSyncStatuses.FindAsync(1));
+    }
+
+    [Fact]
+    public async Task First_event_sets_both_first_and_last_event_received_at()
+    {
+        await using var context = CreateContext();
+        var contactId = await SeedContactAsync(context);
+        var service = CreateService(context);
+
+        var payload = CreateOrderPayload("evt-1", "order.created", "order-100", contactId,
+            "paid", 50.00m, 0m);
+
+        await service.ProcessEventAsync("evt-1", "order.created", payload);
+
+        var status = await context.EcommerceSyncStatuses.FindAsync(1);
+        Assert.NotNull(status);
+        Assert.NotNull(status.FirstEventReceivedAt);
+        Assert.NotNull(status.LastEventReceivedAt);
+        Assert.Equal(status.FirstEventReceivedAt, status.LastEventReceivedAt);
+    }
+
+    [Fact]
+    public async Task Second_event_of_different_type_updates_last_but_not_first()
+    {
+        await using var context = CreateContext();
+        var contactId = await SeedContactAsync(context);
+        var service = CreateService(context);
+
+        // First event: order
+        var orderPayload = CreateOrderPayload("evt-1", "order.created", "order-100", contactId,
+            "paid", 50.00m, 0m);
+        await service.ProcessEventAsync("evt-1", "order.created", orderPayload);
+
+        var statusAfterFirst = await context.EcommerceSyncStatuses.FindAsync(1);
+        var firstReceivedAt = statusAfterFirst!.FirstEventReceivedAt;
+        var lastAfterFirst = statusAfterFirst.LastEventReceivedAt;
+
+        // Small delay to ensure timestamps differ
+        await Task.Delay(50);
+
+        // Second event: cart (different type)
+        var cartPayload = CreateCartPayload("evt-2", "cart-200", contactId);
+        await service.ProcessEventAsync("evt-2", "cart.updated", cartPayload);
+
+        // Re-read (detach to force fresh read)
+        context.ChangeTracker.Clear();
+        var statusAfterSecond = await context.EcommerceSyncStatuses.FindAsync(1);
+        Assert.NotNull(statusAfterSecond);
+        Assert.Equal(firstReceivedAt, statusAfterSecond.FirstEventReceivedAt);
+        Assert.True(statusAfterSecond.LastEventReceivedAt >= lastAfterFirst);
+    }
+
+    [Fact]
+    public async Task Failed_event_does_not_update_sync_status()
+    {
+        await using var context = CreateContext();
+        var contactId = await SeedContactAsync(context);
+        var service = CreateService(context);
+
+        // First, successfully process an event so sync status exists
+        var goodPayload = CreateOrderPayload("evt-1", "order.created", "order-100", contactId,
+            "paid", 50.00m, 0m);
+        await service.ProcessEventAsync("evt-1", "order.created", goodPayload);
+
+        var statusBefore = await context.EcommerceSyncStatuses.FindAsync(1);
+        var lastBefore = statusBefore!.LastEventReceivedAt;
+
+        // Now try a bad event
+        var badPayload = JsonSerializer.Serialize(new
+        {
+            EventId = "evt-bad",
+            EventType = "unknown.type",
+            Data = new
+            {
+                ContactId = contactId.ToString(),
+                OccurredAt = DateTimeOffset.UtcNow.ToString("O"),
+            },
+        });
+
+        await Assert.ThrowsAsync<InvalidOperationException>(
+            () => service.ProcessEventAsync("evt-bad", "unknown.type", badPayload));
+
+        // Sync status should be unchanged
+        context.ChangeTracker.Clear();
+        var statusAfter = await context.EcommerceSyncStatuses.FindAsync(1);
+        Assert.Equal(lastBefore, statusAfter!.LastEventReceivedAt);
+    }
+
     public void Dispose()
     {
         File.Delete(_databasePath);

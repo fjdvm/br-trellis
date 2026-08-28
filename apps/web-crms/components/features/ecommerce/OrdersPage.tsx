@@ -6,6 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DataTable, Column } from "@/components/shared/DataTable";
 import { crmClient } from "@/lib/api/crm-client";
+import { useEcommerceSyncStatus } from "@/hooks/useEcommerceSyncStatus";
+import { EcommerceConnectPrompt } from "./EcommerceConnectPrompt";
 import type { OrderListItem } from "@/types/ecommerce";
 
 const columns: Column<OrderListItem>[] = [
@@ -61,6 +63,7 @@ function searchOrders(order: OrderListItem, query: string): boolean {
 }
 
 export function OrdersPage() {
+  const { status: syncState, isLoading: syncLoading } = useEcommerceSyncStatus();
   const [orders, setOrders] = useState<OrderListItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -79,6 +82,10 @@ export function OrdersPage() {
   useEffect(() => {
     void loadOrders();
   }, [loadOrders]);
+
+  if (!syncLoading && syncState === "never_connected") {
+    return <EcommerceConnectPrompt />;
+  }
 
   return (
     <div className="w-full min-h-full py-xl px-lg md:px-xl space-y-lg max-w-7xl mx-auto">
