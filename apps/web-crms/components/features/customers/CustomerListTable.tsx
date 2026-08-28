@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/table";
 import { crmClient } from "@/lib/api/crm-client";
 import { formatName, formatEmail } from "@/lib/format-display";
+import { TableSkeleton } from "@/components/shared/TableSkeleton";
 import type { CustomerIdentityListItem } from "@/types/customer";
 
 export function CustomerListTable() {
@@ -46,7 +47,7 @@ export function CustomerListTable() {
   }, []);
 
   if (isLoading) {
-    return <div className="p-xl text-muted-foreground">Loading customers…</div>;
+    return <TableSkeleton columns={4} />;
   }
 
   if (error) {

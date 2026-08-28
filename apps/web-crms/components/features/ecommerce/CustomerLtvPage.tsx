@@ -1,9 +1,9 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Loader2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DataTable, Column } from "@/components/shared/DataTable";
+import { TableSkeleton } from "@/components/shared/TableSkeleton";
 import { request } from "@/lib/api/request";
 import { formatName, formatEmail } from "@/lib/format-display";
 import { useEcommerceSyncStatus } from "@/hooks/useEcommerceSyncStatus";
@@ -97,9 +97,7 @@ export function CustomerLtvPage() {
         </CardHeader>
         <CardContent className="p-lg pt-0">
           {isLoading ? (
-            <div className="flex items-center justify-center py-xl">
-              <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
-            </div>
+            <TableSkeleton columns={5} />
           ) : error ? (
             <div className="p-xl text-destructive">{error}</div>
           ) : (

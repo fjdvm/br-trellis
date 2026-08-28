@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Building2, Loader2, Pencil, Trash2 } from "lucide-react";
+import { DetailSkeleton } from "@/components/shared/DetailSkeleton";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -116,11 +117,7 @@ export function ContactDetailPage({ contactId }: ContactDetailPageProps) {
   }
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center py-xl">
-        <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
-      </div>
-    );
+    return <DetailSkeleton />;
   }
 
   if (error && !contact) {

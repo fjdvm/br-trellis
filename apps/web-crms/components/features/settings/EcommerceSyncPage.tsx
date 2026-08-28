@@ -1,7 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { Loader2, CheckCircle2, AlertTriangle, XCircle, RefreshCw } from "lucide-react";
+import { CheckCircle2, AlertTriangle, XCircle, RefreshCw } from "lucide-react";
+import { DetailSkeleton } from "@/components/shared/DetailSkeleton";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -91,11 +92,7 @@ export function EcommerceSyncPage() {
   }, [loadStatus]);
 
   if (isLoading) {
-    return (
-      <div className="w-full min-h-full py-xl px-lg md:px-xl flex items-center justify-center">
-        <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
-      </div>
-    );
+    return <DetailSkeleton cards={2} />;
   }
 
   if (error) {

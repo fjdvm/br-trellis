@@ -1,10 +1,10 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DataTable, Column } from "@/components/shared/DataTable";
+import { TableSkeleton } from "@/components/shared/TableSkeleton";
 import { crmClient } from "@/lib/api/crm-client";
 import { useEcommerceSyncStatus } from "@/hooks/useEcommerceSyncStatus";
 import { EcommerceConnectPrompt } from "./EcommerceConnectPrompt";
@@ -103,9 +103,7 @@ export function AbandonedCartsPage() {
         </CardHeader>
         <CardContent className="p-lg pt-0">
           {isLoading ? (
-            <div className="flex items-center justify-center py-xl">
-              <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
-            </div>
+            <TableSkeleton columns={6} />
           ) : error ? (
             <div className="p-xl text-destructive">{error}</div>
           ) : (

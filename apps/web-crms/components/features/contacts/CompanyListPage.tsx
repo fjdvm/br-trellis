@@ -2,7 +2,8 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Building2, Loader2, Plus } from "lucide-react";
+import { Building2 } from "lucide-react";
+import { TableSkeleton } from "@/components/shared/TableSkeleton";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -76,9 +77,7 @@ export function CompanyListPage() {
         </CardHeader>
         <CardContent className="p-lg pt-0">
           {isLoading ? (
-            <div className="flex items-center justify-center py-xl">
-              <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
-            </div>
+            <TableSkeleton columns={4} />
           ) : error ? (
             <div className="p-xl text-destructive">{error}</div>
           ) : companies.length === 0 ? (

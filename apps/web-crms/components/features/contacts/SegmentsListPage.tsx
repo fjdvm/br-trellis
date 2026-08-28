@@ -2,7 +2,8 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Loader2, Users } from "lucide-react";
+import { ArrowLeft, Users } from "lucide-react";
+import { TableSkeleton } from "@/components/shared/TableSkeleton";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -124,9 +125,7 @@ export function SegmentsListPage({ preSelectedSegmentName }: SegmentsListPagePro
           </CardHeader>
           <CardContent className="p-lg pt-0">
             {isMembersLoading ? (
-              <div className="flex items-center justify-center py-xl">
-                <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
-              </div>
+              <TableSkeleton columns={4} />
             ) : membersError ? (
               <div className="p-xl text-destructive">{membersError}</div>
             ) : members.length === 0 ? (
@@ -191,9 +190,7 @@ export function SegmentsListPage({ preSelectedSegmentName }: SegmentsListPagePro
         </CardHeader>
         <CardContent className="p-lg pt-0">
           {isLoading ? (
-            <div className="flex items-center justify-center py-xl">
-              <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
-            </div>
+            <TableSkeleton columns={4} />
           ) : error ? (
             <div className="p-xl text-destructive">{error}</div>
           ) : segments.length === 0 ? (

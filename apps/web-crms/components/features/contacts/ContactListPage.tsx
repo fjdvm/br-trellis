@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
+import { TableSkeleton } from "@/components/shared/TableSkeleton";
 import { ContactListTable } from "@/components/features/contacts/ContactListTable";
 import { AddContactSheet } from "@/components/features/contacts/AddContactSheet";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -59,9 +60,7 @@ export function ContactListPage() {
         </CardHeader>
         <CardContent className="p-lg pt-0">
           {isLoading ? (
-            <div className="flex items-center justify-center py-xl">
-              <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
-            </div>
+            <TableSkeleton columns={5} />
           ) : error ? (
             <div className="p-xl text-destructive">{error}</div>
           ) : (
