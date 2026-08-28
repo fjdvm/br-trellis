@@ -42,3 +42,6 @@ public sealed record ClaimTicketDto(
 
 public sealed record ChangeTicketStatusDto(
     string Status);
+
+public sealed record SetWaitingOnDto(
+    string WaitingOn);

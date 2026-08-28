@@ -106,4 +106,21 @@ public sealed class TicketController(ITicketService ticketService) : ControllerB
             return BadRequest(ex.Message);
         }
     }
+
+    [HttpPost("{id:guid}/waiting-on")]
+    public async Task<ActionResult<TicketDetailDto>> SetWaitingOn(
+        Guid id,
+        SetWaitingOnDto input,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var ticket = await ticketService.SetWaitingOnAsync(id, input, cancellationToken);
+            return ticket is null ? NotFound() : Ok(ticket);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
 }

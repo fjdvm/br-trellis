@@ -18,4 +18,6 @@ public interface ITicketService
     Task<TicketDetailDto?> UnclaimTicketAsync(Guid id, CancellationToken cancellationToken);
 
     Task<TicketDetailDto?> ChangeStatusAsync(Guid id, ChangeTicketStatusDto input, CancellationToken cancellationToken);
+
+    Task<TicketDetailDto?> SetWaitingOnAsync(Guid id, SetWaitingOnDto input, CancellationToken cancellationToken);
 }

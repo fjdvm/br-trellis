@@ -178,6 +178,32 @@ public sealed class TicketService(
         return TicketMapper.ToDetail(full!);
     }
 
+    public async Task<TicketDetailDto?> SetWaitingOnAsync(
+        Guid id,
+        SetWaitingOnDto input,
+        CancellationToken cancellationToken)
+    {
+        if (!Enum.TryParse<WaitingOn>(input.WaitingOn, ignoreCase: true, out var target))
+        {
+            throw new ArgumentException($"Invalid WaitingOn: '{input.WaitingOn}'.");
+        }
+
+        var ticket = await dbContext.Tickets.FindAsync([id], cancellationToken);
+        if (ticket is null)
+        {
+            return null;
+        }
+
+        // WaitingOn is fully independent of Status/AssignedTo* — set it and nothing else.
+        ticket.WaitingOn = target;
+        ticket.UpdatedAt = DateTimeOffset.UtcNow;
+
+        await dbContext.SaveChangesAsync(cancellationToken);
+
+        var full = await ticketRepository.GetTicketByIdAsync(id, cancellationToken);
+        return TicketMapper.ToDetail(full!);
+    }
+
     private static bool IsValidTransition(TicketStatus from, TicketStatus to)
     {
         // Completed and Canceled are terminal.
