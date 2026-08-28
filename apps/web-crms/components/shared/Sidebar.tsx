@@ -34,11 +34,12 @@ import {
   systems,
 } from "./SidebarNav";
 import { SidebarProfileFooter } from "./SidebarProfileFooter";
+import { SidebarNavSkeleton } from "./SidebarNavSkeleton";
 import { useEcommerceSyncStatus } from "@/hooks/useEcommerceSyncStatus";
 
 export function Sidebar() {
   const pathname = usePathname();
-  const { data: session } = useSession();
+  const { data: session, status: sessionStatus } = useSession();
   const { open, openMobile, setOpenMobile, toggleSidebar, isMobile } =
     useSidebar();
   const [activeAccount, setActiveAccountState] = useState(() => {
@@ -111,6 +112,12 @@ export function Sidebar() {
 
   // Dashboard is gated on the "Dashboard" module permission (unless superuser)
   const showDashboard = isSuperUser || crmsPerms?.["Dashboard"]?.canRead === true;
+
+  // While the session/permissions or ecommerce sync status are still resolving,
+  // the set of visible nav tabs is unknown. Show a skeleton transition so the
+  // nav fades in cleanly instead of popping/flickering item-by-item.
+  const isNavLoading =
+    !mounted || sessionStatus === "loading" || syncStatusLoading;
 
   return (
     <>
@@ -190,6 +197,10 @@ export function Sidebar() {
         <SidebarContent className="p-md overflow-y-auto">
           <SidebarGroup className="p-0">
             <SidebarGroupContent>
+              {isNavLoading ? (
+                <SidebarNavSkeleton />
+              ) : (
+                <>
               {/* Dashboard (standalone, no sub-tabs) */}
               {showDashboard && (
               <SidebarMenu>
@@ -280,6 +291,8 @@ export function Sidebar() {
                   </div>
                 );
               })}
+                </>
+              )}
             </SidebarGroupContent>
           </SidebarGroup>
         </SidebarContent>
