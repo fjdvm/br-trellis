@@ -57,6 +57,10 @@ builder.Services.AddScoped<ICartService, CartService>();
 builder.Services.AddScoped<IWorkflowRunRepository, WorkflowRunRepository>();
 builder.Services.AddScoped<IWorkflowRunQueryService, WorkflowRunQueryService>();
 
+// Conversations (Tickets / Messages) services
+builder.Services.AddScoped<ITicketRepository, TicketRepository>();
+builder.Services.AddScoped<ITicketService, TicketService>();
+
 builder.Services.AddControllers();
 builder.Services.AddOpenApi(options =>
 {

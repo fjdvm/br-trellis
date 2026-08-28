@@ -142,6 +142,26 @@ Orders. Historical only — not a predictive/forward-looking estimate.
 Recalculated whenever an Order projection relevant to that Contact changes
 (created, updated, or refunded).
 
+## Conversation
+
+A single support interaction between a Contact and Trellis, tracked as a
+Ticket with an ordered thread of Messages. A Conversation has two
+independent fields, not one:
+
+- **Status** — the ownership lifecycle: `Unclaimed → Claimed → Ongoing →
+  Completed`, or `Canceled` from any non-terminal state. Tracks who owns
+  the ticket and where it sits in the staff workflow.
+- **WaitingOn** — `Agent`, `Customer`, or `None`: whose turn it is to
+  respond. Orthogonal to Status — a `Claimed` or `Ongoing` ticket can be
+  WaitingOn either party at different points in its life; Status alone
+  never implies whose turn it is.
+
+These are deliberately separate fields, not collapsed into a single enum
+or a boolean bolted onto Status: Status answers "who owns this and is it
+done," WaitingOn answers "who needs to act next." Conflating them would
+require a transition table with a state for every combination, most of
+which are the same ownership stage repeated with different waiting-sides.
+
 ## Identity Resolution
 
 The process of matching an incoming record (from an external source system)

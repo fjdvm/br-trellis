@@ -362,6 +362,119 @@ public static class SeedData
 
         // Seed ecommerce data if not already present
         SeedEcommerce(dbContext, contacts);
+
+        // Seed conversation tickets if not already present
+        SeedTickets(dbContext, contacts);
+    }
+
+    private static void SeedTickets(AppDbContext dbContext, Contact[] contacts)
+    {
+        if (dbContext.Tickets.Any()) return;
+
+        var now = DateTimeOffset.UtcNow;
+
+        // Claimed + Ongoing ticket with a short staff/customer message thread.
+        var ongoing = new Ticket
+        {
+            Id = Guid.NewGuid(),
+            ContactId = contacts[0].Id, // Maya Chen
+            Subject = "Cannot access invoice download",
+            Status = TicketStatus.Ongoing,
+            WaitingOn = WaitingOn.Customer,
+            AssignedToId = "auth|agent-amelia",
+            AssignedToName = "Amelia Ward",
+            AssignedToEmail = "amelia.ward@trellis.io",
+            CreatedAt = now.AddDays(-3),
+            UpdatedAt = now.AddHours(-6),
+        };
+
+        var claimed = new Ticket
+        {
+            Id = Guid.NewGuid(),
+            ContactId = contacts[1].Id, // Liam Torres
+            Subject = "Refund not received after 5 business days",
+            Status = TicketStatus.Claimed,
+            WaitingOn = WaitingOn.Agent,
+            AssignedToId = "auth|agent-amelia",
+            AssignedToName = "Amelia Ward",
+            AssignedToEmail = "amelia.ward@trellis.io",
+            CreatedAt = now.AddDays(-1),
+            UpdatedAt = now.AddHours(-2),
+        };
+
+        // Unclaimed + WaitingOn=Agent — a customer just replied but nobody owns it yet.
+        var unclaimedWaitingAgent = new Ticket
+        {
+            Id = Guid.NewGuid(),
+            ContactId = contacts[2].Id,
+            Subject = "Question about bulk pricing",
+            Status = TicketStatus.Unclaimed,
+            WaitingOn = WaitingOn.Agent,
+            CreatedAt = now.AddHours(-8),
+            UpdatedAt = now.AddHours(-1),
+        };
+
+        // Unlinked (ContactId = null) ticket — e.g. email ingestion before identity resolution.
+        var unlinked = new Ticket
+        {
+            Id = Guid.NewGuid(),
+            ContactId = null,
+            Subject = "Inbound email: website contact form",
+            Status = TicketStatus.Unclaimed,
+            WaitingOn = WaitingOn.Agent,
+            CreatedAt = now.AddHours(-4),
+            UpdatedAt = now.AddHours(-4),
+        };
+
+        var completed = new Ticket
+        {
+            Id = Guid.NewGuid(),
+            ContactId = contacts[3].Id, // Marcus Johnson
+            Subject = "Support ticket #TK-892 resolved",
+            Status = TicketStatus.Completed,
+            WaitingOn = WaitingOn.None,
+            AssignedToId = "auth|agent-noah",
+            AssignedToName = "Noah Patel",
+            AssignedToEmail = "noah.patel@trellis.io",
+            CreatedAt = now.AddDays(-10),
+            UpdatedAt = now.AddDays(-9),
+        };
+
+        dbContext.Tickets.AddRange(
+            ongoing, claimed, unclaimedWaitingAgent, unlinked, completed);
+
+        // A short chronological message thread on the ongoing ticket.
+        dbContext.Messages.AddRange(
+            new Message
+            {
+                Id = Guid.NewGuid(),
+                TicketId = ongoing.Id,
+                SenderType = MessageSenderType.Contact,
+                SenderContactId = contacts[0].Id,
+                Content = "Hi, I can't download my invoice — the button does nothing.",
+                SentAt = now.AddDays(-3),
+            },
+            new Message
+            {
+                Id = Guid.NewGuid(),
+                TicketId = ongoing.Id,
+                SenderType = MessageSenderType.Staff,
+                SenderStaffId = "auth|agent-amelia",
+                SenderStaffName = "Amelia Ward",
+                Content = "Thanks for reaching out! Which browser are you using?",
+                SentAt = now.AddDays(-3).AddMinutes(30),
+            },
+            new Message
+            {
+                Id = Guid.NewGuid(),
+                TicketId = ongoing.Id,
+                SenderType = MessageSenderType.Contact,
+                SenderContactId = contacts[0].Id,
+                Content = "Safari on macOS. Still no luck after clearing the cache.",
+                SentAt = now.AddHours(-6),
+            });
+
+        dbContext.SaveChanges();
     }
 
     private static void SeedEcommerce(AppDbContext dbContext, Contact[] contacts)

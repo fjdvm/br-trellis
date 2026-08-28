@@ -44,6 +44,10 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
 
     public DbSet<EcommerceSyncStatus> EcommerceSyncStatuses => Set<EcommerceSyncStatus>();
 
+    public DbSet<Ticket> Tickets => Set<Ticket>();
+
+    public DbSet<Message> Messages => Set<Message>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         ConfigureContact(modelBuilder);
@@ -66,6 +70,8 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
         ConfigureWorkflowStep(modelBuilder);
         ConfigureWorkflowRun(modelBuilder);
         ConfigureEcommerceSyncStatus(modelBuilder);
+        ConfigureTicket(modelBuilder);
+        ConfigureMessage(modelBuilder);
     }
 
     private static void ConfigureContact(ModelBuilder modelBuilder)
@@ -487,6 +493,67 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
             status.Property(e => e.Id).HasColumnName("id");
             status.Property(e => e.FirstEventReceivedAt).HasColumnName("first_event_received_at");
             status.Property(e => e.LastEventReceivedAt).HasColumnName("last_event_received_at");
+        });
+    }
+
+    private static void ConfigureTicket(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<Ticket>(ticket =>
+        {
+            ticket.ToTable("ticket");
+            ticket.HasKey(e => e.Id);
+            ticket.Property(e => e.Id).HasColumnName("id");
+            ticket.Property(e => e.ContactId).HasColumnName("contact_id");
+            ticket.Property(e => e.Subject).HasColumnName("subject");
+            ticket.Property(e => e.Status)
+                .HasColumnName("status")
+                .HasConversion<string>();
+            ticket.Property(e => e.WaitingOn)
+                .HasColumnName("waiting_on")
+                .HasConversion<string>();
+            ticket.Property(e => e.AssignedToId).HasColumnName("assigned_to_id");
+            ticket.Property(e => e.AssignedToName).HasColumnName("assigned_to_name");
+            ticket.Property(e => e.AssignedToEmail).HasColumnName("assigned_to_email");
+            ticket.Property(e => e.CreatedAt).HasColumnName("created_at");
+            ticket.Property(e => e.UpdatedAt).HasColumnName("updated_at");
+            ticket.HasIndex(e => e.Status);
+            ticket.HasIndex(e => e.WaitingOn);
+            ticket.HasIndex(e => e.ContactId);
+
+            ticket.HasOne(e => e.Contact)
+                .WithMany()
+                .HasForeignKey(e => e.ContactId)
+                .OnDelete(DeleteBehavior.SetNull);
+        });
+    }
+
+    private static void ConfigureMessage(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<Message>(message =>
+        {
+            message.ToTable("message");
+            message.HasKey(e => e.Id);
+            message.Property(e => e.Id).HasColumnName("id");
+            message.Property(e => e.TicketId).HasColumnName("ticket_id");
+            message.Property(e => e.SenderType)
+                .HasColumnName("sender_type")
+                .HasConversion<string>();
+            message.Property(e => e.SenderContactId).HasColumnName("sender_contact_id");
+            message.Property(e => e.SenderStaffId).HasColumnName("sender_staff_id");
+            message.Property(e => e.SenderStaffName).HasColumnName("sender_staff_name");
+            message.Property(e => e.Content).HasColumnName("content");
+            message.Property(e => e.SentAt).HasColumnName("sent_at");
+            message.HasIndex(e => new { e.TicketId, e.SentAt });
+
+            message.HasOne(e => e.Ticket)
+                .WithMany(e => e.Messages)
+                .HasForeignKey(e => e.TicketId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            message.HasOne(e => e.SenderContact)
+                .WithMany()
+                .HasForeignKey(e => e.SenderContactId)
+                .OnDelete(DeleteBehavior.SetNull);
         });
     }
 }
