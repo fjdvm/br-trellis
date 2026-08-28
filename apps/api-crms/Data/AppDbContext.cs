@@ -505,6 +505,7 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
             ticket.Property(e => e.Id).HasColumnName("id");
             ticket.Property(e => e.ContactId).HasColumnName("contact_id");
             ticket.Property(e => e.Subject).HasColumnName("subject");
+            ticket.Property(e => e.ExternalThreadId).HasColumnName("external_thread_id");
             ticket.Property(e => e.Status)
                 .HasColumnName("status")
                 .HasConversion<string>();
@@ -519,6 +520,7 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
             ticket.HasIndex(e => e.Status);
             ticket.HasIndex(e => e.WaitingOn);
             ticket.HasIndex(e => e.ContactId);
+            ticket.HasIndex(e => e.ExternalThreadId);
 
             ticket.HasOne(e => e.Contact)
                 .WithMany()

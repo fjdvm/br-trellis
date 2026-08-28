@@ -12,6 +12,8 @@ public sealed class Ticket
 
     public string Subject { get; set; } = string.Empty;
 
+    public string? ExternalThreadId { get; set; }
+
     public TicketStatus Status { get; set; }
 
     public WaitingOn WaitingOn { get; set; }

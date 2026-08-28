@@ -419,6 +419,7 @@ public static class SeedData
         {
             Id = Guid.NewGuid(),
             ContactId = null,
+            ExternalThreadId = "thread-inbound-9f3a",
             Subject = "Inbound email: website contact form",
             Status = TicketStatus.Unclaimed,
             WaitingOn = WaitingOn.Agent,
