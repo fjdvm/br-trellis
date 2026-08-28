@@ -100,7 +100,7 @@ export function EcommerceSyncPage() {
 
   if (error) {
     return (
-      <div className="w-full min-h-full py-xl px-lg md:px-xl space-y-lg max-w-3xl mx-auto">
+      <div className="w-full min-h-full py-xl px-lg md:px-xl space-y-lg">
         <h1 className="text-headline-md font-bold tracking-tight text-foreground">
           Ecommerce Sync
         </h1>
@@ -110,7 +110,7 @@ export function EcommerceSyncPage() {
   }
 
   return (
-    <div className="w-full min-h-full py-xl px-lg md:px-xl space-y-lg max-w-3xl mx-auto">
+    <div className="w-full min-h-full py-xl px-lg md:px-xl space-y-lg">
       <div className="flex items-center justify-between">
         <div className="space-y-sm">
           <h1 className="text-headline-md font-bold tracking-tight text-foreground">
