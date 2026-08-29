@@ -36,20 +36,35 @@ export async function request<T>(path: string, init?: RequestInit): Promise<T> {
 
   if (!response.ok) {
     let errorMessage = `API request failed with status ${response.status}`;
+    // Read the body as text first, then try to interpret it as JSON. ASP.NET
+    // Core's `BadRequest(ex.Message)` returns a bare `text/plain` string (not
+    // even JSON-quoted), while ProblemDetails-style errors return a JSON
+    // `{ message: ... }` object. Reading text once and parsing defensively
+    // covers a plain-text message, a JSON string, and a JSON object alike.
     try {
-      const errorData = await response.json();
-      // ASP.NET Core's `BadRequest(ex.Message)` serializes the body as a raw
-      // JSON string, whereas ProblemDetails-style errors use `{ message: ... }`.
-      // Handle both, ignoring empty strings and shapes without a usable message.
-      if (typeof errorData === "string") {
-        if (errorData.trim().length > 0) {
-          errorMessage = errorData;
+      const raw = (await response.text()).trim();
+      if (raw.length > 0) {
+        let parsed: unknown = undefined;
+        try {
+          parsed = JSON.parse(raw);
+        } catch {
+          // Not JSON — treat the raw text as the message.
+          parsed = raw;
         }
-      } else if (errorData?.message) {
-        errorMessage = errorData.message;
+        if (typeof parsed === "string") {
+          if (parsed.trim().length > 0) {
+            errorMessage = parsed;
+          }
+        } else if (
+          parsed &&
+          typeof parsed === "object" &&
+          typeof (parsed as { message?: unknown }).message === "string"
+        ) {
+          errorMessage = (parsed as { message: string }).message;
+        }
       }
     } catch {
-      // Ignore JSON parse errors for non-JSON responses.
+      // Ignore body-read errors and fall back to the generic status message.
     }
     throw new Error(errorMessage);
   }
