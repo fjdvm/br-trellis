@@ -38,7 +38,14 @@ export async function request<T>(path: string, init?: RequestInit): Promise<T> {
     let errorMessage = `API request failed with status ${response.status}`;
     try {
       const errorData = await response.json();
-      if (errorData?.message) {
+      // ASP.NET Core's `BadRequest(ex.Message)` serializes the body as a raw
+      // JSON string, whereas ProblemDetails-style errors use `{ message: ... }`.
+      // Handle both, ignoring empty strings and shapes without a usable message.
+      if (typeof errorData === "string") {
+        if (errorData.trim().length > 0) {
+          errorMessage = errorData;
+        }
+      } else if (errorData?.message) {
         errorMessage = errorData.message;
       }
     } catch {
