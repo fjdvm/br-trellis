@@ -18,10 +18,25 @@ jest.mock("next/navigation", () => ({
   useRouter: () => ({ push: jest.fn() }),
 }));
 
+jest.mock("next-auth/react", () => ({
+  useSession: () => ({
+    data: {
+      user: {
+        id: "auth|amelia",
+        name: "amelia ward",
+        email: "amelia.ward@trellis.io",
+      },
+    },
+    status: "authenticated",
+  }),
+}));
+
 jest.mock("@/lib/api/crm-client", () => ({
   crmClient: {
     conversationTickets: {
       list: jest.fn(),
+      claim: jest.fn(),
+      changeStatus: jest.fn(),
     },
   },
 }));
@@ -64,7 +79,9 @@ describe("TicketListPage against live API payload", () => {
     // Two seeded tickets are assigned to Amelia Ward (Ongoing + Claimed).
     expect(screen.getAllByText("Amelia Ward").length).toBe(2);
     // The unlinked "Inbound email" ticket has null contact AND null assignee.
-    expect(screen.getByText("\u2014")).toBeInTheDocument();
+    // (Em-dash also appears in the Actions column for terminal rows, so assert
+    // presence rather than an exact count.)
+    expect(screen.getAllByText("\u2014").length).toBeGreaterThanOrEqual(1);
     expect(screen.getAllByText("Unassigned").length).toBeGreaterThanOrEqual(1);
   });
 });

@@ -2,10 +2,22 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Ticket as TicketIcon } from "lucide-react";
+import { useSession } from "next-auth/react";
+import { Ticket as TicketIcon, Loader2, UserPlus, XCircle } from "lucide-react";
 import { TableSkeleton } from "@/components/shared/TableSkeleton";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import {
   Select,
   SelectContent,
@@ -46,6 +58,9 @@ const WAITING_ON_OPTIONS: readonly (TicketWaitingOn | "All")[] = [
   "None",
 ];
 
+/** Which in-flight row mutation is running, keyed to a ticket id. */
+type RowPending = { id: string; action: "claim" | "cancel" } | null;
+
 function contactLabel(ticket: TicketListItem): string {
   const name = formatName(ticket.contact?.name);
   if (name) return name;
@@ -59,11 +74,28 @@ function assignedLabel(ticket: TicketListItem): string {
   return name ?? "Unassigned";
 }
 
+/** Unclaimed, or an Ongoing ticket nobody owns yet, can be claimed. */
+function isClaimable(ticket: TicketListItem): boolean {
+  return (
+    ticket.status === "Unclaimed" ||
+    (ticket.status === "Ongoing" && ticket.assignedToId === null)
+  );
+}
+
+/** Completed/Canceled tickets are terminal — no row actions apply. */
+function isTerminal(ticket: TicketListItem): boolean {
+  return ticket.status === "Completed" || ticket.status === "Canceled";
+}
+
 export function TicketListPage() {
   const router = useRouter();
+  const { data: session } = useSession();
   const [tickets, setTickets] = useState<TicketListItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
+  const [rowPending, setRowPending] = useState<RowPending>(null);
+  const [cancelTarget, setCancelTarget] = useState<TicketListItem | null>(null);
   const [statusFilter, setStatusFilter] = useState<TicketStatus | "All">("All");
   const [waitingOnFilter, setWaitingOnFilter] = useState<TicketWaitingOn | "All">(
     "All"
@@ -88,6 +120,51 @@ export function TicketListPage() {
   useEffect(() => {
     void loadTickets();
   }, [loadTickets]);
+
+  /** Replace a single row from a mutation's response body (no full refetch). */
+  function applyRowUpdate(updated: TicketListItem) {
+    setTickets((prev) =>
+      prev.map((t) => (t.id === updated.id ? updated : t))
+    );
+  }
+
+  async function runRowMutation(
+    id: string,
+    action: "claim" | "cancel",
+    mutate: () => Promise<TicketListItem>
+  ) {
+    setRowPending({ id, action });
+    setActionError(null);
+    try {
+      applyRowUpdate(await mutate());
+    } catch (err) {
+      setActionError(err instanceof Error ? err.message : "Action failed.");
+    } finally {
+      setRowPending(null);
+    }
+  }
+
+  function handleClaim(ticket: TicketListItem) {
+    const staffId = session?.user?.id ?? session?.user?.username;
+    void runRowMutation(ticket.id, "claim", () =>
+      crmClient.conversationTickets.claim(ticket.id, {
+        staffId: staffId ?? "",
+        staffName: session?.user?.name ?? "",
+        staffEmail: session?.user?.email ?? "",
+      })
+    );
+  }
+
+  function handleCancelConfirmed() {
+    const ticket = cancelTarget;
+    setCancelTarget(null);
+    if (!ticket) return;
+    void runRowMutation(ticket.id, "cancel", () =>
+      crmClient.conversationTickets.changeStatus(ticket.id, {
+        status: "Canceled",
+      })
+    );
+  }
 
   const hasActiveFilter = statusFilter !== "All" || waitingOnFilter !== "All";
 
@@ -150,9 +227,12 @@ export function TicketListPage() {
             </div>
           </div>
         </CardHeader>
-        <CardContent className="p-lg pt-0">
+        <CardContent className="p-lg pt-0 space-y-md">
+          {actionError && (
+            <p className="text-base text-destructive">{actionError}</p>
+          )}
           {isLoading ? (
-            <TableSkeleton columns={5} />
+            <TableSkeleton columns={6} />
           ) : error ? (
             <div className="p-xl text-destructive">{error}</div>
           ) : tickets.length === 0 ? (
@@ -172,45 +252,126 @@ export function TicketListPage() {
                     <TableHead className="min-w-[180px]">Contact</TableHead>
                     <TableHead className="min-w-[160px]">Assigned To</TableHead>
                     <TableHead className="min-w-[120px]">Created</TableHead>
+                    <TableHead className="min-w-[180px]">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {tickets.map((ticket) => (
-                    <TableRow
-                      key={ticket.id}
-                      className="cursor-pointer hover:bg-muted/50"
-                      onClick={() =>
-                        router.push(`/conversations/tickets/${ticket.id}`)
-                      }
-                    >
-                      <TableCell className="text-base font-medium">
-                        {ticket.subject}
-                      </TableCell>
-                      <TableCell className="text-base">
-                        <Badge variant={STATUS_BADGE_VARIANT[ticket.status]}>
-                          {ticket.status}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-base">
-                        <Badge variant="secondary">{ticket.waitingOn}</Badge>
-                      </TableCell>
-                      <TableCell className="text-base text-muted-foreground">
-                        {contactLabel(ticket)}
-                      </TableCell>
-                      <TableCell className="text-base text-muted-foreground">
-                        {assignedLabel(ticket)}
-                      </TableCell>
-                      <TableCell className="text-sm text-muted-foreground">
-                        {new Date(ticket.createdAt).toLocaleDateString()}
-                      </TableCell>
-                    </TableRow>
-                  ))}
+                  {tickets.map((ticket) => {
+                    const claimBusy =
+                      rowPending?.id === ticket.id &&
+                      rowPending.action === "claim";
+                    const cancelBusy =
+                      rowPending?.id === ticket.id &&
+                      rowPending.action === "cancel";
+                    const rowBusy = rowPending?.id === ticket.id;
+                    return (
+                      <TableRow
+                        key={ticket.id}
+                        className="cursor-pointer hover:bg-muted/50"
+                        onClick={() =>
+                          router.push(`/conversations/tickets/${ticket.id}`)
+                        }
+                      >
+                        <TableCell className="text-base font-medium">
+                          {ticket.subject}
+                        </TableCell>
+                        <TableCell className="text-base">
+                          <Badge variant={STATUS_BADGE_VARIANT[ticket.status]}>
+                            {ticket.status}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-base">
+                          <Badge variant="secondary">{ticket.waitingOn}</Badge>
+                        </TableCell>
+                        <TableCell className="text-base text-muted-foreground">
+                          {contactLabel(ticket)}
+                        </TableCell>
+                        <TableCell className="text-base text-muted-foreground">
+                          {assignedLabel(ticket)}
+                        </TableCell>
+                        <TableCell className="text-sm text-muted-foreground">
+                          {new Date(ticket.createdAt).toLocaleDateString()}
+                        </TableCell>
+                        <TableCell className="text-base">
+                          {isTerminal(ticket) ? (
+                            <span className="text-muted-foreground">
+                              {"\u2014"}
+                            </span>
+                          ) : (
+                            <div className="flex items-center gap-2">
+                              {isClaimable(ticket) && (
+                                <Button
+                                  size="sm"
+                                  aria-label="Claim ticket"
+                                  disabled={rowBusy}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleClaim(ticket);
+                                  }}
+                                >
+                                  {claimBusy ? (
+                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                  ) : (
+                                    <UserPlus className="w-4 h-4" />
+                                  )}
+                                  <span className="ml-1">Claim</span>
+                                </Button>
+                              )}
+                              <Button
+                                size="sm"
+                                variant="destructive"
+                                aria-label="Cancel ticket"
+                                disabled={rowBusy}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setCancelTarget(ticket);
+                                }}
+                              >
+                                {cancelBusy ? (
+                                  <Loader2 className="w-4 h-4 animate-spin" />
+                                ) : (
+                                  <XCircle className="w-4 h-4" />
+                                )}
+                                <span className="ml-1">Cancel</span>
+                              </Button>
+                            </div>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
                 </TableBody>
               </Table>
             </div>
           )}
         </CardContent>
       </Card>
+
+      <AlertDialog
+        open={cancelTarget !== null}
+        onOpenChange={(open) => {
+          if (!open) setCancelTarget(null);
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Cancel Ticket</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to cancel this ticket? Canceling is terminal
+              and cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Keep Ticket</AlertDialogCancel>
+            <AlertDialogAction
+              variant="destructive"
+              onClick={handleCancelConfirmed}
+            >
+              Cancel Ticket
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

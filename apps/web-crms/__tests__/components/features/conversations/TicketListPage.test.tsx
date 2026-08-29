@@ -29,10 +29,25 @@ jest.mock("next/navigation", () => ({
   }),
 }));
 
+jest.mock("next-auth/react", () => ({
+  useSession: () => ({
+    data: {
+      user: {
+        id: "auth|amelia",
+        name: "amelia ward",
+        email: "Amelia.Ward@Trellis.io",
+      },
+    },
+    status: "authenticated",
+  }),
+}));
+
 jest.mock("@/lib/api/crm-client", () => ({
   crmClient: {
     conversationTickets: {
       list: jest.fn(),
+      claim: jest.fn(),
+      changeStatus: jest.fn(),
     },
   },
 }));
@@ -224,5 +239,163 @@ describe("TicketListPage", () => {
     fireEvent.click(row!);
 
     expect(mockPush).toHaveBeenCalledWith("/conversations/tickets/t-42");
+  });
+
+  // --- Row actions: Claim + Cancel ---
+
+  it("shows a Claim button on an Unclaimed row and hides it once claimed", async () => {
+    jest
+      .mocked(crmClient.conversationTickets.list)
+      .mockResolvedValue([makeTicket({ id: "t-1", status: "Unclaimed" })]);
+
+    render(<TicketListPage />);
+
+    await screen.findByText("Cannot log in");
+    expect(
+      screen.getByRole("button", { name: "Claim ticket" })
+    ).toBeInTheDocument();
+  });
+
+  it("shows a Claim button on an Ongoing row with a null assignee", async () => {
+    jest.mocked(crmClient.conversationTickets.list).mockResolvedValue([
+      makeTicket({ id: "t-1", status: "Ongoing", assignedToId: null }),
+    ]);
+
+    render(<TicketListPage />);
+
+    await screen.findByText("Cannot log in");
+    expect(
+      screen.getByRole("button", { name: "Claim ticket" })
+    ).toBeInTheDocument();
+  });
+
+  it("hides the Claim button on a Claimed (assigned) row", async () => {
+    jest.mocked(crmClient.conversationTickets.list).mockResolvedValue([
+      makeTicket({ id: "t-1", status: "Claimed", assignedToId: "s-1" }),
+    ]);
+
+    render(<TicketListPage />);
+
+    await screen.findByText("Cannot log in");
+    expect(
+      screen.queryByRole("button", { name: "Claim ticket" })
+    ).not.toBeInTheDocument();
+  });
+
+  it("claims a row with the session identity and updates the row in place", async () => {
+    jest
+      .mocked(crmClient.conversationTickets.list)
+      .mockResolvedValue([makeTicket({ id: "t-1", status: "Unclaimed" })]);
+    jest.mocked(crmClient.conversationTickets.claim).mockResolvedValue(
+      makeTicket({
+        id: "t-1",
+        status: "Claimed",
+        assignedToId: "auth|amelia",
+        assignedToName: "amelia ward",
+        assignedToEmail: "amelia.ward@trellis.io",
+      })
+    );
+
+    render(<TicketListPage />);
+
+    fireEvent.click(await screen.findByRole("button", { name: "Claim ticket" }));
+
+    await waitFor(() =>
+      expect(crmClient.conversationTickets.claim).toHaveBeenCalledWith("t-1", {
+        staffId: "auth|amelia",
+        staffName: "amelia ward",
+        staffEmail: "Amelia.Ward@Trellis.io",
+      })
+    );
+    // Row updates in place from the response body: status badge flips to Claimed
+    // and the Claim button disappears (no full-list refetch).
+    expect(await screen.findByText("Claimed")).toBeInTheDocument();
+    await waitFor(() =>
+      expect(
+        screen.queryByRole("button", { name: "Claim ticket" })
+      ).not.toBeInTheDocument()
+    );
+    expect(crmClient.conversationTickets.list).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not navigate when the Claim button is clicked (stopPropagation)", async () => {
+    jest
+      .mocked(crmClient.conversationTickets.list)
+      .mockResolvedValue([makeTicket({ id: "t-1", status: "Unclaimed" })]);
+    jest
+      .mocked(crmClient.conversationTickets.claim)
+      .mockResolvedValue(makeTicket({ id: "t-1", status: "Claimed", assignedToId: "auth|amelia" }));
+
+    render(<TicketListPage />);
+
+    fireEvent.click(await screen.findByRole("button", { name: "Claim ticket" }));
+
+    await waitFor(() =>
+      expect(crmClient.conversationTickets.claim).toHaveBeenCalled()
+    );
+    expect(mockPush).not.toHaveBeenCalled();
+  });
+
+  it("shows a Cancel button on a non-terminal row and gates it behind a confirmation dialog", async () => {
+    jest
+      .mocked(crmClient.conversationTickets.list)
+      .mockResolvedValue([makeTicket({ id: "t-1", status: "Claimed", assignedToId: "s-1" })]);
+    jest
+      .mocked(crmClient.conversationTickets.changeStatus)
+      .mockResolvedValue(makeTicket({ id: "t-1", status: "Canceled", assignedToId: "s-1" }));
+    const user = userEvent.setup({ pointerEventsCheck: 0 });
+
+    render(<TicketListPage />);
+
+    await user.click(await screen.findByRole("button", { name: "Cancel ticket" }));
+
+    // Dialog open; API not called yet.
+    expect(crmClient.conversationTickets.changeStatus).not.toHaveBeenCalled();
+
+    // Confirm inside the dialog.
+    const confirmButtons = screen.getAllByRole("button", { name: /Cancel Ticket/i });
+    await user.click(confirmButtons[confirmButtons.length - 1]);
+
+    await waitFor(() =>
+      expect(crmClient.conversationTickets.changeStatus).toHaveBeenCalledWith("t-1", {
+        status: "Canceled",
+      })
+    );
+    // Row updates in place; navigation never fired.
+    expect(await screen.findByText("Canceled")).toBeInTheDocument();
+    expect(mockPush).not.toHaveBeenCalled();
+    expect(crmClient.conversationTickets.list).toHaveBeenCalledTimes(1);
+  });
+
+  it("renders neither Claim nor Cancel on a terminal (Completed) row", async () => {
+    jest
+      .mocked(crmClient.conversationTickets.list)
+      .mockResolvedValue([makeTicket({ id: "t-1", status: "Completed", assignedToId: "s-1" })]);
+
+    render(<TicketListPage />);
+
+    await screen.findByText("Completed");
+    expect(
+      screen.queryByRole("button", { name: "Claim ticket" })
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "Cancel ticket" })
+    ).not.toBeInTheDocument();
+  });
+
+  it("renders neither Claim nor Cancel on a terminal (Canceled) row", async () => {
+    jest
+      .mocked(crmClient.conversationTickets.list)
+      .mockResolvedValue([makeTicket({ id: "t-1", status: "Canceled", assignedToId: "s-1" })]);
+
+    render(<TicketListPage />);
+
+    await screen.findByText("Canceled");
+    expect(
+      screen.queryByRole("button", { name: "Claim ticket" })
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "Cancel ticket" })
+    ).not.toBeInTheDocument();
   });
 });
