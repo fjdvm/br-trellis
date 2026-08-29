@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Ticket as TicketIcon } from "lucide-react";
 import { TableSkeleton } from "@/components/shared/TableSkeleton";
-import { Badge, type BadgeProps } from "@/components/ui/badge";
+import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Select,
@@ -22,6 +22,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { crmClient } from "@/lib/api/crm-client";
+import { STATUS_BADGE_VARIANT } from "@/lib/tickets";
 import { formatName, formatEmail } from "@/lib/format-display";
 import type {
   TicketListItem,
@@ -44,14 +45,6 @@ const WAITING_ON_OPTIONS: readonly (TicketWaitingOn | "All")[] = [
   "Customer",
   "None",
 ];
-
-const STATUS_BADGE_VARIANT: Record<TicketStatus, BadgeProps["variant"]> = {
-  Unclaimed: "outline",
-  Claimed: "secondary",
-  Ongoing: "info",
-  Completed: "default",
-  Canceled: "destructive",
-};
 
 function contactLabel(ticket: TicketListItem): string {
   const name = formatName(ticket.contact?.name);

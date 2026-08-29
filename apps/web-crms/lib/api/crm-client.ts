@@ -35,6 +35,11 @@ import {
 } from "@/types/ticket";
 import { TicketListItem as ConversationTicketListItem } from "@/types/ticket-list";
 import {
+  TicketDetail,
+  ClaimTicketInput,
+  ChangeTicketStatusInput,
+} from "@/types/ticket-detail";
+import {
   OrderListItem,
   ProductListItem,
   CartListItem,
@@ -229,6 +234,22 @@ export const crmClient = {
         `/api/v1/tickets${query ? `?${query}` : ""}`
       );
     },
+    getById: (id: string) =>
+      request<TicketDetail>(`/api/v1/tickets/${id}`),
+    claim: (id: string, body: ClaimTicketInput) =>
+      request<TicketDetail>(`/api/v1/tickets/${id}/claim`, {
+        method: "POST",
+        body: JSON.stringify(body),
+      }),
+    unclaim: (id: string) =>
+      request<TicketDetail>(`/api/v1/tickets/${id}/unclaim`, {
+        method: "POST",
+      }),
+    changeStatus: (id: string, body: ChangeTicketStatusInput) =>
+      request<TicketDetail>(`/api/v1/tickets/${id}/status`, {
+        method: "POST",
+        body: JSON.stringify(body),
+      }),
   },
   messages: {
     listByTicket: (ticketId: string) =>
