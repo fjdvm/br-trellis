@@ -146,6 +146,33 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
       // Extract user profile claims
       if (profile) {
+        // Standard OIDC identity claims — persist onto the token so the
+        // session callback can expose them via session.user.
+        const p = profile as Record<string, unknown>;
+        const name =
+          (p.name as string) ??
+          (p.preferred_username as string) ??
+          (p.given_name as string) ??
+          undefined;
+        if (name) token.name = name;
+        if (p.email) token.email = p.email as string;
+
+        // Employee/login code (e.g. "2026-AS-001"). Different OIDC providers
+        // surface this under different claim names, so check the common ones
+        // in priority order and store the first present value.
+        const username =
+          (p.preferred_username as string) ??
+          (p.employee_code as string) ??
+          (p.employeeCode as string) ??
+          (p.employee_id as string) ??
+          (p.username as string) ??
+          (p.unique_name as string) ??
+          (p.nickname as string) ??
+          undefined;
+        if (username) {
+          token.username = username;
+        }
+
         if (profile.systems) {
           token.systems = (profile.systems as string).split(",");
         }
@@ -197,6 +224,15 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
       if (token.sub && session.user) {
         session.user.id = token.sub;
+      }
+
+      // Expose identity claims on session.user so the UI can render them.
+      if (session.user) {
+        if (token.name) session.user.name = token.name as string;
+        if (token.email) session.user.email = token.email as string;
+        if (token.username) {
+          session.user.username = token.username as string;
+        }
       }
 
       // Propagate token error to session so client can react (e.g., force re-login)

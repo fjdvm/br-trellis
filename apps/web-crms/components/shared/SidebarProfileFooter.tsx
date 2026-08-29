@@ -36,6 +36,7 @@ export function SidebarProfileFooter({
 
   const name = session.user.name ?? "User";
   const email = session.user.email ?? "";
+  const username = session.user.username ?? name;
   const role = session.role ?? "Staff/Employee";
   const initials = name
     .split(" ")
@@ -87,6 +88,11 @@ export function SidebarProfileFooter({
               <span className="text-xs font-bold text-foreground truncate">
                 {name}
               </span>
+              {session.user.username && (
+                <span className="text-[11px] font-medium text-muted-foreground truncate">
+                  {session.user.username}
+                </span>
+              )}
               <span className="text-[11px] text-muted-foreground truncate">
                 {email}
               </span>
@@ -120,6 +126,15 @@ export function SidebarProfileFooter({
           </DropdownMenuItem>
 
           <DropdownMenuSeparator className="bg-border" />
+
+          <div className="px-sm py-xs flex flex-col min-w-0 overflow-hidden">
+            <span className="text-xs font-bold text-foreground truncate">
+              {username}
+            </span>
+            <span className="text-[11px] text-muted-foreground truncate">
+              {email || "No email"}
+            </span>
+          </div>
 
           <DropdownMenuItem
             onClick={async () => {

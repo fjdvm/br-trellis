@@ -692,6 +692,22 @@
           }
         }
       },
+      "Scalar.AspNetCore/2.17.1": {
+        "type": "package",
+        "compile": {
+          "lib/net10.0/Scalar.AspNetCore.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net10.0/Scalar.AspNetCore.dll": {
+            "related": ".xml"
+          }
+        },
+        "frameworkReferences": [
+          "Microsoft.AspNetCore.App"
+        ]
+      },
       "SQLitePCLRaw.bundle_e_sqlite3/2.1.11": {
         "type": "package",
         "dependencies": {
@@ -2532,6 +2548,25 @@
         "packageIcon.png"
       ]
     },
+    "Scalar.AspNetCore/2.17.1": {
+      "sha512": "7np19IKEqPi+Isbo5Ka1wdMsQedv5jUECPHq223NgKEL7eGd+z98ncZRmpYfKotU/BD07kJSpnPaXp6X0TzRKw==",
+      "type": "package",
+      "path": "scalar.aspnetcore/2.17.1",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "README.md",
+        "icon.png",
+        "lib/net10.0/Scalar.AspNetCore.dll",
+        "lib/net10.0/Scalar.AspNetCore.xml",
+        "lib/net8.0/Scalar.AspNetCore.dll",
+        "lib/net8.0/Scalar.AspNetCore.xml",
+        "lib/net9.0/Scalar.AspNetCore.dll",
+        "lib/net9.0/Scalar.AspNetCore.xml",
+        "scalar.aspnetcore.2.17.1.nupkg.sha512",
+        "scalar.aspnetcore.nuspec"
+      ]
+    },
     "SQLitePCLRaw.bundle_e_sqlite3/2.1.11": {
       "sha512": "DC4nA7yWnf4UZdgJDF+9Mus4/cb0Y3Sfgi3gDnAoKNAIBwzkskNAbNbyu+u4atT0ruVlZNJfwZmwiEwE5oz9LQ==",
       "type": "package",
@@ -2844,7 +2879,8 @@
       "Microsoft.AspNetCore.Authentication.JwtBearer >= 10.0.10",
       "Microsoft.AspNetCore.OpenApi >= 10.0.10",
       "Microsoft.EntityFrameworkCore.Design >= 10.0.10",
-      "Microsoft.EntityFrameworkCore.Sqlite >= 10.0.10"
+      "Microsoft.EntityFrameworkCore.Sqlite >= 10.0.10",
+      "Scalar.AspNetCore >= 2.17.1"
     ]
   },
   "packageFolders": {
@@ -2908,6 +2944,10 @@
           "Microsoft.EntityFrameworkCore.Sqlite": {
             "target": "Package",
             "version": "[10.0.10, )"
+          },
+          "Scalar.AspNetCore": {
+            "target": "Package",
+            "version": "[2.17.1, )"
           }
         },
         "imports": [
@@ -2929,7 +2969,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "/usr/lib/dotnet/sdk/10.0.110/PortableRuntimeIdentifierGraph.json",
+        "runtimeIdentifierGraphPath": "/usr/lib/dotnet/sdk/10.0.111/PortableRuntimeIdentifierGraph.json",
         "packagesToPrune": {
           "Microsoft.AspNetCore": "(,10.0.32767]",
           "Microsoft.AspNetCore.Antiforgery": "(,10.0.32767]",

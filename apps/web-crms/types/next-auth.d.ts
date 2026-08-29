@@ -8,7 +8,10 @@ declare module "next-auth" {
     isSuperUser: boolean;
     permissions: any;
     error?: string;
-    user: DefaultSession["user"];
+    user: DefaultSession["user"] & {
+      id?: string;
+      username?: string;
+    };
   }
 
   interface Profile {
@@ -24,6 +27,9 @@ declare module "next-auth/jwt" {
     accessToken?: string;
     refreshToken?: string;
     expiresAt?: number;
+    name?: string;
+    email?: string;
+    username?: string;
     systems?: string[];
     role?: string;
     isSuperUser?: boolean;
