@@ -38,6 +38,7 @@ import {
   TicketDetail,
   ClaimTicketInput,
   ChangeTicketStatusInput,
+  SetWaitingOnInput,
 } from "@/types/ticket-detail";
 import {
   OrderListItem,
@@ -247,6 +248,11 @@ export const crmClient = {
       }),
     changeStatus: (id: string, body: ChangeTicketStatusInput) =>
       request<TicketDetail>(`/api/v1/tickets/${id}/status`, {
+        method: "POST",
+        body: JSON.stringify(body),
+      }),
+    setWaitingOn: (id: string, body: SetWaitingOnInput) =>
+      request<TicketDetail>(`/api/v1/tickets/${id}/waiting-on`, {
         method: "POST",
         body: JSON.stringify(body),
       }),

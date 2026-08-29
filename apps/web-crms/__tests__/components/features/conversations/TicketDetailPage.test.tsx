@@ -4,6 +4,23 @@ import { TicketDetailPage } from "@/components/features/conversations/TicketDeta
 import { crmClient } from "@/lib/api/crm-client";
 import type { TicketDetail } from "@/types/ticket-detail";
 
+// Radix Select relies on pointer-capture and scrollIntoView APIs that jsdom
+// does not implement. Polyfill them so the dropdown can open under test.
+beforeAll(() => {
+  if (!Element.prototype.hasPointerCapture) {
+    Element.prototype.hasPointerCapture = () => false;
+  }
+  if (!Element.prototype.setPointerCapture) {
+    Element.prototype.setPointerCapture = () => {};
+  }
+  if (!Element.prototype.releasePointerCapture) {
+    Element.prototype.releasePointerCapture = () => {};
+  }
+  if (!Element.prototype.scrollIntoView) {
+    Element.prototype.scrollIntoView = () => {};
+  }
+});
+
 const mockPush = jest.fn();
 
 jest.mock("next/navigation", () => ({
@@ -30,6 +47,7 @@ jest.mock("@/lib/api/crm-client", () => ({
       claim: jest.fn(),
       unclaim: jest.fn(),
       changeStatus: jest.fn(),
+      setWaitingOn: jest.fn(),
     },
   },
 }));
@@ -56,6 +74,7 @@ const mocked = {
   claim: jest.mocked(crmClient.conversationTickets.claim),
   unclaim: jest.mocked(crmClient.conversationTickets.unclaim),
   changeStatus: jest.mocked(crmClient.conversationTickets.changeStatus),
+  setWaitingOn: jest.mocked(crmClient.conversationTickets.setWaitingOn),
 };
 
 describe("TicketDetailPage", () => {
@@ -283,5 +302,150 @@ describe("TicketDetailPage", () => {
     await waitFor(() =>
       expect(screen.getByText("Claimed")).toBeInTheDocument()
     );
+  });
+
+  // --- WaitingOn Select (feature 3, #82) ---
+
+  it("renders the WaitingOn Select pre-selected to the ticket's current value", async () => {
+    mocked.getById.mockResolvedValue(
+      makeTicket({ status: "Claimed", assignedToId: "auth|amelia", waitingOn: "Customer" })
+    );
+
+    render(<TicketDetailPage ticketId="t-1" />);
+
+    const select = await screen.findByLabelText("Set waiting on");
+    // Radix renders the selected item's text inside the trigger.
+    expect(select).toHaveTextContent("Customer");
+  });
+
+  it("changes WaitingOn and updates the displayed value from the response body", async () => {
+    mocked.getById.mockResolvedValue(
+      makeTicket({ status: "Claimed", assignedToId: "auth|amelia", waitingOn: "None" })
+    );
+    mocked.setWaitingOn.mockResolvedValue(
+      makeTicket({ status: "Claimed", assignedToId: "auth|amelia", waitingOn: "Agent" })
+    );
+    const user = userEvent.setup({ pointerEventsCheck: 0 });
+
+    render(<TicketDetailPage ticketId="t-1" />);
+
+    await user.click(await screen.findByLabelText("Set waiting on"));
+    await user.click(await screen.findByRole("option", { name: "Agent" }));
+
+    await waitFor(() =>
+      expect(mocked.setWaitingOn).toHaveBeenCalledWith("t-1", { waitingOn: "Agent" })
+    );
+    // Displayed value comes from the response body, no follow-up GET.
+    await waitFor(() =>
+      expect(screen.getByLabelText("Set waiting on")).toHaveTextContent("Agent")
+    );
+    expect(mocked.getById).toHaveBeenCalledTimes(1);
+  });
+
+  it("surfaces the real backend error in the shared actionError slot and keeps the prior value", async () => {
+    mocked.getById.mockResolvedValue(
+      makeTicket({ status: "Claimed", assignedToId: "auth|amelia", waitingOn: "Customer" })
+    );
+    mocked.setWaitingOn.mockRejectedValue(new Error("Invalid WaitingOn value."));
+    const user = userEvent.setup({ pointerEventsCheck: 0 });
+
+    render(<TicketDetailPage ticketId="t-1" />);
+
+    await user.click(await screen.findByLabelText("Set waiting on"));
+    await user.click(await screen.findByRole("option", { name: "Agent" }));
+
+    expect(await screen.findByText("Invalid WaitingOn value.")).toBeInTheDocument();
+    // No optimistic update: the previously-displayed value is still shown.
+    expect(screen.getByLabelText("Set waiting on")).toHaveTextContent("Customer");
+  });
+
+  it("disables the WaitingOn Select while its own mutation is in flight", async () => {
+    mocked.getById.mockResolvedValue(
+      makeTicket({ status: "Claimed", assignedToId: "auth|amelia", waitingOn: "None" })
+    );
+    let resolveSet: (t: TicketDetail) => void = () => {};
+    mocked.setWaitingOn.mockReturnValue(
+      new Promise<TicketDetail>((r) => {
+        resolveSet = r;
+      })
+    );
+    const user = userEvent.setup({ pointerEventsCheck: 0 });
+
+    render(<TicketDetailPage ticketId="t-1" />);
+
+    await user.click(await screen.findByLabelText("Set waiting on"));
+    await user.click(await screen.findByRole("option", { name: "Agent" }));
+
+    await waitFor(() =>
+      expect(screen.getByLabelText("Set waiting on")).toBeDisabled()
+    );
+
+    resolveSet(
+      makeTicket({ status: "Claimed", assignedToId: "auth|amelia", waitingOn: "Agent" })
+    );
+    await waitFor(() =>
+      expect(screen.getByLabelText("Set waiting on")).not.toBeDisabled()
+    );
+  });
+
+  it("renders the WaitingOn Select disabled but visible on a Completed ticket", async () => {
+    mocked.getById.mockResolvedValue(
+      makeTicket({ status: "Completed", waitingOn: "Customer" })
+    );
+
+    render(<TicketDetailPage ticketId="t-1" />);
+
+    const select = await screen.findByLabelText("Set waiting on");
+    expect(select).toBeInTheDocument();
+    expect(select).toBeDisabled();
+    expect(select).toHaveTextContent("Customer");
+  });
+
+  it("renders the WaitingOn Select disabled but visible on a Canceled ticket", async () => {
+    mocked.getById.mockResolvedValue(
+      makeTicket({ status: "Canceled", waitingOn: "Agent" })
+    );
+
+    render(<TicketDetailPage ticketId="t-1" />);
+
+    const select = await screen.findByLabelText("Set waiting on");
+    expect(select).toBeInTheDocument();
+    expect(select).toBeDisabled();
+    expect(select).toHaveTextContent("Agent");
+  });
+
+  it("does not change the Status badge or assignee when WaitingOn changes", async () => {
+    mocked.getById.mockResolvedValue(
+      makeTicket({
+        status: "Claimed",
+        waitingOn: "None",
+        assignedToId: "auth|noah",
+        assignedToName: "noah patel",
+        assignedToEmail: "NOAH@TRELLIS.IO",
+      })
+    );
+    mocked.setWaitingOn.mockResolvedValue(
+      makeTicket({
+        status: "Claimed",
+        waitingOn: "Agent",
+        assignedToId: "auth|noah",
+        assignedToName: "noah patel",
+        assignedToEmail: "NOAH@TRELLIS.IO",
+      })
+    );
+    const user = userEvent.setup({ pointerEventsCheck: 0 });
+
+    render(<TicketDetailPage ticketId="t-1" />);
+
+    await user.click(await screen.findByLabelText("Set waiting on"));
+    await user.click(await screen.findByRole("option", { name: "Agent" }));
+
+    await waitFor(() =>
+      expect(screen.getByLabelText("Set waiting on")).toHaveTextContent("Agent")
+    );
+    // Status badge and assignee remain unchanged.
+    expect(screen.getByText("Claimed")).toBeInTheDocument();
+    expect(screen.getAllByText("Noah Patel").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("noah@trellis.io").length).toBeGreaterThan(0);
   });
 });

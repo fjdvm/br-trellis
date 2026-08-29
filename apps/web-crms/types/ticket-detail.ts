@@ -39,3 +39,8 @@ export interface ClaimTicketInput {
 export interface ChangeTicketStatusInput {
   status: TicketStatus;
 }
+
+/** Body for POST /tickets/{id}/waiting-on (SetWaitingOnDto). */
+export interface SetWaitingOnInput {
+  waitingOn: TicketWaitingOn;
+}

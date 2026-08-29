@@ -18,6 +18,12 @@ function mockFetch(status: number, body: unknown) {
     ok: status >= 200 && status < 300,
     status,
     json: jest.fn().mockResolvedValue(body),
+    // request() reads non-OK bodies via response.text() before parsing, so the
+    // mock must expose text() too (JSON-serialising object bodies to match how
+    // a real fetch Response would return the raw payload as text).
+    text: jest
+      .fn()
+      .mockResolvedValue(typeof body === "string" ? body : JSON.stringify(body)),
   } as unknown as Response);
 }
 
@@ -169,5 +175,48 @@ describe("crmClient.customerIdentity.listPendingReviewCustomers", () => {
       `${BASE}/api/v1/customer-identity/pending-review`,
       expect.any(Object)
     );
+  });
+});
+
+describe("crmClient.conversationTickets.setWaitingOn", () => {
+  it("sends a POST request to the waiting-on endpoint with the waitingOn body", async () => {
+    mockFetch(200, { id: "t-1", waitingOn: "Agent" });
+
+    await crmClient.conversationTickets.setWaitingOn("t-1", {
+      waitingOn: "Agent",
+    });
+
+    expect(fetch).toHaveBeenCalledWith(
+      `${BASE}/api/v1/tickets/t-1/waiting-on`,
+      expect.objectContaining({
+        method: "POST",
+        body: JSON.stringify({ waitingOn: "Agent" }),
+      })
+    );
+  });
+
+  it("returns the updated ticket from the response body", async () => {
+    const updated = { id: "t-1", waitingOn: "Customer" };
+    mockFetch(200, updated);
+
+    const result = await crmClient.conversationTickets.setWaitingOn("t-1", {
+      waitingOn: "Customer",
+    });
+
+    expect(result).toEqual(updated);
+  });
+
+  it("throws the real backend error message when the change is rejected", async () => {
+    // request() reads non-OK bodies via response.text() (ASP.NET Core's
+    // BadRequest(ex.Message) returns a bare text/plain string).
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: false,
+      status: 400,
+      text: jest.fn().mockResolvedValue("Invalid WaitingOn: 'Nobody'."),
+    } as unknown as Response);
+
+    await expect(
+      crmClient.conversationTickets.setWaitingOn("t-1", { waitingOn: "None" })
+    ).rejects.toThrow("Invalid WaitingOn: 'Nobody'.");
   });
 });

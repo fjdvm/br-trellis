@@ -11,6 +11,13 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -23,7 +30,11 @@ import {
 import { crmClient } from "@/lib/api/crm-client";
 import { STATUS_BADGE_VARIANT } from "@/lib/tickets";
 import { formatName, formatEmail } from "@/lib/format-display";
-import type { TicketDetail, TicketStatus } from "@/types/ticket-detail";
+import type {
+  TicketDetail,
+  TicketStatus,
+  TicketWaitingOn,
+} from "@/types/ticket-detail";
 
 interface TicketDetailPageProps {
   ticketId: string;
@@ -35,8 +46,17 @@ const NEXT_STATUS: Partial<Record<TicketStatus, TicketStatus>> = {
   Ongoing: "Completed",
 };
 
-/** Which in-flight mutation is running, so we can disable the right button. */
-type PendingAction = "claim" | "unclaim" | "advance" | "cancel" | null;
+/** The three WaitingOn values a ticket can point at (mirrors the backend enum). */
+const WAITING_ON_OPTIONS: TicketWaitingOn[] = ["Agent", "Customer", "None"];
+
+/** Which in-flight mutation is running, so we can disable the right control. */
+type PendingAction =
+  | "claim"
+  | "unclaim"
+  | "advance"
+  | "cancel"
+  | "waitingOn"
+  | null;
 
 function isClaimable(ticket: TicketDetail): boolean {
   return (
@@ -122,6 +142,12 @@ export function TicketDetailPage({ ticketId }: TicketDetailPageProps) {
     setShowCancelDialog(false);
     void runMutation("cancel", () =>
       crmClient.conversationTickets.changeStatus(ticketId, { status: "Canceled" })
+    );
+  }
+
+  function handleSetWaitingOn(value: TicketWaitingOn) {
+    void runMutation("waitingOn", () =>
+      crmClient.conversationTickets.setWaitingOn(ticketId, { waitingOn: value })
     );
   }
 
@@ -223,9 +249,31 @@ export function TicketDetailPage({ ticketId }: TicketDetailPageProps) {
           <CardTitle className="text-title-lg font-bold">Details</CardTitle>
         </CardHeader>
         <CardContent className="p-lg pt-0 space-y-md">
-          <div className="grid grid-cols-2 gap-md text-base">
+          <div className="grid grid-cols-2 gap-md text-base items-center">
             <div className="text-muted-foreground">Waiting On</div>
-            <div>{ticket.waitingOn}</div>
+            <div>
+              <Select
+                value={ticket.waitingOn}
+                onValueChange={(value) =>
+                  handleSetWaitingOn(value as TicketWaitingOn)
+                }
+                disabled={pending === "waitingOn" || isTerminal(ticket)}
+              >
+                <SelectTrigger
+                  className="w-[160px]"
+                  aria-label="Set waiting on"
+                >
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {WAITING_ON_OPTIONS.map((option) => (
+                    <SelectItem key={option} value={option}>
+                      {option}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
             <div className="text-muted-foreground">Assignee</div>
             <div>{formatName(ticket.assignedToName) ?? "\u2014"}</div>
             <div className="text-muted-foreground">Assignee email</div>
