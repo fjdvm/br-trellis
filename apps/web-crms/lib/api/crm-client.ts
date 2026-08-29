@@ -30,10 +30,10 @@ import {
 } from "@/types/campaign";
 import {
   Ticket,
-  TicketListItem,
   CreateTicketInput,
   PaginatedTicketResponse,
 } from "@/types/ticket";
+import { TicketListItem as ConversationTicketListItem } from "@/types/ticket-list";
 import {
   OrderListItem,
   ProductListItem,
@@ -212,6 +212,23 @@ export const crmClient = {
       request<void>(`/api/v1/tickets/${id}`, {
         method: "DELETE",
       }),
+  },
+  // Real ticket list contract (backed by TicketController #63), kept separate
+  // from the legacy `tickets` block above, which targets an unimplemented API.
+  conversationTickets: {
+    list: (status?: string, waitingOn?: string) => {
+      const params = new URLSearchParams();
+      if (status && status !== "All") {
+        params.set("status", status);
+      }
+      if (waitingOn && waitingOn !== "All") {
+        params.set("waitingOn", waitingOn);
+      }
+      const query = params.toString();
+      return request<ConversationTicketListItem[]>(
+        `/api/v1/tickets${query ? `?${query}` : ""}`
+      );
+    },
   },
   messages: {
     listByTicket: (ticketId: string) =>

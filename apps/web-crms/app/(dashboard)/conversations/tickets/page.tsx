@@ -1,5 +1,5 @@
-import { ComingSoonPage } from "@/components/shared/ComingSoonPage";
+import { TicketListPage } from "@/components/features/conversations/TicketListPage";
 
 export default function Page() {
-  return <ComingSoonPage title="Tickets" description="Support tickets from customers." />;
+  return <TicketListPage />;
 }
