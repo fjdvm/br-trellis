@@ -44,3 +44,14 @@ export interface ChangeTicketStatusInput {
 export interface SetWaitingOnInput {
   waitingOn: TicketWaitingOn;
 }
+
+/**
+ * Body for POST /tickets (CreateTicketDto). Subject is required; contactId is
+ * optional (an unlinked ticket, e.g. from a walk-in or an unresolved sender).
+ * New tickets start Unclaimed with WaitingOn=None — the server sets those, not
+ * the client.
+ */
+export interface CreateTicketInput {
+  subject: string;
+  contactId?: string | null;
+}

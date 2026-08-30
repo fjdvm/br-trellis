@@ -43,6 +43,7 @@ import {
   ClaimTicketInput,
   ChangeTicketStatusInput,
   SetWaitingOnInput,
+  CreateTicketInput as CreateConversationTicketInput,
 } from "@/types/ticket-detail";
 import {
   OrderListItem,
@@ -241,6 +242,11 @@ export const crmClient = {
     },
     getById: (id: string) =>
       request<TicketDetail>(`/api/v1/tickets/${id}`),
+    create: (body: CreateConversationTicketInput) =>
+      request<TicketDetail>(`/api/v1/tickets`, {
+        method: "POST",
+        body: JSON.stringify(body),
+      }),
     claim: (id: string, body: ClaimTicketInput) =>
       request<TicketDetail>(`/api/v1/tickets/${id}/claim`, {
         method: "POST",

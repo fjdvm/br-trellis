@@ -34,6 +34,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { crmClient } from "@/lib/api/crm-client";
+import { NewTicketSheet } from "@/components/features/conversations/NewTicketSheet";
 import { STATUS_BADGE_VARIANT } from "@/lib/tickets";
 import { formatName, formatEmail } from "@/lib/format-display";
 import type {
@@ -284,6 +285,7 @@ export function TicketListPage({
               {cardTitle}
             </CardTitle>
             <div className="flex items-center gap-md">
+              <NewTicketSheet onCreated={() => void loadTickets()} />
               <Select
                 value={statusFilter}
                 onValueChange={(value) =>
