@@ -87,7 +87,51 @@ function isTerminal(ticket: TicketListItem): boolean {
   return ticket.status === "Completed" || ticket.status === "Canceled";
 }
 
-export function TicketListPage() {
+/**
+ * Optional props that let a screen reuse this component as a pre-filtered
+ * variant (e.g. the Inbox screen) without forking it. Every prop is optional,
+ * so the default Tickets screen renders exactly as before when none are passed.
+ */
+export interface TicketListPageProps {
+  /** Page heading override. Defaults to "Tickets". */
+  heading?: string;
+  /** Sub-heading override. Defaults to "Support tickets from customers.". */
+  description?: string;
+  /** Card title override. Defaults to "All Tickets". */
+  cardTitle?: string;
+  /** Initial Status filter value. Defaults to "All". */
+  initialStatusFilter?: TicketStatus | "All";
+  /** Initial Waiting On filter value. Defaults to "All". */
+  initialWaitingOnFilter?: TicketWaitingOn | "All";
+  /**
+   * Client-side filter applied to the fetched list before rendering, run on
+   * every (re)fetch and after every in-place row update. Used by Inbox to
+   * exclude terminal tickets regardless of the active server-side filters.
+   */
+  resultFilter?: (tickets: TicketListItem[]) => TicketListItem[];
+  /**
+   * Empty-state copy shown when the list is empty at the initial filter values
+   * (the screen's default view). Defaults to "No tickets found.".
+   */
+  emptyMessage?: string;
+  /**
+   * Empty-state copy shown when the filters have been narrowed away from their
+   * initial values and nothing matches. Defaults to
+   * "No tickets match the selected filters.".
+   */
+  filteredEmptyMessage?: string;
+}
+
+export function TicketListPage({
+  heading = "Tickets",
+  description = "Support tickets from customers.",
+  cardTitle = "All Tickets",
+  initialStatusFilter = "All",
+  initialWaitingOnFilter = "All",
+  resultFilter,
+  emptyMessage = "No tickets found.",
+  filteredEmptyMessage = "No tickets match the selected filters.",
+}: TicketListPageProps = {}) {
   const router = useRouter();
   const { data: session } = useSession();
   const [tickets, setTickets] = useState<TicketListItem[]>([]);
@@ -96,9 +140,11 @@ export function TicketListPage() {
   const [actionError, setActionError] = useState<string | null>(null);
   const [rowPending, setRowPending] = useState<RowPending>(null);
   const [cancelTarget, setCancelTarget] = useState<TicketListItem | null>(null);
-  const [statusFilter, setStatusFilter] = useState<TicketStatus | "All">("All");
+  const [statusFilter, setStatusFilter] = useState<TicketStatus | "All">(
+    initialStatusFilter
+  );
   const [waitingOnFilter, setWaitingOnFilter] = useState<TicketWaitingOn | "All">(
-    "All"
+    initialWaitingOnFilter
   );
 
   const loadTickets = useCallback(async () => {
@@ -108,14 +154,14 @@ export function TicketListPage() {
         statusFilter,
         waitingOnFilter
       );
-      setTickets(result);
+      setTickets(resultFilter ? resultFilter(result) : result);
       setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unable to load tickets.");
     } finally {
       setIsLoading(false);
     }
-  }, [statusFilter, waitingOnFilter]);
+  }, [statusFilter, waitingOnFilter, resultFilter]);
 
   useEffect(() => {
     void loadTickets();
@@ -123,9 +169,10 @@ export function TicketListPage() {
 
   /** Replace a single row from a mutation's response body (no full refetch). */
   function applyRowUpdate(updated: TicketListItem) {
-    setTickets((prev) =>
-      prev.map((t) => (t.id === updated.id ? updated : t))
-    );
+    setTickets((prev) => {
+      const next = prev.map((t) => (t.id === updated.id ? updated : t));
+      return resultFilter ? resultFilter(next) : next;
+    });
   }
 
   async function runRowMutation(
@@ -166,16 +213,18 @@ export function TicketListPage() {
     );
   }
 
-  const hasActiveFilter = statusFilter !== "All" || waitingOnFilter !== "All";
+  const isFilterNarrowed =
+    statusFilter !== initialStatusFilter ||
+    waitingOnFilter !== initialWaitingOnFilter;
 
   return (
     <div className="w-full min-h-full py-xl px-lg md:px-xl space-y-lg max-w-7xl mx-auto">
       <div className="space-y-sm">
         <h1 className="text-headline-md font-bold tracking-tight text-foreground">
-          Tickets
+          {heading}
         </h1>
         <p className="text-body-md text-muted-foreground">
-          Support tickets from customers.
+          {description}
         </p>
       </div>
 
@@ -184,7 +233,7 @@ export function TicketListPage() {
           <div className="flex flex-col gap-md sm:flex-row sm:items-center sm:justify-between">
             <CardTitle className="text-title-lg font-bold flex items-center gap-2">
               <TicketIcon className="w-5 h-5" />
-              All Tickets
+              {cardTitle}
             </CardTitle>
             <div className="flex items-center gap-md">
               <Select
@@ -237,9 +286,7 @@ export function TicketListPage() {
             <div className="p-xl text-destructive">{error}</div>
           ) : tickets.length === 0 ? (
             <div className="p-xl text-muted-foreground">
-              {hasActiveFilter
-                ? "No tickets match the selected filters."
-                : "No tickets found."}
+              {isFilterNarrowed ? filteredEmptyMessage : emptyMessage}
             </div>
           ) : (
             <div className="max-h-[600px] overflow-y-auto border border-border rounded-lg">
