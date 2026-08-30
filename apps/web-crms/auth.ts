@@ -1,4 +1,5 @@
 import NextAuth from "next-auth";
+import { resolveRouteAccess, isRouteAllowedForUser } from "@/lib/auth/route-access";
 
 // Module-level cache for in-flight token refresh promises.
 // Keyed by refresh token string, entries expire after 30 seconds.
@@ -291,43 +292,18 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           return true;
         }
 
-        // Enforce module-level permission
-        let requiredModule: string | null = null;
-        if (pathname === "/" || pathname.startsWith("/dashboard")) {
-          requiredModule = "Dashboard";
-        } else if (pathname.startsWith("/customers")) {
-          requiredModule = "Customer Profiles";
-        } else if (pathname.startsWith("/tickets")) {
-          // Ticket lifecycle management (formerly /conversations/*) is gated on
-          // the existing Conversations module permission — no new module.
-          requiredModule = "Conversations";
-        } else if (pathname.startsWith("/conversations")) {
-          // The messenger Conversations section shares the same module gate.
-          requiredModule = "Conversations";
-        } else if (pathname.startsWith("/campaigns")) {
-          requiredModule = "Campaigns";
-        } else if (pathname.startsWith("/settings")) {
-          // Settings is SuperAdmin/CEO only — non-super users get denied
+        // Enforce module-level permission. The route→module policy lives in a
+        // pure, unit-tested helper (lib/auth/route-access) so the "deny at the
+        // boundary" decision is verifiable without booting NextAuth. SuperUsers
+        // already returned above, so this only governs regular authenticated
+        // users.
+        const routeRule = resolveRouteAccess(pathname);
+        const crmsPerms = auth.permissions?.CRMS as
+          | Record<string, { canRead?: boolean } | undefined>
+          | undefined;
+        if (!isRouteAllowedForUser(routeRule, crmsPerms)) {
           if (isAccessDeniedPage) return true;
           return Response.redirect(new URL("/access-denied", request.nextUrl));
-        } else if (pathname.startsWith("/ecommerce")) {
-          if (isAccessDeniedPage) return true;
-          return Response.redirect(new URL("/access-denied", request.nextUrl));
-        } else if (pathname.startsWith("/automation")) {
-          if (isAccessDeniedPage) return true;
-          return Response.redirect(new URL("/access-denied", request.nextUrl));
-        } else if (pathname.startsWith("/contacts/segments")) {
-          if (isAccessDeniedPage) return true;
-          return Response.redirect(new URL("/access-denied", request.nextUrl));
-        }
-
-        if (requiredModule) {
-          const crmsPerms = auth.permissions?.CRMS;
-          const hasModuleAccess = crmsPerms?.[requiredModule]?.canRead;
-          if (!hasModuleAccess) {
-            if (isAccessDeniedPage) return true;
-            return Response.redirect(new URL("/access-denied", request.nextUrl));
-          }
         }
 
         // Authenticated users shouldn't see signin/access-denied
