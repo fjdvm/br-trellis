@@ -9,16 +9,18 @@
 import type {
   TicketStatus,
   TicketWaitingOn,
+  TicketSource,
   TicketListContact,
 } from "@/types/ticket-list";
 
-export type { TicketStatus, TicketWaitingOn } from "@/types/ticket-list";
+export type { TicketStatus, TicketWaitingOn, TicketSource } from "@/types/ticket-list";
 
 export interface TicketDetail {
   id: string;
   subject: string;
   status: TicketStatus;
   waitingOn: TicketWaitingOn;
+  source: TicketSource;
   assignedToId: string | null;
   assignedToName: string | null;
   assignedToEmail: string | null;

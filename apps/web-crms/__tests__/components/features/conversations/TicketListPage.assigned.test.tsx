@@ -68,6 +68,7 @@ function makeTicket(overrides: Partial<TicketListItem> = {}): TicketListItem {
     subject: "Cannot log in",
     status: "Ongoing",
     waitingOn: "Agent",
+    source: "Email",
     assignedToId: "auth|amelia",
     assignedToName: "amelia ward",
     assignedToEmail: "amelia.ward@trellis.io",
@@ -85,6 +86,7 @@ const assignedProps = {
   description: "Tickets assigned to you.",
   cardTitle: "Assigned to Me",
   assignedToMe: true,
+  showSourceFilter: false,
   emptyMessage: "No tickets are assigned to you.",
   filteredEmptyMessage: "No tickets match the selected filters.",
 };
@@ -112,11 +114,21 @@ describe("TicketListPage (My Assigned props)", () => {
     expect(screen.getByText("Assigned to Me")).toBeInTheDocument();
   });
 
+  it("does not render the Source filter (My Assigned stays as it was)", async () => {
+    render(<TicketListPage {...assignedProps} />);
+
+    await screen.findByRole("heading", { name: "My Assigned" });
+    expect(
+      screen.queryByLabelText("Filter by source")
+    ).not.toBeInTheDocument();
+  });
+
   it("performs the initial fetch with All/All (no server-side assignee filter)", async () => {
     render(<TicketListPage {...assignedProps} />);
 
     await waitFor(() =>
       expect(crmClient.conversationTickets.list).toHaveBeenCalledWith(
+        "All",
         "All",
         "All"
       )
@@ -246,6 +258,7 @@ describe("TicketListPage (My Assigned props)", () => {
     await waitFor(() =>
       expect(crmClient.conversationTickets.list).toHaveBeenCalledWith(
         "Ongoing",
+        "All",
         "All"
       )
     );

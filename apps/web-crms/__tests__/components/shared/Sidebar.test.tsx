@@ -218,3 +218,48 @@ describe("Sidebar two-group structure (#100)", () => {
     expect(screen.queryByText("Canned Replies")).not.toBeInTheDocument();
   });
 });
+
+describe("Sidebar Tickets group History tab (#107)", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    localStorage.clear();
+    localStorage.setItem("activeAccount", "admin");
+    __setMockStatus({ status: "healthy", isLoading: false });
+  });
+
+  it("adds a fourth History child pointing at /tickets/history", async () => {
+    await act(async () => {
+      render(<Sidebar />);
+    });
+
+    await act(async () => {
+      screen.getByRole("button", { name: /Tickets/ }).click();
+    });
+
+    const history = screen.getByText("History").closest("a");
+    expect(history).toHaveAttribute("href", "/tickets/history");
+  });
+
+  it("orders the Tickets children Triage Queue → Tickets → My Assigned → History", async () => {
+    await act(async () => {
+      render(<Sidebar />);
+    });
+
+    await act(async () => {
+      screen.getByRole("button", { name: /Tickets/ }).click();
+    });
+
+    // Collect the Tickets group's child link labels in DOM order and assert the
+    // History tab is last, after My Assigned.
+    const triage = screen.getByText("Triage Queue").closest("a");
+    const myAssigned = screen.getByText("My Assigned").closest("a");
+    const history = screen.getByText("History").closest("a");
+    expect(triage).not.toBeNull();
+    expect(myAssigned).not.toBeNull();
+    expect(history).not.toBeNull();
+
+    // History comes after My Assigned in document order.
+    const position = myAssigned!.compareDocumentPosition(history!);
+    expect(position & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+});

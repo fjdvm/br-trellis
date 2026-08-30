@@ -37,7 +37,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { crmClient } from "@/lib/api/crm-client";
 import { useCurrentAgentId } from "@/hooks/useCurrentAgentId";
-import { STATUS_BADGE_VARIANT, isActiveStatus, isTerminalStatus } from "@/lib/tickets";
+import { STATUS_BADGE_VARIANT, SOURCE_BADGE_VARIANT, isActiveStatus, isTerminalStatus } from "@/lib/tickets";
 import { formatName, formatEmail } from "@/lib/format-display";
 import type {
   TicketDetail,
@@ -191,6 +191,9 @@ export function TicketDetailPage({ ticketId }: TicketDetailPageProps) {
               </h1>
               <Badge variant={STATUS_BADGE_VARIANT[ticket.status]}>
                 {ticket.status}
+              </Badge>
+              <Badge variant={SOURCE_BADGE_VARIANT[ticket.source]}>
+                {ticket.source}
               </Badge>
             </div>
             <p className="text-body-md text-muted-foreground">

@@ -381,6 +381,7 @@ public static class SeedData
             Subject = "Cannot access invoice download",
             Status = TicketStatus.Ongoing,
             WaitingOn = WaitingOn.Customer,
+            Source = TicketSource.Email,
             AssignedToId = "auth|agent-amelia",
             AssignedToName = "Amelia Ward",
             AssignedToEmail = "amelia.ward@trellis.io",
@@ -395,6 +396,7 @@ public static class SeedData
             Subject = "Refund not received after 5 business days",
             Status = TicketStatus.Claimed,
             WaitingOn = WaitingOn.Agent,
+            Source = TicketSource.Email,
             AssignedToId = "auth|agent-amelia",
             AssignedToName = "Amelia Ward",
             AssignedToEmail = "amelia.ward@trellis.io",
@@ -410,6 +412,7 @@ public static class SeedData
             Subject = "Question about bulk pricing",
             Status = TicketStatus.Unclaimed,
             WaitingOn = WaitingOn.Agent,
+            Source = TicketSource.Email,
             CreatedAt = now.AddHours(-8),
             UpdatedAt = now.AddHours(-1),
         };
@@ -423,6 +426,7 @@ public static class SeedData
             Subject = "Inbound email: website contact form",
             Status = TicketStatus.Unclaimed,
             WaitingOn = WaitingOn.Agent,
+            Source = TicketSource.Email,
             CreatedAt = now.AddHours(-4),
             UpdatedAt = now.AddHours(-4),
         };
@@ -434,6 +438,7 @@ public static class SeedData
             Subject = "Support ticket #TK-892 resolved",
             Status = TicketStatus.Completed,
             WaitingOn = WaitingOn.None,
+            Source = TicketSource.Email,
             AssignedToId = "auth|agent-noah",
             AssignedToName = "Noah Patel",
             AssignedToEmail = "noah.patel@trellis.io",
@@ -441,8 +446,25 @@ public static class SeedData
             UpdatedAt = now.AddDays(-9),
         };
 
+        // A Canceled ticket so the History view (Completed ∪ Canceled) shows
+        // more than a single terminal row out of the box.
+        var canceled = new Ticket
+        {
+            Id = Guid.NewGuid(),
+            ContactId = contacts[1].Id, // Liam Torres
+            Subject = "Duplicate order — customer withdrew request",
+            Status = TicketStatus.Canceled,
+            WaitingOn = WaitingOn.None,
+            Source = TicketSource.Email,
+            AssignedToId = "auth|agent-noah",
+            AssignedToName = "Noah Patel",
+            AssignedToEmail = "noah.patel@trellis.io",
+            CreatedAt = now.AddDays(-7),
+            UpdatedAt = now.AddDays(-6),
+        };
+
         dbContext.Tickets.AddRange(
-            ongoing, claimed, unclaimedWaitingAgent, unlinked, completed);
+            ongoing, claimed, unclaimedWaitingAgent, unlinked, completed, canceled);
 
         // A short chronological message thread on the ongoing ticket.
         dbContext.Messages.AddRange(

@@ -14,6 +14,7 @@ export default function Page() {
       description="Tickets assigned to you."
       cardTitle="Assigned to Me"
       assignedToMe
+      showSourceFilter={false}
       emptyMessage="No tickets are assigned to you."
       filteredEmptyMessage="No tickets match the selected filters."
     />

@@ -296,6 +296,7 @@ function ConversationPane({ ticketId, ticket, listLoaded }: ConversationPaneProp
             subject: detail.subject,
             status: detail.status,
             waitingOn: detail.waitingOn,
+            source: detail.source,
             assignedToId: detail.assignedToId,
             assignedToName: detail.assignedToName,
             assignedToEmail: detail.assignedToEmail,

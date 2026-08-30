@@ -227,13 +227,16 @@ export const crmClient = {
   // Real ticket list contract (backed by TicketController #63), kept separate
   // from the legacy `tickets` block above, which targets an unimplemented API.
   conversationTickets: {
-    list: (status?: string, waitingOn?: string) => {
+    list: (status?: string, waitingOn?: string, source?: string) => {
       const params = new URLSearchParams();
       if (status && status !== "All") {
         params.set("status", status);
       }
       if (waitingOn && waitingOn !== "All") {
         params.set("waitingOn", waitingOn);
+      }
+      if (source && source !== "All") {
+        params.set("source", source);
       }
       const query = params.toString();
       return request<ConversationTicketListItem[]>(

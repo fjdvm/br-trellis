@@ -1,5 +1,5 @@
 import type { BadgeProps } from "@/components/ui/badge";
-import type { TicketStatus } from "@/types/ticket-list";
+import type { TicketStatus, TicketSource } from "@/types/ticket-list";
 
 /**
  * Badge variant per ticket status, shared between the ticket list and detail
@@ -11,6 +11,17 @@ export const STATUS_BADGE_VARIANT: Record<TicketStatus, BadgeProps["variant"]> =
   Ongoing: "info",
   Completed: "default",
   Canceled: "destructive",
+};
+
+/**
+ * Badge variant per ticket Source, shared between the ticket list and detail
+ * pages so a ticket's origin reads consistently wherever it appears. Distinct
+ * from the Status/WaitingOn palettes so Source is visually its own dimension.
+ */
+export const SOURCE_BADGE_VARIANT: Record<TicketSource, BadgeProps["variant"]> = {
+  Email: "secondary",
+  Manual: "outline",
+  Ecommerce: "info",
 };
 
 /**

@@ -58,6 +58,7 @@ function makeTicket(overrides: Partial<TicketListItem> = {}): TicketListItem {
     subject: "Cannot log in",
     status: "Unclaimed",
     waitingOn: "Agent",
+    source: "Email",
     assignedToId: null,
     assignedToName: null,
     assignedToEmail: null,
@@ -76,6 +77,7 @@ const inboxProps = {
   cardTitle: "My Queue",
   initialWaitingOnFilter: "Agent" as const,
   excludeTerminal: true,
+  showSourceFilter: false,
   emptyMessage: "Nothing waiting on you right now.",
   filteredEmptyMessage: "No tickets match the selected filters.",
 };
@@ -104,9 +106,19 @@ describe("TicketListPage (Inbox props)", () => {
     await waitFor(() =>
       expect(crmClient.conversationTickets.list).toHaveBeenCalledWith(
         "All",
-        "Agent"
+        "Agent",
+        "All"
       )
     );
+  });
+
+  it("does not render the Source filter (Triage Queue stays as it was)", async () => {
+    render(<TicketListPage {...inboxProps} />);
+
+    await screen.findByRole("heading", { name: "Inbox" });
+    expect(
+      screen.queryByLabelText("Filter by source")
+    ).not.toBeInTheDocument();
   });
 
   it("excludes Completed and Canceled tickets returned by the API via the result filter", async () => {
@@ -159,7 +171,8 @@ describe("TicketListPage (Inbox props)", () => {
     await waitFor(() =>
       expect(crmClient.conversationTickets.list).toHaveBeenCalledWith(
         "All",
-        "Customer"
+        "Customer",
+        "All"
       )
     );
 

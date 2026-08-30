@@ -58,6 +58,7 @@ function makeTicket(overrides: Partial<TicketListItem> = {}): TicketListItem {
     subject: "Cannot log in",
     status: "Unclaimed",
     waitingOn: "Agent",
+    source: "Email",
     assignedToId: null,
     assignedToName: null,
     assignedToEmail: null,
@@ -192,7 +193,7 @@ describe("TicketListPage", () => {
     render(<TicketListPage />);
 
     await waitFor(() =>
-      expect(crmClient.conversationTickets.list).toHaveBeenCalledWith("All", "All")
+      expect(crmClient.conversationTickets.list).toHaveBeenCalledWith("All", "All", "All")
     );
 
     await user.click(screen.getByLabelText("Filter by status"));
@@ -201,6 +202,7 @@ describe("TicketListPage", () => {
     await waitFor(() =>
       expect(crmClient.conversationTickets.list).toHaveBeenCalledWith(
         "Claimed",
+        "All",
         "All"
       )
     );
@@ -213,7 +215,7 @@ describe("TicketListPage", () => {
     render(<TicketListPage />);
 
     await waitFor(() =>
-      expect(crmClient.conversationTickets.list).toHaveBeenCalledWith("All", "All")
+      expect(crmClient.conversationTickets.list).toHaveBeenCalledWith("All", "All", "All")
     );
 
     await user.click(screen.getByLabelText("Filter by waiting on"));
@@ -222,9 +224,60 @@ describe("TicketListPage", () => {
     await waitFor(() =>
       expect(crmClient.conversationTickets.list).toHaveBeenCalledWith(
         "All",
-        "Customer"
+        "Customer",
+        "All"
       )
     );
+  });
+
+  it("re-fetches with the selected source filter", async () => {
+    jest.mocked(crmClient.conversationTickets.list).mockResolvedValue([]);
+    const user = userEvent.setup({ pointerEventsCheck: 0 });
+
+    render(<TicketListPage />);
+
+    await waitFor(() =>
+      expect(crmClient.conversationTickets.list).toHaveBeenCalledWith(
+        "All",
+        "All",
+        "All"
+      )
+    );
+
+    await user.click(screen.getByLabelText("Filter by source"));
+    await user.click(await screen.findByRole("option", { name: "Manual" }));
+
+    await waitFor(() =>
+      expect(crmClient.conversationTickets.list).toHaveBeenCalledWith(
+        "All",
+        "All",
+        "Manual"
+      )
+    );
+  });
+
+  it("renders a Source badge per row", async () => {
+    jest.mocked(crmClient.conversationTickets.list).mockResolvedValue([
+      makeTicket({ id: "t-email", subject: "From email", source: "Email" }),
+      makeTicket({ id: "t-manual", subject: "By hand", source: "Manual" }),
+    ]);
+
+    render(<TicketListPage />);
+
+    expect(await screen.findByText("From email")).toBeInTheDocument();
+    // Both Source values render as badges in their rows.
+    expect(screen.getByText("Email")).toBeInTheDocument();
+    expect(screen.getByText("Manual")).toBeInTheDocument();
+  });
+
+  it("renders the Source filter on the default Tickets screen", async () => {
+    jest.mocked(crmClient.conversationTickets.list).mockResolvedValue([]);
+
+    render(<TicketListPage />);
+
+    expect(
+      await screen.findByLabelText("Filter by source")
+    ).toBeInTheDocument();
   });
 
   it("navigates to the ticket detail route on row click", async () => {

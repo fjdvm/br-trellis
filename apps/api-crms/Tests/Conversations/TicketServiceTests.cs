@@ -126,7 +126,7 @@ public sealed class TicketServiceTests : IDisposable
         await SeedTicketAsync(context, "C", TicketStatus.Unclaimed, WaitingOn.Agent);
         var service = CreateService(context);
 
-        var result = await service.ListTicketsAsync("Unclaimed", null, CancellationToken.None);
+        var result = await service.ListTicketsAsync("Unclaimed", null, null, CancellationToken.None);
 
         Assert.Equal(2, result.Count);
         Assert.All(result, t => Assert.Equal("Unclaimed", t.Status));
@@ -141,7 +141,7 @@ public sealed class TicketServiceTests : IDisposable
         await SeedTicketAsync(context, "C", TicketStatus.Unclaimed, WaitingOn.Agent);
         var service = CreateService(context);
 
-        var result = await service.ListTicketsAsync(null, "Agent", CancellationToken.None);
+        var result = await service.ListTicketsAsync(null, "Agent", null, CancellationToken.None);
 
         Assert.Equal(2, result.Count);
         Assert.All(result, t => Assert.Equal("Agent", t.WaitingOn));
@@ -156,7 +156,7 @@ public sealed class TicketServiceTests : IDisposable
         await SeedTicketAsync(context, "C", TicketStatus.Claimed, WaitingOn.Agent);
         var service = CreateService(context);
 
-        var result = await service.ListTicketsAsync("Unclaimed", "Agent", CancellationToken.None);
+        var result = await service.ListTicketsAsync("Unclaimed", "Agent", null, CancellationToken.None);
 
         Assert.Single(result);
         Assert.Equal("B", result[0].Subject);
@@ -170,7 +170,7 @@ public sealed class TicketServiceTests : IDisposable
         await SeedTicketAsync(context, "B", TicketStatus.Claimed, WaitingOn.Agent);
         var service = CreateService(context);
 
-        var result = await service.ListTicketsAsync(null, null, CancellationToken.None);
+        var result = await service.ListTicketsAsync(null, null, null, CancellationToken.None);
 
         Assert.Equal(2, result.Count);
     }
@@ -182,7 +182,99 @@ public sealed class TicketServiceTests : IDisposable
         var service = CreateService(context);
 
         await Assert.ThrowsAsync<ArgumentException>(
-            () => service.ListTicketsAsync("Bogus", null, CancellationToken.None));
+            () => service.ListTicketsAsync("Bogus", null, null, CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task CreateTicket_stamps_source_manual()
+    {
+        await using var context = CreateContext();
+        var service = CreateService(context);
+
+        var result = await service.CreateTicketAsync(
+            new CreateTicketDto("Opened by hand", null),
+            CancellationToken.None);
+
+        // A ticket opened via the New Ticket sheet is Manual, never Email.
+        Assert.Equal("Manual", result.Source);
+    }
+
+    [Fact]
+    public async Task ListTickets_filters_by_source()
+    {
+        await using var context = CreateContext();
+        await SeedTicketAsync(
+            context, "Email one", TicketStatus.Unclaimed, WaitingOn.None, TicketSource.Email);
+        await SeedTicketAsync(
+            context, "Manual one", TicketStatus.Unclaimed, WaitingOn.None, TicketSource.Manual);
+        await SeedTicketAsync(
+            context, "Email two", TicketStatus.Claimed, WaitingOn.Agent, TicketSource.Email);
+        var service = CreateService(context);
+
+        var result = await service.ListTicketsAsync(null, null, "Email", CancellationToken.None);
+
+        Assert.Equal(2, result.Count);
+        Assert.All(result, t => Assert.Equal("Email", t.Source));
+    }
+
+    [Fact]
+    public async Task ListTickets_filters_by_source_manual()
+    {
+        await using var context = CreateContext();
+        await SeedTicketAsync(
+            context, "Email one", TicketStatus.Unclaimed, WaitingOn.None, TicketSource.Email);
+        await SeedTicketAsync(
+            context, "Manual one", TicketStatus.Unclaimed, WaitingOn.None, TicketSource.Manual);
+        var service = CreateService(context);
+
+        var result = await service.ListTicketsAsync(null, null, "Manual", CancellationToken.None);
+
+        Assert.Single(result);
+        Assert.Equal("Manual one", result[0].Subject);
+    }
+
+    [Fact]
+    public async Task ListTickets_without_source_returns_all_sources()
+    {
+        await using var context = CreateContext();
+        await SeedTicketAsync(
+            context, "Email one", TicketStatus.Unclaimed, WaitingOn.None, TicketSource.Email);
+        await SeedTicketAsync(
+            context, "Manual one", TicketStatus.Unclaimed, WaitingOn.None, TicketSource.Manual);
+        var service = CreateService(context);
+
+        var result = await service.ListTicketsAsync(null, null, null, CancellationToken.None);
+
+        Assert.Equal(2, result.Count);
+    }
+
+    [Fact]
+    public async Task ListTickets_combines_source_with_status_and_waitingon()
+    {
+        await using var context = CreateContext();
+        await SeedTicketAsync(
+            context, "Match", TicketStatus.Unclaimed, WaitingOn.Agent, TicketSource.Manual);
+        await SeedTicketAsync(
+            context, "Wrong source", TicketStatus.Unclaimed, WaitingOn.Agent, TicketSource.Email);
+        await SeedTicketAsync(
+            context, "Wrong status", TicketStatus.Claimed, WaitingOn.Agent, TicketSource.Manual);
+        var service = CreateService(context);
+
+        var result = await service.ListTicketsAsync(
+            "Unclaimed", "Agent", "Manual", CancellationToken.None);
+
+        Assert.Single(result);
+        Assert.Equal("Match", result[0].Subject);
+    }
+
+    [Fact]
+    public async Task ListTickets_throws_for_invalid_source_filter()
+    {
+        await using var context = CreateContext();
+        var service = CreateService(context);
+
+        await Assert.ThrowsAsync<ArgumentException>(
+            () => service.ListTicketsAsync(null, null, "Bogus", CancellationToken.None));
     }
 
     [Fact]
@@ -193,7 +285,7 @@ public sealed class TicketServiceTests : IDisposable
         var service = CreateService(context);
         var controller = new TicketController(service);
 
-        var response = await controller.ListTickets(null, null, CancellationToken.None);
+        var response = await controller.ListTickets(null, null, null, CancellationToken.None);
 
         var result = Assert.IsType<OkObjectResult>(response.Result);
         var items = Assert.IsAssignableFrom<IReadOnlyList<TicketListItemDto>>(result.Value);
@@ -207,7 +299,7 @@ public sealed class TicketServiceTests : IDisposable
         var service = CreateService(context);
         var controller = new TicketController(service);
 
-        var response = await controller.ListTickets("Nope", null, CancellationToken.None);
+        var response = await controller.ListTickets("Nope", null, null, CancellationToken.None);
 
         Assert.IsType<BadRequestObjectResult>(response.Result);
     }
@@ -289,7 +381,8 @@ public sealed class TicketServiceTests : IDisposable
     }
 
     private static async Task SeedTicketAsync(
-        AppDbContext context, string subject, TicketStatus status, WaitingOn waitingOn)
+        AppDbContext context, string subject, TicketStatus status, WaitingOn waitingOn,
+        TicketSource source = TicketSource.Email)
     {
         context.Tickets.Add(new Ticket
         {
@@ -297,6 +390,7 @@ public sealed class TicketServiceTests : IDisposable
             Subject = subject,
             Status = status,
             WaitingOn = waitingOn,
+            Source = source,
             CreatedAt = DateTimeOffset.UtcNow,
             UpdatedAt = DateTimeOffset.UtcNow,
         });

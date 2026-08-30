@@ -14,6 +14,7 @@ export default function Page() {
       cardTitle="My Queue"
       initialWaitingOnFilter="Agent"
       excludeTerminal
+      showSourceFilter={false}
       emptyMessage="Nothing waiting on you right now."
       filteredEmptyMessage="No tickets match the selected filters."
     />

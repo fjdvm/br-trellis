@@ -11,6 +11,7 @@ import {
   Inbox,
   Ticket,
   UserCheck,
+  History,
   FileText,
   SmilePlus,
   Flag,
@@ -110,6 +111,7 @@ export const navGroups: NavGroup[] = [
       { name: "Triage Queue", href: "/tickets/inbox", icon: Inbox },
       { name: "Tickets", href: "/tickets", icon: Ticket },
       { name: "My Assigned", href: "/tickets/assigned", icon: UserCheck },
+      { name: "History", href: "/tickets/history", icon: History },
     ],
   },
   {

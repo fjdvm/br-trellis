@@ -12,6 +12,14 @@ export type TicketStatus = "Unclaimed" | "Claimed" | "Ongoing" | "Completed" | "
 
 export type TicketWaitingOn = "Agent" | "Customer" | "None";
 
+/**
+ * The channel a ticket originated from. Set once at creation and never changed
+ * — a fixed record of origin, distinct from the lifecycle fields. Mirrors the
+ * backend `TicketSource` enum. `Ecommerce` is forward-compatible: no ticket
+ * takes it yet.
+ */
+export type TicketSource = "Email" | "Manual" | "Ecommerce";
+
 export interface TicketListContact {
   id: string;
   name: string | null;
@@ -23,6 +31,7 @@ export interface TicketListItem {
   subject: string;
   status: TicketStatus;
   waitingOn: TicketWaitingOn;
+  source: TicketSource;
   assignedToId: string | null;
   assignedToName: string | null;
   assignedToEmail: string | null;

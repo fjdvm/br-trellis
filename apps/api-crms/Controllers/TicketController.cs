@@ -12,11 +12,12 @@ public sealed class TicketController(ITicketService ticketService) : ControllerB
     public async Task<ActionResult<IReadOnlyList<TicketListItemDto>>> ListTickets(
         [FromQuery] string? status = null,
         [FromQuery] string? waitingOn = null,
+        [FromQuery] string? source = null,
         CancellationToken cancellationToken = default)
     {
         try
         {
-            return Ok(await ticketService.ListTicketsAsync(status, waitingOn, cancellationToken));
+            return Ok(await ticketService.ListTicketsAsync(status, waitingOn, source, cancellationToken));
         }
         catch (ArgumentException ex)
         {

@@ -18,6 +18,13 @@ public sealed class Ticket
 
     public WaitingOn WaitingOn { get; set; }
 
+    /// <summary>
+    /// The channel a ticket originated from. Set once at creation and never
+    /// changed afterward — a fixed record of origin, distinct from the
+    /// lifecycle fields Status/WaitingOn.
+    /// </summary>
+    public TicketSource Source { get; set; }
+
     public string? AssignedToId { get; set; }
 
     public string? AssignedToName { get; set; }

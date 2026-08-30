@@ -77,6 +77,7 @@ public sealed class EmailIngestionService(IEmailRepository emailRepository) : IE
                 Subject = (data.Subject ?? string.Empty).Trim(),
                 Status = TicketStatus.Unclaimed,
                 WaitingOn = WaitingOn.Agent,
+                Source = TicketSource.Email,
                 CreatedAt = occurredAt,
                 UpdatedAt = occurredAt,
             };

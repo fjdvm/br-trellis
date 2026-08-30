@@ -8,6 +8,7 @@ public interface ITicketRepository
     Task<IReadOnlyList<Ticket>> ListTicketsAsync(
         TicketStatus? status,
         WaitingOn? waitingOn,
+        TicketSource? source,
         CancellationToken cancellationToken);
 
     Task<Ticket?> GetTicketByIdAsync(Guid id, CancellationToken cancellationToken);

@@ -14,6 +14,7 @@ public sealed class TicketService(
     public async Task<IReadOnlyList<TicketListItemDto>> ListTicketsAsync(
         string? status,
         string? waitingOn,
+        string? source,
         CancellationToken cancellationToken)
     {
         TicketStatus? statusFilter = null;
@@ -36,8 +37,18 @@ public sealed class TicketService(
             waitingOnFilter = parsedWaitingOn;
         }
 
+        TicketSource? sourceFilter = null;
+        if (!string.IsNullOrWhiteSpace(source))
+        {
+            if (!Enum.TryParse<TicketSource>(source, ignoreCase: true, out var parsedSource))
+            {
+                throw new ArgumentException($"Invalid Source: '{source}'.");
+            }
+            sourceFilter = parsedSource;
+        }
+
         var tickets = await ticketRepository.ListTicketsAsync(
-            statusFilter, waitingOnFilter, cancellationToken);
+            statusFilter, waitingOnFilter, sourceFilter, cancellationToken);
         return TicketMapper.ToListItems(tickets);
     }
 
@@ -72,6 +83,7 @@ public sealed class TicketService(
             Subject = input.Subject.Trim(),
             Status = TicketStatus.Unclaimed,
             WaitingOn = WaitingOn.None,
+            Source = TicketSource.Manual,
             CreatedAt = now,
             UpdatedAt = now,
         };

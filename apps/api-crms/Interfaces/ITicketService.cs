@@ -7,6 +7,7 @@ public interface ITicketService
     Task<IReadOnlyList<TicketListItemDto>> ListTicketsAsync(
         string? status,
         string? waitingOn,
+        string? source,
         CancellationToken cancellationToken);
 
     Task<TicketDetailDto?> GetTicketByIdAsync(Guid id, CancellationToken cancellationToken);

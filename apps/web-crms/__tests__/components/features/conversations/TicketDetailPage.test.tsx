@@ -62,6 +62,7 @@ function makeTicket(overrides: Partial<TicketDetail> = {}): TicketDetail {
     subject: "Cannot log in",
     status: "Unclaimed",
     waitingOn: "None",
+    source: "Email",
     assignedToId: null,
     assignedToName: null,
     assignedToEmail: null,
@@ -133,6 +134,18 @@ describe("TicketDetailPage", () => {
     render(<TicketDetailPage ticketId="t-1" />);
 
     expect(await screen.findByText("Ticket not found.")).toBeInTheDocument();
+  });
+
+  it("renders a Source badge next to the Status badge", async () => {
+    mocked.getById.mockResolvedValue(
+      makeTicket({ status: "Claimed", source: "Manual", assignedToId: "auth|amelia" })
+    );
+
+    render(<TicketDetailPage ticketId="t-1" />);
+
+    // Status and Source both render as badges in the header.
+    expect(await screen.findByText("Claimed")).toBeInTheDocument();
+    expect(screen.getByText("Manual")).toBeInTheDocument();
   });
 
   // --- View Conversation link (#101): the inline thread was removed from the

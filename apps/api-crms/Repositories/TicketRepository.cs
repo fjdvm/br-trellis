@@ -11,6 +11,7 @@ public sealed class TicketRepository(AppDbContext dbContext) : ITicketRepository
     public async Task<IReadOnlyList<Ticket>> ListTicketsAsync(
         TicketStatus? status,
         WaitingOn? waitingOn,
+        TicketSource? source,
         CancellationToken cancellationToken)
     {
         var query = dbContext.Tickets.AsNoTracking()
@@ -25,6 +26,11 @@ public sealed class TicketRepository(AppDbContext dbContext) : ITicketRepository
         if (waitingOn.HasValue)
         {
             query = query.Where(t => t.WaitingOn == waitingOn.Value);
+        }
+
+        if (source.HasValue)
+        {
+            query = query.Where(t => t.Source == source.Value);
         }
 
         var tickets = await query.ToListAsync(cancellationToken);

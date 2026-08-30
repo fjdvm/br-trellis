@@ -33,6 +33,7 @@ public sealed class EmailIngestionServiceTests : IDisposable
         Assert.Equal("Help please", ticket.Subject);
         Assert.Equal(TicketStatus.Unclaimed, ticket.Status);
         Assert.Equal(WaitingOn.Agent, ticket.WaitingOn);
+        Assert.Equal(TicketSource.Email, ticket.Source);
         Assert.Null(ticket.ContactId);
     }
 
@@ -112,6 +113,39 @@ public sealed class EmailIngestionServiceTests : IDisposable
         Assert.Equal(WaitingOn.Agent, updated.WaitingOn);
         // Status (ownership) is not forced back by an inbound reply.
         Assert.Equal(TicketStatus.Claimed, updated.Status);
+    }
+
+    [Fact]
+    public async Task Reply_on_existing_thread_does_not_change_source()
+    {
+        await using var context = CreateContext();
+        var service = CreateService(context);
+
+        // An existing ticket on a thread, created some other way (Manual here),
+        // so we can prove the append branch never rewrites Source to Email.
+        context.Tickets.Add(new Ticket
+        {
+            Id = Guid.NewGuid(),
+            ExternalThreadId = "thread-1",
+            Subject = "Opened by hand",
+            Status = TicketStatus.Claimed,
+            WaitingOn = WaitingOn.Customer,
+            Source = TicketSource.Manual,
+            CreatedAt = DateTimeOffset.UtcNow,
+            UpdatedAt = DateTimeOffset.UtcNow,
+        });
+        await context.SaveChangesAsync();
+        context.ChangeTracker.Clear();
+
+        // A customer emails in on that same thread.
+        await service.ProcessEventAsync(
+            "evt-1", "email.received",
+            CreateEmailPayload("evt-1", "thread-1", "Opened by hand", "Customer reply."));
+
+        // Exactly one ticket, and its Source is still Manual — untouched.
+        var ticket = await context.Tickets.SingleAsync();
+        Assert.Equal(TicketSource.Manual, ticket.Source);
+        Assert.Equal(1, await context.Tickets.CountAsync());
     }
 
     [Fact]

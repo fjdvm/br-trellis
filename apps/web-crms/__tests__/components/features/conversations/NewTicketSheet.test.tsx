@@ -35,6 +35,7 @@ function makeTicketDetail(overrides: Partial<TicketDetail> = {}): TicketDetail {
     subject: "New subject",
     status: "Unclaimed",
     waitingOn: "None",
+    source: "Manual",
     assignedToId: null,
     assignedToName: null,
     assignedToEmail: null,

@@ -512,6 +512,9 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
             ticket.Property(e => e.WaitingOn)
                 .HasColumnName("waiting_on")
                 .HasConversion<string>();
+            ticket.Property(e => e.Source)
+                .HasColumnName("source")
+                .HasConversion<string>();
             ticket.Property(e => e.AssignedToId).HasColumnName("assigned_to_id");
             ticket.Property(e => e.AssignedToName).HasColumnName("assigned_to_name");
             ticket.Property(e => e.AssignedToEmail).HasColumnName("assigned_to_email");
@@ -519,6 +522,7 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
             ticket.Property(e => e.UpdatedAt).HasColumnName("updated_at");
             ticket.HasIndex(e => e.Status);
             ticket.HasIndex(e => e.WaitingOn);
+            ticket.HasIndex(e => e.Source);
             ticket.HasIndex(e => e.ContactId);
             ticket.HasIndex(e => e.ExternalThreadId);
 

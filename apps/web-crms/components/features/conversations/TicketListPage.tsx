@@ -36,12 +36,13 @@ import {
 import { crmClient } from "@/lib/api/crm-client";
 import { useCurrentAgentId } from "@/hooks/useCurrentAgentId";
 import { NewTicketSheet } from "@/components/features/conversations/NewTicketSheet";
-import { STATUS_BADGE_VARIANT, isTerminalStatus } from "@/lib/tickets";
+import { STATUS_BADGE_VARIANT, SOURCE_BADGE_VARIANT, isTerminalStatus } from "@/lib/tickets";
 import { formatName, formatEmail } from "@/lib/format-display";
 import type {
   TicketListItem,
   TicketStatus,
   TicketWaitingOn,
+  TicketSource,
 } from "@/types/ticket-list";
 
 const STATUS_OPTIONS: readonly (TicketStatus | "All")[] = [
@@ -58,6 +59,13 @@ const WAITING_ON_OPTIONS: readonly (TicketWaitingOn | "All")[] = [
   "Agent",
   "Customer",
   "None",
+];
+
+const SOURCE_OPTIONS: readonly (TicketSource | "All")[] = [
+  "All",
+  "Email",
+  "Manual",
+  "Ecommerce",
 ];
 
 /** Which in-flight row mutation is running, keyed to a ticket id. */
@@ -103,6 +111,14 @@ export interface TicketListPageProps {
   cardTitle?: string;
   /** Initial Status filter value. Defaults to "All". */
   initialStatusFilter?: TicketStatus | "All";
+  /**
+   * Override the Status dropdown's option list. Defaults to the full five-status
+   * list. History passes a narrowed list (`["All", "Completed", "Canceled"]`) so
+   * its Status dropdown can't select a status the view will never show. Purely a
+   * dropdown-options override — the terminal-only guarantee itself is enforced by
+   * `terminalOnly`, not by this list.
+   */
+  statusOptions?: readonly (TicketStatus | "All")[];
   /** Initial Waiting On filter value. Defaults to "All". */
   initialWaitingOnFilter?: TicketWaitingOn | "All";
   /**
@@ -114,6 +130,18 @@ export interface TicketListPageProps {
    * crossing the server/client boundary with a non-serializable prop.
    */
   excludeTerminal?: boolean;
+  /**
+   * When true, only terminal (Completed/Canceled) tickets are kept in the
+   * rendered rows, regardless of the active server-side filters — the mirror
+   * image of `excludeTerminal`. Used by the History screen so no non-terminal
+   * ticket can ever appear, no matter what filter combination is picked.
+   * Fetches with no status parameter sent to the server, then narrows the
+   * rendered rows to Status ∈ {Completed, Canceled} in-memory, reapplied after
+   * every in-place row update exactly as `excludeTerminal`/`assignedToMe` are.
+   * A boolean (not a function) so this component can be driven from a Server
+   * Component page wrapper with only serializable props.
+   */
+  terminalOnly?: boolean;
   /**
    * When true, the fetched ticket list is filtered to rows whose
    * `assignedToId` matches the signed-in agent's identity (`currentAgentId`,
@@ -128,6 +156,14 @@ export interface TicketListPageProps {
    * from a Server Component page wrapper with only serializable props.
    */
   assignedToMe?: boolean;
+  /**
+   * Whether to render the Source filter dropdown. Defaults to `true` (the
+   * Tickets and History screens both show it). Triage Queue and My Assigned
+   * pass `false` — per spec, Source is a filter only on Tickets and History,
+   * and those two screens stay as they are. The Source *badge column* is
+   * unaffected by this flag: it renders on every screen that shows the table.
+   */
+  showSourceFilter?: boolean;
   /**
    * Empty-state copy shown when the list is empty at the initial filter values
    * (the screen's default view). Defaults to "No tickets found.".
@@ -146,9 +182,12 @@ export function TicketListPage({
   description = "Support tickets from customers.",
   cardTitle = "All Tickets",
   initialStatusFilter = "All",
+  statusOptions = STATUS_OPTIONS,
   initialWaitingOnFilter = "All",
   excludeTerminal = false,
+  terminalOnly = false,
   assignedToMe = false,
+  showSourceFilter = true,
   emptyMessage = "No tickets found.",
   filteredEmptyMessage = "No tickets match the selected filters.",
 }: TicketListPageProps = {}) {
@@ -167,6 +206,7 @@ export function TicketListPage({
   const [waitingOnFilter, setWaitingOnFilter] = useState<TicketWaitingOn | "All">(
     initialWaitingOnFilter
   );
+  const [sourceFilter, setSourceFilter] = useState<TicketSource | "All">("All");
 
   /**
    * The signed-in agent's identity, resolved via the shared `useCurrentAgentId`
@@ -188,6 +228,7 @@ export function TicketListPage({
     (rows: TicketListItem[]) => {
       let next = rows;
       if (excludeTerminal) next = next.filter((t) => !isTerminal(t));
+      if (terminalOnly) next = next.filter((t) => isTerminal(t));
       if (assignedToMe) {
         next = next.filter(
           (t) => t.assignedToId !== null && t.assignedToId === currentAgentId
@@ -195,7 +236,7 @@ export function TicketListPage({
       }
       return next;
     },
-    [excludeTerminal, assignedToMe, currentAgentId]
+    [excludeTerminal, terminalOnly, assignedToMe, currentAgentId]
   );
 
   const loadTickets = useCallback(async () => {
@@ -203,7 +244,8 @@ export function TicketListPage({
     try {
       const result = await crmClient.conversationTickets.list(
         statusFilter,
-        waitingOnFilter
+        waitingOnFilter,
+        sourceFilter
       );
       setTickets(applyResultFilter(result));
       setError(null);
@@ -212,7 +254,7 @@ export function TicketListPage({
     } finally {
       setIsLoading(false);
     }
-  }, [statusFilter, waitingOnFilter, applyResultFilter]);
+  }, [statusFilter, waitingOnFilter, sourceFilter, applyResultFilter]);
 
   useEffect(() => {
     void loadTickets();
@@ -265,7 +307,8 @@ export function TicketListPage({
 
   const isFilterNarrowed =
     statusFilter !== initialStatusFilter ||
-    waitingOnFilter !== initialWaitingOnFilter;
+    waitingOnFilter !== initialWaitingOnFilter ||
+    sourceFilter !== "All";
 
   return (
     <div className="w-full min-h-full py-xl px-lg md:px-xl space-y-lg max-w-7xl mx-auto">
@@ -299,7 +342,7 @@ export function TicketListPage({
                   <SelectValue placeholder="Status" />
                 </SelectTrigger>
                 <SelectContent>
-                  {STATUS_OPTIONS.map((option) => (
+                  {statusOptions.map((option) => (
                     <SelectItem key={option} value={option}>
                       {option === "All" ? "All statuses" : option}
                     </SelectItem>
@@ -326,6 +369,25 @@ export function TicketListPage({
                   ))}
                 </SelectContent>
               </Select>
+              {showSourceFilter && (
+                <Select
+                  value={sourceFilter}
+                  onValueChange={(value) =>
+                    setSourceFilter(value as TicketSource | "All")
+                  }
+                >
+                  <SelectTrigger className="w-[150px]" aria-label="Filter by source">
+                    <SelectValue placeholder="Source" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {SOURCE_OPTIONS.map((option) => (
+                      <SelectItem key={option} value={option}>
+                        {option === "All" ? "All sources" : option}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
             </div>
           </div>
         </CardHeader>
@@ -334,7 +396,7 @@ export function TicketListPage({
             <p className="text-base text-destructive">{actionError}</p>
           )}
           {isLoading ? (
-            <TableSkeleton columns={6} />
+            <TableSkeleton columns={7} />
           ) : error ? (
             <div className="p-xl text-destructive">{error}</div>
           ) : tickets.length === 0 ? (
@@ -349,6 +411,7 @@ export function TicketListPage({
                     <TableHead className="min-w-[220px]">Subject</TableHead>
                     <TableHead className="min-w-[120px]">Status</TableHead>
                     <TableHead className="min-w-[120px]">Waiting On</TableHead>
+                    <TableHead className="min-w-[110px]">Source</TableHead>
                     <TableHead className="min-w-[180px]">Contact</TableHead>
                     <TableHead className="min-w-[160px]">Assigned To</TableHead>
                     <TableHead className="min-w-[120px]">Created</TableHead>
@@ -382,6 +445,11 @@ export function TicketListPage({
                         </TableCell>
                         <TableCell className="text-base">
                           <Badge variant="secondary">{ticket.waitingOn}</Badge>
+                        </TableCell>
+                        <TableCell className="text-base">
+                          <Badge variant={SOURCE_BADGE_VARIANT[ticket.source]}>
+                            {ticket.source}
+                          </Badge>
                         </TableCell>
                         <TableCell className="text-base text-muted-foreground">
                           {contactLabel(ticket)}
