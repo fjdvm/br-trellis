@@ -238,7 +238,7 @@ describe("TicketListPage", () => {
     expect(row).not.toBeNull();
     fireEvent.click(row!);
 
-    expect(mockPush).toHaveBeenCalledWith("/conversations/tickets/t-42");
+    expect(mockPush).toHaveBeenCalledWith("/tickets/t-42");
   });
 
   // --- Row actions: Claim + Cancel ---

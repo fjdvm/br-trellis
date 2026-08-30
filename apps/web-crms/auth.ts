@@ -297,10 +297,13 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           requiredModule = "Dashboard";
         } else if (pathname.startsWith("/customers")) {
           requiredModule = "Customer Profiles";
-        } else if (pathname.startsWith("/conversations")) {
-          requiredModule = "Conversations";
         } else if (pathname.startsWith("/tickets")) {
-          requiredModule = "Tickets";
+          // Ticket lifecycle management (formerly /conversations/*) is gated on
+          // the existing Conversations module permission — no new module.
+          requiredModule = "Conversations";
+        } else if (pathname.startsWith("/conversations")) {
+          // The messenger Conversations section shares the same module gate.
+          requiredModule = "Conversations";
         } else if (pathname.startsWith("/campaigns")) {
           requiredModule = "Campaigns";
         } else if (pathname.startsWith("/settings")) {

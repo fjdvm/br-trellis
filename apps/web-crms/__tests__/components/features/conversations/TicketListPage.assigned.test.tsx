@@ -331,7 +331,7 @@ describe("TicketListPage (My Assigned props)", () => {
     const row = (await screen.findByText("Cannot log in")).closest("tr");
     expect(row).not.toBeNull();
     fireEvent.click(row!);
-    expect(mockPush).toHaveBeenCalledWith("/conversations/tickets/t-1");
+    expect(mockPush).toHaveBeenCalledWith("/tickets/t-1");
   });
 
   it("shows the loading skeleton before the fetch resolves", () => {

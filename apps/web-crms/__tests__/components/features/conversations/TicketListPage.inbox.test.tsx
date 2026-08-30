@@ -241,7 +241,7 @@ describe("TicketListPage (Inbox props)", () => {
     const row = screen.getByText("Cannot log in").closest("tr");
     expect(row).not.toBeNull();
     fireEvent.click(row!);
-    expect(mockPush).toHaveBeenCalledWith("/conversations/tickets/t-1");
+    expect(mockPush).toHaveBeenCalledWith("/tickets/t-1");
   });
 
   it("supports Cancel (with confirmation dialog) through the Inbox props and drops the now-terminal row", async () => {

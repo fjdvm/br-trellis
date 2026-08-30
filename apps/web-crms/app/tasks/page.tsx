@@ -93,7 +93,7 @@ export default function TasksPage() {
           severity: "medium",
           date: t.lastMessageAt || t.updatedAt || t.createdAt,
           actionLabel: "Reply",
-          actionHref: `/conversations?ticketId=${t.id}`,
+          actionHref: `/conversations/${t.id}`,
         });
       });
 

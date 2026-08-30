@@ -1,7 +1,7 @@
 import { TicketListPage } from "@/components/features/conversations/TicketListPage";
 
 /**
- * Inbox is a pre-filtered view of the shared Tickets list: it opens on
+ * Triage Queue is a pre-filtered view of the shared Tickets list: it opens on
  * Waiting On = Agent and always hides terminal (Completed/Canceled) tickets,
  * so every row in the queue is actionable. All props are serializable, so this
  * wrapper stays a Server Component.
@@ -9,7 +9,7 @@ import { TicketListPage } from "@/components/features/conversations/TicketListPa
 export default function Page() {
   return (
     <TicketListPage
-      heading="Inbox"
+      heading="Triage Queue"
       description="Tickets waiting on an agent's response."
       cardTitle="My Queue"
       initialWaitingOnFilter="Agent"
