@@ -13,6 +13,11 @@ import {
 import { crmClient } from "@/lib/api/crm-client";
 import { formatName, formatEmail } from "@/lib/format-display";
 import { TableSkeleton } from "@/components/shared/TableSkeleton";
+import { ScrollableTable } from "@/components/shared/ScrollableTable";
+import {
+  TablePagination,
+  useClientPagination,
+} from "@/components/shared/TablePagination";
 import type { PendingReviewContact } from "@/types/contact";
 
 export function PendingReviewTable() {
@@ -46,6 +51,11 @@ export function PendingReviewTable() {
     };
   }, []);
 
+  const reviewRows = pendingReviews.flatMap((review) =>
+    review.candidates.map((candidate) => ({ review, candidate }))
+  );
+  const pagination = useClientPagination(reviewRows);
+
   if (isLoading) {
     return <TableSkeleton columns={4} />;
   }
@@ -59,9 +69,10 @@ export function PendingReviewTable() {
   }
 
   return (
-    <div className="max-h-[600px] overflow-y-auto border border-border rounded-lg">
-      <Table>
-        <TableHeader className="sticky top-0 bg-background z-10">
+    <>
+      <ScrollableTable>
+        <Table>
+          <TableHeader className="sticky top-0 bg-background z-10">
         <TableRow>
           <TableHead className="min-w-[180px]">New Contact</TableHead>
           <TableHead className="min-w-[200px]">Possible existing Contact</TableHead>
@@ -69,28 +80,28 @@ export function PendingReviewTable() {
         </TableRow>
       </TableHeader>
       <TableBody>
-        {pendingReviews.flatMap((review) =>
-          review.candidates.map((candidate) => (
-            <TableRow key={`${review.contact.id}:${candidate.contact.id}`}>
-              <TableCell className="font-medium">
-                {formatName(review.contact.name) ?? "Unnamed contact"}
-              </TableCell>
-              <TableCell>
-                <div className="font-medium">{formatName(candidate.contact.name) ?? "Unnamed contact"}</div>
-                <div className="text-muted-foreground text-sm">
-                  {formatEmail(candidate.contact.email) ?? candidate.contact.phone ?? "—"}
-                </div>
-              </TableCell>
-              <TableCell>
-                <Badge variant="outline">
-                  {Math.round(candidate.confidenceScore * 100)}% confidence
-                </Badge>
-              </TableCell>
-            </TableRow>
-          ))
-        )}
+        {pagination.pageItems.map(({ review, candidate }) => (
+          <TableRow key={`${review.contact.id}:${candidate.contact.id}`}>
+            <TableCell className="font-medium">
+              {formatName(review.contact.name) ?? "Unnamed contact"}
+            </TableCell>
+            <TableCell>
+              <div className="font-medium">{formatName(candidate.contact.name) ?? "Unnamed contact"}</div>
+              <div className="text-muted-foreground text-sm">
+                {formatEmail(candidate.contact.email) ?? candidate.contact.phone ?? "—"}
+              </div>
+            </TableCell>
+            <TableCell>
+              <Badge variant="outline">
+                {Math.round(candidate.confidenceScore * 100)}% confidence
+              </Badge>
+            </TableCell>
+          </TableRow>
+        ))}
       </TableBody>
-      </Table>
-    </div>
+        </Table>
+      </ScrollableTable>
+      <TablePagination pagination={pagination} itemLabel="matches" />
+    </>
   );
 }

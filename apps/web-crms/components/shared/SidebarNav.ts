@@ -6,23 +6,16 @@ import {
   AlertTriangle,
   ShoppingCart,
   CreditCard,
-  Package,
   MessageSquare,
   Inbox,
   Ticket,
   UserCheck,
   History,
   FileText,
-  SmilePlus,
-  Flag,
-  Star,
   Megaphone,
   Calendar,
   Send,
   MessageCircle,
-  Zap,
-  GitBranch,
-  ClipboardList,
   BarChart3,
   PieChart,
   TrendingUp,
@@ -95,16 +88,6 @@ export const navGroups: NavGroup[] = [
     ],
   },
   {
-    name: "Ecommerce",
-    icon: ShoppingCart,
-    children: [
-      { name: "Orders", href: "/ecommerce/orders", icon: CreditCard },
-      { name: "Products", href: "/ecommerce/products", icon: Package },
-      { name: "Abandoned Carts", href: "/ecommerce/abandoned-carts", icon: ShoppingCart },
-      { name: "Customer LTV", href: "/ecommerce/ltv", icon: TrendingUp },
-    ],
-  },
-  {
     name: "Tickets",
     icon: Ticket,
     children: [
@@ -122,29 +105,12 @@ export const navGroups: NavGroup[] = [
     ],
   },
   {
-    name: "Sentiment",
-    icon: SmilePlus,
-    children: [
-      { name: "Sentiment Overview", href: "/sentiment/overview", icon: SmilePlus },
-      { name: "Flagged/Negative Feed", href: "/sentiment/flagged", icon: Flag },
-      { name: "Reviews & Feedback", href: "/sentiment/reviews", icon: Star },
-    ],
-  },
-  {
     name: "Content",
     icon: Megaphone,
     children: [
       { name: "Calendar", href: "/content/calendar", icon: Calendar },
       { name: "Published Posts", href: "/content/published", icon: Send },
       { name: "Comment Sentiment", href: "/content/comments", icon: MessageCircle },
-    ],
-  },
-  {
-    name: "Automation",
-    icon: Zap,
-    children: [
-      { name: "Workflows", href: "/automation/workflows", icon: GitBranch },
-      { name: "Triggers/Events Log", href: "/automation/triggers", icon: ClipboardList },
     ],
   },
   {

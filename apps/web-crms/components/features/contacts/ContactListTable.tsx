@@ -3,9 +3,8 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ChevronLeft, ChevronRight, Search } from "lucide-react";
+import { Search } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   Table,
@@ -15,10 +14,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { ScrollableTable } from "@/components/shared/ScrollableTable";
+import {
+  TablePagination,
+  useClientPagination,
+} from "@/components/shared/TablePagination";
 import { formatName, formatEmail } from "@/lib/format-display";
 import type { ContactListItem } from "@/types/contact";
-
-const PAGE_SIZE = 20;
 
 interface ContactListTableProps {
   contacts: ContactListItem[];
@@ -27,7 +29,6 @@ interface ContactListTableProps {
 export function ContactListTable({ contacts }: ContactListTableProps) {
   const router = useRouter();
   const [search, setSearch] = useState("");
-  const [page, setPage] = useState(1);
 
   const filteredContacts = useMemo(() => {
     if (!search.trim()) return contacts;
@@ -41,17 +42,12 @@ export function ContactListTable({ contacts }: ContactListTableProps) {
     );
   }, [contacts, search]);
 
-  const totalPages = Math.max(1, Math.ceil(filteredContacts.length / PAGE_SIZE));
-  const currentPage = Math.min(page, totalPages);
-  const paginatedContacts = filteredContacts.slice(
-    (currentPage - 1) * PAGE_SIZE,
-    currentPage * PAGE_SIZE
-  );
+  const pagination = useClientPagination(filteredContacts);
 
-  // Reset to page 1 when search changes
+  // Reset to page 1 when search changes.
   const handleSearchChange = (value: string) => {
     setSearch(value);
-    setPage(1);
+    pagination.setPage(1);
   };
 
   if (contacts.length === 0) {
@@ -74,7 +70,7 @@ export function ContactListTable({ contacts }: ContactListTableProps) {
         <div className="p-xl text-muted-foreground">No contacts match your search.</div>
       ) : (
         <>
-          <div className="max-h-[600px] overflow-y-auto border border-border rounded-lg">
+          <ScrollableTable>
             <Table>
               <TableHeader className="sticky top-0 bg-background z-10">
                 <TableRow>
@@ -85,7 +81,7 @@ export function ContactListTable({ contacts }: ContactListTableProps) {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {paginatedContacts.map((contact) => (
+                {pagination.pageItems.map((contact) => (
                   <TableRow
                     key={contact.id}
                     className="cursor-pointer hover:bg-muted/50"
@@ -118,35 +114,9 @@ export function ContactListTable({ contacts }: ContactListTableProps) {
                 ))}
               </TableBody>
             </Table>
-          </div>
+          </ScrollableTable>
 
-          {/* Pagination */}
-          <div className="flex items-center justify-between pt-2">
-            <p className="text-sm text-muted-foreground">
-              Showing {(currentPage - 1) * PAGE_SIZE + 1}–{Math.min(currentPage * PAGE_SIZE, filteredContacts.length)} of {filteredContacts.length} contacts
-            </p>
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
-                disabled={currentPage <= 1}
-              >
-                <ChevronLeft className="w-4 h-4" />
-              </Button>
-              <span className="text-sm font-medium">
-                {currentPage} / {totalPages}
-              </span>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                disabled={currentPage >= totalPages}
-              >
-                <ChevronRight className="w-4 h-4" />
-              </Button>
-            </div>
-          </div>
+          <TablePagination pagination={pagination} itemLabel="contacts" />
         </>
       )}
     </div>

@@ -28,6 +28,11 @@ import {
 } from "@/components/ui/alert-dialog";
 import { crmClient } from "@/lib/api/crm-client";
 import { BackButton } from "@/components/shared/BackButton";
+import { ScrollableTable } from "@/components/shared/ScrollableTable";
+import {
+  TablePagination,
+  useClientPagination,
+} from "@/components/shared/TablePagination";
 import { formatName, formatEmail } from "@/lib/format-display";
 import type { CompanyDetail } from "@/types/company";
 import Link from "next/link";
@@ -69,6 +74,8 @@ export function CompanyDetailPage({ companyId }: CompanyDetailPageProps) {
   useEffect(() => {
     void loadCompany();
   }, [loadCompany]);
+
+  const contactsPagination = useClientPagination(company?.contacts ?? []);
 
   function handleStartEdit() {
     if (!company) return;
@@ -238,7 +245,8 @@ export function CompanyDetailPage({ companyId }: CompanyDetailPageProps) {
               No contacts assigned to this company.
             </div>
           ) : (
-            <div className="max-h-[600px] overflow-y-auto border border-border rounded-lg">
+            <>
+            <ScrollableTable>
               <Table>
                 <TableHeader className="sticky top-0 bg-background z-10">
                 <TableRow>
@@ -249,7 +257,7 @@ export function CompanyDetailPage({ companyId }: CompanyDetailPageProps) {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {company.contacts.map((contact) => (
+                {contactsPagination.pageItems.map((contact) => (
                   <TableRow
                     key={contact.id}
                     className="cursor-pointer hover:bg-muted/50"
@@ -276,7 +284,9 @@ export function CompanyDetailPage({ companyId }: CompanyDetailPageProps) {
                 ))}
               </TableBody>
               </Table>
-            </div>
+            </ScrollableTable>
+            <TablePagination pagination={contactsPagination} itemLabel="contacts" />
+            </>
           )}
         </CardContent>
       </Card>

@@ -33,7 +33,9 @@ node_modules
 bin/
 obj/
 *.db
+*.db.bak*
 !.env.example
 .agents/
 .kiro/
 .design-ref/
+.claude/

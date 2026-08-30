@@ -5,6 +5,7 @@ import { useSession } from "next-auth/react";
 import { MessageSquare } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useConversationMessages } from "@/hooks/useConversationMessages";
+import { useCurrentAgentId } from "@/hooks/useCurrentAgentId";
 import { formatName, formatEmail } from "@/lib/format-display";
 import {
   MessageGroupRow,
@@ -67,6 +68,7 @@ export function MessageThread({
   onMessageSent,
 }: MessageThreadProps) {
   const { data: session } = useSession();
+  const currentAgentId = useCurrentAgentId();
   const { messages, isLoading, error, sendMessage } =
     useConversationMessages(ticketId);
 
@@ -86,8 +88,10 @@ export function MessageThread({
   async function handleSend() {
     if (!canSend) return;
 
-    // Same session-identity source the Claim action already uses.
-    const staffId = session?.user?.id ?? session?.user?.username ?? "";
+    // Shared, session-stable identity source (employee code first) — the same
+    // value Claim and the ownership filters use, so message authorship keys to
+    // the same stable id.
+    const staffId = currentAgentId ?? "";
     const staffName = session?.user?.name ?? "";
 
     setIsSending(true);

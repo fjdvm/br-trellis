@@ -271,12 +271,12 @@ describe("TicketListPage (Inbox props)", () => {
     jest
       .mocked(crmClient.conversationTickets.list)
       .mockResolvedValue([
-        makeTicket({ id: "t-1", status: "Claimed", assignedToId: "s-1" }),
+        makeTicket({ id: "t-1", status: "Claimed", assignedToId: "auth|amelia" }),
       ]);
     jest
       .mocked(crmClient.conversationTickets.changeStatus)
       .mockResolvedValue(
-        makeTicket({ id: "t-1", status: "Canceled", assignedToId: "s-1" })
+        makeTicket({ id: "t-1", status: "Canceled", assignedToId: "auth|amelia" })
       );
     const user = userEvent.setup({ pointerEventsCheck: 0 });
 

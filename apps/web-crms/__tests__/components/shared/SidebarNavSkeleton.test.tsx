@@ -113,17 +113,6 @@ describe("Sidebar nav loading skeleton", () => {
     expect(screen.queryByText("Contacts")).not.toBeInTheDocument();
   });
 
-  it("shows the nav skeleton while the ecommerce sync status is loading", async () => {
-    __setMockSession(authenticatedSession);
-    __setMockStatus({ status: null, isLoading: true });
-
-    await act(async () => {
-      render(<Sidebar />);
-    });
-
-    expect(screen.getByTestId("sidebar-nav-skeleton")).toBeInTheDocument();
-  });
-
   it("replaces the skeleton with real nav once loaded", async () => {
     __setMockSession(authenticatedSession);
     __setMockStatus({ status: "healthy", isLoading: false });
@@ -134,6 +123,6 @@ describe("Sidebar nav loading skeleton", () => {
 
     expect(screen.queryByTestId("sidebar-nav-skeleton")).not.toBeInTheDocument();
     expect(screen.getByText("Contacts")).toBeInTheDocument();
-    expect(screen.getByText("Ecommerce")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Tickets/ })).toBeInTheDocument();
   });
 });

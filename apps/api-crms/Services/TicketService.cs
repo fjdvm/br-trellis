@@ -133,13 +133,16 @@ public sealed class TicketService(
 
     public async Task<TicketDetailDto?> UnclaimTicketAsync(
         Guid id,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        string? callerId = null)
     {
         var ticket = await dbContext.Tickets.FindAsync([id], cancellationToken);
         if (ticket is null)
         {
             return null;
         }
+
+        EnsureCallerMayModify(ticket, callerId);
 
         if (ticket.Status is not (TicketStatus.Claimed or TicketStatus.Ongoing))
         {
@@ -162,7 +165,8 @@ public sealed class TicketService(
     public async Task<TicketDetailDto?> ChangeStatusAsync(
         Guid id,
         ChangeTicketStatusDto input,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        string? callerId = null)
     {
         if (!Enum.TryParse<TicketStatus>(input.Status, ignoreCase: true, out var target))
         {
@@ -174,6 +178,8 @@ public sealed class TicketService(
         {
             return null;
         }
+
+        EnsureCallerMayModify(ticket, callerId);
 
         if (!IsValidTransition(ticket.Status, target))
         {
@@ -193,7 +199,8 @@ public sealed class TicketService(
     public async Task<TicketDetailDto?> SetWaitingOnAsync(
         Guid id,
         SetWaitingOnDto input,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        string? callerId = null)
     {
         if (!Enum.TryParse<WaitingOn>(input.WaitingOn, ignoreCase: true, out var target))
         {
@@ -206,6 +213,8 @@ public sealed class TicketService(
             return null;
         }
 
+        EnsureCallerMayModify(ticket, callerId);
+
         // WaitingOn is fully independent of Status/AssignedTo* — set it and nothing else.
         ticket.WaitingOn = target;
         ticket.UpdatedAt = DateTimeOffset.UtcNow;
@@ -214,6 +223,24 @@ public sealed class TicketService(
 
         var full = await ticketRepository.GetTicketByIdAsync(id, cancellationToken);
         return TicketMapper.ToDetail(full!);
+    }
+
+    /// <summary>
+    /// Enforce that only a claimed ticket's owner may modify it. When a
+    /// <paramref name="callerId"/> is supplied (an authenticated request) and
+    /// the ticket is assigned to a different agent, the modification is
+    /// rejected. Unowned tickets, and calls without a caller identity (internal
+    /// callers/unit tests), are unaffected.
+    /// </summary>
+    private static void EnsureCallerMayModify(Ticket ticket, string? callerId)
+    {
+        if (string.IsNullOrWhiteSpace(callerId)) return;      // no caller identity → skip
+        if (string.IsNullOrWhiteSpace(ticket.AssignedToId)) return; // unowned → anyone may act
+        if (!string.Equals(ticket.AssignedToId, callerId, StringComparison.Ordinal))
+        {
+            throw new UnauthorizedAccessException(
+                "Only the agent who owns this ticket can modify it.");
+        }
     }
 
     private static bool IsValidTransition(TicketStatus from, TicketStatus to)

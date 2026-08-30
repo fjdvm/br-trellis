@@ -38,9 +38,12 @@ public sealed class TicketClaimTransitionIntegrationTests
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         var body = await response.Content.ReadFromJsonAsync<JsonElement>();
         Assert.Equal("Claimed", body.GetProperty("status").GetString());
-        Assert.Equal("auth|amelia", body.GetProperty("assignedToId").GetString());
+        // Identity is taken from the validated bearer token (TestAuthHandler:
+        // NameIdentifier="test-user-id", email="test@example.com"), overriding
+        // the client-supplied body — the "trust the token, not the client" rule.
+        Assert.Equal("test-user-id", body.GetProperty("assignedToId").GetString());
         Assert.Equal("Amelia Ward", body.GetProperty("assignedToName").GetString());
-        Assert.Equal("amelia@trellis.io", body.GetProperty("assignedToEmail").GetString());
+        Assert.Equal("test@example.com", body.GetProperty("assignedToEmail").GetString());
     }
 
     [Fact]
@@ -83,7 +86,9 @@ public sealed class TicketClaimTransitionIntegrationTests
     [Fact]
     public async Task Unclaim_from_claimed_clears_assignee_and_returns_unclaimed()
     {
-        var id = SeedTicket(TicketStatus.Claimed, assignedToId: "auth|amelia",
+        // Owned by the caller (TestAuthHandler's NameIdentifier) so the
+        // owner-only guard permits the unclaim.
+        var id = SeedTicket(TicketStatus.Claimed, assignedToId: "test-user-id",
             assignedToName: "Amelia", assignedToEmail: "amelia@trellis.io");
 
         var response = await _client.PostAsync($"/api/v1/tickets/{id}/unclaim", null);
@@ -102,6 +107,41 @@ public sealed class TicketClaimTransitionIntegrationTests
         var id = SeedTicket(TicketStatus.Unclaimed);
         var response = await _client.PostAsync($"/api/v1/tickets/{id}/unclaim", null);
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Unclaim_by_non_owner_is_forbidden()
+    {
+        // Owned by a DIFFERENT agent than the caller (TestAuthHandler = test-user-id).
+        var id = SeedTicket(TicketStatus.Claimed, assignedToId: "auth|someone-else",
+            assignedToName: "Someone Else");
+
+        var response = await _client.PostAsync($"/api/v1/tickets/{id}/unclaim", null);
+
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+
+        // Ownership untouched.
+        using var scope = _factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var ticket = db.Tickets.Find(id);
+        Assert.Equal("auth|someone-else", ticket!.AssignedToId);
+        Assert.Equal(TicketStatus.Claimed, ticket.Status);
+    }
+
+    [Fact]
+    public async Task StatusChange_by_non_owner_is_forbidden()
+    {
+        var id = SeedTicket(TicketStatus.Claimed, assignedToId: "auth|someone-else",
+            assignedToName: "Someone Else");
+
+        var response = await _client.PostAsJsonAsync(
+            $"/api/v1/tickets/{id}/status", new { status = "Canceled" });
+
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+
+        using var scope = _factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        Assert.Equal(TicketStatus.Claimed, db.Tickets.Find(id)!.Status);
     }
 
     [Fact]
@@ -162,9 +202,9 @@ public sealed class TicketClaimTransitionIntegrationTests
 
         var response = await _client.GetAsync($"/api/v1/tickets/{id}");
         var body = await response.Content.ReadFromJsonAsync<JsonElement>();
-        Assert.Equal("auth|amelia", body.GetProperty("assignedToId").GetString());
+        Assert.Equal("test-user-id", body.GetProperty("assignedToId").GetString());
         Assert.Equal("Amelia Ward", body.GetProperty("assignedToName").GetString());
-        Assert.Equal("amelia@trellis.io", body.GetProperty("assignedToEmail").GetString());
+        Assert.Equal("test@example.com", body.GetProperty("assignedToEmail").GetString());
     }
 
     private Guid SeedTicket(

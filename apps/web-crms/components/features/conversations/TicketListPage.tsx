@@ -34,7 +34,13 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { crmClient } from "@/lib/api/crm-client";
+import { ScrollableTable } from "@/components/shared/ScrollableTable";
+import {
+  TablePagination,
+  useClientPagination,
+} from "@/components/shared/TablePagination";
 import { useCurrentAgentId } from "@/hooks/useCurrentAgentId";
+import { useRefetchOnFocus } from "@/hooks/useRefetchOnFocus";
 import { NewTicketSheet } from "@/components/features/conversations/NewTicketSheet";
 import { STATUS_BADGE_VARIANT, SOURCE_BADGE_VARIANT, isTerminalStatus } from "@/lib/tickets";
 import { formatName, formatEmail } from "@/lib/format-display";
@@ -95,6 +101,21 @@ function isClaimable(ticket: TicketListItem): boolean {
 /** Completed/Canceled tickets are terminal — no row actions apply. */
 function isTerminal(ticket: TicketListItem): boolean {
   return isTerminalStatus(ticket.status);
+}
+
+/**
+ * Whether the signed-in agent may act on a *claimed* ticket. Once a ticket is
+ * owned, only its owner can Cancel/Unclaim/advance it — other agents get no
+ * action buttons. An unowned ticket (Unclaimed, or Ongoing with no assignee)
+ * has no owner yet, so acting on it is allowed for anyone. `currentAgentId`
+ * null (no session) never owns anything.
+ */
+function canActOnTicket(
+  ticket: TicketListItem,
+  currentAgentId: string | null
+): boolean {
+  if (ticket.assignedToId == null) return true; // unowned
+  return currentAgentId != null && ticket.assignedToId === currentAgentId;
 }
 
 /**
@@ -269,6 +290,11 @@ export function TicketListPage({
     void loadTickets();
   }, [loadTickets]);
 
+  // Re-sync when returning to this list from another screen (e.g. after
+  // claiming a ticket on the detail page) so My Assigned / the Tickets list
+  // don't show stale, pre-mutation rows. loadTickets is stable via useCallback.
+  useRefetchOnFocus(loadTickets);
+
   /** Replace a single row from a mutation's response body (no full refetch). */
   function applyRowUpdate(updated: TicketListItem) {
     setTickets((prev) => {
@@ -319,6 +345,8 @@ export function TicketListPage({
     waitingOnFilter !== initialWaitingOnFilter ||
     sourceFilter !== "All";
 
+  const pagination = useClientPagination(tickets);
+
   return (
     <div className="w-full min-h-full py-xl px-lg md:px-xl space-y-lg max-w-7xl mx-auto">
       <div className="flex flex-col gap-md sm:flex-row sm:items-start sm:justify-between">
@@ -345,9 +373,10 @@ export function TicketListPage({
             <div className="flex items-center gap-md">
               <Select
                 value={statusFilter}
-                onValueChange={(value) =>
-                  setStatusFilter(value as TicketStatus | "All")
-                }
+                onValueChange={(value) => {
+                  setStatusFilter(value as TicketStatus | "All");
+                  pagination.setPage(1);
+                }}
               >
                 <SelectTrigger className="w-[160px]" aria-label="Filter by status">
                   <SelectValue placeholder="Status" />
@@ -362,9 +391,10 @@ export function TicketListPage({
               </Select>
               <Select
                 value={waitingOnFilter}
-                onValueChange={(value) =>
-                  setWaitingOnFilter(value as TicketWaitingOn | "All")
-                }
+                onValueChange={(value) => {
+                  setWaitingOnFilter(value as TicketWaitingOn | "All");
+                  pagination.setPage(1);
+                }}
               >
                 <SelectTrigger
                   className="w-[170px]"
@@ -383,9 +413,10 @@ export function TicketListPage({
               {showSourceFilter && (
                 <Select
                   value={sourceFilter}
-                  onValueChange={(value) =>
-                    setSourceFilter(value as TicketSource | "All")
-                  }
+                  onValueChange={(value) => {
+                    setSourceFilter(value as TicketSource | "All");
+                    pagination.setPage(1);
+                  }}
                 >
                   <SelectTrigger className="w-[150px]" aria-label="Filter by source">
                     <SelectValue placeholder="Source" />
@@ -415,7 +446,8 @@ export function TicketListPage({
               {isFilterNarrowed ? filteredEmptyMessage : emptyMessage}
             </div>
           ) : (
-            <div className="max-h-[600px] overflow-y-auto border border-border rounded-lg">
+            <>
+            <ScrollableTable>
               <Table>
                 <TableHeader className="sticky top-0 bg-background z-10">
                   <TableRow>
@@ -430,7 +462,7 @@ export function TicketListPage({
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {tickets.map((ticket) => {
+                  {pagination.pageItems.map((ticket) => {
                     const claimBusy =
                       rowPending?.id === ticket.id &&
                       rowPending.action === "claim";
@@ -473,6 +505,12 @@ export function TicketListPage({
                         </TableCell>
                         <TableCell className="text-base">
                           {isTerminal(ticket) ? (
+                            <span className="text-muted-foreground">
+                              {"\u2014"}
+                            </span>
+                          ) : !canActOnTicket(ticket, currentAgentId) ? (
+                            // Claimed by another agent — no actions for anyone
+                            // but the owner.
                             <span className="text-muted-foreground">
                               {"\u2014"}
                             </span>
@@ -521,7 +559,9 @@ export function TicketListPage({
                   })}
                 </TableBody>
               </Table>
-            </div>
+            </ScrollableTable>
+            <TablePagination pagination={pagination} itemLabel="tickets" />
+            </>
           )}
         </CardContent>
       </Card>

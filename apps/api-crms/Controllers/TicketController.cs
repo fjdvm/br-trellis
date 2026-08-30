@@ -58,7 +58,32 @@ public sealed class TicketController(ITicketService ticketService) : ControllerB
     {
         try
         {
-            var ticket = await ticketService.ClaimTicketAsync(id, input, cancellationToken);
+            // Identity must come from the server-validated bearer token, not the
+            // client. The browser session (NextAuth) can carry a mangled/rotating
+            // id; the access token's `sub` is the stable, authoritative user id
+            // (verified by JWT validation). Prefer it over the client-supplied
+            // StaffId so a claimed ticket's AssignedToId always equals the id the
+            // ownership filters compare against on later requests — the same
+            // "trust the token, not the client" rule SentraCX's TicketsController
+            // uses. Fall back to the request body only when unauthenticated.
+            var tokenUserId = User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
+                              ?? User?.FindFirst("sub")?.Value;
+
+            var tokenName = User?.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value
+                            ?? User?.FindFirst("name")?.Value;
+            var tokenEmail = User?.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value
+                             ?? User?.FindFirst("email")?.Value;
+
+            var effectiveInput = string.IsNullOrWhiteSpace(tokenUserId)
+                ? input
+                : input with
+                {
+                    StaffId = tokenUserId,
+                    StaffName = string.IsNullOrWhiteSpace(tokenName) ? input.StaffName : tokenName,
+                    StaffEmail = string.IsNullOrWhiteSpace(tokenEmail) ? input.StaffEmail : tokenEmail,
+                };
+
+            var ticket = await ticketService.ClaimTicketAsync(id, effectiveInput, cancellationToken);
             return ticket is null ? NotFound() : Ok(ticket);
         }
         catch (ArgumentException ex)
@@ -78,8 +103,12 @@ public sealed class TicketController(ITicketService ticketService) : ControllerB
     {
         try
         {
-            var ticket = await ticketService.UnclaimTicketAsync(id, cancellationToken);
+            var ticket = await ticketService.UnclaimTicketAsync(id, cancellationToken, CurrentUserId());
             return ticket is null ? NotFound() : Ok(ticket);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return StatusCode(StatusCodes.Status403Forbidden, ex.Message);
         }
         catch (InvalidOperationException ex)
         {
@@ -95,8 +124,12 @@ public sealed class TicketController(ITicketService ticketService) : ControllerB
     {
         try
         {
-            var ticket = await ticketService.ChangeStatusAsync(id, input, cancellationToken);
+            var ticket = await ticketService.ChangeStatusAsync(id, input, cancellationToken, CurrentUserId());
             return ticket is null ? NotFound() : Ok(ticket);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return StatusCode(StatusCodes.Status403Forbidden, ex.Message);
         }
         catch (ArgumentException ex)
         {
@@ -116,12 +149,25 @@ public sealed class TicketController(ITicketService ticketService) : ControllerB
     {
         try
         {
-            var ticket = await ticketService.SetWaitingOnAsync(id, input, cancellationToken);
+            var ticket = await ticketService.SetWaitingOnAsync(id, input, cancellationToken, CurrentUserId());
             return ticket is null ? NotFound() : Ok(ticket);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return StatusCode(StatusCodes.Status403Forbidden, ex.Message);
         }
         catch (ArgumentException ex)
         {
             return BadRequest(ex.Message);
         }
     }
+
+    /// <summary>
+    /// The authenticated caller's stable user id (OIDC subject) from the
+    /// validated bearer token, or null when unauthenticated. Used to enforce
+    /// that only a claimed ticket's owner can modify it.
+    /// </summary>
+    private string? CurrentUserId() =>
+        User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
+        ?? User?.FindFirst("sub")?.Value;
 }

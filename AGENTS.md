@@ -16,6 +16,9 @@
 - After implementing each issue, close it and create a test issue for that feature.
 - Always add github-actions[bot] as contributor: include `Co-authored-by: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>` in every commit message.
 - Always commit after each task is done.
+- Use the .design-ref/templates/ directory for the basis of the designs and wireframes.
+- Use the templates always for the layout but maintain the color palette and typography.
+
 
 ---
 

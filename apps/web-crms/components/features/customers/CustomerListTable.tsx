@@ -13,6 +13,11 @@ import {
 import { crmClient } from "@/lib/api/crm-client";
 import { formatName, formatEmail } from "@/lib/format-display";
 import { TableSkeleton } from "@/components/shared/TableSkeleton";
+import { ScrollableTable } from "@/components/shared/ScrollableTable";
+import {
+  TablePagination,
+  useClientPagination,
+} from "@/components/shared/TablePagination";
 import type { CustomerIdentityListItem } from "@/types/customer";
 
 export function CustomerListTable() {
@@ -46,6 +51,8 @@ export function CustomerListTable() {
     };
   }, []);
 
+  const pagination = useClientPagination(customers);
+
   if (isLoading) {
     return <TableSkeleton columns={4} />;
   }
@@ -59,9 +66,10 @@ export function CustomerListTable() {
   }
 
   return (
-    <div className="max-h-[600px] overflow-y-auto border border-border rounded-lg">
-      <Table>
-        <TableHeader className="sticky top-0 bg-background z-10">
+    <>
+      <ScrollableTable>
+        <Table>
+          <TableHeader className="sticky top-0 bg-background z-10">
         <TableRow>
           <TableHead className="min-w-[160px]">Customer</TableHead>
           <TableHead className="min-w-[180px]">Contact</TableHead>
@@ -69,7 +77,7 @@ export function CustomerListTable() {
         </TableRow>
       </TableHeader>
       <TableBody>
-        {customers.map((customer) => (
+        {pagination.pageItems.map((customer) => (
           <TableRow key={customer.id}>
             <TableCell className="font-medium">
               {formatName(customer.name) ?? "Unnamed customer"}
@@ -92,7 +100,9 @@ export function CustomerListTable() {
           </TableRow>
         ))}
       </TableBody>
-      </Table>
-    </div>
+        </Table>
+      </ScrollableTable>
+      <TablePagination pagination={pagination} itemLabel="customers" />
+    </>
   );
 }

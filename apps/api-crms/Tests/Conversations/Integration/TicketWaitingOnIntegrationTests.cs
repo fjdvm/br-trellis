@@ -46,8 +46,9 @@ public sealed class TicketWaitingOnIntegrationTests
     [Fact]
     public async Task SetWaitingOn_does_not_change_status_or_assignee()
     {
+        // Owned by the caller so the owner-only guard permits the change.
         var id = SeedTicket(TicketStatus.Claimed, WaitingOn.None,
-            assignedToId: "auth|amelia", assignedToName: "Amelia", assignedToEmail: "amelia@trellis.io");
+            assignedToId: "test-user-id", assignedToName: "Amelia", assignedToEmail: "amelia@trellis.io");
 
         var response = await _client.PostAsJsonAsync(
             $"/api/v1/tickets/{id}/waiting-on", new { waitingOn = "Customer" });
@@ -55,7 +56,7 @@ public sealed class TicketWaitingOnIntegrationTests
         var body = await response.Content.ReadFromJsonAsync<JsonElement>();
         Assert.Equal("Customer", body.GetProperty("waitingOn").GetString());
         Assert.Equal("Claimed", body.GetProperty("status").GetString());
-        Assert.Equal("auth|amelia", body.GetProperty("assignedToId").GetString());
+        Assert.Equal("test-user-id", body.GetProperty("assignedToId").GetString());
         Assert.Equal("Amelia", body.GetProperty("assignedToName").GetString());
         Assert.Equal("amelia@trellis.io", body.GetProperty("assignedToEmail").GetString());
     }

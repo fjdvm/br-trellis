@@ -35,7 +35,7 @@ import {
 } from "./SidebarNav";
 import { SidebarProfileFooter } from "./SidebarProfileFooter";
 import { SidebarNavSkeleton } from "./SidebarNavSkeleton";
-import { useEcommerceSyncStatus } from "@/hooks/useEcommerceSyncStatus";
+
 
 export function Sidebar() {
   const pathname = usePathname();
@@ -92,17 +92,12 @@ export function Sidebar() {
   // Groups without a mapping are always shown (no permission check yet).
   const navGroupToModule: Record<string, string> = {
     Contacts: "Customer Profiles",
-    Ecommerce: "Ecommerce",
     Tickets: "Conversations",
     Conversations: "Conversations",
-    Automation: "Automation",
   };
 
   const crmsPerms = session?.permissions?.CRMS as Record<string, Record<string, boolean>> | undefined;
   const isSuperUser = !!session?.isSuperUser;
-
-  const { status: ecommerceSyncState, isLoading: syncStatusLoading } = useEcommerceSyncStatus();
-  const isEcommerceDisabled = !syncStatusLoading && ecommerceSyncState === "never_connected";
 
   const allowedNavGroups = navGroups.filter((group) => {
     if (isSuperUser) return true;
@@ -114,11 +109,10 @@ export function Sidebar() {
   // Dashboard is gated on the "Dashboard" module permission (unless superuser)
   const showDashboard = isSuperUser || crmsPerms?.["Dashboard"]?.canRead === true;
 
-  // While the session/permissions or ecommerce sync status are still resolving,
-  // the set of visible nav tabs is unknown. Show a skeleton transition so the
-  // nav fades in cleanly instead of popping/flickering item-by-item.
-  const isNavLoading =
-    !mounted || sessionStatus === "loading" || syncStatusLoading;
+  // While the session/permissions are still resolving, the set of visible nav
+  // tabs is unknown. Show a skeleton transition so the nav fades in cleanly
+  // instead of popping/flickering item-by-item.
+  const isNavLoading = !mounted || sessionStatus === "loading";
 
   return (
     <>
@@ -252,39 +246,27 @@ export function Sidebar() {
                 );
                 const isExpanded =
                   expandedGroups[group.name] ?? hasActiveChild;
-                const isDisabled = group.name === "Ecommerce" && isEcommerceDisabled;
 
                 return (
                   <div key={group.name} className="mt-xs">
                     <button
                       onClick={() => {
-                        if (isDisabled) return;
                         setExpandedGroups((prev) => ({
                           ...prev,
                           [group.name]: !isExpanded,
                         }));
                       }}
-                      className={`w-full flex items-center gap-sm px-sm py-sm rounded-lg text-sm transition-colors ${
-                        isDisabled
-                          ? "text-muted-foreground/50 cursor-not-allowed"
-                          : "text-foreground hover:bg-sidebar-accent"
-                      }`}
+                      className="w-full flex items-center gap-sm px-sm py-sm rounded-lg text-sm transition-colors text-foreground hover:bg-sidebar-accent"
                     >
-                      <GroupIcon className={`w-4 h-4 shrink-0 ${isDisabled ? "opacity-50" : ""}`} />
+                      <GroupIcon className="w-4 h-4 shrink-0" />
                       <span className="flex-1 text-left">{group.name}</span>
-                      {isDisabled ? (
-                        <span className="text-[10px] text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
-                          Not connected
-                        </span>
-                      ) : (
-                        <ChevronRight
-                          className={`w-4 h-4 transition-transform ${
-                            isExpanded ? "rotate-90" : ""
-                          }`}
-                        />
-                      )}
+                      <ChevronRight
+                        className={`w-4 h-4 transition-transform ${
+                          isExpanded ? "rotate-90" : ""
+                        }`}
+                      />
                     </button>
-                    {!isDisabled && isExpanded && (
+                    {isExpanded && (
                       <div className="ml-[18px] mt-xs border-l-2 border-border pl-md">
                         <SidebarMenu>
                           {group.children.map((child) => {

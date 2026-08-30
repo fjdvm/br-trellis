@@ -126,6 +126,38 @@ describe("TicketDetailPage", () => {
     // Assignee name/email appear in both the header subtext and the details card.
     expect(screen.getAllByText("Noah Patel").length).toBeGreaterThan(0);
     expect(screen.getAllByText("noah@trellis.io").length).toBeGreaterThan(0);
+
+    // Owner-only gate: this ticket belongs to another agent (auth|noah), so the
+    // signed-in agent (auth|amelia) gets no lifecycle actions.
+    expect(
+      screen.queryByRole("button", { name: "Unclaim" })
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "Cancel Ticket" })
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: /^Mark / })
+    ).not.toBeInTheDocument();
+  });
+
+  it("shows owner lifecycle actions when the signed-in agent owns the ticket", async () => {
+    mocked.getById.mockResolvedValue(
+      makeTicket({
+        status: "Claimed",
+        assignedToId: "auth|amelia",
+        assignedToName: "amelia ward",
+        assignedToEmail: "amelia@trellis.io",
+      })
+    );
+
+    render(<TicketDetailPage ticketId="t-1" />);
+
+    await screen.findByText("Cannot log in");
+    // Owner sees Unclaim, the next-status advance, and Cancel.
+    expect(screen.getByRole("button", { name: "Unclaim" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Cancel Ticket" })
+    ).toBeInTheDocument();
   });
 
   it("shows an error state when the ticket fails to load", async () => {

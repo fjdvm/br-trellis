@@ -162,6 +162,26 @@ done," WaitingOn answers "who needs to act next." Conflating them would
 require a transition table with a state for every combination, most of
 which are the same ownership stage repeated with different waiting-sides.
 
+A Conversation also has a **Source** — the channel through which it
+originated: `Email` (arrived via inbound email ingestion), `Manual` (a
+staff member opened it directly, with no external triggering event), or
+`Ecommerce` (reserved for a future ecommerce-initiated ticket path; no
+Conversation is created this way yet). Source is set once at creation
+and does not change over a Conversation's life — unlike Status and
+WaitingOn, it isn't a lifecycle field, just a fixed record of how the
+Conversation came to exist.
+
+A Conversation appears in an agent's personal Inbox only while they
+actively own it: Status is `Claimed` or `Ongoing` and they are the
+current assignee. Unclaimed, unassigned, and terminal (`Completed` /
+`Canceled`) Conversations never appear in anyone's Inbox. This rule
+governs presence in that per-agent worklist only — it is not an access
+boundary; any agent with access to Conversations can still open a
+Conversation's full message history regardless of who it's assigned to.
+Dropping out of an Inbox (unclaiming, completing, canceling) never
+deletes history — it belongs to the Ticket, not to any agent's session,
+and reappears in full for whoever claims the ticket next.
+
 ## Identity Resolution
 
 The process of matching an incoming record (from an external source system)

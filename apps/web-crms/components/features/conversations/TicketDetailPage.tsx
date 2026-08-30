@@ -82,6 +82,20 @@ function isTerminal(ticket: TicketDetail): boolean {
   return isTerminalStatus(ticket.status);
 }
 
+/**
+ * Whether the signed-in agent may act on a *claimed* ticket. A claimed ticket's
+ * lifecycle actions (Unclaim, advance status, Cancel) belong to its owner only;
+ * other agents see no action buttons. An unowned ticket (no assignee) has no
+ * owner yet, so anyone may act. `currentAgentId` null (no session) owns nothing.
+ */
+function canActOnTicket(
+  ticket: TicketDetail,
+  currentAgentId: string | null
+): boolean {
+  if (ticket.assignedToId == null) return true; // unowned
+  return currentAgentId != null && ticket.assignedToId === currentAgentId;
+}
+
 export function TicketDetailPage({ ticketId }: TicketDetailPageProps) {
   const { data: session } = useSession();
   const currentAgentId = useCurrentAgentId();
@@ -177,6 +191,9 @@ export function TicketDetailPage({ ticketId }: TicketDetailPageProps) {
 
   const next = NEXT_STATUS[ticket.status];
   const busy = pending !== null;
+  // Owner-only gate: Unclaim / advance / Cancel are available on a claimed
+  // ticket only to the agent who owns it (unowned tickets are open to anyone).
+  const canAct = canActOnTicket(ticket, currentAgentId);
 
   return (
     <div className="w-full min-h-full py-xl px-lg md:px-xl space-y-lg max-w-7xl mx-auto">
@@ -216,7 +233,7 @@ export function TicketDetailPage({ ticketId }: TicketDetailPageProps) {
                 />
               )}
 
-              {isActive(ticket) && (
+              {canAct && isActive(ticket) && (
                 <>
                   <ActionButton
                     label="Unclaim"
@@ -239,14 +256,16 @@ export function TicketDetailPage({ ticketId }: TicketDetailPageProps) {
                 </>
               )}
 
-              <ActionButton
-                label="Cancel Ticket"
-                icon={XCircle}
-                variant="destructive"
-                loading={pending === "cancel"}
-                disabled={busy}
-                onClick={() => setShowCancelDialog(true)}
-              />
+              {canAct && (
+                <ActionButton
+                  label="Cancel Ticket"
+                  icon={XCircle}
+                  variant="destructive"
+                  loading={pending === "cancel"}
+                  disabled={busy}
+                  onClick={() => setShowCancelDialog(true)}
+                />
+              )}
             </div>
           )}
         </div>

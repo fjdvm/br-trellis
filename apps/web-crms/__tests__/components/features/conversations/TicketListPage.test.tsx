@@ -79,6 +79,53 @@ describe("TicketListPage", () => {
     jest.mocked(crmClient.conversationTickets.list).mockResolvedValue([]);
   });
 
+  it("hides all row actions for a ticket claimed by another agent (owner-only)", async () => {
+    jest
+      .mocked(crmClient.conversationTickets.list)
+      .mockResolvedValue([
+        makeTicket({
+          id: "t-other",
+          subject: "Someone else's ticket",
+          status: "Claimed",
+          assignedToId: "auth|someone-else",
+          assignedToName: "someone else",
+        }),
+      ]);
+
+    render(<TicketListPage />);
+
+    // Row renders, but neither Claim nor Cancel is offered to a non-owner.
+    expect(await screen.findByText("Someone else's ticket")).toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "Cancel ticket" })
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "Claim ticket" })
+    ).not.toBeInTheDocument();
+  });
+
+  it("shows owner actions for a ticket claimed by the current agent", async () => {
+    jest
+      .mocked(crmClient.conversationTickets.list)
+      .mockResolvedValue([
+        makeTicket({
+          id: "t-mine",
+          subject: "My claimed ticket",
+          status: "Claimed",
+          assignedToId: "auth|amelia",
+          assignedToName: "amelia ward",
+        }),
+      ]);
+
+    render(<TicketListPage />);
+
+    await screen.findByText("My claimed ticket");
+    // Owner sees Cancel (a Claimed ticket isn't claimable, so no Claim button).
+    expect(
+      screen.getByRole("button", { name: "Cancel ticket" })
+    ).toBeInTheDocument();
+  });
+
   it("renders tickets with subject, status, waiting-on, formatted contact, and assignee", async () => {
     jest.mocked(crmClient.conversationTickets.list).mockResolvedValue([
       makeTicket(),
@@ -402,10 +449,10 @@ describe("TicketListPage", () => {
   it("shows a Cancel button on a non-terminal row and gates it behind a confirmation dialog", async () => {
     jest
       .mocked(crmClient.conversationTickets.list)
-      .mockResolvedValue([makeTicket({ id: "t-1", status: "Claimed", assignedToId: "s-1" })]);
+      .mockResolvedValue([makeTicket({ id: "t-1", status: "Claimed", assignedToId: "auth|amelia" })]);
     jest
       .mocked(crmClient.conversationTickets.changeStatus)
-      .mockResolvedValue(makeTicket({ id: "t-1", status: "Canceled", assignedToId: "s-1" }));
+      .mockResolvedValue(makeTicket({ id: "t-1", status: "Canceled", assignedToId: "auth|amelia" }));
     const user = userEvent.setup({ pointerEventsCheck: 0 });
 
     render(<TicketListPage />);

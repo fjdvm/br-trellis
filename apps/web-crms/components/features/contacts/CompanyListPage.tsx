@@ -16,8 +16,14 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { crmClient } from "@/lib/api/crm-client";
+import { ScrollableTable } from "@/components/shared/ScrollableTable";
+import {
+  TablePagination,
+  useClientPagination,
+} from "@/components/shared/TablePagination";
 import { formatName } from "@/lib/format-display";
 import type { CompanyListItem } from "@/types/company";
+import { NewCompanySheet } from "@/components/features/contacts/NewCompanySheet";
 import Link from "next/link";
 
 export function CompanyListPage() {
@@ -46,6 +52,8 @@ export function CompanyListPage() {
     void loadCompanies();
   }, [loadCompanies]);
 
+  const pagination = useClientPagination(companies);
+
   return (
     <div className="w-full min-h-full py-xl px-lg md:px-xl space-y-lg max-w-7xl mx-auto">
       <div className="flex items-center justify-between">
@@ -65,6 +73,7 @@ export function CompanyListPage() {
           >
             {showArchived ? "Hide Archived" : "Show Archived"}
           </Button>
+          <NewCompanySheet onCreated={() => void loadCompanies()} />
         </div>
       </div>
 
@@ -85,7 +94,8 @@ export function CompanyListPage() {
               No companies found.
             </div>
           ) : (
-            <div className="max-h-[600px] overflow-y-auto border border-border rounded-lg">
+            <>
+            <ScrollableTable>
               <Table>
               <TableHeader className="sticky top-0 bg-background z-10">
                 <TableRow>
@@ -96,7 +106,7 @@ export function CompanyListPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {companies.map((company) => (
+                {pagination.pageItems.map((company) => (
                   <TableRow
                     key={company.id}
                     className="cursor-pointer hover:bg-muted/50"
@@ -123,7 +133,9 @@ export function CompanyListPage() {
                 ))}
               </TableBody>
               </Table>
-            </div>
+            </ScrollableTable>
+            <TablePagination pagination={pagination} itemLabel="companies" />
+            </>
           )}
         </CardContent>
       </Card>

@@ -143,6 +143,23 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         token.refreshToken = account.refresh_token;
         token.expiresAt = account.expires_at;
         token.error = undefined;
+
+        // Pin the token subject to the AUTHORITATIVE OIDC subject.
+        //
+        // NextAuth otherwise assigns `token.sub` a generated id when it can't
+        // derive one from the provider, which then flows into
+        // `session.user.id`. That id exists nowhere in the auth service, so a
+        // ticket claimed "as me" never matches me again — the Inbox/My Assigned
+        // ownership filters key on `session.user.id`. The auth service's `sub`
+        // (surfaced as `account.providerAccountId`, and as `profile.sub`) is the
+        // stable `ApplicationUser.Id`; force it onto the token so identity is
+        // correct and constant across logins.
+        const authoritativeSub =
+          account.providerAccountId ??
+          ((profile as Record<string, unknown> | undefined)?.sub as string | undefined);
+        if (authoritativeSub) {
+          token.sub = authoritativeSub;
+        }
       }
 
       // Extract user profile claims

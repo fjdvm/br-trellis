@@ -17,6 +17,11 @@ import {
 } from "@/components/ui/table";
 import { crmClient } from "@/lib/api/crm-client";
 import { BackButton } from "@/components/shared/BackButton";
+import { ScrollableTable } from "@/components/shared/ScrollableTable";
+import {
+  TablePagination,
+  useClientPagination,
+} from "@/components/shared/TablePagination";
 import { formatName, formatEmail } from "@/lib/format-display";
 import type { SegmentListItem, SegmentMember } from "@/types/segment";
 
@@ -93,6 +98,9 @@ export function SegmentsListPage({ preSelectedSegmentName }: SegmentsListPagePro
     router.push(`/contacts/${member.id}`);
   }, [router]);
 
+  const membersPagination = useClientPagination(members);
+  const segmentsPagination = useClientPagination(segments);
+
   // Membership view
   if (selectedSegment) {
     return (
@@ -131,9 +139,10 @@ export function SegmentsListPage({ preSelectedSegmentName }: SegmentsListPagePro
             ) : members.length === 0 ? (
               <div className="p-xl text-muted-foreground">No members in this segment.</div>
             ) : (
-              <div className="max-h-[600px] overflow-y-auto border border-border rounded-lg">
-                <Table>
-                  <TableHeader className="sticky top-0 bg-background z-10">
+              <>
+                <ScrollableTable>
+                  <Table>
+                    <TableHeader className="sticky top-0 bg-background z-10">
                     <TableRow>
                       <TableHead className="min-w-[160px]">Name</TableHead>
                       <TableHead className="min-w-[180px]">Email</TableHead>
@@ -142,7 +151,7 @@ export function SegmentsListPage({ preSelectedSegmentName }: SegmentsListPagePro
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {members.map((member) => (
+                    {membersPagination.pageItems.map((member) => (
                       <TableRow
                         key={member.id}
                         className="cursor-pointer hover:bg-muted/50"
@@ -163,8 +172,10 @@ export function SegmentsListPage({ preSelectedSegmentName }: SegmentsListPagePro
                       </TableRow>
                     ))}
                   </TableBody>
-                </Table>
-              </div>
+                  </Table>
+                </ScrollableTable>
+                <TablePagination pagination={membersPagination} itemLabel="members" />
+              </>
             )}
           </CardContent>
         </Card>
@@ -196,7 +207,8 @@ export function SegmentsListPage({ preSelectedSegmentName }: SegmentsListPagePro
           ) : segments.length === 0 ? (
             <div className="p-xl text-muted-foreground">No segments found.</div>
           ) : (
-            <div className="max-h-[600px] overflow-y-auto border border-border rounded-lg">
+            <>
+            <ScrollableTable>
               <Table>
                 <TableHeader className="sticky top-0 bg-background z-10">
                   <TableRow>
@@ -208,7 +220,7 @@ export function SegmentsListPage({ preSelectedSegmentName }: SegmentsListPagePro
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {segments.map((segment) => (
+                  {segmentsPagination.pageItems.map((segment) => (
                     <TableRow key={segment.id}>
                       <TableCell className="text-base font-medium">
                         {segment.name}
@@ -258,7 +270,9 @@ export function SegmentsListPage({ preSelectedSegmentName }: SegmentsListPagePro
                   ))}
                 </TableBody>
               </Table>
-            </div>
+            </ScrollableTable>
+            <TablePagination pagination={segmentsPagination} itemLabel="segments" />
+            </>
           )}
         </CardContent>
       </Card>

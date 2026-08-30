@@ -7,6 +7,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { crmClient } from "@/lib/api/crm-client";
 import { useCurrentAgentId } from "@/hooks/useCurrentAgentId";
+import { useRefetchOnFocus } from "@/hooks/useRefetchOnFocus";
 import { MessageThread } from "@/components/features/conversations/MessageThread";
 import { STATUS_BADGE_VARIANT, isActiveStatus, isTerminalStatus } from "@/lib/tickets";
 import { formatConversationTime } from "@/lib/format-conversation-time";
@@ -90,6 +91,11 @@ export function ConversationsInbox({ selectedTicketId }: ConversationsInboxProps
   useEffect(() => {
     void loadConversations();
   }, [loadConversations]);
+
+  // Re-sync the worklist when the tab regains focus so a ticket claimed on
+  // another screen (ticket detail, tasks) shows up here without a manual
+  // refresh. loadConversations is stable via useCallback.
+  useRefetchOnFocus(loadConversations);
 
   /**
    * The Visibility Rule: my active conversations, most-recently-updated first.
@@ -239,7 +245,7 @@ export function ConversationsInbox({ selectedTicketId }: ConversationsInboxProps
             <h2 className="text-headline-sm font-semibold text-foreground mb-sm">
               No Conversation Selected
             </h2>
-            <p className="text-base text-muted-foreground max-w-md">
+            <p className="text-base text-muted-foreground">
               Select a conversation from the inbox on the left to start
               messaging, view ticket details, and manage contact history.
             </p>

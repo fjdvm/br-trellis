@@ -81,46 +81,6 @@ jest.mock("@/hooks/useEcommerceSyncStatus", () => {
 
 const { __setMockStatus } = require("@/hooks/useEcommerceSyncStatus");
 
-describe("Sidebar Ecommerce disabled state", () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
-    localStorage.clear();
-    localStorage.setItem("activeAccount", "admin");
-  });
-
-  it("shows 'Not connected' badge on Ecommerce group when never_connected", async () => {
-    __setMockStatus({ status: "never_connected", isLoading: false });
-
-    await act(async () => {
-      render(<Sidebar />);
-    });
-
-    expect(screen.getByText("Not connected")).toBeInTheDocument();
-  });
-
-  it("shows Ecommerce group normally when healthy", async () => {
-    __setMockStatus({ status: "healthy", isLoading: false });
-
-    await act(async () => {
-      render(<Sidebar />);
-    });
-
-    expect(screen.queryByText("Not connected")).not.toBeInTheDocument();
-    expect(screen.getByText("Ecommerce")).toBeInTheDocument();
-  });
-
-  it("shows Ecommerce group normally when stale", async () => {
-    __setMockStatus({ status: "stale", isLoading: false });
-
-    await act(async () => {
-      render(<Sidebar />);
-    });
-
-    expect(screen.queryByText("Not connected")).not.toBeInTheDocument();
-    expect(screen.getByText("Ecommerce")).toBeInTheDocument();
-  });
-});
-
 describe("Sidebar Tickets group (#99 rename)", () => {
   beforeEach(() => {
     jest.clearAllMocks();
