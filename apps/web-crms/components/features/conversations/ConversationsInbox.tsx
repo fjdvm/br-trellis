@@ -2,25 +2,25 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Inbox as InboxIcon, MessageSquare } from "lucide-react";
-import { TableSkeleton } from "@/components/shared/TableSkeleton";
+import { Inbox as InboxIcon, ListFilter, MessagesSquare } from "lucide-react";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { crmClient } from "@/lib/api/crm-client";
 import { useCurrentAgentId } from "@/hooks/useCurrentAgentId";
 import { MessageThread } from "@/components/features/conversations/MessageThread";
 import { STATUS_BADGE_VARIANT, isActiveStatus, isTerminalStatus } from "@/lib/tickets";
+import { formatConversationTime } from "@/lib/format-conversation-time";
 import { formatName, formatEmail } from "@/lib/format-display";
 import type { TicketListItem } from "@/types/ticket-list";
 
 interface ConversationsInboxProps {
   /**
    * The ticket whose conversation is open in the right-hand pane, taken from
-   * the URL (`/conversations/[id]`). When absent, the pane shows a "select a
-   * conversation" placeholder. A ticket id here need not satisfy the
-   * Visibility Rule — deep-linking into a colleague's conversation is allowed
-   * (visibility governs the list, not access), so the pane opens whatever id
-   * the URL carries.
+   * the URL (`/conversations/inbox/[id]`). When absent, the pane shows the
+   * "No Conversation Selected" empty state. A ticket id here need not satisfy
+   * the Visibility Rule — deep-linking into a colleague's conversation is
+   * allowed (visibility governs the list, not access), so the pane opens
+   * whatever id the URL carries.
    */
   selectedTicketId?: string;
 }
@@ -34,19 +34,34 @@ function conversationLabel(ticket: TicketListItem): string {
   );
 }
 
+/** Up-to-two-letter initials for a conversation's avatar (e.g. "Jane Doe" → "JD"). */
+function conversationInitials(ticket: TicketListItem): string {
+  const label = conversationLabel(ticket);
+  if (label === "\u2014") return "?";
+  const parts = label.split(/\s+/).filter(Boolean);
+  const initials = parts
+    .slice(0, 2)
+    .map((p) => p[0]?.toUpperCase() ?? "")
+    .join("");
+  return initials || "?";
+}
+
 /**
- * The messenger-style Conversations Inbox: a thread list on the left, an open
- * conversation pane on the right. The list is the signed-in agent's personal
- * worklist under the Visibility Rule — a conversation appears iff its ticket's
- * `assignedToId` is the agent (resolved via the shared `useCurrentAgentId`
- * hook, exactly as My Assigned and Claim resolve identity) AND its Status is
- * Claimed or Ongoing. Unclaimed tickets, tickets owned by someone else, and
- * terminal (Completed/Canceled) tickets never appear.
+ * The messenger-style Conversations Inbox: a split layout with a conversation
+ * list on the left and the open conversation (or an empty state) on the right,
+ * matching `.design-ref/templates/conversations_inbox_wireframe`.
+ *
+ * The list is the signed-in agent's personal worklist under the Visibility
+ * Rule — a conversation appears iff its ticket's `assignedToId` is the agent
+ * (resolved via the shared `useCurrentAgentId` hook, exactly as My Assigned and
+ * Claim resolve identity) AND its Status is Claimed or Ongoing. Unclaimed
+ * tickets, tickets owned by someone else, and terminal (Completed/Canceled)
+ * tickets never appear.
  *
  * The list loads once on mount (no background poll, matching the Tickets/My
  * Assigned lists); only the opened conversation pane polls, inside the reused
- * `MessageThread`. Selecting a conversation pushes `/conversations/[id]` so a
- * refresh or direct link lands on the right open thread.
+ * `MessageThread`. Selecting a conversation pushes `/conversations/inbox/[id]`
+ * so a refresh or direct link lands on the right open thread.
  */
 export function ConversationsInbox({ selectedTicketId }: ConversationsInboxProps) {
   const router = useRouter();
@@ -106,97 +121,130 @@ export function ConversationsInbox({ selectedTicketId }: ConversationsInboxProps
     : null;
 
   return (
-    <div className="w-full min-h-full py-xl px-lg md:px-xl space-y-lg max-w-7xl mx-auto">
-      <div className="space-y-sm">
-        <h1 className="text-headline-md font-bold tracking-tight text-foreground">
-          Inbox
-        </h1>
-        <p className="text-body-md text-muted-foreground">
-          Your active conversations.
-        </p>
-      </div>
+    // Full-height split workspace: fills the viewport below the app header so
+    // the two panels scroll independently (list left, conversation right).
+    <div className="w-full h-[calc(100vh-4rem)] min-h-[520px] flex overflow-hidden">
+      {/* Left panel: the conversation list (~30%, clamped 320–400px). */}
+      <div className="w-[30%] min-w-[320px] max-w-[400px] border-r border-border flex flex-col bg-background">
+        {/* Panel header. */}
+        <div className="p-md border-b border-border flex justify-between items-center shrink-0">
+          <h1 className="text-title-lg font-bold flex items-center gap-2">
+            <InboxIcon className="w-5 h-5" />
+            Inbox
+          </h1>
+          <button
+            type="button"
+            aria-label="Filter conversations"
+            className="p-1 rounded text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+          >
+            <ListFilter className="w-4 h-4" />
+          </button>
+        </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-lg items-start">
-        {/* Left column: the thread list. */}
-        <Card className="shadow-none border-border lg:col-span-1 min-w-0">
-          <CardHeader className="pb-md p-lg">
-            <CardTitle className="text-title-lg font-bold flex items-center gap-2">
-              <InboxIcon className="w-5 h-5" />
-              Conversations
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-lg pt-0">
-            {isLoading ? (
-              <TableSkeleton columns={1} />
-            ) : error ? (
-              <div className="p-xl text-destructive">{error}</div>
-            ) : conversations.length === 0 ? (
-              <div className="flex flex-col items-center justify-center text-center py-xl">
-                <MessageSquare className="w-10 h-10 text-muted-foreground mb-md" />
-                <p className="text-base text-muted-foreground">
-                  Nothing to work on right now.
-                </p>
-              </div>
-            ) : (
-              <ul
-                className="max-h-[640px] overflow-y-auto space-y-xs"
-                aria-label="Conversations"
-              >
-                {conversations.map((ticket) => {
-                  const isSelected = ticket.id === selectedTicketId;
-                  return (
-                    <li key={ticket.id}>
-                      <button
-                        type="button"
-                        aria-current={isSelected ? "true" : undefined}
-                        onClick={() =>
-                          router.push(`/conversations/${ticket.id}`)
-                        }
-                        className={`w-full text-left rounded-lg border p-md transition-colors ${
-                          isSelected
-                            ? "border-primary bg-muted"
-                            : "border-border hover:bg-muted/50"
-                        }`}
-                      >
-                        <div className="flex items-center justify-between gap-2">
-                          <span className="text-base font-medium truncate">
+        {/* Conversation list body. */}
+        <div className="flex-1 overflow-y-auto">
+          {isLoading ? (
+            <div className="p-md space-y-sm">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="h-16 rounded-lg bg-muted animate-pulse"
+                  data-testid="conversation-skeleton-row"
+                />
+              ))}
+            </div>
+          ) : error ? (
+            <div className="p-lg text-base text-destructive">{error}</div>
+          ) : conversations.length === 0 ? (
+            <div className="flex flex-col items-center justify-center text-center px-lg py-xl">
+              <MessagesSquare className="w-10 h-10 text-muted-foreground mb-md" />
+              <p className="text-base text-muted-foreground">
+                Nothing to work on right now.
+              </p>
+            </div>
+          ) : (
+            <ul aria-label="Conversations" className="min-w-[280px]">
+              {conversations.map((ticket) => {
+                const isSelected = ticket.id === selectedTicketId;
+                return (
+                  <li key={ticket.id} className="relative">
+                    {/* Accent bar marks the currently-open conversation. */}
+                    {isSelected && (
+                      <span
+                        aria-hidden="true"
+                        className="absolute left-0 top-0 bottom-0 w-1 bg-primary"
+                      />
+                    )}
+                    <button
+                      type="button"
+                      aria-current={isSelected ? "true" : undefined}
+                      onClick={() =>
+                        router.push(`/conversations/inbox/${ticket.id}`)
+                      }
+                      className={`w-full text-left p-md border-b border-border transition-colors flex gap-sm ${
+                        isSelected ? "bg-muted" : "hover:bg-muted/50"
+                      }`}
+                    >
+                      <Avatar className="h-10 w-10">
+                        <AvatarFallback className="text-sm font-semibold">
+                          {conversationInitials(ticket)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex justify-between items-start gap-2">
+                          <h3 className="text-base font-semibold text-foreground truncate">
                             {conversationLabel(ticket)}
+                          </h3>
+                          <span className="text-sm text-muted-foreground shrink-0">
+                            {formatConversationTime(ticket.updatedAt)}
                           </span>
-                          <Badge variant={STATUS_BADGE_VARIANT[ticket.status]}>
-                            {ticket.status}
-                          </Badge>
                         </div>
                         <p className="text-sm text-muted-foreground truncate mt-xs">
                           {ticket.subject}
                         </p>
-                      </button>
-                    </li>
-                  );
-                })}
-              </ul>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Right column: the open conversation pane. */}
-        <div className="lg:col-span-2 min-w-0" data-testid="conversation-pane">
-          {selectedTicketId ? (
-            <ConversationPane
-              ticketId={selectedTicketId}
-              ticket={selectedFromList}
-              listLoaded={!isLoading && error === null}
-            />
-          ) : (
-            <Card className="shadow-none border-border">
-              <CardContent className="flex flex-col items-center justify-center text-center min-h-[320px] py-xl">
-                <MessageSquare className="w-10 h-10 text-muted-foreground mb-md" />
-                <p className="text-base text-muted-foreground">
-                  Select a conversation to open it.
-                </p>
-              </CardContent>
-            </Card>
+                        <div className="flex items-center gap-2 mt-sm">
+                          <Badge variant={STATUS_BADGE_VARIANT[ticket.status]}>
+                            {ticket.status}
+                          </Badge>
+                          {ticket.waitingOn === "Agent" && (
+                            <Badge variant="secondary">Waiting on you</Badge>
+                          )}
+                        </div>
+                      </div>
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
           )}
         </div>
+      </div>
+
+      {/* Right panel: the open conversation, or the empty state. */}
+      <div
+        className="flex-1 min-w-0 flex flex-col bg-muted/20"
+        data-testid="conversation-pane"
+      >
+        {selectedTicketId ? (
+          <ConversationPane
+            ticketId={selectedTicketId}
+            ticket={selectedFromList}
+            listLoaded={!isLoading && error === null}
+          />
+        ) : (
+          <div className="flex-1 flex flex-col items-center justify-center text-center px-xl">
+            <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center text-muted-foreground mb-md">
+              <MessagesSquare className="w-8 h-8" />
+            </div>
+            <h2 className="text-headline-sm font-semibold text-foreground mb-sm">
+              No Conversation Selected
+            </h2>
+            <p className="text-base text-muted-foreground max-w-md">
+              Select a conversation from the inbox on the left to start
+              messaging, view ticket details, and manage contact history.
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -280,6 +328,7 @@ function ConversationPane({ ticketId, ticket, listLoaded }: ConversationPaneProp
       ticketId={ticketId}
       contactName={resolved?.contact?.name ?? null}
       contactEmail={resolved?.contact?.email ?? null}
+      ticketSubject={resolved?.subject ?? null}
       isTerminal={isTerminal}
       onMessageSent={handleMessageSent}
     />

@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useSession } from "next-auth/react";
 import { MessageSquare } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useConversationMessages } from "@/hooks/useConversationMessages";
 import { formatName, formatEmail } from "@/lib/format-display";
 import {
@@ -18,6 +18,11 @@ interface MessageThreadProps {
   contactName: string | null;
   /** The ticket's contact email; used as the thread title when there's no name. */
   contactEmail?: string | null;
+  /**
+   * The ticket's subject, shown in the conversation header subtitle
+   * ("Conversation • <subject>"). Optional — omitted callers get just the name.
+   */
+  ticketSubject?: string | null;
   /** Whether the ticket's Status is terminal (Completed/Canceled). */
   isTerminal: boolean;
   /** Called after a reply is successfully sent (parent flips WaitingOn). */
@@ -37,6 +42,16 @@ function threadTitle(
   );
 }
 
+/** Up-to-two-letter initials for the header avatar. */
+function threadInitials(title: string): string {
+  const parts = title.split(/\s+/).filter(Boolean);
+  const initials = parts
+    .slice(0, 2)
+    .map((p) => p[0]?.toUpperCase() ?? "")
+    .join("");
+  return initials || "?";
+}
+
 /**
  * Messenger-style message thread for the ticket detail page: sender avatars,
  * consecutive-message grouping, a scrollable viewport that auto-scrolls to the
@@ -47,6 +62,7 @@ export function MessageThread({
   ticketId,
   contactName,
   contactEmail = null,
+  ticketSubject = null,
   isTerminal,
   onMessageSent,
 }: MessageThreadProps) {
@@ -93,42 +109,58 @@ export function MessageThread({
   }
 
   const groups = groupMessages(messages, contactName);
+  const title = threadTitle(contactName, contactEmail);
 
   return (
-    <Card className="shadow-none border-border">
-      <CardHeader className="pb-md p-lg">
-        <CardTitle className="text-title-lg font-bold">
-          {threadTitle(contactName, contactEmail)}
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="p-lg pt-0">
-        {error && <p className="mb-md text-base text-destructive">{error}</p>}
-
-        {/* Scrollable message viewport — height-constrained relative to the
-            viewport so long threads scroll here instead of growing the page;
-            the composer below is pinned outside it. */}
-        <div
-          className="flex flex-col gap-lg min-h-[320px] h-[calc(100vh-360px)] max-h-[640px] overflow-y-auto rounded-lg border border-border bg-muted/30 p-md"
-          role="log"
-          aria-label="Message thread"
-        >
-          {isLoading && messages.length === 0 ? (
-            <p className="text-base text-muted-foreground">Loading messages…</p>
-          ) : messages.length === 0 ? (
-            <div className="flex flex-1 flex-col items-center justify-center text-center">
-              <MessageSquare className="w-10 h-10 text-muted-foreground mb-md" />
-              <p className="text-base text-muted-foreground">
-                No messages yet. Replies you send will appear here.
-              </p>
-            </div>
-          ) : (
-            groups.map((group) => (
-              <MessageGroupRow key={group.key} group={group} />
-            ))
-          )}
-          <div ref={bottomRef} data-testid="thread-bottom" />
+    // Fills the conversation pane; header pinned top, thread scrolls, composer
+    // pinned bottom — the messenger layout from conversation_detail_wireframe.
+    <div className="flex h-full min-h-0 flex-col">
+      {/* Conversation header: avatar + contact name + ticket subtitle. */}
+      <div className="flex items-center gap-sm border-b border-border p-md shrink-0 bg-background">
+        <Avatar className="h-10 w-10">
+          <AvatarFallback className="text-sm font-semibold">
+            {threadInitials(title)}
+          </AvatarFallback>
+        </Avatar>
+        <div className="min-w-0">
+          <h2 className="text-title-lg font-bold text-foreground truncate">
+            {title}
+          </h2>
+          <p className="text-sm text-muted-foreground truncate">
+            {ticketSubject ? `Conversation \u00b7 ${ticketSubject}` : "Conversation"}
+          </p>
         </div>
+      </div>
 
+      {error && (
+        <p className="px-md pt-md text-base text-destructive shrink-0">{error}</p>
+      )}
+
+      {/* Scrollable message viewport — grows to fill the pane; the composer
+          below is pinned outside it. */}
+      <div
+        className="flex-1 min-h-0 flex flex-col gap-lg overflow-y-auto bg-muted/20 p-md"
+        role="log"
+        aria-label="Message thread"
+      >
+        {isLoading && messages.length === 0 ? (
+          <p className="text-base text-muted-foreground">Loading messages…</p>
+        ) : messages.length === 0 ? (
+          <div className="flex flex-1 flex-col items-center justify-center text-center">
+            <MessageSquare className="w-10 h-10 text-muted-foreground mb-md" />
+            <p className="text-base text-muted-foreground">
+              No messages yet. Replies you send will appear here.
+            </p>
+          </div>
+        ) : (
+          groups.map((group) => (
+            <MessageGroupRow key={group.key} group={group} />
+          ))
+        )}
+        <div ref={bottomRef} data-testid="thread-bottom" />
+      </div>
+
+      <div className="border-t border-border p-md shrink-0 bg-background">
         <ReplyBox
           draft={draft}
           onDraftChange={setDraft}
@@ -137,7 +169,7 @@ export function MessageThread({
           isSending={isSending}
           disabled={isTerminal}
         />
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

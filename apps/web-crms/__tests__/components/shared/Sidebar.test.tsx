@@ -186,7 +186,7 @@ describe("Sidebar two-group structure (#100)", () => {
     ).toBeInTheDocument();
   });
 
-  it("puts the messenger Inbox and relocated Canned Replies under Conversations, with Inbox pointing at /conversations", async () => {
+  it("puts the messenger Inbox and relocated Canned Replies under Conversations, with Inbox pointing at /conversations/inbox", async () => {
     await act(async () => {
       render(<Sidebar />);
     });
@@ -196,7 +196,7 @@ describe("Sidebar two-group structure (#100)", () => {
     });
 
     const inbox = screen.getByText("Inbox").closest("a");
-    expect(inbox).toHaveAttribute("href", "/conversations");
+    expect(inbox).toHaveAttribute("href", "/conversations/inbox");
 
     const cannedReplies = screen.getByText("Canned Replies").closest("a");
     expect(cannedReplies).toHaveAttribute("href", "/conversations/canned-replies");

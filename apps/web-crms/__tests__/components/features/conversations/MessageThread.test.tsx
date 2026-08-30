@@ -455,10 +455,14 @@ describe("MessageThread (messenger layout)", () => {
 
     await screen.findByText("Customer says hi");
 
+    // Contact + Staff avatar initials appear inside the thread viewport (the
+    // conversation header also renders an avatar for the contact, so scope the
+    // group-avatar assertions to the message log).
+    const viewport = screen.getByRole("log", { name: /message thread/i });
     // Contact avatar initials from the ticket contact name (Jane Doe -> JD).
-    expect(screen.getByText("JD")).toBeInTheDocument();
+    expect(within(viewport).getByText("JD")).toBeInTheDocument();
     // Staff avatar initials from the staff name (Amelia Ward -> AW).
-    expect(screen.getByText("AW")).toBeInTheDocument();
+    expect(within(viewport).getByText("AW")).toBeInTheDocument();
   });
 
   it("falls back to a 'C' avatar for a Contact when the ticket has no linked contact", async () => {
@@ -581,8 +585,11 @@ describe("MessageThread (messenger layout)", () => {
     // Vertical scrolling is enabled...
     expect(viewport.className).toContain("overflow-y-auto");
     // ...and the region is height-constrained so overflow actually scrolls
-    // rather than growing the page infinitely.
-    expect(viewport.className).toMatch(/\b(max-)?h-\[/);
+    // rather than growing the page. In the split-pane messenger layout the
+    // viewport fills the pane as a flex child (`flex-1 min-h-0`), which bounds
+    // its height so the composer stays pinned and the thread scrolls.
+    expect(viewport.className).toMatch(/\b(flex-1|(max-)?h-\[)/);
+    expect(viewport.className).toContain("min-h-0");
   });
 });
 

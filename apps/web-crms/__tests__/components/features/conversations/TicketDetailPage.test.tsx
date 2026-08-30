@@ -161,7 +161,7 @@ describe("TicketDetailPage", () => {
     render(<TicketDetailPage ticketId="t-1" />);
 
     const link = await screen.findByRole("link", { name: /View Conversation/ });
-    expect(link).toHaveAttribute("href", "/conversations/t-1");
+    expect(link).toHaveAttribute("href", "/conversations/inbox/t-1");
   });
 
   it("shows a 'View Conversation' link on an Ongoing ticket", async () => {

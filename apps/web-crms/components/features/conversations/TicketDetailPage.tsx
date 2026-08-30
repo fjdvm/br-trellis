@@ -269,7 +269,7 @@ export function TicketDetailPage({ ticketId }: TicketDetailPageProps) {
               </div>
             </div>
             <Button asChild variant="outline" size="sm" className="shrink-0">
-              <Link href={`/conversations/${ticketId}`}>
+              <Link href={`/conversations/inbox/${ticketId}`}>
                 <MessageSquare className="w-4 h-4" />
                 <span className="ml-1">View Conversation</span>
               </Link>

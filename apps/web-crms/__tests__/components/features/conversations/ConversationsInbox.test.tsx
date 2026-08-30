@@ -165,7 +165,7 @@ describe("ConversationsInbox — pane + navigation", () => {
     render(<ConversationsInbox />);
 
     expect(
-      await screen.findByText("Select a conversation to open it.")
+      await screen.findByText("No Conversation Selected")
     ).toBeInTheDocument();
   });
 
@@ -177,7 +177,7 @@ describe("ConversationsInbox — pane + navigation", () => {
     render(<ConversationsInbox />);
 
     fireEvent.click(await screen.findByText("Jane Doe"));
-    expect(mockPush).toHaveBeenCalledWith("/conversations/t-1");
+    expect(mockPush).toHaveBeenCalledWith("/conversations/inbox/t-1");
   });
 
   it("opens the message thread for the selected conversation from the loaded list", async () => {

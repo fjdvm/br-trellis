@@ -1,5 +1,9 @@
-import { ConversationsInbox } from "@/components/features/conversations/ConversationsInbox";
+import { redirect } from "next/navigation";
 
+/**
+ * The Conversations section opens on its Inbox. `/conversations` itself carries
+ * no view, so redirect to the nested Inbox route where the messenger lives.
+ */
 export default function Page() {
-  return <ConversationsInbox />;
+  redirect("/conversations/inbox");
 }
