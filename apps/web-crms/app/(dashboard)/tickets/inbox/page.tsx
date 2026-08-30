@@ -15,6 +15,7 @@ export default function Page() {
       initialWaitingOnFilter="Agent"
       excludeTerminal
       showSourceFilter={false}
+      showNewTicketButton={false}
       emptyMessage="Nothing waiting on you right now."
       filteredEmptyMessage="No tickets match the selected filters."
     />

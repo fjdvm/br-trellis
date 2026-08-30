@@ -280,6 +280,16 @@ describe("TicketListPage", () => {
     ).toBeInTheDocument();
   });
 
+  it("renders the New Ticket button on the default Tickets screen", async () => {
+    jest.mocked(crmClient.conversationTickets.list).mockResolvedValue([]);
+
+    render(<TicketListPage />);
+
+    expect(
+      await screen.findByRole("button", { name: /New Ticket/i })
+    ).toBeInTheDocument();
+  });
+
   it("navigates to the ticket detail route on row click", async () => {
     jest
       .mocked(crmClient.conversationTickets.list)

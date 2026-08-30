@@ -87,6 +87,7 @@ const assignedProps = {
   cardTitle: "Assigned to Me",
   assignedToMe: true,
   showSourceFilter: false,
+  showNewTicketButton: false,
   emptyMessage: "No tickets are assigned to you.",
   filteredEmptyMessage: "No tickets match the selected filters.",
 };
@@ -120,6 +121,15 @@ describe("TicketListPage (My Assigned props)", () => {
     await screen.findByRole("heading", { name: "My Assigned" });
     expect(
       screen.queryByLabelText("Filter by source")
+    ).not.toBeInTheDocument();
+  });
+
+  it("does not render the New Ticket button (My Assigned is a worklist)", async () => {
+    render(<TicketListPage {...assignedProps} />);
+
+    await screen.findByRole("heading", { name: "My Assigned" });
+    expect(
+      screen.queryByRole("button", { name: /New Ticket/i })
     ).not.toBeInTheDocument();
   });
 

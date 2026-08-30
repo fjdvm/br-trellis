@@ -78,6 +78,7 @@ const inboxProps = {
   initialWaitingOnFilter: "Agent" as const,
   excludeTerminal: true,
   showSourceFilter: false,
+  showNewTicketButton: false,
   emptyMessage: "Nothing waiting on you right now.",
   filteredEmptyMessage: "No tickets match the selected filters.",
 };
@@ -118,6 +119,15 @@ describe("TicketListPage (Inbox props)", () => {
     await screen.findByRole("heading", { name: "Inbox" });
     expect(
       screen.queryByLabelText("Filter by source")
+    ).not.toBeInTheDocument();
+  });
+
+  it("does not render the New Ticket button (Triage Queue is a worklist)", async () => {
+    render(<TicketListPage {...inboxProps} />);
+
+    await screen.findByRole("heading", { name: "Inbox" });
+    expect(
+      screen.queryByRole("button", { name: /New Ticket/i })
     ).not.toBeInTheDocument();
   });
 

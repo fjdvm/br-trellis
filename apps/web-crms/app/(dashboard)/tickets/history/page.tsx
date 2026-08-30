@@ -17,6 +17,7 @@ export default function Page() {
       cardTitle="Finished Tickets"
       terminalOnly
       statusOptions={["All", "Completed", "Canceled"]}
+      showNewTicketButton={false}
       emptyMessage="No finished tickets yet."
       filteredEmptyMessage="No tickets match the selected filters."
     />

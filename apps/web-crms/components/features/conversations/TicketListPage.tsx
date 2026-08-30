@@ -165,6 +165,14 @@ export interface TicketListPageProps {
    */
   showSourceFilter?: boolean;
   /**
+   * Whether to render the "New Ticket" button in the page header. Defaults to
+   * `true` (the default Tickets / "All Tickets" screen shows it). The sub-tabs
+   * — Triage Queue, My Assigned, and History — pass `false`: creating a ticket
+   * belongs on the main Tickets screen, not inside a filtered worklist or the
+   * read-only History view.
+   */
+  showNewTicketButton?: boolean;
+  /**
    * Empty-state copy shown when the list is empty at the initial filter values
    * (the screen's default view). Defaults to "No tickets found.".
    */
@@ -188,6 +196,7 @@ export function TicketListPage({
   terminalOnly = false,
   assignedToMe = false,
   showSourceFilter = true,
+  showNewTicketButton = true,
   emptyMessage = "No tickets found.",
   filteredEmptyMessage = "No tickets match the selected filters.",
 }: TicketListPageProps = {}) {
@@ -321,7 +330,9 @@ export function TicketListPage({
             {description}
           </p>
         </div>
-        <NewTicketSheet onCreated={() => void loadTickets()} />
+        {showNewTicketButton && (
+          <NewTicketSheet onCreated={() => void loadTickets()} />
+        )}
       </div>
 
       <Card className="shadow-none border-border">

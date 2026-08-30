@@ -77,6 +77,7 @@ const historyProps = {
   cardTitle: "Finished Tickets",
   terminalOnly: true,
   statusOptions: ["All", "Completed", "Canceled"] as const,
+  showNewTicketButton: false,
   emptyMessage: "No finished tickets yet.",
   filteredEmptyMessage: "No tickets match the selected filters.",
 };
@@ -97,6 +98,15 @@ describe("TicketListPage (History props)", () => {
       screen.getByText("Completed and canceled tickets across the whole team.")
     ).toBeInTheDocument();
     expect(screen.getByText("Finished Tickets")).toBeInTheDocument();
+  });
+
+  it("does not render the New Ticket button (History is a read-only record)", async () => {
+    render(<TicketListPage {...historyProps} />);
+
+    await screen.findByRole("heading", { name: "History" });
+    expect(
+      screen.queryByRole("button", { name: /New Ticket/i })
+    ).not.toBeInTheDocument();
   });
 
   it("performs the initial fetch with no status sent to the server (terminal scoping is client-side)", async () => {
