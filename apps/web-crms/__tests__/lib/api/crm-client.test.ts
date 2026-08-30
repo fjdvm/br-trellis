@@ -220,3 +220,113 @@ describe("crmClient.conversationTickets.setWaitingOn", () => {
     ).rejects.toThrow("Invalid WaitingOn: 'Nobody'.");
   });
 });
+
+describe("crmClient.conversationMessages.listByTicket", () => {
+  it("sends a GET request to the ticket messages endpoint", async () => {
+    mockFetch(200, []);
+
+    await crmClient.conversationMessages.listByTicket("t-1");
+
+    expect(fetch).toHaveBeenCalledWith(
+      `${BASE}/api/v1/tickets/t-1/messages`,
+      expect.objectContaining({
+        headers: expect.objectContaining({
+          "Content-Type": "application/json",
+        }),
+      })
+    );
+  });
+
+  it("returns the parsed message array from the response body", async () => {
+    const messages = [
+      {
+        id: "m-1",
+        ticketId: "t-1",
+        senderType: "Contact",
+        senderContactId: "c-1",
+        senderStaffId: null,
+        senderStaffName: null,
+        content: "Hello",
+        sentAt: "2025-01-15T00:00:00Z",
+      },
+    ];
+    mockFetch(200, messages);
+
+    const result = await crmClient.conversationMessages.listByTicket("t-1");
+
+    expect(result).toEqual(messages);
+  });
+});
+
+describe("crmClient.conversationMessages.postStaffMessage", () => {
+  it("sends a POST to the messages endpoint with senderType Staff fixed", async () => {
+    mockFetch(201, {
+      id: "m-1",
+      ticketId: "t-1",
+      senderType: "Staff",
+      senderContactId: null,
+      senderStaffId: "auth|amelia",
+      senderStaffName: "amelia ward",
+      content: "On it",
+      sentAt: "2025-01-15T10:00:00Z",
+    });
+
+    await crmClient.conversationMessages.postStaffMessage("t-1", {
+      senderStaffId: "auth|amelia",
+      senderStaffName: "amelia ward",
+      content: "On it",
+    });
+
+    expect(fetch).toHaveBeenCalledWith(
+      `${BASE}/api/v1/tickets/t-1/messages`,
+      expect.objectContaining({
+        method: "POST",
+        body: JSON.stringify({
+          senderType: "Staff",
+          senderStaffId: "auth|amelia",
+          senderStaffName: "amelia ward",
+          content: "On it",
+        }),
+      })
+    );
+  });
+
+  it("returns the created message from the response body", async () => {
+    const created = {
+      id: "m-1",
+      ticketId: "t-1",
+      senderType: "Staff",
+      senderContactId: null,
+      senderStaffId: "auth|amelia",
+      senderStaffName: "amelia ward",
+      content: "On it",
+      sentAt: "2025-01-15T10:00:00Z",
+    };
+    mockFetch(201, created);
+
+    const result = await crmClient.conversationMessages.postStaffMessage("t-1", {
+      senderStaffId: "auth|amelia",
+      senderStaffName: "amelia ward",
+      content: "On it",
+    });
+
+    expect(result).toEqual(created);
+  });
+
+  it("throws the real backend error message when the post is rejected", async () => {
+    // ASP.NET Core's BadRequest(ex.Message) returns a bare text/plain string.
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: false,
+      status: 400,
+      text: jest.fn().mockResolvedValue("Message content cannot be empty."),
+    } as unknown as Response);
+
+    await expect(
+      crmClient.conversationMessages.postStaffMessage("t-1", {
+        senderStaffId: "auth|amelia",
+        senderStaffName: "amelia ward",
+        content: "   ",
+      })
+    ).rejects.toThrow("Message content cannot be empty.");
+  });
+});

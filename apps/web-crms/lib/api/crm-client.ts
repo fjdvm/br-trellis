@@ -19,6 +19,10 @@ import {
 } from "@/types/contact";
 import { Message } from "@/types/message";
 import {
+  ConversationMessage,
+  PostStaffMessageInput,
+} from "@/types/conversation-message";
+import {
   Campaign,
   CampaignListItem,
   CreateCampaignInput,
@@ -255,6 +259,18 @@ export const crmClient = {
       request<TicketDetail>(`/api/v1/tickets/${id}/waiting-on`, {
         method: "POST",
         body: JSON.stringify(body),
+      }),
+  },
+  // Real message thread contract (backed by MessageController #66), kept
+  // separate from the legacy `messages` block below, which targets an
+  // unimplemented API (a senderId query param, an isRead/markRead endpoint).
+  conversationMessages: {
+    listByTicket: (ticketId: string) =>
+      request<ConversationMessage[]>(`/api/v1/tickets/${ticketId}/messages`),
+    postStaffMessage: (ticketId: string, body: PostStaffMessageInput) =>
+      request<ConversationMessage>(`/api/v1/tickets/${ticketId}/messages`, {
+        method: "POST",
+        body: JSON.stringify({ senderType: "Staff", ...body }),
       }),
   },
   messages: {

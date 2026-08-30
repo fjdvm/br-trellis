@@ -49,6 +49,10 @@ jest.mock("@/lib/api/crm-client", () => ({
       changeStatus: jest.fn(),
       setWaitingOn: jest.fn(),
     },
+    conversationMessages: {
+      listByTicket: jest.fn(),
+      postStaffMessage: jest.fn(),
+    },
   },
 }));
 
@@ -75,12 +79,16 @@ const mocked = {
   unclaim: jest.mocked(crmClient.conversationTickets.unclaim),
   changeStatus: jest.mocked(crmClient.conversationTickets.changeStatus),
   setWaitingOn: jest.mocked(crmClient.conversationTickets.setWaitingOn),
+  listMessages: jest.mocked(crmClient.conversationMessages.listByTicket),
 };
 
 describe("TicketDetailPage", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mocked.getById.mockResolvedValue(makeTicket());
+    // MessageThread mounts inside the page and fetches on mount; default to an
+    // empty thread so the page's own tests don't hit an unmocked call.
+    mocked.listMessages.mockResolvedValue([]);
   });
 
   it("shows the detail skeleton while loading", async () => {
@@ -125,6 +133,75 @@ describe("TicketDetailPage", () => {
     render(<TicketDetailPage ticketId="t-1" />);
 
     expect(await screen.findByText("Ticket not found.")).toBeInTheDocument();
+  });
+
+  // --- Message thread integration (feature 4, #85) ---
+
+  it("mounts the Messages card below Details, passing the ticket's contact name to Contact bubbles", async () => {
+    mocked.getById.mockResolvedValue(
+      makeTicket({ contact: { id: "c-1", name: "jane doe", email: "jane@example.com" } })
+    );
+    mocked.listMessages.mockResolvedValue([
+      {
+        id: "m-1",
+        ticketId: "t-1",
+        senderType: "Contact",
+        senderContactId: "c-1",
+        senderStaffId: null,
+        senderStaffName: null,
+        content: "I need help",
+        sentAt: "2025-01-15T10:00:00Z",
+      },
+    ]);
+
+    render(<TicketDetailPage ticketId="t-1" />);
+
+    // The Messages card and the thread render, labelled with the ticket's
+    // own contact name (title-cased for display).
+    const messagesHeading = await screen.findByText("Messages");
+    expect(messagesHeading).toBeInTheDocument();
+    expect(await screen.findByText("I need help")).toBeInTheDocument();
+    expect(screen.getAllByText("Jane Doe").length).toBeGreaterThan(0);
+
+    // Messages card is ordered after the Details card in the DOM.
+    const detailsHeading = screen.getByText("Details");
+    expect(
+      detailsHeading.compareDocumentPosition(messagesHeading) &
+        Node.DOCUMENT_POSITION_FOLLOWING
+    ).toBeTruthy();
+
+    // listByTicket was called with the ticket id.
+    expect(mocked.listMessages).toHaveBeenCalledWith("t-1");
+  });
+
+  it("flips WaitingOn to Customer after a reply is sent from the thread", async () => {
+    mocked.getById.mockResolvedValue(
+      makeTicket({ status: "Claimed", assignedToId: "auth|amelia", waitingOn: "Agent" })
+    );
+    mocked.listMessages.mockResolvedValue([]);
+    jest.mocked(crmClient.conversationMessages.postStaffMessage).mockResolvedValue({
+      id: "server-1",
+      ticketId: "t-1",
+      senderType: "Staff",
+      senderContactId: null,
+      senderStaffId: "auth|amelia",
+      senderStaffName: "amelia ward",
+      content: "Following up",
+      sentAt: "2025-01-15T11:00:00Z",
+    });
+    mocked.setWaitingOn.mockResolvedValue(
+      makeTicket({ status: "Claimed", assignedToId: "auth|amelia", waitingOn: "Customer" })
+    );
+    const user = userEvent.setup();
+
+    render(<TicketDetailPage ticketId="t-1" />);
+
+    await user.type(await screen.findByLabelText("Reply"), "Following up");
+    await user.click(screen.getByRole("button", { name: /Send/ }));
+
+    await waitFor(() =>
+      expect(mocked.setWaitingOn).toHaveBeenCalledWith("t-1", { waitingOn: "Customer" })
+    );
   });
 
   // --- Claim ---

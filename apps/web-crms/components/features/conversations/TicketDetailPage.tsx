@@ -29,6 +29,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { crmClient } from "@/lib/api/crm-client";
 import { STATUS_BADGE_VARIANT } from "@/lib/tickets";
+import { MessageThread } from "@/components/features/conversations/MessageThread";
 import { formatName, formatEmail } from "@/lib/format-display";
 import type {
   TicketDetail,
@@ -293,6 +294,13 @@ export function TicketDetailPage({ ticketId }: TicketDetailPageProps) {
           )}
         </CardContent>
       </Card>
+
+      <MessageThread
+        ticketId={ticketId}
+        contactName={ticket.contact?.name ?? null}
+        isTerminal={isTerminal(ticket)}
+        onMessageSent={() => handleSetWaitingOn("Customer")}
+      />
 
       <AlertDialog open={showCancelDialog} onOpenChange={setShowCancelDialog}>
         <AlertDialogContent>
