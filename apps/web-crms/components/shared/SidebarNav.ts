@@ -104,12 +104,19 @@ export const navGroups: NavGroup[] = [
     ],
   },
   {
+    name: "Tickets",
+    icon: Ticket,
+    children: [
+      { name: "Triage Queue", href: "/tickets/inbox", icon: Inbox },
+      { name: "Tickets", href: "/tickets", icon: Ticket },
+      { name: "My Assigned", href: "/tickets/assigned", icon: UserCheck },
+    ],
+  },
+  {
     name: "Conversations",
     icon: MessageSquare,
     children: [
-      { name: "Inbox", href: "/conversations/inbox", icon: Inbox },
-      { name: "Tickets", href: "/conversations/tickets", icon: Ticket },
-      { name: "My Assigned", href: "/conversations/assigned", icon: UserCheck },
+      { name: "Inbox", href: "/conversations", icon: Inbox },
       { name: "Canned Replies", href: "/conversations/canned-replies", icon: FileText },
     ],
   },

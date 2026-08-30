@@ -93,6 +93,7 @@ export function Sidebar() {
   const navGroupToModule: Record<string, string> = {
     Contacts: "Customer Profiles",
     Ecommerce: "Ecommerce",
+    Tickets: "Conversations",
     Conversations: "Conversations",
     Automation: "Automation",
   };

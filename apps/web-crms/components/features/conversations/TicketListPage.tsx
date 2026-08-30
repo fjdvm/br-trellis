@@ -34,8 +34,9 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { crmClient } from "@/lib/api/crm-client";
+import { useCurrentAgentId } from "@/hooks/useCurrentAgentId";
 import { NewTicketSheet } from "@/components/features/conversations/NewTicketSheet";
-import { STATUS_BADGE_VARIANT } from "@/lib/tickets";
+import { STATUS_BADGE_VARIANT, isTerminalStatus } from "@/lib/tickets";
 import { formatName, formatEmail } from "@/lib/format-display";
 import type {
   TicketListItem,
@@ -85,7 +86,7 @@ function isClaimable(ticket: TicketListItem): boolean {
 
 /** Completed/Canceled tickets are terminal — no row actions apply. */
 function isTerminal(ticket: TicketListItem): boolean {
-  return ticket.status === "Completed" || ticket.status === "Canceled";
+  return isTerminalStatus(ticket.status);
 }
 
 /**
@@ -153,6 +154,7 @@ export function TicketListPage({
 }: TicketListPageProps = {}) {
   const router = useRouter();
   const { data: session } = useSession();
+  const currentAgentId = useCurrentAgentId();
   const [tickets, setTickets] = useState<TicketListItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -167,13 +169,12 @@ export function TicketListPage({
   );
 
   /**
-   * The signed-in agent's identity, resolved once here so "who am I" has a
-   * single source of truth shared by both `handleClaim` (who to assign a
-   * claimed ticket to) and the `assignedToMe` filter (which tickets I own).
-   * `null` when there is no session yet; the `assignedToMe` filter then
-   * matches nothing (an unauthenticated view has no tickets of its own).
+   * The signed-in agent's identity, resolved via the shared `useCurrentAgentId`
+   * hook so "who am I" has a single source of truth across Claim (who to assign
+   * a claimed ticket to) and the `assignedToMe` filter (which tickets I own).
+   * `null` when there is no session yet; the `assignedToMe` filter then matches
+   * nothing (an unauthenticated view has no tickets of its own).
    */
-  const currentAgentId = session?.user?.id ?? session?.user?.username ?? null;
 
   /**
    * Apply the screen's client-side row filters at the component boundary. Run
@@ -368,7 +369,7 @@ export function TicketListPage({
                         key={ticket.id}
                         className="cursor-pointer hover:bg-muted/50"
                         onClick={() =>
-                          router.push(`/conversations/tickets/${ticket.id}`)
+                          router.push(`/tickets/${ticket.id}`)
                         }
                       >
                         <TableCell className="text-base font-medium">
