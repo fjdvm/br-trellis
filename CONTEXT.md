@@ -182,6 +182,23 @@ Dropping out of an Inbox (unclaiming, completing, canceling) never
 deletes history — it belongs to the Ticket, not to any agent's session,
 and reappears in full for whoever claims the ticket next.
 
+## Canned Reply
+
+A pre-written, reusable reply body agents can insert into a Conversation's
+composer, organized into agent-managed Canned Reply Categories (e.g.
+Shipping, Refunds, General). Both Categories and the Canned Replies within
+them are shared/org-wide — there are no per-agent personal templates — and
+are full CRUD records, following the same create/edit/archive convention
+as Contact and Company. A Canned Reply body may contain Variable
+placeholders (`{{customer_name}}`, `{{ticket_id}}`, `{{agent_name}}`)
+resolved at the moment of insertion, using only data already available in
+the composer at that point. This deliberately excludes any Order-linked
+variable (e.g. an order number): no Order-to-Ticket or Order-to-Company
+link exists in the current model (see Order), so a Canned Reply cannot
+reference either. A Canned Reply Category cannot be archived while it
+still contains any non-archived Canned Reply — its Canned Replies must be
+moved or archived first.
+
 ## Identity Resolution
 
 The process of matching an incoming record (from an external source system)

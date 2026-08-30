@@ -48,6 +48,10 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
 
     public DbSet<Message> Messages => Set<Message>();
 
+    public DbSet<CannedReplyCategory> CannedReplyCategories => Set<CannedReplyCategory>();
+
+    public DbSet<CannedReply> CannedReplies => Set<CannedReply>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         ConfigureContact(modelBuilder);
@@ -72,6 +76,8 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
         ConfigureEcommerceSyncStatus(modelBuilder);
         ConfigureTicket(modelBuilder);
         ConfigureMessage(modelBuilder);
+        ConfigureCannedReplyCategory(modelBuilder);
+        ConfigureCannedReply(modelBuilder);
     }
 
     private static void ConfigureContact(ModelBuilder modelBuilder)
@@ -560,6 +566,40 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
                 .WithMany()
                 .HasForeignKey(e => e.SenderContactId)
                 .OnDelete(DeleteBehavior.SetNull);
+        });
+    }
+
+    private static void ConfigureCannedReplyCategory(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<CannedReplyCategory>(category =>
+        {
+            category.ToTable("canned_reply_category");
+            category.HasKey(e => e.Id);
+            category.Property(e => e.Id).HasColumnName("id");
+            category.Property(e => e.Name).HasColumnName("name");
+            category.Property(e => e.CreatedAt).HasColumnName("created_at");
+            category.Property(e => e.DeletedAt).HasColumnName("deleted_at");
+        });
+    }
+
+    private static void ConfigureCannedReply(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<CannedReply>(reply =>
+        {
+            reply.ToTable("canned_reply");
+            reply.HasKey(e => e.Id);
+            reply.Property(e => e.Id).HasColumnName("id");
+            reply.Property(e => e.CategoryId).HasColumnName("category_id");
+            reply.Property(e => e.Name).HasColumnName("name");
+            reply.Property(e => e.Body).HasColumnName("body");
+            reply.Property(e => e.CreatedAt).HasColumnName("created_at");
+            reply.Property(e => e.DeletedAt).HasColumnName("deleted_at");
+            reply.HasIndex(e => e.CategoryId);
+
+            reply.HasOne(e => e.Category)
+                .WithMany(e => e.CannedReplies)
+                .HasForeignKey(e => e.CategoryId)
+                .OnDelete(DeleteBehavior.Restrict);
         });
     }
 }

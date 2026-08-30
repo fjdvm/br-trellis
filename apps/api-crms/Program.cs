@@ -65,6 +65,12 @@ builder.Services.AddScoped<IMessageService, MessageService>();
 builder.Services.AddScoped<IEmailRepository, EmailRepository>();
 builder.Services.AddScoped<IEmailIngestionService, EmailIngestionService>();
 
+// Canned Replies
+builder.Services.AddScoped<ICannedReplyCategoryRepository, CannedReplyCategoryRepository>();
+builder.Services.AddScoped<ICannedReplyCategoryService, CannedReplyCategoryService>();
+builder.Services.AddScoped<ICannedReplyRepository, CannedReplyRepository>();
+builder.Services.AddScoped<ICannedReplyService, CannedReplyService>();
+
 builder.Services.AddControllers();
 builder.Services.AddOpenApi(options =>
 {
@@ -110,6 +116,10 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy(CrmPermissionPolicies.AutomationCanRead, policy =>
         policy.RequireAuthenticatedUser()
               .AddRequirements(new CrmPermissionRequirement("Automation", "canRead")));
+
+    options.AddPolicy(CrmPermissionPolicies.ConversationsCanWrite, policy =>
+        policy.RequireAuthenticatedUser()
+              .AddRequirements(new CrmPermissionRequirement("Conversations", "canWrite")));
 });
 builder.Services.AddSingleton<IAuthorizationHandler, CrmPermissionAuthorizationHandler>();
 

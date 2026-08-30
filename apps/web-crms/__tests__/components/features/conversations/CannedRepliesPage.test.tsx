@@ -1,0 +1,273 @@
+import { render, screen, fireEvent, waitFor, within } from "@testing-library/react";
+import { CannedRepliesPage } from "@/components/features/conversations/CannedRepliesPage";
+import { crmClient } from "@/lib/api/crm-client";
+
+// useSession is overridden per describe via this mutable holder so we can flip
+// canWrite / isSuperUser without re-mocking the module each time.
+let mockSession: unknown = {
+  data: {
+    user: { name: "Bren Raphael", email: "bren@example.com" },
+    isSuperUser: true,
+    permissions: { CRMS: { Conversations: { canRead: true } } },
+  },
+  status: "authenticated",
+};
+
+jest.mock("next-auth/react", () => ({
+  useSession: () => mockSession,
+}));
+
+jest.mock("next/navigation", () => ({
+  useRouter: () => ({ push: jest.fn() }),
+}));
+
+jest.mock("@/lib/api/crm-client", () => ({
+  crmClient: {
+    cannedReplyCategories: {
+      list: jest.fn(),
+      create: jest.fn(),
+      update: jest.fn(),
+      archive: jest.fn(),
+      restore: jest.fn(),
+    },
+    cannedReplies: {
+      list: jest.fn(),
+      create: jest.fn(),
+      update: jest.fn(),
+      archive: jest.fn(),
+      restore: jest.fn(),
+    },
+  },
+}));
+
+const api = {
+  catList: jest.mocked(crmClient.cannedReplyCategories.list),
+  catCreate: jest.mocked(crmClient.cannedReplyCategories.create),
+  catArchive: jest.mocked(crmClient.cannedReplyCategories.archive),
+  replyList: jest.mocked(crmClient.cannedReplies.list),
+  replyArchive: jest.mocked(crmClient.cannedReplies.archive),
+  replyRestore: jest.mocked(crmClient.cannedReplies.restore),
+};
+
+beforeAll(() => {
+  if (!Element.prototype.hasPointerCapture) {
+    Element.prototype.hasPointerCapture = () => false;
+  }
+  if (!Element.prototype.scrollIntoView) {
+    Element.prototype.scrollIntoView = () => {};
+  }
+});
+
+function superUserSession() {
+  return {
+    data: {
+      user: { name: "Bren Raphael" },
+      isSuperUser: true,
+      permissions: { CRMS: { Conversations: { canRead: true } } },
+    },
+    status: "authenticated",
+  };
+}
+
+function writerSession() {
+  return {
+    data: {
+      user: { name: "Casey Writer" },
+      isSuperUser: false,
+      permissions: { CRMS: { Conversations: { canRead: true, canWrite: true } } },
+    },
+    status: "authenticated",
+  };
+}
+
+function readerSession() {
+  return {
+    data: {
+      user: { name: "Riley Reader" },
+      isSuperUser: false,
+      permissions: { CRMS: { Conversations: { canRead: true } } },
+    },
+    status: "authenticated",
+  };
+}
+
+const sampleCategories = [
+  { id: "cat-1", name: "Shipping", replyCount: 1, createdAt: "2025-01-15T00:00:00Z", deletedAt: null },
+  { id: "cat-2", name: "Refunds", replyCount: 0, createdAt: "2025-01-16T00:00:00Z", deletedAt: null },
+];
+
+const sampleReplies = [
+  {
+    id: "rep-1",
+    categoryId: "cat-1",
+    categoryName: "Shipping",
+    name: "Order status",
+    body: "Hi {{customer_name}}, your order {{ticket_id}} is on its way.",
+    createdAt: "2025-01-17T00:00:00Z",
+    deletedAt: null,
+  },
+];
+
+describe("CannedRepliesPage", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockSession = superUserSession();
+    api.catList.mockResolvedValue(sampleCategories);
+    api.replyList.mockResolvedValue(sampleReplies);
+  });
+
+  it("renders categories and canned replies with their fields", async () => {
+    render(<CannedRepliesPage />);
+
+    expect(await screen.findByText("Order status")).toBeInTheDocument();
+    // "Shipping" appears as a category row and as the reply's category badge.
+    expect(screen.getAllByText("Shipping").length).toBeGreaterThanOrEqual(2);
+    expect(screen.getByText("Refunds")).toBeInTheDocument();
+    expect(screen.getByText("Order status")).toBeInTheDocument();
+    expect(
+      screen.getByText(/your order \{\{ticket_id\}\} is on its way/)
+    ).toBeInTheDocument();
+  });
+
+  it("hides archived items by default and toggles them via the button", async () => {
+    render(<CannedRepliesPage />);
+
+    await screen.findByText("Order status");
+    expect(api.catList).toHaveBeenCalledWith(false);
+    expect(api.replyList).toHaveBeenCalledWith(false);
+
+    fireEvent.click(screen.getByText("Show Archived"));
+
+    await waitFor(() => {
+      expect(api.catList).toHaveBeenCalledWith(true);
+      expect(api.replyList).toHaveBeenCalledWith(true);
+    });
+  });
+
+  it("creates a category via the New Category sheet and refetches", async () => {
+    api.catCreate.mockResolvedValue({
+      id: "cat-new",
+      name: "General",
+      createdAt: "2025-02-01T00:00:00Z",
+      deletedAt: null,
+      replyCount: 0,
+    });
+
+    render(<CannedRepliesPage />);
+    await screen.findByText("Order status");
+
+    fireEvent.click(screen.getByRole("button", { name: /New Category/i }));
+    fireEvent.change(await screen.findByLabelText(/Name/i), {
+      target: { value: "General" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /Create Category/i }));
+
+    await waitFor(() =>
+      expect(api.catCreate).toHaveBeenCalledWith({ name: "General" })
+    );
+    // Initial load (1) + post-create refetch (2).
+    await waitFor(() => expect(api.catList).toHaveBeenCalledTimes(2));
+  });
+
+  it("archives a canned reply through the confirmation dialog", async () => {
+    api.replyArchive.mockResolvedValue(undefined);
+
+    render(<CannedRepliesPage />);
+    await screen.findByText("Order status");
+
+    // The reply row's Archive button (categories row for Refunds also has one;
+    // scope to the reply table row).
+    const replyRow = screen.getByText("Order status").closest("tr")!;
+    fireEvent.click(within(replyRow).getByRole("button", { name: /Archive/i }));
+
+    // Confirm in the dialog.
+    fireEvent.click(await screen.findByRole("button", { name: "Archive" }));
+
+    await waitFor(() =>
+      expect(api.replyArchive).toHaveBeenCalledWith("rep-1")
+    );
+  });
+
+  it("restores an archived canned reply via the restore endpoint", async () => {
+    api.replyList.mockResolvedValue([
+      {
+        id: "rep-archived",
+        categoryId: "cat-1",
+        categoryName: "Shipping",
+        name: "Retired reply",
+        body: "old",
+        createdAt: "2025-01-10T00:00:00Z",
+        deletedAt: "2025-02-01T00:00:00Z",
+      },
+    ]);
+    api.replyRestore.mockResolvedValue({
+      id: "rep-archived",
+      categoryId: "cat-1",
+      categoryName: "Shipping",
+      name: "Retired reply",
+      body: "old",
+      createdAt: "2025-01-10T00:00:00Z",
+      deletedAt: null,
+    });
+
+    render(<CannedRepliesPage />);
+    await screen.findByText("Retired reply");
+
+    fireEvent.click(screen.getByRole("button", { name: /Restore/i }));
+
+    await waitFor(() =>
+      expect(api.replyRestore).toHaveBeenCalledWith("rep-archived")
+    );
+  });
+
+  it("surfaces the API error when archiving a non-empty category is rejected", async () => {
+    api.catArchive.mockRejectedValue(
+      new Error("Cannot archive a category that still contains active canned replies.")
+    );
+
+    render(<CannedRepliesPage />);
+    await screen.findByText("Order status");
+
+    // The category "Shipping" also appears as a reply badge; the first match is
+    // the Categories-table row (rendered before the replies table).
+    const categoryRow = screen.getAllByText("Shipping")[0].closest("tr")!;
+    fireEvent.click(within(categoryRow).getByRole("button", { name: /Archive/i }));
+    fireEvent.click(await screen.findByRole("button", { name: "Archive" }));
+
+    expect(
+      await screen.findByText(/Cannot archive a category that still contains active/)
+    ).toBeInTheDocument();
+  });
+
+  describe("permission gating", () => {
+    it("shows management controls for a SuperUser", async () => {
+      mockSession = superUserSession();
+      render(<CannedRepliesPage />);
+      await screen.findByText("Order status");
+      expect(screen.getByRole("button", { name: /New Category/i })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /New Canned Reply/i })).toBeInTheDocument();
+    });
+
+    it("shows management controls for an agent with Conversations.canWrite", async () => {
+      mockSession = writerSession();
+      render(<CannedRepliesPage />);
+      await screen.findByText("Order status");
+      expect(screen.getByRole("button", { name: /New Category/i })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /New Canned Reply/i })).toBeInTheDocument();
+    });
+
+    it("hides all management controls for a reader without canWrite", async () => {
+      mockSession = readerSession();
+      render(<CannedRepliesPage />);
+      await screen.findByText("Order status");
+      // No create/edit/archive controls at all.
+      expect(screen.queryByRole("button", { name: /New Category/i })).not.toBeInTheDocument();
+      expect(screen.queryByRole("button", { name: /New Canned Reply/i })).not.toBeInTheDocument();
+      // Exact names so the read-only "Show Archived" toggle isn't matched.
+      expect(screen.queryByRole("button", { name: "Archive" })).not.toBeInTheDocument();
+      expect(screen.queryByRole("button", { name: "Edit" })).not.toBeInTheDocument();
+      // But the lists are still readable.
+      expect(screen.getByText("Order status")).toBeInTheDocument();
+    });
+  });
+});

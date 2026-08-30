@@ -80,13 +80,24 @@ interface ReplyBoxProps {
   canSend: boolean;
   isSending: boolean;
   disabled: boolean;
+  /**
+   * Ref to the composer textarea, owned by the parent so it can insert canned
+   * reply text at the current cursor position without disturbing the draft.
+   */
+  textareaRef?: React.Ref<HTMLTextAreaElement>;
+  /**
+   * The canned-reply insertion control, rendered beside Send. Supplied by the
+   * parent (MessageThread) which holds the substitution values; ReplyBox stays
+   * presentational and doesn't know about canned replies itself.
+   */
+  pickerSlot?: React.ReactNode;
 }
 
 /**
  * The staff reply composer, pinned below the scrollable thread. Disabled (not
  * hidden) on a terminal ticket so history stays readable. Empty/whitespace
  * content is blocked. Enter sends; Shift+Enter inserts a newline (messenger
- * convention).
+ * convention). An optional canned-reply picker sits beside Send.
  */
 export function ReplyBox({
   draft,
@@ -95,6 +106,8 @@ export function ReplyBox({
   canSend,
   isSending,
   disabled,
+  textareaRef,
+  pickerSlot,
 }: ReplyBoxProps) {
   function handleKeyDown(event: React.KeyboardEvent<HTMLTextAreaElement>) {
     if (event.key === "Enter" && !event.shiftKey) {
@@ -106,6 +119,7 @@ export function ReplyBox({
   return (
     <div className="mt-md flex items-end gap-sm">
       <Textarea
+        ref={textareaRef}
         aria-label="Reply"
         placeholder={disabled ? "This ticket is closed." : "Type a reply…"}
         value={draft}
@@ -115,6 +129,7 @@ export function ReplyBox({
         rows={1}
         className="min-h-[44px] max-h-32 resize-none text-base"
       />
+      {pickerSlot}
       <Button
         onClick={onSend}
         disabled={!canSend}

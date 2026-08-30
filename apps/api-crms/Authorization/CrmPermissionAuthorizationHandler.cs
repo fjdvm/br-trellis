@@ -50,4 +50,5 @@ public static class CrmPermissionPolicies
 {
     public const string EcommerceCanRead = "EcommerceCanRead";
     public const string AutomationCanRead = "AutomationCanRead";
+    public const string ConversationsCanWrite = "ConversationsCanWrite";
 }

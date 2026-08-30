@@ -12,6 +12,8 @@ import {
   ReplyBox,
   groupMessages,
 } from "@/components/features/conversations/MessageThreadParts";
+import { CannedReplyPicker } from "@/components/features/conversations/CannedReplyPicker";
+import { substituteCannedReplyVariables } from "@/lib/canned-reply-substitution";
 
 interface MessageThreadProps {
   ticketId: string;
@@ -75,6 +77,7 @@ export function MessageThread({
   const [draft, setDraft] = useState("");
   const [isSending, setIsSending] = useState(false);
   const bottomRef = useRef<HTMLDivElement | null>(null);
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
   const trimmed = draft.trim();
   const canSend = trimmed.length > 0 && !isSending && !isTerminal;
@@ -114,6 +117,37 @@ export function MessageThread({
 
   const groups = groupMessages(messages, contactName);
   const title = threadTitle(contactName, contactEmail);
+
+  // Insert a selected canned reply's body — with {{customer_name}}, {{ticket_id}}
+  // and {{agent_name}} substituted from data already in scope here — at the
+  // textarea's current cursor position, preserving any draft already typed.
+  function handleInsertCannedReply(rawBody: string) {
+    const substituted = substituteCannedReplyVariables(rawBody, {
+      customerName: contactName,
+      ticketId,
+      agentName: session?.user?.name ?? "",
+    });
+
+    const textarea = textareaRef.current;
+    const hasSelection =
+      textarea &&
+      textarea.selectionStart !== null &&
+      textarea.selectionEnd !== null;
+    const start = hasSelection ? textarea.selectionStart : draft.length;
+    const end = hasSelection ? textarea.selectionEnd : draft.length;
+
+    const next = draft.slice(0, start) + substituted + draft.slice(end);
+    setDraft(next);
+
+    // Restore focus and place the caret just after the inserted text.
+    if (textarea) {
+      const caret = start + substituted.length;
+      requestAnimationFrame(() => {
+        textarea.focus();
+        textarea.setSelectionRange(caret, caret);
+      });
+    }
+  }
 
   return (
     // Fills the conversation pane; header pinned top, thread scrolls, composer
@@ -172,6 +206,13 @@ export function MessageThread({
           canSend={canSend}
           isSending={isSending}
           disabled={isTerminal}
+          textareaRef={textareaRef}
+          pickerSlot={
+            <CannedReplyPicker
+              disabled={isTerminal}
+              onSelect={handleInsertCannedReply}
+            />
+          }
         />
       </div>
     </div>

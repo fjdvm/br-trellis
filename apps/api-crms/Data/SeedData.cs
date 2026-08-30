@@ -809,7 +809,97 @@ public static class SeedData
             LastEventReceivedAt = DateTimeOffset.UtcNow.AddHours(-6),
         });
 
+        SeedCannedReplies(dbContext);
+
         dbContext.SaveChanges();
+    }
+
+    // --- Canned Replies (shared, org-wide reply templates grouped by category) ---
+    private static void SeedCannedReplies(AppDbContext dbContext)
+    {
+        var shipping = new CannedReplyCategory
+        {
+            Id = Guid.NewGuid(),
+            Name = "Shipping",
+            CreatedAt = DateTimeOffset.UtcNow.AddDays(-20),
+        };
+        var refunds = new CannedReplyCategory
+        {
+            Id = Guid.NewGuid(),
+            Name = "Refunds",
+            CreatedAt = DateTimeOffset.UtcNow.AddDays(-20),
+        };
+        var general = new CannedReplyCategory
+        {
+            Id = Guid.NewGuid(),
+            Name = "General",
+            CreatedAt = DateTimeOffset.UtcNow.AddDays(-20),
+        };
+        // An archived category demonstrates the includeArchived toggle.
+        var seasonal = new CannedReplyCategory
+        {
+            Id = Guid.NewGuid(),
+            Name = "Seasonal (2024)",
+            CreatedAt = DateTimeOffset.UtcNow.AddDays(-200),
+            DeletedAt = DateTimeOffset.UtcNow.AddDays(-30),
+        };
+        dbContext.CannedReplyCategories.AddRange(shipping, refunds, general, seasonal);
+
+        dbContext.CannedReplies.AddRange(
+            new CannedReply
+            {
+                Id = Guid.NewGuid(),
+                CategoryId = shipping.Id,
+                Name = "Order status",
+                Body = "Hi {{customer_name}},\n\nThanks for reaching out about ticket {{ticket_id}}. "
+                    + "Your order is on its way and should arrive within 3-5 business days.\n\nBest,\n{{agent_name}}",
+                CreatedAt = DateTimeOffset.UtcNow.AddDays(-19),
+            },
+            new CannedReply
+            {
+                Id = Guid.NewGuid(),
+                CategoryId = shipping.Id,
+                Name = "Shipping delay",
+                Body = "Hi {{customer_name}},\n\nWe're sorry for the delay on your order. "
+                    + "We're working to get it moving and will update ticket {{ticket_id}} as soon as it ships.\n\n{{agent_name}}",
+                CreatedAt = DateTimeOffset.UtcNow.AddDays(-18),
+            },
+            new CannedReply
+            {
+                Id = Guid.NewGuid(),
+                CategoryId = refunds.Id,
+                Name = "Refund policy",
+                Body = "Hi {{customer_name}},\n\nOur refund policy allows returns within 30 days of delivery. "
+                    + "I've noted this on ticket {{ticket_id}} and can start the process for you.\n\n{{agent_name}}",
+                CreatedAt = DateTimeOffset.UtcNow.AddDays(-17),
+            },
+            new CannedReply
+            {
+                Id = Guid.NewGuid(),
+                CategoryId = general.Id,
+                Name = "Greeting",
+                Body = "Hi {{customer_name}},\n\nThanks for getting in touch! I'm happy to help.\n\n{{agent_name}}",
+                CreatedAt = DateTimeOffset.UtcNow.AddDays(-16),
+            },
+            new CannedReply
+            {
+                Id = Guid.NewGuid(),
+                CategoryId = general.Id,
+                Name = "Follow-up",
+                Body = "Hi {{customer_name}},\n\nJust following up on ticket {{ticket_id}} — "
+                    + "is there anything else I can help you with?\n\n{{agent_name}}",
+                CreatedAt = DateTimeOffset.UtcNow.AddDays(-15),
+            },
+            // An archived reply demonstrates the includeArchived toggle in the management screen.
+            new CannedReply
+            {
+                Id = Guid.NewGuid(),
+                CategoryId = general.Id,
+                Name = "Old greeting (retired)",
+                Body = "Hey {{customer_name}}! Thanks for the message.",
+                CreatedAt = DateTimeOffset.UtcNow.AddDays(-100),
+                DeletedAt = DateTimeOffset.UtcNow.AddDays(-40),
+            });
     }
 
     private static Order CreateOrder(

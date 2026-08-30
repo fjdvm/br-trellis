@@ -1,5 +1,5 @@
-import { ComingSoonPage } from "@/components/shared/ComingSoonPage";
+import { CannedRepliesPage } from "@/components/features/conversations/CannedRepliesPage";
 
 export default function Page() {
-  return <ComingSoonPage title="Canned Replies" description="Pre-written response templates for common inquiries." />;
+  return <CannedRepliesPage />;
 }
