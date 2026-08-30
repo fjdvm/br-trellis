@@ -108,7 +108,6 @@ export const navGroups: NavGroup[] = [
     name: "Tickets",
     icon: Ticket,
     children: [
-      { name: "Triage Queue", href: "/tickets/inbox", icon: Inbox },
       { name: "Tickets", href: "/tickets", icon: Ticket },
       { name: "My Assigned", href: "/tickets/assigned", icon: UserCheck },
       { name: "History", href: "/tickets/history", icon: History },

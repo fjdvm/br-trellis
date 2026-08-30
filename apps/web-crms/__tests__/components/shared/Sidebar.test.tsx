@@ -139,7 +139,7 @@ describe("Sidebar Tickets group (#99 rename)", () => {
     expect(screen.getByRole("button", { name: /Tickets/ })).toBeInTheDocument();
   });
 
-  it("relabels the triage-queue child to 'Triage Queue' (the word 'Inbox' is freed) and points lifecycle links at /tickets/*", async () => {
+  it("no longer lists a Triage Queue child (tab removed) and points lifecycle links at /tickets/*", async () => {
     await act(async () => {
       render(<Sidebar />);
     });
@@ -150,8 +150,8 @@ describe("Sidebar Tickets group (#99 rename)", () => {
       screen.getByRole("button", { name: /Tickets/ }).click();
     });
 
-    const triage = screen.getByText("Triage Queue").closest("a");
-    expect(triage).toHaveAttribute("href", "/tickets/inbox");
+    // Triage Queue has been removed from the Tickets group for now.
+    expect(screen.queryByText("Triage Queue")).not.toBeInTheDocument();
     // The messenger word "Inbox" is not used as a Tickets child label.
     expect(screen.queryByText("Inbox")).not.toBeInTheDocument();
 
@@ -212,8 +212,8 @@ describe("Sidebar two-group structure (#100)", () => {
       screen.getByRole("button", { name: /Tickets/ }).click();
     });
 
-    // Tickets group children: Triage Queue, Tickets, My Assigned — no Canned Replies.
-    expect(screen.getByText("Triage Queue")).toBeInTheDocument();
+    // Tickets group children (Triage Queue removed for now): Tickets, My Assigned — no Canned Replies.
+    expect(screen.queryByText("Triage Queue")).not.toBeInTheDocument();
     expect(screen.getByText("My Assigned")).toBeInTheDocument();
     expect(screen.queryByText("Canned Replies")).not.toBeInTheDocument();
   });
@@ -227,7 +227,7 @@ describe("Sidebar Tickets group History tab (#107)", () => {
     __setMockStatus({ status: "healthy", isLoading: false });
   });
 
-  it("adds a fourth History child pointing at /tickets/history", async () => {
+  it("includes a History child pointing at /tickets/history", async () => {
     await act(async () => {
       render(<Sidebar />);
     });
@@ -240,7 +240,7 @@ describe("Sidebar Tickets group History tab (#107)", () => {
     expect(history).toHaveAttribute("href", "/tickets/history");
   });
 
-  it("orders the Tickets children Triage Queue → Tickets → My Assigned → History", async () => {
+  it("orders the Tickets children Tickets → My Assigned → History (Triage Queue removed)", async () => {
     await act(async () => {
       render(<Sidebar />);
     });
@@ -249,12 +249,10 @@ describe("Sidebar Tickets group History tab (#107)", () => {
       screen.getByRole("button", { name: /Tickets/ }).click();
     });
 
-    // Collect the Tickets group's child link labels in DOM order and assert the
-    // History tab is last, after My Assigned.
-    const triage = screen.getByText("Triage Queue").closest("a");
+    // Triage Queue is gone; History remains the last child, after My Assigned.
+    expect(screen.queryByText("Triage Queue")).not.toBeInTheDocument();
     const myAssigned = screen.getByText("My Assigned").closest("a");
     const history = screen.getByText("History").closest("a");
-    expect(triage).not.toBeNull();
     expect(myAssigned).not.toBeNull();
     expect(history).not.toBeNull();
 
