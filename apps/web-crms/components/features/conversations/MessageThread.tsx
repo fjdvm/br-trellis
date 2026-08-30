@@ -5,6 +5,7 @@ import { useSession } from "next-auth/react";
 import { MessageSquare } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useConversationMessages } from "@/hooks/useConversationMessages";
+import { formatName, formatEmail } from "@/lib/format-display";
 import {
   MessageGroupRow,
   ReplyBox,
@@ -15,10 +16,25 @@ interface MessageThreadProps {
   ticketId: string;
   /** The ticket's own contact name; every Contact-authored bubble uses it. */
   contactName: string | null;
+  /** The ticket's contact email; used as the thread title when there's no name. */
+  contactEmail?: string | null;
   /** Whether the ticket's Status is terminal (Completed/Canceled). */
   isTerminal: boolean;
   /** Called after a reply is successfully sent (parent flips WaitingOn). */
   onMessageSent: () => void;
+}
+
+/**
+ * The thread's card title: the customer's name, falling back to their email,
+ * then to a generic "Messages" label when the ticket has no linked contact.
+ */
+function threadTitle(
+  contactName: string | null,
+  contactEmail: string | null | undefined
+): string {
+  return (
+    formatName(contactName) ?? formatEmail(contactEmail) ?? "Messages"
+  );
 }
 
 /**
@@ -30,6 +46,7 @@ interface MessageThreadProps {
 export function MessageThread({
   ticketId,
   contactName,
+  contactEmail = null,
   isTerminal,
   onMessageSent,
 }: MessageThreadProps) {
@@ -80,7 +97,9 @@ export function MessageThread({
   return (
     <Card className="shadow-none border-border">
       <CardHeader className="pb-md p-lg">
-        <CardTitle className="text-title-lg font-bold">Messages</CardTitle>
+        <CardTitle className="text-title-lg font-bold">
+          {threadTitle(contactName, contactEmail)}
+        </CardTitle>
       </CardHeader>
       <CardContent className="p-lg pt-0">
         {error && <p className="mb-md text-base text-destructive">{error}</p>}

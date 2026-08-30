@@ -1,4 +1,4 @@
-import { render, screen, waitFor, act } from "@testing-library/react";
+import { render, screen, waitFor, act, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MessageThread } from "@/components/features/conversations/MessageThread";
 import { crmClient } from "@/lib/api/crm-client";
@@ -143,7 +143,8 @@ describe("MessageThread (read path)", () => {
     renderThread({ contactName: "jane doe" });
 
     expect(await screen.findByText("Anonymous-origin line")).toBeInTheDocument();
-    expect(screen.getByText("Jane Doe")).toBeInTheDocument();
+    const viewport = screen.getByRole("log", { name: /message thread/i });
+    expect(within(viewport).getByText("Jane Doe")).toBeInTheDocument();
   });
 
   it("falls back to 'Customer' when the ticket has no linked contact", async () => {
@@ -488,8 +489,10 @@ describe("MessageThread (messenger layout)", () => {
     expect(screen.getByText("First")).toBeInTheDocument();
     expect(screen.getByText("Second")).toBeInTheDocument();
     expect(screen.getByText("Third")).toBeInTheDocument();
-    // But the sender name label appears exactly once for the group.
-    expect(screen.getAllByText("Jane Doe")).toHaveLength(1);
+    // But the sender name label appears exactly once for the group (within the
+    // thread viewport — the card title also shows the customer name).
+    const viewport = screen.getByRole("log", { name: /message thread/i });
+    expect(within(viewport).getAllByText("Jane Doe")).toHaveLength(1);
   });
 
   it("starts a new group (new name label) when the sender changes", async () => {
@@ -504,10 +507,12 @@ describe("MessageThread (messenger layout)", () => {
 
     await screen.findByText("Customer line 3");
 
-    // Two separate Contact groups (first pair, then the trailing single) -> 2 labels.
-    expect(screen.getAllByText("Jane Doe")).toHaveLength(2);
+    // Two separate Contact groups (first pair, then the trailing single) -> 2
+    // labels within the thread viewport (the card title also shows the name).
+    const viewport = screen.getByRole("log", { name: /message thread/i });
+    expect(within(viewport).getAllByText("Jane Doe")).toHaveLength(2);
     // One Staff group.
-    expect(screen.getAllByText("Amelia Ward")).toHaveLength(1);
+    expect(within(viewport).getAllByText("Amelia Ward")).toHaveLength(1);
   });
 
   it("sends on Enter and inserts a newline on Shift+Enter", async () => {
@@ -561,5 +566,34 @@ describe("MessageThread (messenger layout)", () => {
     const replyBox = screen.getByLabelText("Reply");
     // The composer must NOT be nested inside the scroll viewport (it's pinned).
     expect(viewport.contains(replyBox)).toBe(false);
+  });
+});
+
+describe("MessageThread (title)", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mocked.list.mockResolvedValue([]);
+  });
+
+  it("titles the thread with the customer's name when available", async () => {
+    renderThread({ contactName: "jane doe", contactEmail: "jane@example.com" });
+
+    // Title is the title-cased contact name, not the generic "Messages".
+    expect(await screen.findByText("Jane Doe")).toBeInTheDocument();
+    expect(screen.queryByText("Messages")).not.toBeInTheDocument();
+  });
+
+  it("falls back to the customer's email when there is no name", async () => {
+    renderThread({ contactName: null, contactEmail: "JANE@EXAMPLE.COM" });
+
+    // Email shown lowercased for display consistency.
+    expect(await screen.findByText("jane@example.com")).toBeInTheDocument();
+    expect(screen.queryByText("Messages")).not.toBeInTheDocument();
+  });
+
+  it("falls back to 'Messages' when the ticket has no name or email", async () => {
+    renderThread({ contactName: null, contactEmail: null });
+
+    expect(await screen.findByText("Messages")).toBeInTheDocument();
   });
 });

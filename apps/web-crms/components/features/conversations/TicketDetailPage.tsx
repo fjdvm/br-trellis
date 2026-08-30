@@ -245,62 +245,74 @@ export function TicketDetailPage({ ticketId }: TicketDetailPageProps) {
         )}
       </div>
 
-      <Card className="shadow-none border-border">
-        <CardHeader className="pb-md p-lg">
-          <CardTitle className="text-title-lg font-bold">Details</CardTitle>
-        </CardHeader>
-        <CardContent className="p-lg pt-0 space-y-md">
-          <div className="grid grid-cols-2 gap-md text-base items-center">
-            <div className="text-muted-foreground">Waiting On</div>
-            <div>
-              <Select
-                value={ticket.waitingOn}
-                onValueChange={(value) =>
-                  handleSetWaitingOn(value as TicketWaitingOn)
-                }
-                disabled={pending === "waitingOn" || isTerminal(ticket)}
-              >
-                <SelectTrigger
-                  className="w-[160px]"
-                  aria-label="Set waiting on"
-                >
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {WAITING_ON_OPTIONS.map((option) => (
-                    <SelectItem key={option} value={option}>
-                      {option}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="text-muted-foreground">Assignee</div>
-            <div>{formatName(ticket.assignedToName) ?? "\u2014"}</div>
-            <div className="text-muted-foreground">Assignee email</div>
-            <div>{formatEmail(ticket.assignedToEmail) ?? "\u2014"}</div>
-          </div>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-lg items-start">
+        {/* Left column (primary): the message thread. */}
+        <div data-testid="messages-column" className="lg:col-span-2 min-w-0">
+          <MessageThread
+            ticketId={ticketId}
+            contactName={ticket.contact?.name ?? null}
+            contactEmail={ticket.contact?.email ?? null}
+            isTerminal={isTerminal(ticket)}
+            onMessageSent={() => handleSetWaitingOn("Customer")}
+          />
+        </div>
 
-          {ticket.contact && (
-            <>
-              <Separator />
-              <div className="grid grid-cols-2 gap-md text-base">
-                <div className="text-muted-foreground">Contact</div>
-                <div>{formatName(ticket.contact.name) ?? "\u2014"}</div>
-                <div className="text-muted-foreground">Contact email</div>
-                <div>{formatEmail(ticket.contact.email) ?? "\u2014"}</div>
+        {/* Right sidebar: the ticket Details card. */}
+        <aside
+          data-testid="details-sidebar"
+          className="lg:col-span-1 lg:sticky lg:top-xl min-w-0"
+        >
+          <Card className="shadow-none border-border">
+            <CardHeader className="pb-md p-lg">
+              <CardTitle className="text-title-lg font-bold">Details</CardTitle>
+            </CardHeader>
+            <CardContent className="p-lg pt-0 space-y-md">
+              <div className="grid grid-cols-2 gap-md text-base items-center">
+                <div className="text-muted-foreground">Waiting On</div>
+                <div>
+                  <Select
+                    value={ticket.waitingOn}
+                    onValueChange={(value) =>
+                      handleSetWaitingOn(value as TicketWaitingOn)
+                    }
+                    disabled={pending === "waitingOn" || isTerminal(ticket)}
+                  >
+                    <SelectTrigger
+                      className="w-[160px]"
+                      aria-label="Set waiting on"
+                    >
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {WAITING_ON_OPTIONS.map((option) => (
+                        <SelectItem key={option} value={option}>
+                          {option}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="text-muted-foreground">Assignee</div>
+                <div>{formatName(ticket.assignedToName) ?? "\u2014"}</div>
+                <div className="text-muted-foreground">Assignee email</div>
+                <div>{formatEmail(ticket.assignedToEmail) ?? "\u2014"}</div>
               </div>
-            </>
-          )}
-        </CardContent>
-      </Card>
 
-      <MessageThread
-        ticketId={ticketId}
-        contactName={ticket.contact?.name ?? null}
-        isTerminal={isTerminal(ticket)}
-        onMessageSent={() => handleSetWaitingOn("Customer")}
-      />
+              {ticket.contact && (
+                <>
+                  <Separator />
+                  <div className="grid grid-cols-2 gap-md text-base">
+                    <div className="text-muted-foreground">Contact</div>
+                    <div>{formatName(ticket.contact.name) ?? "\u2014"}</div>
+                    <div className="text-muted-foreground">Contact email</div>
+                    <div>{formatEmail(ticket.contact.email) ?? "\u2014"}</div>
+                  </div>
+                </>
+              )}
+            </CardContent>
+          </Card>
+        </aside>
+      </div>
 
       <AlertDialog open={showCancelDialog} onOpenChange={setShowCancelDialog}>
         <AlertDialogContent>

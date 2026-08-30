@@ -137,7 +137,7 @@ describe("TicketDetailPage", () => {
 
   // --- Message thread integration (feature 4, #85) ---
 
-  it("mounts the Messages card below Details, passing the ticket's contact name to Contact bubbles", async () => {
+  it("lays out Messages in the left column and Details in a right sidebar, passing the ticket's contact name to Contact bubbles", async () => {
     mocked.getById.mockResolvedValue(
       makeTicket({ contact: { id: "c-1", name: "jane doe", email: "jane@example.com" } })
     );
@@ -156,17 +156,36 @@ describe("TicketDetailPage", () => {
 
     render(<TicketDetailPage ticketId="t-1" />);
 
-    // The Messages card and the thread render, labelled with the ticket's
-    // own contact name (title-cased for display).
-    const messagesHeading = await screen.findByText("Messages");
-    expect(messagesHeading).toBeInTheDocument();
+    // The thread renders, and its card title is the customer's name (not the
+    // generic "Messages" label) — title-cased for display.
     expect(await screen.findByText("I need help")).toBeInTheDocument();
     expect(screen.getAllByText("Jane Doe").length).toBeGreaterThan(0);
 
-    // Messages card is ordered after the Details card in the DOM.
-    const detailsHeading = screen.getByText("Details");
+    // Both cards live inside a shared 2-column grid container: Messages in the
+    // left column, Details in the right sidebar.
+    const messagesColumn = document.querySelector(
+      '[data-testid="messages-column"]'
+    ) as HTMLElement | null;
+    const detailsSidebar = document.querySelector(
+      '[data-testid="details-sidebar"]'
+    ) as HTMLElement | null;
+    expect(messagesColumn).not.toBeNull();
+    expect(detailsSidebar).not.toBeNull();
+
+    // The thread's title (customer name) lives in the messages column; the
+    // Details heading lives in the sidebar.
+    expect(messagesColumn!).toHaveTextContent("Jane Doe");
+    expect(detailsSidebar!).toHaveTextContent("Details");
+
+    const grid = messagesColumn!.parentElement!;
+    // The two columns share the same grid parent (the 2-column layout).
+    expect(grid).toBe(detailsSidebar!.parentElement);
+    expect(grid.className).toContain("grid");
+
+    // Messages is the left column: it precedes the Details sidebar in source
+    // order, and the grid places the sidebar to its right on large screens.
     expect(
-      detailsHeading.compareDocumentPosition(messagesHeading) &
+      messagesColumn!.compareDocumentPosition(detailsSidebar!) &
         Node.DOCUMENT_POSITION_FOLLOWING
     ).toBeTruthy();
 
