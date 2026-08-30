@@ -31,6 +31,14 @@ const mocked = {
   post: jest.mocked(crmClient.conversationMessages.postStaffMessage),
 };
 
+// jsdom does not implement scrollIntoView, which the messenger layout calls to
+// auto-scroll to the newest message. Polyfill it so those effects don't throw.
+beforeAll(() => {
+  if (!Element.prototype.scrollIntoView) {
+    Element.prototype.scrollIntoView = () => {};
+  }
+});
+
 function makeMessage(
   overrides: Partial<ConversationMessage> = {}
 ): ConversationMessage {
@@ -112,13 +120,17 @@ describe("MessageThread (read path)", () => {
 
     renderThread();
 
-    const customerBubble = (await screen.findByText("Customer line")).closest("div")
-      ?.parentElement;
-    const staffBubble = screen.getByText("Staff line").closest("div")?.parentElement;
+    const customerRow = (await screen.findByText("Customer line")).closest(
+      '[class*="flex-row"]'
+    );
+    const staffRow = screen
+      .getByText("Staff line")
+      .closest('[class*="flex-row"]');
 
-    // Staff bubbles self-align to the right; Contact bubbles do not.
-    expect(staffBubble?.className).toContain("self-end");
-    expect(customerBubble?.className).not.toContain("self-end");
+    // Staff group rows are reversed (avatar + bubbles pushed to the right);
+    // Contact group rows are not.
+    expect(staffRow?.className).toContain("flex-row-reverse");
+    expect(customerRow?.className).not.toContain("flex-row-reverse");
   });
 
   it("labels a Contact message with the ticket's contact name regardless of senderContactId", async () => {
@@ -388,5 +400,166 @@ describe("MessageThread (reply box)", () => {
     } finally {
       jest.useRealTimers();
     }
+  });
+});
+
+describe("MessageThread (messenger layout)", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mocked.list.mockResolvedValue([]);
+  });
+
+  function staffMsg(
+    id: string,
+    content: string,
+    sentAt: string,
+    name = "amelia ward"
+  ): ConversationMessage {
+    return {
+      id,
+      ticketId: "t-1",
+      senderType: "Staff",
+      senderContactId: null,
+      senderStaffId: "auth|amelia",
+      senderStaffName: name,
+      content,
+      sentAt,
+    };
+  }
+
+  function contactMsg(
+    id: string,
+    content: string,
+    sentAt: string
+  ): ConversationMessage {
+    return {
+      id,
+      ticketId: "t-1",
+      senderType: "Contact",
+      senderContactId: "c-1",
+      senderStaffId: null,
+      senderStaffName: null,
+      content,
+      sentAt,
+    };
+  }
+
+  it("renders an avatar with the sender's initials for each message group", async () => {
+    mocked.list.mockResolvedValue([
+      contactMsg("m-1", "Customer says hi", "2025-01-15T10:00:00Z"),
+      staffMsg("m-2", "Agent replies", "2025-01-15T10:05:00Z"),
+    ]);
+
+    renderThread({ contactName: "jane doe" });
+
+    await screen.findByText("Customer says hi");
+
+    // Contact avatar initials from the ticket contact name (Jane Doe -> JD).
+    expect(screen.getByText("JD")).toBeInTheDocument();
+    // Staff avatar initials from the staff name (Amelia Ward -> AW).
+    expect(screen.getByText("AW")).toBeInTheDocument();
+  });
+
+  it("falls back to a 'C' avatar for a Contact when the ticket has no linked contact", async () => {
+    mocked.list.mockResolvedValue([
+      contactMsg("m-1", "Anonymous line", "2025-01-15T10:00:00Z"),
+    ]);
+
+    renderThread({ contactName: null });
+
+    await screen.findByText("Anonymous line");
+    // "Customer" fallback -> single initial "C".
+    expect(screen.getByText("C")).toBeInTheDocument();
+  });
+
+  it("shows the sender name once per consecutive group, not per message", async () => {
+    // Three consecutive Contact messages should show the contact name only once.
+    mocked.list.mockResolvedValue([
+      contactMsg("m-1", "First", "2025-01-15T10:00:00Z"),
+      contactMsg("m-2", "Second", "2025-01-15T10:01:00Z"),
+      contactMsg("m-3", "Third", "2025-01-15T10:02:00Z"),
+    ]);
+
+    renderThread({ contactName: "jane doe" });
+
+    await screen.findByText("Third");
+
+    // All three bubbles render.
+    expect(screen.getByText("First")).toBeInTheDocument();
+    expect(screen.getByText("Second")).toBeInTheDocument();
+    expect(screen.getByText("Third")).toBeInTheDocument();
+    // But the sender name label appears exactly once for the group.
+    expect(screen.getAllByText("Jane Doe")).toHaveLength(1);
+  });
+
+  it("starts a new group (new name label) when the sender changes", async () => {
+    mocked.list.mockResolvedValue([
+      contactMsg("m-1", "Customer line 1", "2025-01-15T10:00:00Z"),
+      contactMsg("m-2", "Customer line 2", "2025-01-15T10:01:00Z"),
+      staffMsg("m-3", "Staff line 1", "2025-01-15T10:02:00Z"),
+      contactMsg("m-4", "Customer line 3", "2025-01-15T10:03:00Z"),
+    ]);
+
+    renderThread({ contactName: "jane doe" });
+
+    await screen.findByText("Customer line 3");
+
+    // Two separate Contact groups (first pair, then the trailing single) -> 2 labels.
+    expect(screen.getAllByText("Jane Doe")).toHaveLength(2);
+    // One Staff group.
+    expect(screen.getAllByText("Amelia Ward")).toHaveLength(1);
+  });
+
+  it("sends on Enter and inserts a newline on Shift+Enter", async () => {
+    mocked.post.mockResolvedValue(staffMsg("s-1", "Enter send", "2025-01-15T11:00:00Z"));
+    const user = userEvent.setup();
+
+    renderThread();
+
+    await screen.findByText(/No messages yet/i);
+    const box = screen.getByLabelText("Reply");
+
+    // Shift+Enter should NOT submit; it adds a newline.
+    await user.type(box, "line one{Shift>}{Enter}{/Shift}line two");
+    expect(mocked.post).not.toHaveBeenCalled();
+    expect(box).toHaveValue("line one\nline two");
+
+    // Plain Enter submits the drafted content.
+    await user.type(box, "{Enter}");
+    await waitFor(() =>
+      expect(mocked.post).toHaveBeenCalledWith("t-1", {
+        senderStaffId: "auth|amelia",
+        senderStaffName: "amelia ward",
+        content: "line one\nline two",
+      })
+    );
+  });
+
+  it("does not send on Enter when the ticket is terminal", async () => {
+    mocked.list.mockResolvedValue([
+      contactMsg("m-1", "closed thread", "2025-01-15T10:00:00Z"),
+    ]);
+
+    renderThread({ isTerminal: true });
+
+    await screen.findByText("closed thread");
+    // Textarea is disabled, so typing/Enter can't submit.
+    const box = screen.getByLabelText("Reply");
+    expect(box).toBeDisabled();
+  });
+
+  it("keeps the composer outside the scrollable message viewport", async () => {
+    mocked.list.mockResolvedValue([
+      contactMsg("m-1", "scrollable content", "2025-01-15T10:00:00Z"),
+    ]);
+
+    renderThread();
+
+    await screen.findByText("scrollable content");
+
+    const viewport = screen.getByRole("log", { name: /message thread/i });
+    const replyBox = screen.getByLabelText("Reply");
+    // The composer must NOT be nested inside the scroll viewport (it's pinned).
+    expect(viewport.contains(replyBox)).toBe(false);
   });
 });

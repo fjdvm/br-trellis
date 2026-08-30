@@ -1,15 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useSession } from "next-auth/react";
-import { Loader2, MessageSquare, Send } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { MessageSquare } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Textarea } from "@/components/ui/textarea";
 import { useConversationMessages } from "@/hooks/useConversationMessages";
-import { formatName } from "@/lib/format-display";
-import { cn } from "@/lib/utils";
-import type { ConversationMessage } from "@/types/conversation-message";
+import {
+  MessageGroupRow,
+  ReplyBox,
+  groupMessages,
+} from "@/components/features/conversations/MessageThreadParts";
 
 interface MessageThreadProps {
   ticketId: string;
@@ -21,17 +21,12 @@ interface MessageThreadProps {
   onMessageSent: () => void;
 }
 
-/** Fallback label for a Contact-authored message when the ticket has no linked contact. */
-const CONTACT_FALLBACK_LABEL = "Customer";
-
-function formatSentAt(sentAt: string): string {
-  const date = new Date(sentAt);
-  return `${date.toLocaleDateString()} ${date.toLocaleTimeString([], {
-    hour: "2-digit",
-    minute: "2-digit",
-  })}`;
-}
-
+/**
+ * Messenger-style message thread for the ticket detail page: sender avatars,
+ * consecutive-message grouping, a scrollable viewport that auto-scrolls to the
+ * newest message, and a pinned composer (Enter to send, Shift+Enter for a
+ * newline). Built against #66's real GET/POST /tickets/{id}/messages contract.
+ */
 export function MessageThread({
   ticketId,
   contactName,
@@ -44,9 +39,16 @@ export function MessageThread({
 
   const [draft, setDraft] = useState("");
   const [isSending, setIsSending] = useState(false);
+  const bottomRef = useRef<HTMLDivElement | null>(null);
 
   const trimmed = draft.trim();
   const canSend = trimmed.length > 0 && !isSending && !isTerminal;
+
+  // Auto-scroll to the newest message whenever the thread grows (on load,
+  // on poll-merge, and after an optimistic send) — messenger behavior.
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages.length]);
 
   async function handleSend() {
     if (!canSend) return;
@@ -73,38 +75,38 @@ export function MessageThread({
     }
   }
 
+  const groups = groupMessages(messages, contactName);
+
   return (
     <Card className="shadow-none border-border">
       <CardHeader className="pb-md p-lg">
         <CardTitle className="text-title-lg font-bold">Messages</CardTitle>
       </CardHeader>
-      <CardContent className="p-lg pt-0 space-y-md">
-        {error && <p className="text-base text-destructive">{error}</p>}
+      <CardContent className="p-lg pt-0">
+        {error && <p className="mb-md text-base text-destructive">{error}</p>}
 
-        {isLoading && messages.length === 0 ? (
-          <p className="text-base text-muted-foreground">Loading messages…</p>
-        ) : messages.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-xl text-center">
-            <MessageSquare className="w-10 h-10 text-muted-foreground mb-md" />
-            <p className="text-base text-muted-foreground">
-              No messages yet. Replies you send will appear here.
-            </p>
-          </div>
-        ) : (
-          <div
-            className="flex flex-col gap-md max-h-[600px] overflow-y-auto"
-            role="log"
-            aria-label="Message thread"
-          >
-            {messages.map((message) => (
-              <MessageBubble
-                key={message.id}
-                message={message}
-                contactName={contactName}
-              />
-            ))}
-          </div>
-        )}
+        {/* Scrollable message viewport — the composer below is pinned outside it. */}
+        <div
+          className="flex flex-col gap-lg h-[480px] overflow-y-auto rounded-lg border border-border bg-muted/30 p-md"
+          role="log"
+          aria-label="Message thread"
+        >
+          {isLoading && messages.length === 0 ? (
+            <p className="text-base text-muted-foreground">Loading messages…</p>
+          ) : messages.length === 0 ? (
+            <div className="flex flex-1 flex-col items-center justify-center text-center">
+              <MessageSquare className="w-10 h-10 text-muted-foreground mb-md" />
+              <p className="text-base text-muted-foreground">
+                No messages yet. Replies you send will appear here.
+              </p>
+            </div>
+          ) : (
+            groups.map((group) => (
+              <MessageGroupRow key={group.key} group={group} />
+            ))
+          )}
+          <div ref={bottomRef} data-testid="thread-bottom" />
+        </div>
 
         <ReplyBox
           draft={draft}
@@ -116,106 +118,5 @@ export function MessageThread({
         />
       </CardContent>
     </Card>
-  );
-}
-
-interface ReplyBoxProps {
-  draft: string;
-  onDraftChange: (value: string) => void;
-  onSend: () => void;
-  canSend: boolean;
-  isSending: boolean;
-  disabled: boolean;
-}
-
-/**
- * The staff reply composer. Disabled (not hidden) on a terminal ticket, so
- * the thread stays readable while the conversation is closed. Sending is
- * blocked for empty/whitespace-only content (mirrors the backend's check).
- */
-function ReplyBox({
-  draft,
-  onDraftChange,
-  onSend,
-  canSend,
-  isSending,
-  disabled,
-}: ReplyBoxProps) {
-  return (
-    <div className="space-y-sm border-t border-border pt-md">
-      <Textarea
-        aria-label="Reply"
-        placeholder={
-          disabled
-            ? "This ticket is closed."
-            : "Type a reply…"
-        }
-        value={draft}
-        onChange={(event) => onDraftChange(event.target.value)}
-        disabled={disabled || isSending}
-        className="resize-none h-24 text-base"
-      />
-      <div className="flex justify-end">
-        <Button onClick={onSend} disabled={!canSend} size="sm">
-          {isSending ? (
-            <Loader2 className="w-4 h-4 animate-spin" />
-          ) : (
-            <Send className="w-4 h-4" />
-          )}
-          <span className="ml-1">Send</span>
-        </Button>
-      </div>
-    </div>
-  );
-}
-
-interface MessageBubbleProps {
-  message: ConversationMessage;
-  contactName: string | null;
-}
-
-/**
- * A single chat bubble. Staff messages sit on the right (primary background);
- * Contact messages sit on the left. Contact bubbles always show the ticket's
- * own contact name (falling back to "Customer"), never a per-message identity
- * — `MessageDto` carries no per-message display name.
- */
-function MessageBubble({ message, contactName }: MessageBubbleProps) {
-  const isStaff = message.senderType === "Staff";
-  const senderLabel = isStaff
-    ? formatName(message.senderStaffName) ?? "Staff"
-    : formatName(contactName) ?? CONTACT_FALLBACK_LABEL;
-
-  return (
-    <div
-      className={cn(
-        "flex flex-col max-w-[85%]",
-        isStaff ? "items-end self-end" : "items-start"
-      )}
-    >
-      <div
-        className={cn(
-          "flex items-center gap-2 mb-1",
-          isStaff ? "pr-1 flex-row-reverse" : "pl-1"
-        )}
-      >
-        <span className="text-base font-semibold text-foreground">
-          {senderLabel}
-        </span>
-        <span className="text-sm text-muted-foreground">
-          {formatSentAt(message.sentAt)}
-        </span>
-      </div>
-      <div
-        className={cn(
-          "rounded-xl p-md text-base whitespace-pre-wrap break-words",
-          isStaff
-            ? "bg-primary text-primary-foreground rounded-tr-sm"
-            : "bg-muted text-foreground border border-border rounded-tl-sm"
-        )}
-      >
-        {message.content}
-      </div>
-    </div>
   );
 }
