@@ -268,13 +268,16 @@ export function TicketListPage({
 
   return (
     <div className="w-full min-h-full py-xl px-lg md:px-xl space-y-lg max-w-7xl mx-auto">
-      <div className="space-y-sm">
-        <h1 className="text-headline-md font-bold tracking-tight text-foreground">
-          {heading}
-        </h1>
-        <p className="text-body-md text-muted-foreground">
-          {description}
-        </p>
+      <div className="flex flex-col gap-md sm:flex-row sm:items-start sm:justify-between">
+        <div className="space-y-sm">
+          <h1 className="text-headline-md font-bold tracking-tight text-foreground">
+            {heading}
+          </h1>
+          <p className="text-body-md text-muted-foreground">
+            {description}
+          </p>
+        </div>
+        <NewTicketSheet onCreated={() => void loadTickets()} />
       </div>
 
       <Card className="shadow-none border-border">
@@ -285,7 +288,6 @@ export function TicketListPage({
               {cardTitle}
             </CardTitle>
             <div className="flex items-center gap-md">
-              <NewTicketSheet onCreated={() => void loadTickets()} />
               <Select
                 value={statusFilter}
                 onValueChange={(value) =>
