@@ -1,9 +1,17 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import Link from "next/link";
 import { useSession } from "next-auth/react";
 import type { LucideIcon } from "lucide-react";
-import { Loader2, UserPlus, UserMinus, ChevronRight, XCircle } from "lucide-react";
+import {
+  Loader2,
+  UserPlus,
+  UserMinus,
+  ChevronRight,
+  XCircle,
+  MessageSquare,
+} from "lucide-react";
 import { DetailSkeleton } from "@/components/shared/DetailSkeleton";
 import { BackButton } from "@/components/shared/BackButton";
 import { Badge } from "@/components/ui/badge";
@@ -28,8 +36,8 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { crmClient } from "@/lib/api/crm-client";
-import { STATUS_BADGE_VARIANT } from "@/lib/tickets";
-import { MessageThread } from "@/components/features/conversations/MessageThread";
+import { useCurrentAgentId } from "@/hooks/useCurrentAgentId";
+import { STATUS_BADGE_VARIANT, isActiveStatus, isTerminalStatus } from "@/lib/tickets";
 import { formatName, formatEmail } from "@/lib/format-display";
 import type {
   TicketDetail,
@@ -67,15 +75,16 @@ function isClaimable(ticket: TicketDetail): boolean {
 }
 
 function isActive(ticket: TicketDetail): boolean {
-  return ticket.status === "Claimed" || ticket.status === "Ongoing";
+  return isActiveStatus(ticket.status);
 }
 
 function isTerminal(ticket: TicketDetail): boolean {
-  return ticket.status === "Completed" || ticket.status === "Canceled";
+  return isTerminalStatus(ticket.status);
 }
 
 export function TicketDetailPage({ ticketId }: TicketDetailPageProps) {
   const { data: session } = useSession();
+  const currentAgentId = useCurrentAgentId();
   const [ticket, setTicket] = useState<TicketDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -117,10 +126,9 @@ export function TicketDetailPage({ ticketId }: TicketDetailPageProps) {
   }
 
   function handleClaim() {
-    const staffId = session?.user?.id ?? session?.user?.username;
     void runMutation("claim", () =>
       crmClient.conversationTickets.claim(ticketId, {
-        staffId: staffId ?? "",
+        staffId: currentAgentId ?? "",
         staffName: session?.user?.name ?? "",
         staffEmail: session?.user?.email ?? "",
       })
@@ -159,7 +167,7 @@ export function TicketDetailPage({ ticketId }: TicketDetailPageProps) {
   if (loadError || !ticket) {
     return (
       <div className="w-full min-h-full py-xl px-lg md:px-xl max-w-7xl mx-auto">
-        <BackButton fallbackHref="/conversations/tickets" />
+        <BackButton fallbackHref="/tickets" />
         <div className="p-xl text-destructive">
           {loadError ?? "Ticket not found."}
         </div>
@@ -172,7 +180,7 @@ export function TicketDetailPage({ ticketId }: TicketDetailPageProps) {
 
   return (
     <div className="w-full min-h-full py-xl px-lg md:px-xl space-y-lg max-w-7xl mx-auto">
-      <BackButton fallbackHref="/conversations/tickets" />
+      <BackButton fallbackHref="/tickets" />
 
       <div className="space-y-sm">
         <div className="flex items-start justify-between gap-md">
@@ -245,23 +253,35 @@ export function TicketDetailPage({ ticketId }: TicketDetailPageProps) {
         )}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-lg items-start">
-        {/* Left column (primary): the message thread. */}
-        <div data-testid="messages-column" className="lg:col-span-2 min-w-0">
-          <MessageThread
-            ticketId={ticketId}
-            contactName={ticket.contact?.name ?? null}
-            contactEmail={ticket.contact?.email ?? null}
-            isTerminal={isTerminal(ticket)}
-            onMessageSent={() => handleSetWaitingOn("Customer")}
-          />
-        </div>
+      {isActive(ticket) && (
+        <Card className="shadow-none border-border">
+          <CardContent className="flex flex-col gap-md p-lg sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-sm">
+              <MessageSquare className="w-5 h-5 text-muted-foreground shrink-0" />
+              <div className="space-y-xs">
+                <p className="text-base font-medium text-foreground">
+                  Conversation
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  Open this ticket&apos;s conversation in the Conversations
+                  section.
+                </p>
+              </div>
+            </div>
+            <Button asChild variant="outline" size="sm" className="shrink-0">
+              <Link href={`/conversations/${ticketId}`}>
+                <MessageSquare className="w-4 h-4" />
+                <span className="ml-1">View Conversation</span>
+              </Link>
+            </Button>
+          </CardContent>
+        </Card>
+      )}
 
-        {/* Right sidebar: the ticket Details card. */}
-        <aside
-          data-testid="details-sidebar"
-          className="lg:col-span-1 lg:sticky lg:top-xl min-w-0"
-        >
+      <div className="grid grid-cols-1 gap-lg items-start">
+        {/* The ticket Details card (lifecycle-only; the message thread now
+            lives in the Conversations section, reachable via the link above). */}
+        <aside data-testid="details-sidebar" className="min-w-0">
           <Card className="shadow-none border-border">
             <CardHeader className="pb-md p-lg">
               <CardTitle className="text-title-lg font-bold">Details</CardTitle>

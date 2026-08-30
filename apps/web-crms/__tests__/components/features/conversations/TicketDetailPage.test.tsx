@@ -135,92 +135,78 @@ describe("TicketDetailPage", () => {
     expect(await screen.findByText("Ticket not found.")).toBeInTheDocument();
   });
 
-  // --- Message thread integration (feature 4, #85) ---
+  // --- View Conversation link (#101): the inline thread was removed from the
+  // lifecycle detail page; a link to the Conversations section replaces it. ---
 
-  it("lays out Messages in the left column and Details in a right sidebar, passing the ticket's contact name to Contact bubbles", async () => {
+  it("does not render the message thread inline anymore", async () => {
     mocked.getById.mockResolvedValue(
-      makeTicket({ contact: { id: "c-1", name: "jane doe", email: "jane@example.com" } })
+      makeTicket({ status: "Claimed", assignedToId: "auth|amelia" })
     );
-    mocked.listMessages.mockResolvedValue([
-      {
-        id: "m-1",
-        ticketId: "t-1",
-        senderType: "Contact",
-        senderContactId: "c-1",
-        senderStaffId: null,
-        senderStaffName: null,
-        content: "I need help",
-        sentAt: "2025-01-15T10:00:00Z",
-      },
-    ]);
 
     render(<TicketDetailPage ticketId="t-1" />);
+    await screen.findByText("Cannot log in");
 
-    // The thread renders, and its card title is the customer's name (not the
-    // generic "Messages" label) — title-cased for display.
-    expect(await screen.findByText("I need help")).toBeInTheDocument();
-    expect(screen.getAllByText("Jane Doe").length).toBeGreaterThan(0);
-
-    // Both cards live inside a shared 2-column grid container: Messages in the
-    // left column, Details in the right sidebar.
-    const messagesColumn = document.querySelector(
-      '[data-testid="messages-column"]'
-    ) as HTMLElement | null;
-    const detailsSidebar = document.querySelector(
-      '[data-testid="details-sidebar"]'
-    ) as HTMLElement | null;
-    expect(messagesColumn).not.toBeNull();
-    expect(detailsSidebar).not.toBeNull();
-
-    // The thread's title (customer name) lives in the messages column; the
-    // Details heading lives in the sidebar.
-    expect(messagesColumn!).toHaveTextContent("Jane Doe");
-    expect(detailsSidebar!).toHaveTextContent("Details");
-
-    const grid = messagesColumn!.parentElement!;
-    // The two columns share the same grid parent (the 2-column layout).
-    expect(grid).toBe(detailsSidebar!.parentElement);
-    expect(grid.className).toContain("grid");
-
-    // Messages is the left column: it precedes the Details sidebar in source
-    // order, and the grid places the sidebar to its right on large screens.
-    expect(
-      messagesColumn!.compareDocumentPosition(detailsSidebar!) &
-        Node.DOCUMENT_POSITION_FOLLOWING
-    ).toBeTruthy();
-
-    // listByTicket was called with the ticket id.
-    expect(mocked.listMessages).toHaveBeenCalledWith("t-1");
+    // The old inline thread column and its reply composer are gone.
+    expect(document.querySelector('[data-testid="messages-column"]')).toBeNull();
+    expect(screen.queryByLabelText("Reply")).not.toBeInTheDocument();
+    // The page no longer fetches the message thread.
+    expect(mocked.listMessages).not.toHaveBeenCalled();
   });
 
-  it("flips WaitingOn to Customer after a reply is sent from the thread", async () => {
+  it("shows a 'View Conversation' link on a Claimed ticket, pointing at the conversation route", async () => {
     mocked.getById.mockResolvedValue(
-      makeTicket({ status: "Claimed", assignedToId: "auth|amelia", waitingOn: "Agent" })
+      makeTicket({ status: "Claimed", assignedToId: "auth|amelia" })
     );
-    mocked.listMessages.mockResolvedValue([]);
-    jest.mocked(crmClient.conversationMessages.postStaffMessage).mockResolvedValue({
-      id: "server-1",
-      ticketId: "t-1",
-      senderType: "Staff",
-      senderContactId: null,
-      senderStaffId: "auth|amelia",
-      senderStaffName: "amelia ward",
-      content: "Following up",
-      sentAt: "2025-01-15T11:00:00Z",
-    });
-    mocked.setWaitingOn.mockResolvedValue(
-      makeTicket({ status: "Claimed", assignedToId: "auth|amelia", waitingOn: "Customer" })
-    );
-    const user = userEvent.setup();
 
     render(<TicketDetailPage ticketId="t-1" />);
 
-    await user.type(await screen.findByLabelText("Reply"), "Following up");
-    await user.click(screen.getByRole("button", { name: /Send/ }));
+    const link = await screen.findByRole("link", { name: /View Conversation/ });
+    expect(link).toHaveAttribute("href", "/conversations/t-1");
+  });
 
-    await waitFor(() =>
-      expect(mocked.setWaitingOn).toHaveBeenCalledWith("t-1", { waitingOn: "Customer" })
+  it("shows a 'View Conversation' link on an Ongoing ticket", async () => {
+    mocked.getById.mockResolvedValue(
+      makeTicket({ status: "Ongoing", assignedToId: "auth|amelia" })
     );
+
+    render(<TicketDetailPage ticketId="t-1" />);
+
+    expect(
+      await screen.findByRole("link", { name: /View Conversation/ })
+    ).toBeInTheDocument();
+  });
+
+  it("hides the 'View Conversation' link on an Unclaimed ticket", async () => {
+    mocked.getById.mockResolvedValue(makeTicket({ status: "Unclaimed" }));
+
+    render(<TicketDetailPage ticketId="t-1" />);
+    await screen.findByText("Cannot log in");
+
+    expect(
+      screen.queryByRole("link", { name: /View Conversation/ })
+    ).not.toBeInTheDocument();
+  });
+
+  it("hides the 'View Conversation' link on a Completed ticket", async () => {
+    mocked.getById.mockResolvedValue(makeTicket({ status: "Completed" }));
+
+    render(<TicketDetailPage ticketId="t-1" />);
+    await screen.findByText("Completed");
+
+    expect(
+      screen.queryByRole("link", { name: /View Conversation/ })
+    ).not.toBeInTheDocument();
+  });
+
+  it("hides the 'View Conversation' link on a Canceled ticket", async () => {
+    mocked.getById.mockResolvedValue(makeTicket({ status: "Canceled" }));
+
+    render(<TicketDetailPage ticketId="t-1" />);
+    await screen.findByText("Canceled");
+
+    expect(
+      screen.queryByRole("link", { name: /View Conversation/ })
+    ).not.toBeInTheDocument();
   });
 
   // --- Claim ---
