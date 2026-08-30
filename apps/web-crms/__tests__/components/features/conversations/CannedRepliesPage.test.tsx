@@ -43,7 +43,6 @@ jest.mock("@/lib/api/crm-client", () => ({
 const api = {
   catList: jest.mocked(crmClient.cannedReplyCategories.list),
   catCreate: jest.mocked(crmClient.cannedReplyCategories.create),
-  catArchive: jest.mocked(crmClient.cannedReplyCategories.archive),
   replyList: jest.mocked(crmClient.cannedReplies.list),
   replyArchive: jest.mocked(crmClient.cannedReplies.archive),
   replyRestore: jest.mocked(crmClient.cannedReplies.restore),
@@ -116,17 +115,31 @@ describe("CannedRepliesPage", () => {
     api.replyList.mockResolvedValue(sampleReplies);
   });
 
-  it("renders categories and canned replies with their fields", async () => {
+  it("renders the single canned replies table with name, category, and body", async () => {
     render(<CannedRepliesPage />);
 
     expect(await screen.findByText("Order status")).toBeInTheDocument();
-    // "Shipping" appears as a category row and as the reply's category badge.
-    expect(screen.getAllByText("Shipping").length).toBeGreaterThanOrEqual(2);
-    expect(screen.getByText("Refunds")).toBeInTheDocument();
-    expect(screen.getByText("Order status")).toBeInTheDocument();
+    // Category shows as the reply's badge (there is no separate categories table).
+    expect(screen.getByText("Shipping")).toBeInTheDocument();
     expect(
       screen.getByText(/your order \{\{ticket_id\}\} is on its way/)
     ).toBeInTheDocument();
+  });
+
+  it("filters replies by category via the category Select", async () => {
+    render(<CannedRepliesPage />);
+    await screen.findByText("Order status");
+
+    // Initial load is unfiltered.
+    expect(api.replyList).toHaveBeenCalledWith(false, undefined);
+
+    // Open the filter and pick "Refunds".
+    fireEvent.click(screen.getByRole("combobox", { name: /Filter by category/i }));
+    fireEvent.click(await screen.findByRole("option", { name: "Refunds" }));
+
+    await waitFor(() =>
+      expect(api.replyList).toHaveBeenCalledWith(false, "cat-2")
+    );
   });
 
   it("hides archived items by default and toggles them via the button", async () => {
@@ -134,13 +147,13 @@ describe("CannedRepliesPage", () => {
 
     await screen.findByText("Order status");
     expect(api.catList).toHaveBeenCalledWith(false);
-    expect(api.replyList).toHaveBeenCalledWith(false);
+    expect(api.replyList).toHaveBeenCalledWith(false, undefined);
 
     fireEvent.click(screen.getByText("Show Archived"));
 
     await waitFor(() => {
       expect(api.catList).toHaveBeenCalledWith(true);
-      expect(api.replyList).toHaveBeenCalledWith(true);
+      expect(api.replyList).toHaveBeenCalledWith(true, undefined);
     });
   });
 
@@ -175,8 +188,6 @@ describe("CannedRepliesPage", () => {
     render(<CannedRepliesPage />);
     await screen.findByText("Order status");
 
-    // The reply row's Archive button (categories row for Refunds also has one;
-    // scope to the reply table row).
     const replyRow = screen.getByText("Order status").closest("tr")!;
     fireEvent.click(within(replyRow).getByRole("button", { name: /Archive/i }));
 
@@ -218,25 +229,6 @@ describe("CannedRepliesPage", () => {
     await waitFor(() =>
       expect(api.replyRestore).toHaveBeenCalledWith("rep-archived")
     );
-  });
-
-  it("surfaces the API error when archiving a non-empty category is rejected", async () => {
-    api.catArchive.mockRejectedValue(
-      new Error("Cannot archive a category that still contains active canned replies.")
-    );
-
-    render(<CannedRepliesPage />);
-    await screen.findByText("Order status");
-
-    // The category "Shipping" also appears as a reply badge; the first match is
-    // the Categories-table row (rendered before the replies table).
-    const categoryRow = screen.getAllByText("Shipping")[0].closest("tr")!;
-    fireEvent.click(within(categoryRow).getByRole("button", { name: /Archive/i }));
-    fireEvent.click(await screen.findByRole("button", { name: "Archive" }));
-
-    expect(
-      await screen.findByText(/Cannot archive a category that still contains active/)
-    ).toBeInTheDocument();
   });
 
   describe("permission gating", () => {

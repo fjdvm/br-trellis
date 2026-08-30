@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { Archive, ArchiveRestore, FolderTree, MessageSquareText } from "lucide-react";
+import { Archive, ArchiveRestore, MessageSquareText } from "lucide-react";
 import { TableSkeleton } from "@/components/shared/TableSkeleton";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -34,18 +41,17 @@ import type {
   CannedReplyListItem,
 } from "@/types/canned-reply";
 
-/** Confirmation state for a pending archive action. */
-type PendingArchive =
-  | { kind: "category"; id: string; name: string }
-  | { kind: "reply"; id: string; name: string }
-  | null;
+/** Sentinel value for the "all categories" option in the filter Select. */
+const ALL_CATEGORIES = "__all__";
 
 /**
  * Canned Replies management screen (#111 + #112). Replaces the ComingSoonPage
- * stub at /conversations/canned-replies. Shows shared, org-wide Categories and
- * Canned Replies with an archived-items toggle. Create/edit/archive/restore
- * controls appear only for agents with Conversations.canWrite (or SuperUser);
- * everyone who can already reach this route sees the read-only lists.
+ * stub at /conversations/canned-replies. A single list of shared, org-wide
+ * Canned Replies with a category filter and an archived-items toggle.
+ * Categories back the filter and the create/edit forms but aren't managed as
+ * their own table here. Create/edit/archive/restore controls appear only for
+ * agents with Conversations.canWrite (or SuperUser); everyone who can already
+ * reach this route sees the read-only list.
  */
 export function CannedRepliesPage() {
   const canWrite = useConversationsCanWrite();
@@ -54,14 +60,16 @@ export function CannedRepliesPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showArchived, setShowArchived] = useState(false);
-  const [pendingArchive, setPendingArchive] = useState<PendingArchive>(null);
+  const [categoryFilter, setCategoryFilter] = useState<string>(ALL_CATEGORIES);
+  const [pendingArchive, setPendingArchive] = useState<CannedReplyListItem | null>(null);
 
   const load = useCallback(async () => {
     setIsLoading(true);
     try {
+      const categoryId = categoryFilter === ALL_CATEGORIES ? undefined : categoryFilter;
       const [cats, reps] = await Promise.all([
         crmClient.cannedReplyCategories.list(showArchived),
-        crmClient.cannedReplies.list(showArchived),
+        crmClient.cannedReplies.list(showArchived, categoryId),
       ]);
       setCategories(cats);
       setReplies(reps);
@@ -71,23 +79,14 @@ export function CannedRepliesPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [showArchived]);
+  }, [showArchived, categoryFilter]);
 
   useEffect(() => {
     void load();
   }, [load]);
 
-  // Only active categories can receive new/edited replies.
+  // Only active categories can receive new/edited replies (and populate the filter).
   const activeCategories = categories.filter((c) => c.deletedAt === null);
-
-  async function restoreCategory(id: string) {
-    try {
-      await crmClient.cannedReplyCategories.restore(id);
-      await load();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to restore.");
-    }
-  }
 
   async function restoreReply(id: string) {
     try {
@@ -103,19 +102,10 @@ export function CannedRepliesPage() {
     setPendingArchive(null);
     if (!pending) return;
     try {
-      if (pending.kind === "category") {
-        await crmClient.cannedReplyCategories.archive(pending.id);
-      } else {
-        await crmClient.cannedReplies.archive(pending.id);
-      }
+      await crmClient.cannedReplies.archive(pending.id);
       await load();
     } catch (err) {
-      // The API rejects archiving a category that still has active replies.
-      setError(
-        err instanceof Error
-          ? err.message
-          : "Failed to archive. Move or archive its canned replies first."
-      );
+      setError(err instanceof Error ? err.message : "Failed to archive.");
     }
   }
 
@@ -149,83 +139,28 @@ export function CannedRepliesPage() {
 
       {error && <div className="p-md text-destructive text-base">{error}</div>}
 
-      {/* Categories */}
       <Card className="shadow-none border-border">
-        <CardHeader className="pb-md p-lg">
-          <CardTitle className="text-title-lg font-bold flex items-center gap-2">
-            <FolderTree className="w-5 h-5" />
-            Categories
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="p-lg pt-0">
-          {isLoading ? (
-            <TableSkeleton columns={canWrite ? 4 : 3} />
-          ) : categories.length === 0 ? (
-            <div className="p-xl text-muted-foreground">No categories found.</div>
-          ) : (
-            <ScrollableTable>
-              <Table>
-                <TableHeader className="sticky top-0 bg-background z-10">
-                  <TableRow>
-                    <TableHead className="min-w-[200px]">Name</TableHead>
-                    <TableHead className="min-w-[120px] text-right">Replies</TableHead>
-                    <TableHead className="min-w-[120px]">Created</TableHead>
-                    {canWrite && <TableHead className="min-w-[160px] text-right">Actions</TableHead>}
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {categories.map((category) => {
-                    const isArchived = category.deletedAt !== null;
-                    return (
-                      <TableRow key={category.id}>
-                        <TableCell className="text-base font-medium">
-                          <span className="flex items-center gap-2">
-                            {category.name}
-                            {isArchived && <Badge variant="destructive">Archived</Badge>}
-                          </span>
-                        </TableCell>
-                        <TableCell className="text-base text-right">{category.replyCount}</TableCell>
-                        <TableCell className="text-sm text-muted-foreground">
-                          {new Date(category.createdAt).toLocaleDateString()}
-                        </TableCell>
-                        {canWrite && (
-                          <TableCell className="text-right">
-                            {isArchived ? (
-                              <Button variant="outline" size="sm" onClick={() => void restoreCategory(category.id)}>
-                                <ArchiveRestore className="w-4 h-4 mr-1" />
-                                Restore
-                              </Button>
-                            ) : (
-                              <Button
-                                variant="destructive"
-                                size="sm"
-                                onClick={() =>
-                                  setPendingArchive({ kind: "category", id: category.id, name: category.name })
-                                }
-                              >
-                                <Archive className="w-4 h-4 mr-1" />
-                                Archive
-                              </Button>
-                            )}
-                          </TableCell>
-                        )}
-                      </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
-            </ScrollableTable>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Canned Replies */}
-      <Card className="shadow-none border-border">
-        <CardHeader className="pb-md p-lg">
+        <CardHeader className="pb-md p-lg flex flex-row items-center justify-between gap-4">
           <CardTitle className="text-title-lg font-bold flex items-center gap-2">
             <MessageSquareText className="w-5 h-5" />
             Canned Replies
           </CardTitle>
+          {/* Category filter — replaces the separate Categories table. */}
+          <div className="w-[220px]">
+            <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+              <SelectTrigger aria-label="Filter by category" className="text-base">
+                <SelectValue placeholder="All categories" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={ALL_CATEGORIES}>All categories</SelectItem>
+                {activeCategories.map((c) => (
+                  <SelectItem key={c.id} value={c.id}>
+                    {c.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </CardHeader>
         <CardContent className="p-lg pt-0">
           {isLoading ? (
@@ -279,9 +214,7 @@ export function CannedRepliesPage() {
                                 <Button
                                   variant="destructive"
                                   size="sm"
-                                  onClick={() =>
-                                    setPendingArchive({ kind: "reply", id: reply.id, name: reply.name })
-                                  }
+                                  onClick={() => setPendingArchive(reply)}
                                 >
                                   <Archive className="w-4 h-4 mr-1" />
                                   Archive
@@ -306,13 +239,10 @@ export function CannedRepliesPage() {
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>
-              Archive {pendingArchive?.kind === "category" ? "Category" : "Canned Reply"}
-            </AlertDialogTitle>
+            <AlertDialogTitle>Archive Canned Reply</AlertDialogTitle>
             <AlertDialogDescription>
-              {pendingArchive?.kind === "category"
-                ? `Archive "${pendingArchive?.name}"? A category with active canned replies can't be archived — move or archive its replies first.`
-                : `Archive "${pendingArchive?.name}"? It will stop appearing in the insertion picker but its history is preserved.`}
+              Archive &quot;{pendingArchive?.name}&quot;? It will stop appearing in the
+              insertion picker but its history is preserved.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
