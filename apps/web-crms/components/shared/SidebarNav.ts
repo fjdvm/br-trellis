@@ -31,6 +31,7 @@ import {
   Puzzle,
   Layers,
   Truck,
+  LayoutGrid,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
@@ -51,6 +52,7 @@ export interface SystemItem {
   desc: string;
   icon: LucideIcon;
   active: boolean;
+  url?: string;
 }
 
 export interface AccountItem {
@@ -157,34 +159,46 @@ export const settingsChildren: NavItem[] = [
 
 export const systems: SystemItem[] = [
   {
+    fullName: "Enterprise Portal",
+    desc: "All systems hub & app launcher",
+    icon: LayoutGrid,
+    active: false,
+    url: process.env.NEXT_PUBLIC_HOST_URL ?? "https://localhost:3000/",
+  },
+  {
     fullName: "Customer Relationship Management",
     desc: "Contact profiles, tickets & marketing",
     icon: Building2,
     active: true,
-  },
-  {
-    fullName: "E-Commerce Storefront",
-    desc: "Online orders & products",
-    icon: ShoppingCart,
-    active: false,
+    url: process.env.NEXT_PUBLIC_CRMS_URL ?? "https://localhost:3005/",
   },
   {
     fullName: "Human Resource Management",
     desc: "Staff directory & payroll",
     icon: Users2,
     active: false,
+    url: process.env.NEXT_PUBLIC_HRMS_URL ?? "https://localhost:3001/",
+  },
+  {
+    fullName: "E-Commerce Storefront",
+    desc: "Online orders & products",
+    icon: ShoppingCart,
+    active: false,
+    url: process.env.NEXT_PUBLIC_OOS_URL ?? "https://localhost:3004/",
   },
   {
     fullName: "Point of Sale",
     desc: "Retail & register checkout",
     icon: CreditCard,
     active: false,
+    url: process.env.NEXT_PUBLIC_POS_URL ?? "https://localhost:3002/",
   },
   {
     fullName: "Supply Chain Management",
     desc: "Inventory & logistics",
     icon: Truck,
     active: false,
+    url: process.env.NEXT_PUBLIC_SCMS_URL ?? "https://localhost:3003/",
   },
 ];
 
