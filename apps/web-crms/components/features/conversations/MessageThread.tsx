@@ -104,9 +104,11 @@ export function MessageThread({
       <CardContent className="p-lg pt-0">
         {error && <p className="mb-md text-base text-destructive">{error}</p>}
 
-        {/* Scrollable message viewport — the composer below is pinned outside it. */}
+        {/* Scrollable message viewport — height-constrained relative to the
+            viewport so long threads scroll here instead of growing the page;
+            the composer below is pinned outside it. */}
         <div
-          className="flex flex-col gap-lg h-[480px] overflow-y-auto rounded-lg border border-border bg-muted/30 p-md"
+          className="flex flex-col gap-lg min-h-[320px] h-[calc(100vh-360px)] max-h-[640px] overflow-y-auto rounded-lg border border-border bg-muted/30 p-md"
           role="log"
           aria-label="Message thread"
         >

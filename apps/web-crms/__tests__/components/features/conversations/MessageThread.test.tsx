@@ -567,6 +567,23 @@ describe("MessageThread (messenger layout)", () => {
     // The composer must NOT be nested inside the scroll viewport (it's pinned).
     expect(viewport.contains(replyBox)).toBe(false);
   });
+
+  it("renders the message viewport as a height-constrained, vertically-scrollable region", async () => {
+    mocked.list.mockResolvedValue([
+      contactMsg("m-1", "scroll me", "2025-01-15T10:00:00Z"),
+    ]);
+
+    renderThread();
+
+    await screen.findByText("scroll me");
+
+    const viewport = screen.getByRole("log", { name: /message thread/i });
+    // Vertical scrolling is enabled...
+    expect(viewport.className).toContain("overflow-y-auto");
+    // ...and the region is height-constrained so overflow actually scrolls
+    // rather than growing the page infinitely.
+    expect(viewport.className).toMatch(/\b(max-)?h-\[/);
+  });
 });
 
 describe("MessageThread (title)", () => {
