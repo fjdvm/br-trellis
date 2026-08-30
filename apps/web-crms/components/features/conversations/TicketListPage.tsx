@@ -113,6 +113,20 @@ export interface TicketListPageProps {
    */
   excludeTerminal?: boolean;
   /**
+   * When true, the fetched ticket list is filtered to rows whose
+   * `assignedToId` matches the signed-in agent's identity (`currentAgentId`,
+   * the shared `session?.user?.id ?? session?.user?.username` this component
+   * also uses to claim), so "who am I" has a single source of truth. Used by
+   * the My
+   * Assigned screen as an ownership view. Applied on every (re)fetch and after
+   * every in-place row update, via the same result-filter mechanism
+   * `excludeTerminal` uses. Deliberately does not exclude terminal tickets:
+   * `Completed`/`Canceled` tickets I own stay visible (ownership view, not a
+   * triage queue). A boolean (not a function) so this component can be driven
+   * from a Server Component page wrapper with only serializable props.
+   */
+  assignedToMe?: boolean;
+  /**
    * Empty-state copy shown when the list is empty at the initial filter values
    * (the screen's default view). Defaults to "No tickets found.".
    */
@@ -132,6 +146,7 @@ export function TicketListPage({
   initialStatusFilter = "All",
   initialWaitingOnFilter = "All",
   excludeTerminal = false,
+  assignedToMe = false,
   emptyMessage = "No tickets found.",
   filteredEmptyMessage = "No tickets match the selected filters.",
 }: TicketListPageProps = {}) {
@@ -151,15 +166,34 @@ export function TicketListPage({
   );
 
   /**
-   * Apply the screen's client-side row filter (currently just terminal
-   * exclusion) at the component boundary. Run on every (re)fetch and after
-   * every in-place row mutation so, e.g., a ticket cancelled from the Inbox
-   * queue drops out immediately.
+   * The signed-in agent's identity, resolved once here so "who am I" has a
+   * single source of truth shared by both `handleClaim` (who to assign a
+   * claimed ticket to) and the `assignedToMe` filter (which tickets I own).
+   * `null` when there is no session yet; the `assignedToMe` filter then
+   * matches nothing (an unauthenticated view has no tickets of its own).
+   */
+  const currentAgentId = session?.user?.id ?? session?.user?.username ?? null;
+
+  /**
+   * Apply the screen's client-side row filters at the component boundary. Run
+   * on every (re)fetch and after every in-place row mutation so, e.g., a ticket
+   * cancelled from the Inbox queue drops out immediately. Two independent,
+   * composable filters:
+   *  - `excludeTerminal`: drop Completed/Canceled rows (Inbox's actionable queue).
+   *  - `assignedToMe`: keep only rows I own (My Assigned's ownership view).
    */
   const applyResultFilter = useCallback(
-    (rows: TicketListItem[]) =>
-      excludeTerminal ? rows.filter((t) => !isTerminal(t)) : rows,
-    [excludeTerminal]
+    (rows: TicketListItem[]) => {
+      let next = rows;
+      if (excludeTerminal) next = next.filter((t) => !isTerminal(t));
+      if (assignedToMe) {
+        next = next.filter(
+          (t) => t.assignedToId !== null && t.assignedToId === currentAgentId
+        );
+      }
+      return next;
+    },
+    [excludeTerminal, assignedToMe, currentAgentId]
   );
 
   const loadTickets = useCallback(async () => {
@@ -207,10 +241,9 @@ export function TicketListPage({
   }
 
   function handleClaim(ticket: TicketListItem) {
-    const staffId = session?.user?.id ?? session?.user?.username;
     void runRowMutation(ticket.id, "claim", () =>
       crmClient.conversationTickets.claim(ticket.id, {
-        staffId: staffId ?? "",
+        staffId: currentAgentId ?? "",
         staffName: session?.user?.name ?? "",
         staffEmail: session?.user?.email ?? "",
       })
