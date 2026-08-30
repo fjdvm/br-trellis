@@ -104,11 +104,14 @@ export interface TicketListPageProps {
   /** Initial Waiting On filter value. Defaults to "All". */
   initialWaitingOnFilter?: TicketWaitingOn | "All";
   /**
-   * Client-side filter applied to the fetched list before rendering, run on
-   * every (re)fetch and after every in-place row update. Used by Inbox to
-   * exclude terminal tickets regardless of the active server-side filters.
+   * When true, terminal (Completed/Canceled) tickets are excluded from the
+   * rendered rows regardless of the active server-side filters, on every
+   * (re)fetch and after every in-place row update. Used by the Inbox screen so
+   * every row in the queue is actionable. A boolean (not a function) so this
+   * component can be driven from a Server Component page wrapper without
+   * crossing the server/client boundary with a non-serializable prop.
    */
-  resultFilter?: (tickets: TicketListItem[]) => TicketListItem[];
+  excludeTerminal?: boolean;
   /**
    * Empty-state copy shown when the list is empty at the initial filter values
    * (the screen's default view). Defaults to "No tickets found.".
@@ -128,7 +131,7 @@ export function TicketListPage({
   cardTitle = "All Tickets",
   initialStatusFilter = "All",
   initialWaitingOnFilter = "All",
-  resultFilter,
+  excludeTerminal = false,
   emptyMessage = "No tickets found.",
   filteredEmptyMessage = "No tickets match the selected filters.",
 }: TicketListPageProps = {}) {
@@ -147,6 +150,18 @@ export function TicketListPage({
     initialWaitingOnFilter
   );
 
+  /**
+   * Apply the screen's client-side row filter (currently just terminal
+   * exclusion) at the component boundary. Run on every (re)fetch and after
+   * every in-place row mutation so, e.g., a ticket cancelled from the Inbox
+   * queue drops out immediately.
+   */
+  const applyResultFilter = useCallback(
+    (rows: TicketListItem[]) =>
+      excludeTerminal ? rows.filter((t) => !isTerminal(t)) : rows,
+    [excludeTerminal]
+  );
+
   const loadTickets = useCallback(async () => {
     setIsLoading(true);
     try {
@@ -154,14 +169,14 @@ export function TicketListPage({
         statusFilter,
         waitingOnFilter
       );
-      setTickets(resultFilter ? resultFilter(result) : result);
+      setTickets(applyResultFilter(result));
       setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unable to load tickets.");
     } finally {
       setIsLoading(false);
     }
-  }, [statusFilter, waitingOnFilter, resultFilter]);
+  }, [statusFilter, waitingOnFilter, applyResultFilter]);
 
   useEffect(() => {
     void loadTickets();
@@ -171,7 +186,7 @@ export function TicketListPage({
   function applyRowUpdate(updated: TicketListItem) {
     setTickets((prev) => {
       const next = prev.map((t) => (t.id === updated.id ? updated : t));
-      return resultFilter ? resultFilter(next) : next;
+      return applyResultFilter(next);
     });
   }
 

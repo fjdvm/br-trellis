@@ -75,10 +75,7 @@ const inboxProps = {
   description: "Tickets waiting on an agent's response.",
   cardTitle: "My Queue",
   initialWaitingOnFilter: "Agent" as const,
-  resultFilter: (tickets: TicketListItem[]) =>
-    tickets.filter(
-      (t) => t.status !== "Completed" && t.status !== "Canceled"
-    ),
+  excludeTerminal: true,
   emptyMessage: "Nothing waiting on you right now.",
   filteredEmptyMessage: "No tickets match the selected filters.",
 };
