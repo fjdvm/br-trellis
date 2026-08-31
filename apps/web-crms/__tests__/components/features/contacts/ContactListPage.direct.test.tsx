@@ -58,7 +58,6 @@ const directProps = {
   description: "Contacts with no confirmed ecommerce link.",
   sourceFilter: "non-ecommerce" as const,
   filterIndicatorLabel: "Source: Non-Ecommerce",
-  showAddButton: false,
 };
 
 describe("Contacts view (/contacts/direct props)", () => {
@@ -84,12 +83,12 @@ describe("Contacts view (/contacts/direct props)", () => {
     );
   });
 
-  it("does not render the Add Contact button", async () => {
+  it("renders the Add Contact button (a contact created here has no ecommerce link, so it lands in this view)", async () => {
     render(<ContactListPage {...directProps} />);
     await screen.findByRole("heading", { name: "Contacts" });
     expect(
-      screen.queryByRole("button", { name: /Add Contact/i })
-    ).not.toBeInTheDocument();
+      screen.getByRole("button", { name: /Add Contact/i })
+    ).toBeInTheDocument();
   });
 
   it("shows every contact without a confirmed ecommerce link (including no-link and POS-only)", async () => {
