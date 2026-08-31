@@ -221,3 +221,77 @@ describe("Sidebar Tickets group History tab (#107)", () => {
     expect(position & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 });
+
+describe("Sidebar Contacts group split (#117)", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    localStorage.clear();
+    localStorage.setItem("activeAccount", "admin");
+    __setMockStatus({ status: "healthy", isLoading: false });
+  });
+
+  // "Contacts" is both the group-header label and a child link label, so the
+  // group is expanded via its header button and children are resolved by their
+  // href (not by text alone) to disambiguate.
+  async function expandContacts() {
+    await act(async () => {
+      render(<Sidebar />);
+    });
+    await act(async () => {
+      screen.getByRole("button", { name: /Contacts/ }).click();
+    });
+  }
+
+  /** Find the child nav anchor whose href exactly matches. */
+  function childLinkByHref(href: string): HTMLAnchorElement | null {
+    return screen
+      .getAllByRole("link")
+      .find((a): a is HTMLAnchorElement =>
+        a.getAttribute("href") === href
+      ) ?? null;
+  }
+
+  it("adds Contacts (/contacts/direct) and Ecommerce Contacts (/contacts/ecommerce) children", async () => {
+    await expandContacts();
+
+    expect(childLinkByHref("/contacts/direct")).not.toBeNull();
+    expect(childLinkByHref("/contacts/direct")).toHaveTextContent("Contacts");
+
+    expect(childLinkByHref("/contacts/ecommerce")).not.toBeNull();
+    expect(childLinkByHref("/contacts/ecommerce")).toHaveTextContent(
+      "Ecommerce Contacts"
+    );
+  });
+
+  it("keeps All Contacts pointing at /contacts", async () => {
+    await expandContacts();
+
+    const allContacts = childLinkByHref("/contacts");
+    expect(allContacts).not.toBeNull();
+    expect(allContacts).toHaveTextContent("All Contacts");
+  });
+
+  it("orders the Contacts group: All Contacts → Contacts → Ecommerce Contacts → Companies → Lists/Segments → At-Risk Customers", async () => {
+    await expandContacts();
+
+    const hrefs = [
+      "/contacts",
+      "/contacts/direct",
+      "/contacts/ecommerce",
+      "/contacts/companies",
+      "/contacts/segments",
+      "/contacts/at-risk",
+    ];
+    const anchors = hrefs.map((href) => {
+      const anchor = childLinkByHref(href);
+      expect(anchor).not.toBeNull();
+      return anchor!;
+    });
+
+    // Each entry precedes the next in document order.
+    for (let i = 0; i < anchors.length - 1; i++) {
+      const position = anchors[i].compareDocumentPosition(anchors[i + 1]);
+      expect(position & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    }
+  });
+});

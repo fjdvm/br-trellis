@@ -49,6 +49,22 @@ describe("route-access policy (deny at the boundary)", () => {
         expect(resolveRouteAccess(p)).toEqual({ kind: "super-only" });
       }
     });
+
+    it("leaves the split Contacts routes on the default open rule (#117 — no new gate)", () => {
+      // /contacts/direct and /contacts/ecommerce are the two new pre-filtered
+      // views. They must fall through to the same default "open" rule that
+      // /contacts and /contacts/companies use today — not pick up the
+      // /contacts/segments super-only override, and not (crucially) match the
+      // separate /ecommerce super-only prefix.
+      for (const p of [
+        "/contacts",
+        "/contacts/direct",
+        "/contacts/ecommerce",
+        "/contacts/companies",
+      ]) {
+        expect(resolveRouteAccess(p)).toEqual({ kind: "open" });
+      }
+    });
   });
 
   describe("isRouteAllowedForUser — the actual deny decision", () => {

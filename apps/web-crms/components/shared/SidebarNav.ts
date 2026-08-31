@@ -82,6 +82,8 @@ export const navGroups: NavGroup[] = [
     icon: Users,
     children: [
       { name: "All Contacts", href: "/contacts", icon: Users },
+      { name: "Contacts", href: "/contacts/direct", icon: UserCheck },
+      { name: "Ecommerce Contacts", href: "/contacts/ecommerce", icon: ShoppingCart },
       { name: "Companies", href: "/contacts/companies", icon: Building2 },
       { name: "Lists/Segments", href: "/contacts/segments", icon: ListFilter },
       { name: "At-Risk Customers", href: "/contacts/at-risk", icon: AlertTriangle },
