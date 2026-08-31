@@ -107,42 +107,4 @@ public class OrderServiceTests : IDisposable
         cart.Items.Should().BeEmpty();
     }
 
-    [Fact]
-    public async Task GetOrdersForAnalyticsSyncAsync_ReturnsCustomerAttributedOrdersChangedSinceWatermark()
-    {
-        var firstCustomer = await CreateTestUserAsync();
-        var secondCustomer = await CreateTestUserAsync();
-        var watermark = DateTime.UtcNow.AddHours(-1);
-        var oldOrder = new Order
-        {
-            UserId = firstCustomer.Id,
-            OrderNumber = "ORD-OLD",
-            CreatedAt = watermark.AddMinutes(-30),
-            UpdatedAt = watermark.AddMinutes(-30)
-        };
-        var updatedOrder = new Order
-        {
-            UserId = firstCustomer.Id,
-            OrderNumber = "ORD-UPDATED",
-            CreatedAt = watermark.AddDays(-1),
-            UpdatedAt = watermark.AddMinutes(5)
-        };
-        var newOrder = new Order
-        {
-            UserId = secondCustomer.Id,
-            OrderNumber = "ORD-NEW",
-            CreatedAt = watermark.AddMinutes(10),
-            UpdatedAt = watermark.AddMinutes(10)
-        };
-        _context.Orders.AddRange(oldOrder, updatedOrder, newOrder);
-        await _context.SaveChangesAsync();
-
-        var orders = await _orderService.GetOrdersForAnalyticsSyncAsync(watermark);
-
-        orders.Should().HaveCount(2);
-        orders.Select(order => order.OrderNumber).Should().ContainInOrder("ORD-NEW", "ORD-UPDATED");
-        orders.Single(order => order.OrderNumber == "ORD-NEW").CustomerId.Should().Be(secondCustomer.Id);
-        orders.Single(order => order.OrderNumber == "ORD-UPDATED").CustomerId.Should().Be(firstCustomer.Id);
-    }
-
 }

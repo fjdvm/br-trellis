@@ -9,5 +9,4 @@ public interface IOrderService
     Task<OrderDto> CreateOrderAsync(Guid userId, CreateOrderRequest request);
     Task<OrderDto?> GetOrderByIdAsync(Guid userId, Guid orderId);
     Task<List<OrderDto>> GetUserOrdersAsync(Guid userId);
-    Task<List<OrderSyncDto>> GetOrdersForAnalyticsSyncAsync(DateTime since);
 }

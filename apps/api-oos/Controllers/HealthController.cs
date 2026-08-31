@@ -1,7 +1,9 @@
 namespace ApiOos.Controllers;
 
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
+[AllowAnonymous]
 [ApiController]
 [Route("api/[controller]")]
 public class HealthController : ControllerBase

@@ -1,8 +1,11 @@
 namespace ApiOos.Controllers;
 
+using ApiOos.Constants;
 using ApiOos.Interfaces.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
+[Authorize(AuthenticationSchemes = AuthSchemes.Customer)]
 [ApiController]
 [Route("api/tickets")]
 public class TicketsController : ControllerBase

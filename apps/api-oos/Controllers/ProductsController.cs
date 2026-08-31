@@ -3,8 +3,10 @@ namespace ApiOos.Controllers;
 using ApiOos.DTOs.Requests;
 using ApiOos.DTOs.Responses;
 using ApiOos.Interfaces.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
+[AllowAnonymous]
 [ApiController]
 [Route("api/[controller]")]
 public class ProductsController : ControllerBase

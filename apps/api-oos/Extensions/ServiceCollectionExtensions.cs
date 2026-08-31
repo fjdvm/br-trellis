@@ -1,11 +1,9 @@
 namespace ApiOos.Extensions;
 
 using System.Text;
-using ApiOos.Authorization;
 using ApiOos.Configurations;
+using ApiOos.Constants;
 using ApiOos.Data;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -65,12 +63,23 @@ public static class ServiceCollectionExtensions
 
         var key = Encoding.ASCII.GetBytes(jwtSettings.SecretKey);
 
+        // Internal-auth-service (staff) scheme — mirrors api-crms/web-crms: tokens
+        // are issued by the OIDC provider at StaffAuth:Authority and validated via
+        // its discovery document.
+        var staffAuthority = configuration["StaffAuth:Authority"] ?? "https://localhost:5001";
+        var staffAudience = configuration["StaffAuth:Audience"] ?? "oos-client";
+        var requireHttpsMetadata = !string.Equals(
+            configuration["ASPNETCORE_ENVIRONMENT"], "Development", StringComparison.OrdinalIgnoreCase);
+
+        // Two JWT bearer schemes registered side-by-side. The customer scheme is the
+        // default; staff endpoints opt in by name via [Authorize(AuthenticationSchemes)].
         services.AddAuthentication(options =>
         {
-            options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-            options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            options.DefaultAuthenticateScheme = AuthSchemes.Customer;
+            options.DefaultChallengeScheme = AuthSchemes.Customer;
         })
-        .AddJwtBearer(options =>
+        // Customer scheme: api-oos's own symmetric-key JWTs (unchanged).
+        .AddJwtBearer(AuthSchemes.Customer, options =>
         {
             options.RequireHttpsMetadata = false;
             options.SaveToken = true;
@@ -85,15 +94,17 @@ public static class ServiceCollectionExtensions
                 ValidateLifetime = true,
                 ClockSkew = TimeSpan.Zero
             };
+        })
+        // Staff scheme: tokens issued by internal-auth-service (OIDC discovery).
+        .AddJwtBearer(AuthSchemes.Staff, options =>
+        {
+            options.Authority = staffAuthority;
+            options.Audience = staffAudience;
+            options.RequireHttpsMetadata = requireHttpsMetadata;
+            options.TokenValidationParameters.ValidateAudience = false;
         });
 
-        services.AddAuthorization(options =>
-        {
-            options.AddPolicy(CrmSyncTokenRequirement.PolicyName, policy =>
-                policy.Requirements.Add(new CrmSyncTokenRequirement()));
-        });
-        services.Configure<CrmSyncOptions>(configuration.GetSection(CrmSyncOptions.SectionName));
-        services.AddSingleton<IAuthorizationHandler, CrmSyncTokenAuthorizationHandler>();
+        services.AddAuthorization();
         return services;
     }
 

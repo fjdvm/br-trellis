@@ -164,10 +164,4 @@ public class OrderService : IOrderService
         var orders = await _orderRepository.GetByUserIdAsync(userId);
         return orders.Select(OrderMapper.ToDto).ToList();
     }
-
-    public async Task<List<OrderSyncDto>> GetOrdersForAnalyticsSyncAsync(DateTime since)
-    {
-        var orders = await _orderRepository.GetUpdatedSinceAsync(since);
-        return orders.Select(OrderMapper.ToSyncDto).ToList();
-    }
 }

@@ -38,12 +38,4 @@ public class OrderRepository : IOrderRepository
             .OrderByDescending(o => o.CreatedAt)
             .ToListAsync();
     }
-
-    public async Task<List<Order>> GetUpdatedSinceAsync(DateTime since)
-    {
-        return await _context.Orders
-            .Where(order => order.CreatedAt >= since || order.UpdatedAt >= since)
-            .OrderByDescending(order => order.UpdatedAt)
-            .ToListAsync();
-    }
 }

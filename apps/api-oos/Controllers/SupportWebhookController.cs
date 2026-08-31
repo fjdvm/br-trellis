@@ -1,13 +1,14 @@
 namespace ApiOos.Controllers;
 
 using System.Security.Claims;
+using ApiOos.Constants;
 using ApiOos.DTOs.Responses;
 using ApiOos.Exceptions;
 using ApiOos.Interfaces.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-[Authorize]
+[Authorize(AuthenticationSchemes = AuthSchemes.Customer)]
 [ApiController]
 [Route("api/webhooks")]
 public class SupportWebhookController : ControllerBase

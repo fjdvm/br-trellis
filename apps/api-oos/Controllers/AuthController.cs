@@ -3,9 +3,11 @@ namespace ApiOos.Controllers;
 using ApiOos.DTOs.Requests.Auth;
 using ApiOos.DTOs.Responses.Auth;
 using ApiOos.Interfaces.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 
+[AllowAnonymous]
 [ApiController]
 [Route("api/auth")]
 [EnableRateLimiting("StrictRateLimit")]

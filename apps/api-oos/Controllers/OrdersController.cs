@@ -1,6 +1,7 @@
 namespace ApiOos.Controllers;
 
 using System.Security.Claims;
+using ApiOos.Constants;
 using ApiOos.DTOs.Requests.Orders;
 using ApiOos.DTOs.Responses.Orders;
 using ApiOos.Exceptions;
@@ -8,7 +9,7 @@ using ApiOos.Interfaces.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-[Authorize]
+[Authorize(AuthenticationSchemes = AuthSchemes.Customer)]
 [ApiController]
 [Route("api/orders")]
 public class OrdersController : ControllerBase

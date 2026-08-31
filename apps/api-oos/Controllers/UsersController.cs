@@ -5,11 +5,12 @@ using ApiOos.DTOs.Requests.Users;
 using ApiOos.DTOs.Responses.Auth;
 using ApiOos.DTOs.Responses.Users;
 using ApiOos.Exceptions;
+using ApiOos.Constants;
 using ApiOos.Interfaces.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-[Authorize]
+[Authorize(AuthenticationSchemes = AuthSchemes.Customer)]
 [ApiController]
 [Route("api/users")]
 public class UsersController : ControllerBase

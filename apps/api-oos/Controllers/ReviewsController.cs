@@ -1,6 +1,7 @@
 namespace ApiOos.Controllers;
 
 using System.Security.Claims;
+using ApiOos.Constants;
 using ApiOos.DTOs.Requests;
 using ApiOos.DTOs.Responses;
 using ApiOos.Exceptions;
@@ -19,6 +20,7 @@ public class ReviewsController : ControllerBase
         _reviewService = reviewService;
     }
 
+    [AllowAnonymous]
     [HttpGet]
     public async Task<ActionResult<IEnumerable<ReviewResponseDto>>> GetByProduct([FromQuery] Guid productId)
     {
@@ -26,7 +28,7 @@ public class ReviewsController : ControllerBase
         return Ok(reviews);
     }
 
-    [Authorize]
+    [Authorize(AuthenticationSchemes = AuthSchemes.Customer)]
     [HttpPost]
     public async Task<ActionResult<ReviewResponseDto>> Create([FromBody] CreateReviewRequestDto dto)
     {
