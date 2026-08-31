@@ -66,36 +66,9 @@ public sealed class EcommerceIngestionService(
     {
         var contactId = await ResolveOrderContactIdAsync(data, cancellationToken);
         var now = ParseTimestamp(data.OccurredAt);
-
         var status = ParseOrderStatus(data.Status);
-        var order = new Order
-        {
-            Id = Guid.NewGuid(),
-            PlatformOrderId = data.OrderId ?? throw new InvalidOperationException("OrderId is required."),
-            ContactId = contactId,
-            Status = status,
-            Total = data.Total ?? 0m,
-            RefundedAmount = data.RefundedAmount ?? 0m,
-            CreatedAt = now,
-            UpdatedAt = now,
-        };
 
-        if (data.LineItems is not null)
-        {
-            foreach (var item in data.LineItems)
-            {
-                order.LineItems.Add(new OrderLineItem
-                {
-                    Id = Guid.NewGuid(),
-                    OrderId = order.Id,
-                    ProductId = item.ProductId,
-                    ProductName = item.ProductName?.Trim() ?? string.Empty,
-                    Quantity = item.Quantity,
-                    UnitPrice = item.UnitPrice,
-                });
-            }
-        }
-
+        var order = BuildOrder(data, contactId, status, now);
         await ecommerceRepository.UpsertOrderAsync(order, cancellationToken);
         await ecommerceRepository.RecalculateLifetimeValueAsync(contactId, cancellationToken);
 
@@ -109,40 +82,45 @@ public sealed class EcommerceIngestionService(
         var contactId = await ResolveOrderContactIdAsync(data, cancellationToken);
         var now = ParseTimestamp(data.OccurredAt);
 
-        var order = new Order
-        {
-            Id = Guid.NewGuid(),
-            PlatformOrderId = data.OrderId ?? throw new InvalidOperationException("OrderId is required."),
-            ContactId = contactId,
-            Status = OrderStatus.Refunded,
-            Total = data.Total ?? 0m,
-            RefundedAmount = data.RefundedAmount ?? 0m,
-            CreatedAt = now,
-            UpdatedAt = now,
-        };
-
-        if (data.LineItems is not null)
-        {
-            foreach (var item in data.LineItems)
-            {
-                order.LineItems.Add(new OrderLineItem
-                {
-                    Id = Guid.NewGuid(),
-                    OrderId = order.Id,
-                    ProductId = item.ProductId,
-                    ProductName = item.ProductName?.Trim() ?? string.Empty,
-                    Quantity = item.Quantity,
-                    UnitPrice = item.UnitPrice,
-                });
-            }
-        }
-
+        var order = BuildOrder(data, contactId, OrderStatus.Refunded, now);
         await ecommerceRepository.UpsertOrderAsync(order, cancellationToken);
         await ecommerceRepository.RecalculateLifetimeValueAsync(contactId, cancellationToken);
 
         await WriteOrderTimelineEntryAsync(
             contactId, data.OrderId!, "order.refunded", OrderStatus.Refunded,
             data.RefundedAmount ?? 0m, now, cancellationToken);
+    }
+
+    /// <summary>Builds an <see cref="Order"/> projection (with line items) from event data.</summary>
+    private static Order BuildOrder(
+        EcommerceEventData data, Guid contactId, OrderStatus status, DateTimeOffset now)
+    {
+        var order = new Order
+        {
+            Id = Guid.NewGuid(),
+            PlatformOrderId = data.OrderId ?? throw new InvalidOperationException("OrderId is required."),
+            ContactId = contactId,
+            Status = status,
+            Total = data.Total ?? 0m,
+            RefundedAmount = data.RefundedAmount ?? 0m,
+            CreatedAt = now,
+            UpdatedAt = now,
+        };
+
+        foreach (var item in data.LineItems ?? [])
+        {
+            order.LineItems.Add(new OrderLineItem
+            {
+                Id = Guid.NewGuid(),
+                OrderId = order.Id,
+                ProductId = item.ProductId,
+                ProductName = item.ProductName?.Trim() ?? string.Empty,
+                Quantity = item.Quantity,
+                UnitPrice = item.UnitPrice,
+            });
+        }
+
+        return order;
     }
 
     private async Task ProcessCartUpdatedAsync(

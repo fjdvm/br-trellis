@@ -4,7 +4,7 @@ export const dynamic = "force-dynamic";
 
 export const metadata = {
   title: "Support Conversation | Bren Raphael's Ube Jam & Halaya Shop",
-  description: "Real-time support ticket conversation with SentraCX staff",
+  description: "Real-time support ticket conversation with our support staff",
 };
 
 interface SupportTicketPageProps {

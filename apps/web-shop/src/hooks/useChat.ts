@@ -78,7 +78,7 @@ export function useChat(initialTicketId?: string, options?: UseChatOptions) {
       setMessages([{
         id: "bot-greeting",
         senderId: "bot",
-        senderName: "SentraCX AI Assistant",
+        senderName: "Support Assistant",
         senderType: "bot",
         content: "Hello! 👋 Welcome to Bren Raphael's Ube Jam & Halaya Shop support. How can I assist you today?",
         isRead: true,
@@ -145,7 +145,7 @@ export function useChat(initialTicketId?: string, options?: UseChatOptions) {
             senderId: "system",
             senderName: "System",
             senderType: "agent",
-            content: "You have requested a live support representative. Connecting to SentraCX agent queue...",
+            content: "You have requested a live support representative. Connecting you to a support agent...",
             isRead: true,
             sentAt: new Date().toISOString(),
           },
@@ -202,7 +202,7 @@ export function useChat(initialTicketId?: string, options?: UseChatOptions) {
         const botMsg: ChatMessage = {
           id: `bot-${Date.now()}`,
           senderId: "bot",
-          senderName: "SentraCX AI Assistant",
+          senderName: "Support Assistant",
           senderType: "bot",
           content: reply.reply,
           isRead: true,

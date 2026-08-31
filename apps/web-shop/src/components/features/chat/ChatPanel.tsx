@@ -99,7 +99,7 @@ export function ChatPanel({
             />
           </div>
           <div>
-            <h3 className="text-sm font-semibold leading-tight">SentraCX Support</h3>
+            <h3 className="text-sm font-semibold leading-tight">Bren Raphael Support</h3>
             <p className="text-[11px] text-purple-200">
               {isLive
                 ? isConnected

@@ -126,7 +126,7 @@ export function ConversationPage({ ticketId }: ConversationPageProps) {
             />
             {isConnected ? "Real-time chat active" : "Connecting..."}
           </span>
-          <span className="text-[11px] text-purple-600 hidden sm:block">SentraCX Support</span>
+          <span className="text-[11px] text-purple-600 hidden sm:block">Bren Raphael Support</span>
         </div>
 
         {/* Messages area */}
