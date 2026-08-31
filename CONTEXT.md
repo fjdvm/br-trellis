@@ -206,3 +206,17 @@ to an existing Contact, or creating a new one, based on email/phone/name
 confidence matching. Produces a Source Reference (link from an external
 system's record to a Contact) and, when confidence is ambiguous, a
 Pending Review state requiring a human decision between match candidates.
+
+## Identity Handshake
+
+A session-level gate on an anonymous chat channel: a visitor must supply an
+identifying detail (typically an email) before sending any message — bot or
+live-agent, no exceptions. Passing the Handshake only unlocks messaging and
+triggers Identity Resolution against the supplied identifier; it does not by
+itself guarantee a confident match. A visitor can pass the Handshake and
+still land in Pending Review if Identity Resolution can't confidently match
+or create a Contact. An already-authenticated customer skips the Handshake
+entirely — their account email is used directly as the Identity Resolution
+input.
+_Avoid_: conflating with Identity Resolution — the Handshake is the UX gate
+that precedes it; Identity Resolution is the matching operation itself.

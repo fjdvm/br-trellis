@@ -28,6 +28,29 @@ export function useChat(initialTicketId?: string, options?: UseChatOptions) {
   const isAuthenticated = status === "authenticated" && Boolean(session?.user) && Boolean(token);
   const userId = session?.user?.id;
 
+  // --- Identity Handshake (session-state only) ---
+  // A visitor must supply an identifying email before any chat message can be sent,
+  // bot or live-agent. Authenticated customers skip the Handshake entirely — their
+  // account email is used automatically. The captured/derived email is held here in
+  // session state, ready to be attached to outbound calls built in later tickets.
+  const [handshakeEmail, setHandshakeEmail] = useState<string | null>(null);
+  const accountEmail = session?.user?.email ?? null;
+  const identityEmail = isAuthenticated ? accountEmail : handshakeEmail;
+  const isIdentified = Boolean(identityEmail);
+
+  const submitHandshakeEmail = useCallback((email: string) => {
+    const normalized = email.trim().toLowerCase();
+    // Minimal shape check — full validation/Identity Resolution happens server-side.
+    const looksLikeEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalized);
+    if (!looksLikeEmail) {
+      setError("Please enter a valid email address to start the chat.");
+      return false;
+    }
+    setHandshakeEmail(normalized);
+    setError(null);
+    return true;
+  }, []);
+
   const handleReceiveMessage = useCallback((msg: ChatMessage) => {
     setMessages((prev) => (prev.some((m) => m.id === msg.id) ? prev : [...prev, msg]));
   }, []);
@@ -136,6 +159,15 @@ export function useChat(initialTicketId?: string, options?: UseChatOptions) {
       const text = content.trim();
       if (!text) return;
 
+      // Identity Handshake gate: no message (bot or live-agent) leaves the widget
+      // until the visitor is identified. Authenticated customers are always
+      // identified via their account email, so this only blocks anonymous visitors
+      // who haven't completed the Handshake yet.
+      if (!isIdentified) {
+        setError("Please provide your email to start the chat.");
+        return;
+      }
+
       const currentUserId = userId || "guest";
       const currentUserName = session?.user?.name || "Guest";
 
@@ -184,7 +216,7 @@ export function useChat(initialTicketId?: string, options?: UseChatOptions) {
         setIsBotReplying(false);
       }
     },
-    [botPhase, ticketId, userId, session?.user?.name, token, isAuthenticated, sendSignalRMessage]
+    [botPhase, ticketId, userId, session?.user?.name, token, isAuthenticated, isIdentified, sendSignalRMessage]
   );
 
   return {
@@ -202,5 +234,9 @@ export function useChat(initialTicketId?: string, options?: UseChatOptions) {
     sendMessage,
     escalateToLiveAgent,
     ticketId,
+    // Identity Handshake
+    isIdentified,
+    identityEmail,
+    submitHandshakeEmail,
   };
 }

@@ -20,6 +20,8 @@ interface ChatPanelProps {
   error: string | null;
   isAuthenticated: boolean;
   userId?: string;
+  isIdentified: boolean;
+  submitHandshakeEmail: (email: string) => boolean;
 }
 
 export function ChatPanel({
@@ -35,9 +37,12 @@ export function ChatPanel({
   error,
   isAuthenticated,
   userId,
+  isIdentified,
+  submitHandshakeEmail,
 }: ChatPanelProps) {
   const [input, setInput] = useState("");
   const [isSending, setIsSending] = useState(false);
+  const [handshakeInput, setHandshakeInput] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -63,6 +68,14 @@ export function ChatPanel({
   };
 
   const isLive = botPhase === "LIVE_AGENT";
+
+  const handleHandshakeSubmit = (e: FormEvent) => {
+    e.preventDefault();
+    const email = handshakeInput.trim();
+    if (!email) return;
+    const ok = submitHandshakeEmail(email);
+    if (ok) setHandshakeInput("");
+  };
 
   return (
     <div className="fixed bottom-20 right-5 z-50 flex h-[530px] w-80 flex-col overflow-hidden rounded-2xl border border-purple-200/80 bg-white shadow-2xl transition-all sm:w-96">
@@ -170,29 +183,58 @@ export function ChatPanel({
 
 
           {/* Input Footer */}
-          <form onSubmit={handleSubmit} className="border-t border-slate-100 bg-slate-50/50 p-3">
-            <div className="flex items-center gap-2">
-              <input
-                type="text"
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                placeholder={isLive ? "Type a message to agent..." : "Ask AI support assistant..."}
-                disabled={isBotReplying}
-                className="flex-1 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs text-slate-900 placeholder-slate-400 focus:border-[#451077] focus:outline-none focus:ring-1 focus:ring-[#451077] disabled:opacity-50"
-              />
-              <button
-                type="submit"
-                disabled={!input.trim() || isSending || isBotReplying}
-                className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#451077] text-white shadow-sm hover:bg-[#340c5a] disabled:opacity-50 disabled:hover:bg-[#451077]"
-              >
-                {isSending ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Send className="h-4 w-4" />
-                )}
-              </button>
-            </div>
-          </form>
+          {!isIdentified ? (
+            <form
+              onSubmit={handleHandshakeSubmit}
+              className="border-t border-slate-100 bg-slate-50/50 p-3"
+            >
+              <p className="mb-2 flex items-center gap-1.5 text-[11px] font-medium text-slate-600">
+                <UserCheck className="h-3.5 w-3.5 text-[#451077]" />
+                Enter your email to start chatting with us.
+              </p>
+              <div className="flex items-center gap-2">
+                <input
+                  type="email"
+                  value={handshakeInput}
+                  onChange={(e) => setHandshakeInput(e.target.value)}
+                  placeholder="you@example.com"
+                  aria-label="Your email"
+                  className="flex-1 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs text-slate-900 placeholder-slate-400 focus:border-[#451077] focus:outline-none focus:ring-1 focus:ring-[#451077]"
+                />
+                <button
+                  type="submit"
+                  disabled={!handshakeInput.trim()}
+                  className="flex h-9 items-center justify-center rounded-xl bg-[#451077] px-3 text-xs font-semibold text-white shadow-sm hover:bg-[#340c5a] disabled:opacity-50 disabled:hover:bg-[#451077]"
+                >
+                  Start
+                </button>
+              </div>
+            </form>
+          ) : (
+            <form onSubmit={handleSubmit} className="border-t border-slate-100 bg-slate-50/50 p-3">
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  placeholder={isLive ? "Type a message to agent..." : "Ask AI support assistant..."}
+                  disabled={isBotReplying}
+                  className="flex-1 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs text-slate-900 placeholder-slate-400 focus:border-[#451077] focus:outline-none focus:ring-1 focus:ring-[#451077] disabled:opacity-50"
+                />
+                <button
+                  type="submit"
+                  disabled={!input.trim() || isSending || isBotReplying}
+                  className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#451077] text-white shadow-sm hover:bg-[#340c5a] disabled:opacity-50 disabled:hover:bg-[#451077]"
+                >
+                  {isSending ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Send className="h-4 w-4" />
+                  )}
+                </button>
+              </div>
+            </form>
+          )}
         </>
       )}
     </div>

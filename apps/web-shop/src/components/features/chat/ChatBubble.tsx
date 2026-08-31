@@ -22,6 +22,8 @@ export function ChatBubble() {
     isAuthenticated,
     sendMessage,
     escalateToLiveAgent,
+    isIdentified,
+    submitHandshakeEmail,
   } = useChat();
 
   const isSupportPage = pathname?.startsWith("/support");
@@ -61,6 +63,8 @@ export function ChatBubble() {
         botPhase={botPhase}
         error={error}
         isAuthenticated={isAuthenticated}
+        isIdentified={isIdentified}
+        submitHandshakeEmail={submitHandshakeEmail}
       />
     </>
   );
