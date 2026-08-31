@@ -11,16 +11,25 @@ using Microsoft.AspNetCore.SignalR;
 /// staff replies (fetched by the polling loop in #125) are relayed down the same
 /// group.
 /// </summary>
-public sealed class ChatHub(IChatConversationService conversationService) : Hub
+public sealed class ChatHub(
+    IChatConversationService conversationService,
+    IChatSessionRegistry sessionRegistry) : Hub
 {
     public const string HubPath = "/hubs/chat";
 
-    /// <summary>Joins the caller to a conversation's group so it receives its messages.</summary>
-    public Task JoinConversation(string conversationId)
-        => Groups.AddToGroupAsync(Context.ConnectionId, GroupName(conversationId));
+    /// <summary>Joins the caller to a conversation's group so it receives its messages,
+    /// and marks the conversation active so the staff-reply poller polls it.</summary>
+    public async Task JoinConversation(string conversationId)
+    {
+        await Groups.AddToGroupAsync(Context.ConnectionId, GroupName(conversationId));
+        sessionRegistry.Register(conversationId);
+    }
 
-    public Task LeaveConversation(string conversationId)
-        => Groups.RemoveFromGroupAsync(Context.ConnectionId, GroupName(conversationId));
+    public async Task LeaveConversation(string conversationId)
+    {
+        await Groups.RemoveFromGroupAsync(Context.ConnectionId, GroupName(conversationId));
+        sessionRegistry.Unregister(conversationId);
+    }
 
     /// <summary>
     /// Posts a customer chat message. The Identity Handshake email must be present —

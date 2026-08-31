@@ -78,4 +78,40 @@ public sealed class MessageService(IMessageRepository messageRepository) : IMess
         var messages = await messageRepository.ListMessagesAsync(ticketId, cancellationToken);
         return MessageMapper.ToDtos(messages);
     }
+
+    public async Task<IReadOnlyList<MessageDto>?> ListMessagesSinceAsync(
+        Guid ticketId,
+        DateTimeOffset? since,
+        CancellationToken cancellationToken)
+    {
+        if (!await messageRepository.TicketExistsAsync(ticketId, cancellationToken))
+        {
+            return null;
+        }
+
+        var messages = await messageRepository.ListMessagesSinceAsync(ticketId, since, cancellationToken);
+        return MessageMapper.ToDtos(messages);
+    }
+
+    public async Task<IReadOnlyList<MessageDto>?> ListMessagesByConversationSinceAsync(
+        string conversationId,
+        DateTimeOffset? since,
+        CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(conversationId))
+        {
+            return null;
+        }
+
+        var ticketId = await messageRepository.GetTicketIdByExternalThreadAsync(
+            conversationId.Trim(), cancellationToken);
+        if (ticketId is null)
+        {
+            return null;
+        }
+
+        var messages = await messageRepository.ListMessagesSinceAsync(
+            ticketId.Value, since, cancellationToken);
+        return MessageMapper.ToDtos(messages);
+    }
 }

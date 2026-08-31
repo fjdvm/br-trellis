@@ -11,9 +11,12 @@ public sealed class MessageController(IMessageService messageService) : Controll
     [HttpGet]
     public async Task<ActionResult<IReadOnlyList<MessageDto>>> ListMessages(
         Guid ticketId,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        [FromQuery] DateTimeOffset? since = null)
     {
-        var messages = await messageService.ListMessagesAsync(ticketId, cancellationToken);
+        var messages = since is null
+            ? await messageService.ListMessagesAsync(ticketId, cancellationToken)
+            : await messageService.ListMessagesSinceAsync(ticketId, since, cancellationToken);
         return messages is null ? NotFound() : Ok(messages);
     }
 

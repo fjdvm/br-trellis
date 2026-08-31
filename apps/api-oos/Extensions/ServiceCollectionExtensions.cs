@@ -47,6 +47,11 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ApiOos.Interfaces.Services.IChatBroadcaster, ApiOos.Services.SignalRChatBroadcaster>();
         services.AddScoped<ApiOos.Interfaces.Services.IChatConversationService, ApiOos.Services.ChatConversationService>();
 
+        // Staff-reply delivery via polling api-crms + hub relay (#125)
+        services.AddSingleton<ApiOos.Interfaces.Services.IChatSessionRegistry, ApiOos.Services.InMemoryChatSessionRegistry>();
+        services.AddScoped<ApiOos.Interfaces.Services.ICrmMessageReader, ApiOos.Services.CrmMessageReader>();
+        services.AddScoped<ApiOos.Services.StaffReplyRelayService>();
+
         // Outbound Ecommerce webhook client → api-crms (ADR 0001/0002: CRMS is a
         // passive, HMAC-signed receiver; api-oos is the caller).
         services.AddScoped<ApiOos.Interfaces.Services.IEcommerceWebhookClient, ApiOos.Services.EcommerceWebhookClient>();

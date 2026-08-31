@@ -37,4 +37,26 @@ public sealed class MessageRepository(AppDbContext dbContext) : IMessageReposito
             .OrderBy(m => m.SentAt)
             .ToList();
     }
+
+    public async Task<IReadOnlyList<Message>> ListMessagesSinceAsync(
+        Guid ticketId, DateTimeOffset? since, CancellationToken cancellationToken)
+    {
+        // Filter/order client-side: SQLite cannot compare/ORDER BY DateTimeOffset in SQL.
+        var messages = await dbContext.Messages.AsNoTracking()
+            .Where(m => m.TicketId == ticketId)
+            .ToListAsync(cancellationToken);
+
+        return messages
+            .Where(m => since is null || m.SentAt > since.Value)
+            .OrderBy(m => m.SentAt)
+            .ToList();
+    }
+
+    public async Task<Guid?> GetTicketIdByExternalThreadAsync(
+        string conversationId, CancellationToken cancellationToken)
+    {
+        var ticket = await dbContext.Tickets.AsNoTracking()
+            .FirstOrDefaultAsync(t => t.ExternalThreadId == conversationId, cancellationToken);
+        return ticket?.Id;
+    }
 }

@@ -26,6 +26,7 @@ builder.Host.UseSerilog();
 // Add services to the container
 builder.Services.AddControllers();
 builder.Services.AddSignalR();
+builder.Services.AddHostedService<ApiOos.Services.StaffReplyPollingService>();
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddValidatorsFromAssemblyContaining<LoginRequestValidator>();
 builder.Services.AddDatabase(builder.Configuration);

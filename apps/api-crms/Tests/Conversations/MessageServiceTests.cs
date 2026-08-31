@@ -283,6 +283,54 @@ public sealed class MessageServiceTests : IDisposable
         File.Delete(_databasePath);
     }
 
+    [Fact]
+    public async Task ListMessagesSince_returns_only_messages_after_the_watermark()
+    {
+        await using var context = CreateContext();
+        var ticketId = await SeedTicketAsync(context, contactId: null);
+        var service = CreateService(context);
+
+        var t0 = DateTimeOffset.UtcNow.AddMinutes(-10);
+        var watermark = DateTimeOffset.UtcNow.AddMinutes(-5);
+        await SeedMessageAsync(context, ticketId, "old", t0);
+        await SeedMessageAsync(context, ticketId, "new-1", watermark.AddMinutes(1));
+        await SeedMessageAsync(context, ticketId, "new-2", watermark.AddMinutes(2));
+
+        var result = await service.ListMessagesSinceAsync(ticketId, watermark, CancellationToken.None);
+
+        Assert.NotNull(result);
+        Assert.Equal(new[] { "new-1", "new-2" }, result!.Select(m => m.Content).ToArray());
+    }
+
+    [Fact]
+    public async Task ListMessagesSince_with_null_watermark_returns_all_messages_in_order()
+    {
+        await using var context = CreateContext();
+        var ticketId = await SeedTicketAsync(context, contactId: null);
+        var service = CreateService(context);
+
+        var now = DateTimeOffset.UtcNow;
+        await SeedMessageAsync(context, ticketId, "first", now.AddMinutes(-2));
+        await SeedMessageAsync(context, ticketId, "second", now.AddMinutes(-1));
+
+        var result = await service.ListMessagesSinceAsync(ticketId, null, CancellationToken.None);
+
+        Assert.NotNull(result);
+        Assert.Equal(new[] { "first", "second" }, result!.Select(m => m.Content).ToArray());
+    }
+
+    [Fact]
+    public async Task ListMessagesSince_returns_null_for_missing_ticket()
+    {
+        await using var context = CreateContext();
+        var service = CreateService(context);
+
+        var result = await service.ListMessagesSinceAsync(
+            Guid.NewGuid(), DateTimeOffset.UtcNow, CancellationToken.None);
+
+        Assert.Null(result);
+    }
+
     private MessageService CreateService(AppDbContext context)
     {
         return new MessageService(new MessageRepository(context));
