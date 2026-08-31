@@ -65,6 +65,10 @@ builder.Services.AddScoped<IMessageService, MessageService>();
 builder.Services.AddScoped<IEmailRepository, EmailRepository>();
 builder.Services.AddScoped<IEmailIngestionService, EmailIngestionService>();
 
+// Shop-chat Ticket/Message ingestion webhook (#122)
+builder.Services.AddScoped<ITicketIngestionRepository, TicketIngestionRepository>();
+builder.Services.AddScoped<ITicketIngestionService, TicketIngestionService>();
+
 // Canned Replies
 builder.Services.AddScoped<ICannedReplyCategoryRepository, CannedReplyCategoryRepository>();
 builder.Services.AddScoped<ICannedReplyCategoryService, CannedReplyCategoryService>();
