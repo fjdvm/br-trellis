@@ -95,6 +95,26 @@ public sealed class EcommerceWebhookIntegrationTests
         Assert.Equal(1, db.Orders.Count(o => o.PlatformOrderId == "order-int-dup"));
     }
 
+    [Fact]
+    public async Task Signed_order_without_contactId_resolves_contact_from_email()
+    {
+        // #121: an order carrying only a CustomerEmail (no ContactId) must still
+        // land a Contact-linked Order, resolved via ContactIdentityService.
+        var email = $"resolve-{Guid.NewGuid():N}@example.com";
+        var eventId = $"evt-{Guid.NewGuid():N}";
+        var body = BuildEmailOrderPayload(eventId, "order-int-email", email, 75.50m);
+
+        var response = await PostSignedAsync(body);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+        using var scope = _factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var order = db.Orders.Single(o => o.PlatformOrderId == "order-int-email");
+        var contact = db.Contacts.Single(c => c.Email == email);
+        Assert.Equal(contact.Id, order.ContactId);
+    }
+
     private async Task<HttpResponseMessage> PostSignedAsync(string body)
     {
         var content = new StringContent(body, Encoding.UTF8, "application/json");
@@ -115,6 +135,29 @@ public sealed class EcommerceWebhookIntegrationTests
                 OrderId = orderId,
                 ContactId = contactId.ToString(),
                 Status = status,
+                Total = total,
+                RefundedAmount = 0m,
+                OccurredAt = DateTimeOffset.UtcNow.ToString("O"),
+                LineItems = new[]
+                {
+                    new { ProductId = "prod-1", ProductName = "Widget", Quantity = 1, UnitPrice = total },
+                },
+            },
+        });
+    }
+
+    private static string BuildEmailOrderPayload(
+        string eventId, string orderId, string email, decimal total)
+    {
+        return System.Text.Json.JsonSerializer.Serialize(new
+        {
+            EventId = eventId,
+            EventType = "order.created",
+            Data = new
+            {
+                OrderId = orderId,
+                CustomerEmail = email,
+                Status = "paid",
                 Total = total,
                 RefundedAmount = 0m,
                 OccurredAt = DateTimeOffset.UtcNow.ToString("O"),

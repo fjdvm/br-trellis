@@ -33,7 +33,19 @@ public class OrderServiceTests : IDisposable
         _cartRepository = new CartRepository(_context);
         _orderRepository = new OrderRepository(_context);
         _cartService = new CartService(_cartRepository, new ProductRepository(_context));
-        _orderService = new OrderService(_cartRepository, _orderRepository, _context);
+        _orderService = new OrderService(
+            _cartRepository,
+            _orderRepository,
+            _context,
+            new UserRepository(_context),
+            new NoOpEcommerceWebhookClient());
+    }
+
+    private sealed class NoOpEcommerceWebhookClient : ApiOos.Interfaces.Services.IEcommerceWebhookClient
+    {
+        public Task SendAsync(
+            ApiOos.DTOs.Webhooks.EcommerceWebhookEvent webhookEvent,
+            CancellationToken cancellationToken = default) => Task.CompletedTask;
     }
 
     public void Dispose()

@@ -13,18 +13,15 @@ public class AuthService : IAuthService
 {
     private readonly IUserRepository _userRepository;
     private readonly JwtTokenHelper _jwtTokenHelper;
-    private readonly ISentraCxService _sentraCxService;
     private readonly ILogger<AuthService> _logger;
 
     public AuthService(
         IUserRepository userRepository,
         JwtTokenHelper jwtTokenHelper,
-        ISentraCxService sentraCxService,
         ILogger<AuthService> logger)
     {
         _userRepository = userRepository;
         _jwtTokenHelper = jwtTokenHelper;
-        _sentraCxService = sentraCxService;
         _logger = logger;
     }
 
@@ -48,15 +45,8 @@ public class AuthService : IAuthService
 
         await _userRepository.CreateAsync(user);
 
-        // Notify SentraCX CRM so the customer profile is created
-        try
-        {
-            await _sentraCxService.EnsureCustomerSignupAsync(user.Id, user.FullName, user.Email);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogWarning(ex, "Failed to sync new user {UserId} to SentraCX CRM.", user.Id);
-        }
+        // Contact creation/resolution in api-crms now happens lazily via order (and
+        // later ticket) ingestion — no explicit signup webhook is sent (#121).
 
         var accessToken = _jwtTokenHelper.GenerateAccessToken(user);
         var userDto = MapToUserDto(user);

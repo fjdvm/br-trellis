@@ -7,8 +7,11 @@ using api_crms.Models;
 namespace api_crms.Services;
 
 public sealed class EcommerceIngestionService(
-    IEcommerceRepository ecommerceRepository) : IEcommerceIngestionService
+    IEcommerceRepository ecommerceRepository,
+    IContactIdentityService contactIdentityService) : IEcommerceIngestionService
 {
+    private const string EcommerceSourceSystem = "ecommerce";
+
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
         PropertyNameCaseInsensitive = true,
@@ -61,7 +64,7 @@ public sealed class EcommerceIngestionService(
     private async Task ProcessOrderEventAsync(
         EcommerceEventData data, string eventType, CancellationToken cancellationToken)
     {
-        var contactId = ParseGuid(data.ContactId, "ContactId");
+        var contactId = await ResolveOrderContactIdAsync(data, cancellationToken);
         var now = ParseTimestamp(data.OccurredAt);
 
         var status = ParseOrderStatus(data.Status);
@@ -103,7 +106,7 @@ public sealed class EcommerceIngestionService(
     private async Task ProcessOrderRefundedAsync(
         EcommerceEventData data, CancellationToken cancellationToken)
     {
-        var contactId = ParseGuid(data.ContactId, "ContactId");
+        var contactId = await ResolveOrderContactIdAsync(data, cancellationToken);
         var now = ParseTimestamp(data.OccurredAt);
 
         var order = new Order
@@ -229,6 +232,43 @@ public sealed class EcommerceIngestionService(
         if (string.IsNullOrWhiteSpace(value) || !Guid.TryParse(value, out var result))
             throw new InvalidOperationException($"{fieldName} is required and must be a valid GUID.");
         return result;
+    }
+
+    /// <summary>
+    /// Determines the Contact an order belongs to. When the event already carries a
+    /// resolved <c>ContactId</c> we use it directly (unchanged behaviour). Otherwise,
+    /// when a <c>CustomerEmail</c> is present, we defer to Identity Resolution
+    /// (<see cref="IContactIdentityService"/>) — matching a returning customer or
+    /// creating a new Contact — so api-oos never needs a separate resolution call.
+    /// </summary>
+    private async Task<Guid> ResolveOrderContactIdAsync(
+        EcommerceEventData data, CancellationToken cancellationToken)
+    {
+        if (!string.IsNullOrWhiteSpace(data.ContactId))
+        {
+            return ParseGuid(data.ContactId, "ContactId");
+        }
+
+        var email = data.CustomerEmail?.Trim();
+        if (string.IsNullOrWhiteSpace(email))
+        {
+            throw new InvalidOperationException(
+                "An order event must carry either a ContactId or a CustomerEmail.");
+        }
+
+        // Key the source reference on the customer's email so repeated orders from the
+        // same shopper resolve to a single Contact, independent of the order id.
+        var sourceId = $"customer:{email.ToLowerInvariant()}";
+        var result = await contactIdentityService.ResolveOrCreateContactAsync(
+            new ResolveOrCreateContactCommand(
+                SourceSystem: EcommerceSourceSystem,
+                SourceId: sourceId,
+                Name: null,
+                Email: email,
+                Phone: null),
+            cancellationToken);
+
+        return result.ContactId;
     }
 
     private static OrderStatus ParseOrderStatus(string? status)

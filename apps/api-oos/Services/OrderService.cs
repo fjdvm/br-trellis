@@ -3,12 +3,14 @@ namespace ApiOos.Services;
 using ApiOos.Data;
 using ApiOos.DTOs.Requests.Orders;
 using ApiOos.DTOs.Responses.Orders;
+using ApiOos.DTOs.Webhooks;
 using ApiOos.Enums;
 using ApiOos.Interfaces.Repositories;
 using ApiOos.Interfaces.Services;
 using ApiOos.Mappers;
 using ApiOos.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 
 public class OrderService : IOrderService
@@ -16,17 +18,26 @@ public class OrderService : IOrderService
     private readonly ICartRepository _cartRepository;
     private readonly IOrderRepository _orderRepository;
     private readonly AppDbContext _context;
+    private readonly IUserRepository _userRepository;
+    private readonly IEcommerceWebhookClient _ecommerceWebhookClient;
+    private readonly ILogger<OrderService>? _logger;
     private static readonly decimal FlatShippingFee = 100.00m;
     private static readonly decimal TaxRate = 0.00m;
 
     public OrderService(
         ICartRepository cartRepository,
         IOrderRepository orderRepository,
-        AppDbContext context)
+        AppDbContext context,
+        IUserRepository userRepository,
+        IEcommerceWebhookClient ecommerceWebhookClient,
+        ILogger<OrderService>? logger = null)
     {
         _cartRepository = cartRepository;
         _orderRepository = orderRepository;
         _context = context;
+        _userRepository = userRepository;
+        _ecommerceWebhookClient = ecommerceWebhookClient;
+        _logger = logger;
     }
 
     public async Task<CheckoutSummaryDto> CalculateCheckoutSummaryAsync(Guid userId)
@@ -144,7 +155,9 @@ public class OrderService : IOrderService
 
             await transaction.CommitAsync();
 
-            return OrderMapper.ToDto(order);
+            var orderDto = OrderMapper.ToDto(order);
+            await DispatchOrderCreatedAsync(order, userId);
+            return orderDto;
         }
         catch
         {
@@ -152,6 +165,59 @@ public class OrderService : IOrderService
             throw;
         }
     }
+
+    /// <summary>
+    /// Sends an <c>order.created</c> event to api-crms's Ecommerce webhook. The
+    /// event carries the customer's email (no ContactId) so api-crms resolves the
+    /// Contact via Identity Resolution. Delivery failures are logged, never thrown —
+    /// api-crms is a passive receiver and must not be able to fail checkout.
+    /// </summary>
+    private async Task DispatchOrderCreatedAsync(Order order, Guid userId)
+    {
+        try
+        {
+            var user = await _userRepository.GetByIdAsync(userId);
+            var webhookEvent = new EcommerceWebhookEvent
+            {
+                EventId = Guid.NewGuid().ToString(),
+                EventType = "order.created",
+                Data = new EcommerceWebhookData
+                {
+                    OrderId = order.OrderNumber,
+                    CustomerEmail = user?.Email,
+                    Status = MapOrderStatus(order.Status),
+                    Total = order.TotalAmount,
+                    RefundedAmount = 0m,
+                    OccurredAt = order.CreatedAt.ToUniversalTime().ToString("O"),
+                    LineItems = order.Items.Select(item => new EcommerceWebhookLineItem
+                    {
+                        ProductId = item.ProductId.ToString(),
+                        ProductName = item.ProductName,
+                        Quantity = item.Quantity,
+                        UnitPrice = item.UnitPrice,
+                    }).ToList(),
+                },
+            };
+
+            await _ecommerceWebhookClient.SendAsync(webhookEvent);
+        }
+        catch (Exception exception)
+        {
+            _logger?.LogWarning(
+                exception,
+                "Failed to deliver order.created webhook for order {OrderNumber} to api-crms.",
+                order.OrderNumber);
+        }
+    }
+
+    private static string MapOrderStatus(OrderStatus status) => status switch
+    {
+        OrderStatus.Processing => "pending",
+        OrderStatus.Shipped => "shipped",
+        OrderStatus.Delivered => "delivered",
+        OrderStatus.Cancelled => "pending",
+        _ => "pending",
+    };
 
     public async Task<OrderDto?> GetOrderByIdAsync(Guid userId, Guid orderId)
     {

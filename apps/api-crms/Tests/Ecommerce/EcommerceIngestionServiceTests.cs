@@ -382,7 +382,11 @@ public sealed class EcommerceIngestionServiceTests : IDisposable
 
     private EcommerceIngestionService CreateService(AppDbContext context)
     {
-        return new EcommerceIngestionService(new EcommerceRepository(context));
+        var identityService = new ContactIdentityService(
+            new ContactIdentityRepository(context),
+            new ContactIdentityOptions());
+        return new EcommerceIngestionService(
+            new EcommerceRepository(context), identityService);
     }
 
     private AppDbContext CreateContext()

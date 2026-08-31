@@ -43,6 +43,19 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ApiOos.Interfaces.Services.ICrmChatbotService, ApiOos.Services.CrmChatbotService>();
         services.AddScoped<ApiOos.Interfaces.Services.IJobService, ApiOos.Services.JobService>();
 
+        // Outbound Ecommerce webhook client → api-crms (ADR 0001/0002: CRMS is a
+        // passive, HMAC-signed receiver; api-oos is the caller).
+        services.AddScoped<ApiOos.Interfaces.Services.IEcommerceWebhookClient, ApiOos.Services.EcommerceWebhookClient>();
+        services.AddHttpClient(ApiOos.Services.EcommerceWebhookClient.HttpClientName, (sp, client) =>
+        {
+            var config = sp.GetRequiredService<IConfiguration>();
+            var crmsUrl = config["ApiCrms:BaseUrl"] ?? "https://localhost:5005";
+            client.BaseAddress = new Uri(crmsUrl.EndsWith('/') ? crmsUrl : crmsUrl + "/");
+        }).ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
+        {
+            ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+        });
+
         services.AddHttpClient("SentraCX", (sp, client) =>
         {
             var config = sp.GetRequiredService<IConfiguration>();
