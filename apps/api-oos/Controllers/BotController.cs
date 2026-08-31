@@ -34,6 +34,13 @@ public class BotController : ControllerBase
     [HttpPost("public-reply")]
     public async Task<ActionResult<BotReplyResponseDto>> GetPublicReply([FromBody] BotReplyRequestDto dto)
     {
+        // Identity Handshake gate: an anonymous visitor must have supplied an email
+        // before any bot reply — no fully-anonymous messaging (user story 29).
+        if (string.IsNullOrWhiteSpace(dto.CustomerEmail))
+        {
+            return BadRequest("An email (Identity Handshake) is required before chatting.");
+        }
+
         var reply = await _chatbotService.GetPublicBotReplyAsync(dto.UserMessage);
         return Ok(reply);
     }

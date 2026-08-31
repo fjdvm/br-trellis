@@ -65,16 +65,6 @@ public static class ServiceCollectionExtensions
             ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
         });
 
-        services.AddHttpClient("SentraCX", (sp, client) =>
-        {
-            var config = sp.GetRequiredService<IConfiguration>();
-            var crmUrl = config["SentraCX:ApiUrl"] ?? "http://localhost:5005";
-            client.BaseAddress = new Uri(crmUrl);
-        }).ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
-        {
-            ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
-        });
-
         return services;
     }
 
