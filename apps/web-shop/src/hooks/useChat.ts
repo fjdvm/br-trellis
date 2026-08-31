@@ -61,6 +61,8 @@ export function useChat(initialTicketId?: string, options?: UseChatOptions) {
     ticketId,
     isAuthenticated,
     userId,
+    identityEmail,
+    customerName: session?.user?.name ?? null,
     botPhase,
     isOpen,
     onReceiveMessage: handleReceiveMessage,

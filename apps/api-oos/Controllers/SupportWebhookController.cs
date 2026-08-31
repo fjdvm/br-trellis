@@ -4,32 +4,31 @@ using System.Security.Claims;
 using ApiOos.Constants;
 using ApiOos.DTOs.Responses;
 using ApiOos.Exceptions;
-using ApiOos.Interfaces.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
+/// <summary>
+/// Issues a chat conversation id for an authenticated customer starting a live-agent
+/// chat session. Previously created a ticket in SentraCX; now the conversation is
+/// created lazily in api-crms via the Tickets webhook when the first message is sent
+/// through the chat hub. This endpoint just mints the conversation id the browser
+/// uses to join the hub group.
+/// </summary>
 [Authorize(AuthenticationSchemes = AuthSchemes.Customer)]
 [ApiController]
 [Route("api/webhooks")]
 public class SupportWebhookController : ControllerBase
 {
-    private readonly ISentraCxService _sentraCxService;
-    private readonly IUserService _userService;
-
-    public SupportWebhookController(ISentraCxService sentraCxService, IUserService userService)
-    {
-        _sentraCxService = sentraCxService;
-        _userService = userService;
-    }
-
     [HttpPost("support-ticket")]
-    public async Task<ActionResult<SupportTicketResponseDto>> CreateSupportTicket()
+    public ActionResult<SupportTicketResponseDto> CreateSupportTicket()
     {
-        var userId = GetCurrentUserId();
-        var user = await _userService.GetMeAsync(userId);
+        // Ensure the caller is an authenticated customer (identity is used by the
+        // Handshake when messages are sent through the hub).
+        _ = GetCurrentUserId();
 
-        var ticketId = await _sentraCxService.CreateSupportTicketAsync(userId, user.FullName, user.Email);
-        return Ok(new SupportTicketResponseDto { TicketId = ticketId });
+        // Deterministic-enough unique conversation id for this chat session.
+        var conversationId = Guid.NewGuid().ToString();
+        return Ok(new SupportTicketResponseDto { TicketId = conversationId });
     }
 
     private Guid GetCurrentUserId()

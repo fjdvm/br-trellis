@@ -38,10 +38,14 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ApiOos.Interfaces.Services.ICartService, ApiOos.Services.CartService>();
         services.AddScoped<ApiOos.Interfaces.Services.IOrderService, ApiOos.Services.OrderService>();
         services.AddScoped<ApiOos.Interfaces.Services.IContactService, ApiOos.Services.ContactService>();
-        services.AddScoped<ApiOos.Interfaces.Services.ISentraCxService, ApiOos.Services.SentraCxService>();
         services.AddScoped<ApiOos.Interfaces.Services.IReviewService, ApiOos.Services.ReviewService>();
         services.AddScoped<ApiOos.Interfaces.Services.ICrmChatbotService, ApiOos.Services.CrmChatbotService>();
         services.AddScoped<ApiOos.Interfaces.Services.IJobService, ApiOos.Services.JobService>();
+
+        // Chat hub relay + outbound Tickets webhook → api-crms (#124)
+        services.AddScoped<ApiOos.Interfaces.Services.ITicketWebhookClient, ApiOos.Services.TicketWebhookClient>();
+        services.AddScoped<ApiOos.Interfaces.Services.IChatBroadcaster, ApiOos.Services.SignalRChatBroadcaster>();
+        services.AddScoped<ApiOos.Interfaces.Services.IChatConversationService, ApiOos.Services.ChatConversationService>();
 
         // Outbound Ecommerce webhook client → api-crms (ADR 0001/0002: CRMS is a
         // passive, HMAC-signed receiver; api-oos is the caller).

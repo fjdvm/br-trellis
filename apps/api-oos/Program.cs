@@ -25,6 +25,7 @@ builder.Host.UseSerilog();
 
 // Add services to the container
 builder.Services.AddControllers();
+builder.Services.AddSignalR();
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddValidatorsFromAssemblyContaining<LoginRequestValidator>();
 builder.Services.AddDatabase(builder.Configuration);
@@ -71,6 +72,7 @@ app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
+app.MapHub<ApiOos.Hubs.ChatHub>(ApiOos.Hubs.ChatHub.HubPath);
 
 using (var scope = app.Services.CreateScope())
 {
