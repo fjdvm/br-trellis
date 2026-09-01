@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
+import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { Headphones, Plus, Clock, ShieldCheck, Loader2, ArrowRight } from "lucide-react";
 import { supportApi } from "@/lib/api/support-api";
@@ -13,27 +14,29 @@ interface ProfileTicketsTabProps {
 }
 
 export function ProfileTicketsTab({ userId, onOpenLiveChat }: ProfileTicketsTabProps) {
+  const { data: session } = useSession();
+  const token = (session as { accessToken?: string })?.accessToken;
   const [tickets, setTickets] = useState<TicketSummary[]>([]);
   const [isLoading, setIsLoading] = useState(!!userId);
   const [isSubmitDialogOpen, setIsSubmitDialogOpen] = useState(false);
   const [statusFilter, setStatusFilter] = useState<string>("All");
 
   const loadTickets = useCallback(async (silent = false) => {
-    if (!userId) {
+    if (!token) {
       return;
     }
     if (!silent) setIsLoading(true);
-    const data = await supportApi.getCustomerTickets(userId);
+    const data = await supportApi.getCustomerTickets(token);
     setTickets(data);
     if (!silent) setIsLoading(false);
-  }, [userId]);
+  }, [token]);
 
   useEffect(() => {
-    if (!userId) return;
+    if (!token) return;
 
     let cancelled = false;
 
-    supportApi.getCustomerTickets(userId).then((data) => {
+    supportApi.getCustomerTickets(token).then((data) => {
       if (!cancelled) {
         setTickets(data);
         setIsLoading(false);
@@ -42,7 +45,7 @@ export function ProfileTicketsTab({ userId, onOpenLiveChat }: ProfileTicketsTabP
 
     // Poll for ticket updates every 10 seconds
     const interval = setInterval(() => {
-      supportApi.getCustomerTickets(userId).then((data) => {
+      supportApi.getCustomerTickets(token).then((data) => {
         if (!cancelled) {
           setTickets(data);
         }
@@ -53,7 +56,7 @@ export function ProfileTicketsTab({ userId, onOpenLiveChat }: ProfileTicketsTabP
       cancelled = true;
       clearInterval(interval);
     };
-  }, [userId]);
+  }, [token]);
 
   const getStatusBadge = (status: string) => {
     switch (status) {

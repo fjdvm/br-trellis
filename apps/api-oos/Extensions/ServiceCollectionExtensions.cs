@@ -47,6 +47,8 @@ public static class ServiceCollectionExtensions
         // Shopper support tickets (profile "Submit Ticket") → api-crms via the
         // Tickets webhook. api-oos stores no tickets; the CRM is the record.
         services.AddScoped<ApiOos.Interfaces.Services.ISupportTicketService, ApiOos.Services.SupportTicketService>();
+        // Reads the shopper's tickets back from api-crms for the profile/support table.
+        services.AddScoped<ApiOos.Interfaces.Services.ISupportTicketReader, ApiOos.Services.CrmTicketReader>();
 
         // Chat hub relay + outbound Tickets webhook → api-crms (#124)
         services.AddScoped<ApiOos.Interfaces.Services.ITicketWebhookClient, ApiOos.Services.TicketWebhookClient>();

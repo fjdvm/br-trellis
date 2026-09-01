@@ -19,12 +19,13 @@ export const supportApi = {
     );
   },
 
-  async getCustomerTickets(customerId: string): Promise<TicketSummary[]> {
+  async getCustomerTickets(token?: string): Promise<TicketSummary[]> {
+    // Tickets live in api-crms; api-oos exposes the signed-in shopper's tickets at
+    // GET /support/tickets (filtered by their account email under the hood). A token
+    // is required — without it there's no customer to resolve.
+    if (!token) return [];
     try {
-      const res = await fetch(`${API_BASE_URL}/tickets?customerId=${encodeURIComponent(customerId)}`);
-      if (!res.ok) return [];
-      const data = await res.json();
-      return Array.isArray(data) ? data : data.items || [];
+      return await apiClient.get<TicketSummary[]>("/support/tickets", { token });
     } catch {
       return [];
     }

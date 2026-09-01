@@ -20,10 +20,17 @@ using Microsoft.AspNetCore.Mvc;
 public class SupportController : ControllerBase
 {
     private readonly ISupportTicketService _supportTicketService;
+    private readonly ISupportTicketReader _supportTicketReader;
+    private readonly ApiOos.Interfaces.Repositories.IUserRepository _userRepository;
 
-    public SupportController(ISupportTicketService supportTicketService)
+    public SupportController(
+        ISupportTicketService supportTicketService,
+        ISupportTicketReader supportTicketReader,
+        ApiOos.Interfaces.Repositories.IUserRepository userRepository)
     {
         _supportTicketService = supportTicketService;
+        _supportTicketReader = supportTicketReader;
+        _userRepository = userRepository;
     }
 
     [HttpPost("tickets")]
@@ -34,6 +41,39 @@ public class SupportController : ControllerBase
         var userId = GetCurrentUserId();
         var result = await _supportTicketService.CreateAsync(userId, request, cancellationToken);
         return Ok(result);
+    }
+
+    /// <summary>
+    /// Lists the signed-in shopper's support tickets, read back from api-crms and
+    /// filtered to their account email. Powers the web-shop support/profile tickets
+    /// table so a submitted ticket shows up there.
+    /// </summary>
+    [HttpGet("tickets")]
+    public async Task<ActionResult<IReadOnlyList<ShopperTicketDto>>> ListTickets(
+        CancellationToken cancellationToken)
+    {
+        var userId = GetCurrentUserId();
+        var user = await _userRepository.GetByIdAsync(userId);
+        if (user is null || string.IsNullOrWhiteSpace(user.Email))
+        {
+            return Ok(Array.Empty<ShopperTicketDto>());
+        }
+
+        var tickets = await _supportTicketReader.GetTicketsByEmailAsync(user.Email, cancellationToken);
+
+        var dtos = tickets.Select(t => new ShopperTicketDto
+        {
+            Id = t.Id,
+            Title = t.Title,
+            Description = t.Description ?? string.Empty,
+            Status = t.Status,
+            CustomerId = userId.ToString(),
+            AssignedToName = t.AssignedToName,
+            CreatedAt = t.CreatedAt.ToString("O"),
+            UpdatedAt = t.UpdatedAt.ToString("O"),
+        }).ToList();
+
+        return Ok(dtos);
     }
 
     private Guid GetCurrentUserId()
