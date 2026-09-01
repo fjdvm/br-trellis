@@ -1,5 +1,7 @@
+using api_crms.Authorization;
 using api_crms.DTOs;
 using api_crms.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace api_crms.Controllers;
@@ -21,6 +23,7 @@ public sealed class MessageController(IMessageService messageService) : Controll
     }
 
     [HttpPost]
+    [Authorize(Policy = CrmPermissionPolicies.ConversationsCanWrite)]
     public async Task<ActionResult<MessageDto>> PostMessage(
         Guid ticketId,
         PostMessageDto input,

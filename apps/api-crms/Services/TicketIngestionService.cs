@@ -2,6 +2,7 @@ using System.Text.Json;
 using api_crms.DTOs;
 using api_crms.Enums;
 using api_crms.Interfaces;
+using api_crms.Mappers;
 using api_crms.Models;
 
 namespace api_crms.Services;
@@ -11,11 +12,13 @@ namespace api_crms.Services;
 /// <see cref="EmailIngestionService"/>'s delivery semantics — dedup-by-event-id,
 /// transactional, thread-keyed — but resolves the Contact via
 /// <see cref="IContactIdentityService"/> (email in, Contact out) and tags new
-/// tickets with <see cref="TicketSource.Ecommerce"/>.
+/// tickets with <see cref="TicketSource.Ecommerce"/>. After a successful commit it
+/// broadcasts the same real-time events every write path uses (#140/#141).
 /// </summary>
 public sealed class TicketIngestionService(
     ITicketIngestionRepository ticketRepository,
-    IContactIdentityService contactIdentityService) : ITicketIngestionService
+    IContactIdentityService contactIdentityService,
+    IConversationBroadcaster broadcaster) : ITicketIngestionService
 {
     private const string EcommerceSourceSystem = "ecommerce";
     private const string MessageReceivedEventType = "ticket.message.received";
@@ -46,14 +49,26 @@ public sealed class TicketIngestionService(
             throw new InvalidOperationException($"Unknown event type: {eventType}");
         }
 
-        await ProcessMessageAsync(webhookPayload.Data, cancellationToken);
+        var outcome = await ProcessMessageAsync(webhookPayload.Data, cancellationToken);
 
         await ticketRepository.MarkEventProcessedAsync(eventId, eventType, cancellationToken);
         await transaction.CommitAsync(cancellationToken);
+
+        // Broadcast only after the commit succeeds — a rolled-back ingestion
+        // never reaches here, so a failed write never pushes.
+        await BroadcastAsync(outcome, cancellationToken);
         return true;
     }
 
-    private async Task ProcessMessageAsync(
+    /// <summary>
+    /// Captures what a shop-chat ingestion touched so the caller can broadcast the
+    /// right real-time events after commit: the appended message (to the ticket's
+    /// thread) and either a new-ticket or a status-change event (to the Inbox).
+    /// </summary>
+    private sealed record IngestionOutcome(
+        Ticket Ticket, Message Message, bool IsNewTicket);
+
+    private async Task<IngestionOutcome> ProcessMessageAsync(
         TicketEventData data, CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(data.ConversationId))
@@ -92,7 +107,9 @@ public sealed class TicketIngestionService(
                 UpdatedAt = occurredAt,
             };
             await ticketRepository.AddTicketAsync(ticket, cancellationToken);
-            await AppendMessageAsync(ticket.Id, contactId, data.MessageBody, occurredAt, cancellationToken);
+            var message = await AppendMessageAsync(
+                ticket.Id, contactId, data.MessageBody, occurredAt, cancellationToken);
+            return new IngestionOutcome(ticket, message, IsNewTicket: true);
         }
         else
         {
@@ -100,8 +117,31 @@ public sealed class TicketIngestionService(
             // is set once at creation and never rewritten.
             existing.WaitingOn = WaitingOn.Agent;
             existing.UpdatedAt = occurredAt;
-            await AppendMessageAsync(
+            var message = await AppendMessageAsync(
                 existing.Id, existing.ContactId ?? contactId, data.MessageBody, occurredAt, cancellationToken);
+            return new IngestionOutcome(existing, message, IsNewTicket: false);
+        }
+    }
+
+    /// <summary>
+    /// Pushes the real-time events for a committed shop-chat ingestion: the new
+    /// message to the ticket's thread group (#140), and a ticket-list event to the
+    /// staff Inbox — a new-ticket event when the chat opened a ticket, or a
+    /// status-change event when it flipped an existing ticket's WaitingOn (#141).
+    /// </summary>
+    private async Task BroadcastAsync(IngestionOutcome outcome, CancellationToken cancellationToken)
+    {
+        await broadcaster.BroadcastMessageAsync(
+            outcome.Ticket.Id, MessageMapper.ToDto(outcome.Message), cancellationToken);
+
+        var summary = TicketMapper.ToSummary(outcome.Ticket);
+        if (outcome.IsNewTicket)
+        {
+            await broadcaster.BroadcastNewTicketAsync(summary, cancellationToken);
+        }
+        else
+        {
+            await broadcaster.BroadcastTicketStatusChangedAsync(summary, cancellationToken);
         }
     }
 
@@ -120,7 +160,7 @@ public sealed class TicketIngestionService(
         return result.ContactId;
     }
 
-    private async Task AppendMessageAsync(
+    private async Task<Message> AppendMessageAsync(
         Guid ticketId,
         Guid? senderContactId,
         string body,
@@ -137,6 +177,7 @@ public sealed class TicketIngestionService(
             SentAt = sentAt,
         };
         await ticketRepository.AddMessageAsync(message, cancellationToken);
+        return message;
     }
 
     private static DateTimeOffset ParseTimestamp(string? timestamp)

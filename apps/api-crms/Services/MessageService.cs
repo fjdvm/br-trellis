@@ -6,7 +6,9 @@ using api_crms.Models;
 
 namespace api_crms.Services;
 
-public sealed class MessageService(IMessageRepository messageRepository) : IMessageService
+public sealed class MessageService(
+    IMessageRepository messageRepository,
+    IConversationBroadcaster broadcaster) : IMessageService
 {
     public async Task<MessageDto?> PostMessageAsync(
         Guid ticketId,
@@ -63,7 +65,15 @@ public sealed class MessageService(IMessageRepository messageRepository) : IMess
         }
 
         await messageRepository.AddMessageAsync(message, cancellationToken);
-        return MessageMapper.ToDto(message);
+
+        var dto = MessageMapper.ToDto(message);
+
+        // Push the new message to any agents viewing this ticket's thread. The
+        // write has committed (AddMessageAsync saves), so a live viewer sees the
+        // reply without waiting for the fallback poll.
+        await broadcaster.BroadcastMessageAsync(ticketId, dto, cancellationToken);
+
+        return dto;
     }
 
     public async Task<IReadOnlyList<MessageDto>?> ListMessagesAsync(

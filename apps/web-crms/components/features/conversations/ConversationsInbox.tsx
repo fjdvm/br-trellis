@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { crmClient } from "@/lib/api/crm-client";
 import { useCurrentAgentId } from "@/hooks/useCurrentAgentId";
 import { useRefetchOnFocus } from "@/hooks/useRefetchOnFocus";
+import { useSignalR } from "@/hooks/useSignalR";
 import { MessageThread } from "@/components/features/conversations/MessageThread";
 import { STATUS_BADGE_VARIANT, isActiveStatus, isTerminalStatus } from "@/lib/tickets";
 import { formatConversationTime } from "@/lib/format-conversation-time";
@@ -105,6 +106,34 @@ export function ConversationsInbox({ selectedTicketId }: ConversationsInboxProps
     void loadConversations({ background: true });
   }, [loadConversations]);
   useRefetchOnFocus(refreshInBackground);
+
+  /**
+   * Upsert a ticket pushed in over the real-time hub into the loaded list,
+   * keyed by id so an event for a ticket already present (from the initial
+   * fetch or a prior event) updates that row in place rather than duplicating
+   * it. The `conversations` memo below re-derives the visible worklist from
+   * this state, so a merged ticket that isn't mine or is terminal simply
+   * doesn't render — the Visibility Rule stays the single source of truth.
+   */
+  const mergeTicket = useCallback((ticket: TicketListItem) => {
+    setTickets((prev) => {
+      const index = prev.findIndex((t) => t.id === ticket.id);
+      if (index === -1) {
+        return [...prev, ticket];
+      }
+      const next = [...prev];
+      next[index] = ticket;
+      return next;
+    });
+  }, []);
+
+  // Live ticket-list events (Staff group): a new ticket appearing or an existing
+  // ticket's Status/WaitingOn/assignment changing. `useRefetchOnFocus` remains as
+  // a secondary fallback for anything a dropped connection missed.
+  useSignalR({
+    onNewTicketAvailable: mergeTicket,
+    onTicketStatusChanged: mergeTicket,
+  });
 
   /**
    * The Visibility Rule: my active conversations, most-recently-updated first.

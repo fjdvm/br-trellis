@@ -1,5 +1,6 @@
 using api_crms.Authorization;
 using api_crms.Data;
+using api_crms.Hubs;
 using api_crms.Interfaces;
 using api_crms.Repositories;
 using api_crms.Services;
@@ -65,6 +66,12 @@ builder.Services.AddScoped<IMessageService, MessageService>();
 builder.Services.AddScoped<IEmailRepository, EmailRepository>();
 builder.Services.AddScoped<IEmailIngestionService, EmailIngestionService>();
 
+// Real-time Conversations push (#137). The hub is hosted directly in api-crms
+// (ADR 0004); the broadcaster is the single seam every message/ticket write path
+// uses to push through it.
+builder.Services.AddSignalR();
+builder.Services.AddScoped<IConversationBroadcaster, SignalRConversationBroadcaster>();
+
 // Shop-chat Ticket/Message ingestion webhook (#122)
 builder.Services.AddScoped<ITicketIngestionRepository, TicketIngestionRepository>();
 builder.Services.AddScoped<ITicketIngestionService, TicketIngestionService>();
@@ -109,6 +116,26 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         options.Audience = jwtAudience;
         options.RequireHttpsMetadata = !builder.Environment.IsDevelopment();
         options.TokenValidationParameters.ValidateAudience = false;
+
+        // SignalR-over-JWT: a browser can't set an Authorization header on the
+        // WebSocket upgrade, so the ConversationHub client sends the staff token
+        // as an `access_token` query-string value. Lift it into the request for
+        // the hub path only, so the same bearer scheme authenticates the hub as
+        // the rest of api-crms's agent-facing API.
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = context =>
+            {
+                var accessToken = context.Request.Query["access_token"];
+                var path = context.HttpContext.Request.Path;
+                if (!string.IsNullOrEmpty(accessToken)
+                    && path.StartsWithSegments(ConversationHub.HubPath))
+                {
+                    context.Token = accessToken;
+                }
+                return Task.CompletedTask;
+            },
+        };
     });
 
 builder.Services.AddAuthorization(options =>
@@ -156,6 +183,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+app.MapHub<ConversationHub>(ConversationHub.HubPath);
 
 app.Run();
 

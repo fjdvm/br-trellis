@@ -10,7 +10,7 @@ import type {
 /**
  * Owns fetching, polling, and (feature 4 / #86) optimistic-append state for a
  * single ticket's message thread. Mirrors `useCustomer.ts`'s existing pattern:
- * fetch on mount, a 10s background poll, a request-id guard against
+ * fetch on mount, a 60s background fallback poll, a request-id guard against
  * out-of-order responses, and a `lastOptimisticUpdateRef` that suppresses a
  * background poll for 12s after a local optimistic update so a poll can't
  * clobber a just-sent message before the server has it.
@@ -60,9 +60,12 @@ export function useConversationMessages(ticketId: string) {
 
     fetchMessages(false);
 
+    // Low-frequency fallback poll. Real-time push (useSignalR → appendMessage)
+    // is the primary path now; this poll only recovers a dropped push or a
+    // momentarily-down hub connection, so it runs at 60s rather than 10s.
     const interval = setInterval(() => {
       fetchMessages(true);
-    }, 10000);
+    }, 60000);
 
     return () => {
       clearInterval(interval);
@@ -115,11 +118,29 @@ export function useConversationMessages(ticketId: string) {
     [ticketId]
   );
 
+  /**
+   * Merges a message pushed in over the real-time hub (useSignalR's
+   * `onReceiveMessage`) into thread state, de-duplicating by id so a message
+   * already present — from the initial fetch, a poll, or this agent's own
+   * optimistic send that has since been reconciled — is never appended twice.
+   * This is the guard that stops an agent's own reply from showing twice when
+   * its own broadcast arrives back.
+   */
+  const appendMessage = useCallback((incoming: ConversationMessage) => {
+    setMessages((prev) => {
+      if (prev.some((m) => m.id === incoming.id)) {
+        return prev;
+      }
+      return [...prev, incoming];
+    });
+  }, []);
+
   return {
     messages,
     isLoading,
     error,
     refetch: () => fetchMessages(false),
     sendMessage,
+    appendMessage,
   };
 }

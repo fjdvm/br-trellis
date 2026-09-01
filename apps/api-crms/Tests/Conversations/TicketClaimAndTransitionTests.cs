@@ -289,7 +289,8 @@ public sealed class TicketClaimAndTransitionTests : IDisposable
 
     private TicketService CreateService(AppDbContext context)
     {
-        return new TicketService(new TicketRepository(context), context);
+        return new TicketService(
+            new TicketRepository(context), context, new Helpers.FakeConversationBroadcaster());
     }
 
     private AppDbContext CreateContext()

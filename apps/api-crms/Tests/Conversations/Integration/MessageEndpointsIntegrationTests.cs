@@ -23,6 +23,50 @@ public sealed class MessageEndpointsIntegrationTests
     {
         _factory = factory;
         _client = factory.CreateClient();
+        // POST now requires the ConversationsCanWrite policy (#138). Grant it by
+        // default so the existing post/list behaviour tests exercise an authorized
+        // caller; the unauthenticated-rejection case sends its own headers.
+        _client.DefaultRequestHeaders.Add(
+            "X-Test-Permissions",
+            """{"CRMS":{"Conversations":{"canWrite":true}}}""");
+    }
+
+    [Fact]
+    public async Task Post_message_without_authentication_is_rejected()
+    {
+        var ticketId = SeedTicket(contactId: null);
+
+        // A fresh client with no granted permissions, flagged anonymous — the
+        // TestAuthHandler returns NoResult, so the ConversationsCanWrite policy
+        // challenges the request.
+        using var anonymous = _factory.CreateClient();
+        anonymous.DefaultRequestHeaders.Add("X-Test-Anonymous", "true");
+
+        var response = await anonymous.PostAsJsonAsync(
+            $"/api/v1/tickets/{ticketId}/messages",
+            new { senderType = "Staff", senderStaffId = "auth|a", senderStaffName = "A", content = "hi" });
+
+        Assert.True(
+            response.StatusCode is HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden,
+            $"Expected 401/403 but got {(int)response.StatusCode}.");
+    }
+
+    [Fact]
+    public async Task Post_message_with_authentication_but_without_conversations_write_is_forbidden()
+    {
+        var ticketId = SeedTicket(contactId: null);
+
+        // Authenticated, but lacking Conversations.canWrite — the policy denies.
+        using var readOnly = _factory.CreateClient();
+        readOnly.DefaultRequestHeaders.Add(
+            "X-Test-Permissions",
+            """{"CRMS":{"Ecommerce":{"canRead":true}}}""");
+
+        var response = await readOnly.PostAsJsonAsync(
+            $"/api/v1/tickets/{ticketId}/messages",
+            new { senderType = "Staff", senderStaffId = "auth|a", senderStaffName = "A", content = "hi" });
+
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
     }
 
     [Fact]

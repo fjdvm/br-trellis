@@ -8,6 +8,12 @@ jest.mock("next/navigation", () => ({
   useRouter: () => ({ push: jest.fn() }),
 }));
 
+// Real-time hook is covered by its own test; mock it to a no-op here so the
+// rendered ConversationsInbox doesn't open a live SignalR connection.
+jest.mock("@/hooks/useSignalR", () => ({
+  useSignalR: jest.fn(),
+}));
+
 const AGENT_ID = "20be6bf7-f8cb-40e7-b29c-7f7f15d91aa3";
 
 jest.mock("next-auth/react", () => ({

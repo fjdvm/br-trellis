@@ -5,6 +5,7 @@ using api_crms.Enums;
 using api_crms.Models;
 using api_crms.Repositories;
 using api_crms.Services;
+using api_crms.Tests.Helpers;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
@@ -33,6 +34,102 @@ public sealed class TicketServiceTests : IDisposable
         Assert.Null(result.ContactId);
         Assert.Null(result.Contact);
         Assert.Null(result.AssignedToId);
+    }
+
+    [Fact]
+    public async Task CreateTicket_broadcasts_a_new_ticket_to_the_inbox()
+    {
+        await using var context = CreateContext();
+        var service = CreateService(context);
+
+        var result = await service.CreateTicketAsync(
+            new CreateTicketDto("Cannot log in", null),
+            CancellationToken.None);
+
+        var summary = Assert.Single(_broadcaster.NewTickets);
+        Assert.Equal(result.Id, summary.Id);
+        Assert.Equal("Cannot log in", summary.Subject);
+        Assert.Equal("Unclaimed", summary.Status);
+        Assert.Empty(_broadcaster.StatusChanges);
+    }
+
+    [Fact]
+    public async Task ClaimTicket_broadcasts_a_status_change_to_the_inbox()
+    {
+        await using var context = CreateContext();
+        var service = CreateService(context);
+        var created = await service.CreateTicketAsync(
+            new CreateTicketDto("Needs claiming", null), CancellationToken.None);
+        _broadcaster.StatusChanges.Clear();
+
+        await service.ClaimTicketAsync(
+            created.Id,
+            new ClaimTicketDto("auth|amelia", "Amelia", "amelia@trellis.io"),
+            CancellationToken.None);
+
+        var change = Assert.Single(_broadcaster.StatusChanges);
+        Assert.Equal(created.Id, change.Id);
+        Assert.Equal("Claimed", change.Status);
+        Assert.Equal("auth|amelia", change.AssignedToId);
+    }
+
+    [Fact]
+    public async Task SetWaitingOn_broadcasts_a_status_change_to_the_inbox()
+    {
+        await using var context = CreateContext();
+        var service = CreateService(context);
+        var created = await service.CreateTicketAsync(
+            new CreateTicketDto("Waiting flip", null), CancellationToken.None);
+        _broadcaster.StatusChanges.Clear();
+
+        await service.SetWaitingOnAsync(
+            created.Id, new SetWaitingOnDto("Customer"), CancellationToken.None);
+
+        var change = Assert.Single(_broadcaster.StatusChanges);
+        Assert.Equal(created.Id, change.Id);
+        Assert.Equal("Customer", change.WaitingOn);
+    }
+
+    [Fact]
+    public async Task UnclaimTicket_broadcasts_a_status_change_to_the_inbox()
+    {
+        await using var context = CreateContext();
+        var service = CreateService(context);
+        var created = await service.CreateTicketAsync(
+            new CreateTicketDto("Claim then release", null), CancellationToken.None);
+        await service.ClaimTicketAsync(
+            created.Id, new ClaimTicketDto("auth|amelia", "Amelia", "amelia@trellis.io"),
+            CancellationToken.None);
+        _broadcaster.StatusChanges.Clear();
+
+        await service.UnclaimTicketAsync(created.Id, CancellationToken.None);
+
+        var change = Assert.Single(_broadcaster.StatusChanges);
+        Assert.Equal(created.Id, change.Id);
+        Assert.Equal("Unclaimed", change.Status);
+        Assert.Null(change.AssignedToId);
+    }
+
+    [Fact]
+    public async Task CompleteTicket_via_status_change_broadcasts_to_the_inbox()
+    {
+        await using var context = CreateContext();
+        var service = CreateService(context);
+        var created = await service.CreateTicketAsync(
+            new CreateTicketDto("Run to completion", null), CancellationToken.None);
+        await service.ClaimTicketAsync(
+            created.Id, new ClaimTicketDto("auth|amelia", "Amelia", "amelia@trellis.io"),
+            CancellationToken.None);
+        await service.ChangeStatusAsync(
+            created.Id, new ChangeTicketStatusDto("Ongoing"), CancellationToken.None);
+        _broadcaster.StatusChanges.Clear();
+
+        await service.ChangeStatusAsync(
+            created.Id, new ChangeTicketStatusDto("Completed"), CancellationToken.None);
+
+        var change = Assert.Single(_broadcaster.StatusChanges);
+        Assert.Equal(created.Id, change.Id);
+        Assert.Equal("Completed", change.Status);
     }
 
     [Fact]
@@ -383,9 +480,11 @@ public sealed class TicketServiceTests : IDisposable
         File.Delete(_databasePath);
     }
 
+    private readonly FakeConversationBroadcaster _broadcaster = new();
+
     private TicketService CreateService(AppDbContext context)
     {
-        return new TicketService(new TicketRepository(context), context);
+        return new TicketService(new TicketRepository(context), context, _broadcaster);
     }
 
     private AppDbContext CreateContext()

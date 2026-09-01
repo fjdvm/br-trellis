@@ -6,6 +6,7 @@ import { MessageSquare } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useConversationMessages } from "@/hooks/useConversationMessages";
 import { useCurrentAgentId } from "@/hooks/useCurrentAgentId";
+import { useSignalR } from "@/hooks/useSignalR";
 import { formatName, formatEmail } from "@/lib/format-display";
 import {
   MessageGroupRow,
@@ -71,8 +72,16 @@ export function MessageThread({
 }: MessageThreadProps) {
   const { data: session } = useSession();
   const currentAgentId = useCurrentAgentId();
-  const { messages, isLoading, error, sendMessage } =
+  const { messages, isLoading, error, sendMessage, appendMessage } =
     useConversationMessages(ticketId);
+
+  // Real-time push: a new message on this ticket's thread (a staff reply from
+  // another agent, an inbound email, or an inbound shop-chat message) is
+  // appended live. `appendMessage` de-dups by id, so this agent's own reply —
+  // already shown optimistically and reconciled via the POST response — is not
+  // duplicated when its own broadcast arrives back. The 60s fallback poll in
+  // useConversationMessages still recovers anything a dropped connection missed.
+  useSignalR({ ticketId, onReceiveMessage: appendMessage });
 
   const [draft, setDraft] = useState("");
   const [isSending, setIsSending] = useState(false);

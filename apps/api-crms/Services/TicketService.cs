@@ -9,7 +9,8 @@ namespace api_crms.Services;
 
 public sealed class TicketService(
     ITicketRepository ticketRepository,
-    AppDbContext dbContext) : ITicketService
+    AppDbContext dbContext,
+    IConversationBroadcaster broadcaster) : ITicketService
 {
     public async Task<IReadOnlyList<TicketListItemDto>> ListTicketsAsync(
         string? status,
@@ -105,6 +106,8 @@ public sealed class TicketService(
         await ticketRepository.AddTicketAsync(ticket, cancellationToken);
 
         var full = await ticketRepository.GetTicketByIdAsync(ticket.Id, cancellationToken);
+        await broadcaster.BroadcastNewTicketAsync(
+            TicketMapper.ToSummary(full!), cancellationToken);
         return TicketMapper.ToDetail(full!);
     }
 
@@ -142,6 +145,8 @@ public sealed class TicketService(
         await dbContext.SaveChangesAsync(cancellationToken);
 
         var full = await ticketRepository.GetTicketByIdAsync(id, cancellationToken);
+        await broadcaster.BroadcastTicketStatusChangedAsync(
+            TicketMapper.ToSummary(full!), cancellationToken);
         return TicketMapper.ToDetail(full!);
     }
 
@@ -173,6 +178,8 @@ public sealed class TicketService(
         await dbContext.SaveChangesAsync(cancellationToken);
 
         var full = await ticketRepository.GetTicketByIdAsync(id, cancellationToken);
+        await broadcaster.BroadcastTicketStatusChangedAsync(
+            TicketMapper.ToSummary(full!), cancellationToken);
         return TicketMapper.ToDetail(full!);
     }
 
@@ -207,6 +214,8 @@ public sealed class TicketService(
         await dbContext.SaveChangesAsync(cancellationToken);
 
         var full = await ticketRepository.GetTicketByIdAsync(id, cancellationToken);
+        await broadcaster.BroadcastTicketStatusChangedAsync(
+            TicketMapper.ToSummary(full!), cancellationToken);
         return TicketMapper.ToDetail(full!);
     }
 
@@ -236,6 +245,8 @@ public sealed class TicketService(
         await dbContext.SaveChangesAsync(cancellationToken);
 
         var full = await ticketRepository.GetTicketByIdAsync(id, cancellationToken);
+        await broadcaster.BroadcastTicketStatusChangedAsync(
+            TicketMapper.ToSummary(full!), cancellationToken);
         return TicketMapper.ToDetail(full!);
     }
 

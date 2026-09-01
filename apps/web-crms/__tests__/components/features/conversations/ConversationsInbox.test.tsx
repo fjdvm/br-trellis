@@ -1,7 +1,8 @@
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor, act } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { ConversationsInbox } from "@/components/features/conversations/ConversationsInbox";
 import { crmClient } from "@/lib/api/crm-client";
+import { useSignalR } from "@/hooks/useSignalR";
 import type { TicketListItem } from "@/types/ticket-list";
 
 // Radix/jsdom polyfills consistent with the other conversations suites.
@@ -43,6 +44,13 @@ jest.mock("@/lib/api/crm-client", () => ({
       postStaffMessage: jest.fn(),
     },
   },
+}));
+
+// Real-time hook mocked to a no-op (it's covered by its own test). Capturing the
+// options lets the ticket-list-events suite drive its onNewTicketAvailable /
+// onTicketStatusChanged callbacks directly, without a live SignalR connection.
+jest.mock("@/hooks/useSignalR", () => ({
+  useSignalR: jest.fn(),
 }));
 
 const mocked = {
@@ -303,6 +311,94 @@ describe("ConversationsInbox — pane + navigation", () => {
     await waitFor(() => expect(mocked.getById).toHaveBeenCalledWith("done-1"));
     await waitFor(() =>
       expect(screen.getByLabelText("Reply")).toBeDisabled()
+    );
+  });
+});
+
+
+describe("ConversationsInbox — live ticket-list events", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockUser = {
+      id: "auth|amelia",
+      username: "amelia",
+      name: "amelia ward",
+      email: "amelia.ward@trellis.io",
+    };
+    mocked.listMessages.mockResolvedValue([]);
+  });
+
+  /** The ticket-list callbacks the Inbox handed to useSignalR. */
+  function capturedTicketCallbacks() {
+    const mockUseSignalR = jest.mocked(useSignalR);
+    const call = mockUseSignalR.mock.calls.at(-1);
+    const onNewTicketAvailable = call?.[0]?.onNewTicketAvailable;
+    const onTicketStatusChanged = call?.[0]?.onTicketStatusChanged;
+    if (!onNewTicketAvailable || !onTicketStatusChanged) {
+      throw new Error("useSignalR was not called with ticket-list callbacks");
+    }
+    return { onNewTicketAvailable, onTicketStatusChanged };
+  }
+
+  it("adds a newly-pushed ticket to the worklist without a refetch", async () => {
+    mocked.list.mockResolvedValue([
+      makeTicket({ id: "existing", subject: "Existing convo" }),
+    ]);
+
+    render(<ConversationsInbox />);
+    await screen.findByText("Existing convo");
+
+    act(() => {
+      capturedTicketCallbacks().onNewTicketAvailable(
+        makeTicket({
+          id: "pushed",
+          subject: "Freshly pushed convo",
+          status: "Claimed",
+        })
+      );
+    });
+
+    expect(await screen.findByText("Freshly pushed convo")).toBeInTheDocument();
+    expect(screen.getByText("Existing convo")).toBeInTheDocument();
+  });
+
+  it("updates an existing ticket in place without duplicating its row", async () => {
+    mocked.list.mockResolvedValue([
+      makeTicket({ id: "t-1", subject: "Original subject", status: "Claimed" }),
+    ]);
+
+    render(<ConversationsInbox />);
+    await screen.findByText("Original subject");
+
+    act(() => {
+      capturedTicketCallbacks().onTicketStatusChanged(
+        makeTicket({ id: "t-1", subject: "Updated subject", status: "Ongoing" })
+      );
+    });
+
+    // The row is updated, not duplicated: exactly one conversation row remains.
+    expect(await screen.findByText("Updated subject")).toBeInTheDocument();
+    expect(screen.queryByText("Original subject")).not.toBeInTheDocument();
+    expect(screen.getAllByRole("listitem")).toHaveLength(1);
+  });
+
+  it("drops a ticket from the worklist when a pushed change reassigns it away", async () => {
+    mocked.list.mockResolvedValue([
+      makeTicket({ id: "t-1", subject: "Mine for now", status: "Ongoing" }),
+    ]);
+
+    render(<ConversationsInbox />);
+    await screen.findByText("Mine for now");
+
+    act(() => {
+      // Reassigned to another agent — the Visibility Rule now excludes it.
+      capturedTicketCallbacks().onTicketStatusChanged(
+        makeTicket({ id: "t-1", subject: "Mine for now", assignedToId: "auth|noah" })
+      );
+    });
+
+    await waitFor(() =>
+      expect(screen.queryByText("Mine for now")).not.toBeInTheDocument()
     );
   });
 });

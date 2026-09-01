@@ -5,6 +5,7 @@ using api_crms.Enums;
 using api_crms.Models;
 using api_crms.Repositories;
 using api_crms.Services;
+using api_crms.Tests.Helpers;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
@@ -102,6 +103,56 @@ public sealed class MessageServiceTests : IDisposable
             CancellationToken.None);
 
         Assert.Null(result);
+    }
+
+    [Fact]
+    public async Task Post_broadcasts_the_created_message_to_its_ticket()
+    {
+        await using var context = CreateContext();
+        var ticketId = await SeedTicketAsync(context, contactId: null);
+        var service = CreateService(context);
+
+        var result = await service.PostMessageAsync(
+            ticketId,
+            new PostMessageDto("Staff", null, "auth|amelia", "Amelia", "Live reply"),
+            CancellationToken.None);
+
+        // The created message is broadcast to the ticket's thread group so an
+        // agent viewing it sees the reply without waiting for a poll tick.
+        var broadcast = Assert.Single(_broadcaster.Messages);
+        Assert.Equal(ticketId, broadcast.TicketId);
+        Assert.Equal(result!.Id, broadcast.Message.Id);
+        Assert.Equal("Live reply", broadcast.Message.Content);
+    }
+
+    [Fact]
+    public async Task Post_does_not_broadcast_when_the_ticket_is_missing()
+    {
+        await using var context = CreateContext();
+        var service = CreateService(context);
+
+        await service.PostMessageAsync(
+            Guid.NewGuid(),
+            new PostMessageDto("Staff", null, "auth|amelia", "Amelia", "hi"),
+            CancellationToken.None);
+
+        Assert.Empty(_broadcaster.Messages);
+    }
+
+    [Fact]
+    public async Task Post_does_not_broadcast_when_input_is_invalid()
+    {
+        await using var context = CreateContext();
+        var ticketId = await SeedTicketAsync(context, contactId: null);
+        var service = CreateService(context);
+
+        await Assert.ThrowsAsync<ArgumentException>(
+            () => service.PostMessageAsync(
+                ticketId,
+                new PostMessageDto("Staff", null, null, null, "no id"),
+                CancellationToken.None));
+
+        Assert.Empty(_broadcaster.Messages);
     }
 
     [Fact]
@@ -331,9 +382,11 @@ public sealed class MessageServiceTests : IDisposable
         Assert.Null(result);
     }
 
+    private readonly FakeConversationBroadcaster _broadcaster = new();
+
     private MessageService CreateService(AppDbContext context)
     {
-        return new MessageService(new MessageRepository(context));
+        return new MessageService(new MessageRepository(context), _broadcaster);
     }
 
     private AppDbContext CreateContext()

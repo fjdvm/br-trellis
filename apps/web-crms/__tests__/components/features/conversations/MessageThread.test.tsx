@@ -2,6 +2,7 @@ import { render, screen, waitFor, act, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MessageThread } from "@/components/features/conversations/MessageThread";
 import { crmClient } from "@/lib/api/crm-client";
+import { useSignalR } from "@/hooks/useSignalR";
 import type { ConversationMessage } from "@/types/conversation-message";
 
 jest.mock("next-auth/react", () => ({
@@ -24,6 +25,14 @@ jest.mock("@/lib/api/crm-client", () => ({
       postStaffMessage: jest.fn(),
     },
   },
+}));
+
+// The real-time hook is exercised by its own test (`useSignalR.test.ts`); here
+// it's mocked to a no-op so these component tests don't open a live SignalR
+// connection (which would otherwise hang under fake timers). This mirrors the
+// spec's testing approach: layer a mocked useSignalR over the crm-client mock.
+jest.mock("@/hooks/useSignalR", () => ({
+  useSignalR: jest.fn(),
 }));
 
 const mocked = {
@@ -204,9 +213,9 @@ describe("MessageThread (read path)", () => {
         makeMessage({ id: "m-2", content: "New polled message", sentAt: "2025-01-15T10:20:00Z" }),
       ]);
 
-      // Advance past the 10s poll interval and flush the pending promise.
+      // Advance past the 60s fallback poll interval and flush the pending promise.
       await act(async () => {
-        jest.advanceTimersByTime(10000);
+        jest.advanceTimersByTime(60000);
       });
 
       await waitFor(() =>
@@ -217,6 +226,59 @@ describe("MessageThread (read path)", () => {
     } finally {
       jest.useRealTimers();
     }
+  });
+});
+
+describe("MessageThread (real-time push)", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mocked.list.mockResolvedValue([]);
+  });
+
+  /** The `onReceiveMessage` callback the component handed to useSignalR. */
+  function capturedOnReceiveMessage(): (msg: ConversationMessage) => void {
+    const mockUseSignalR = jest.mocked(useSignalR);
+    const call = mockUseSignalR.mock.calls.at(-1);
+    const handler = call?.[0]?.onReceiveMessage;
+    if (!handler) throw new Error("useSignalR was not called with onReceiveMessage");
+    return handler;
+  }
+
+  it("appends a message pushed over the hub into the open thread", async () => {
+    mocked.list.mockResolvedValue([
+      makeMessage({ id: "m-1", content: "Original message" }),
+    ]);
+
+    renderThread();
+    await screen.findByText("Original message");
+
+    act(() => {
+      capturedOnReceiveMessage()(
+        makeMessage({ id: "m-2", content: "Live pushed message" })
+      );
+    });
+
+    expect(await screen.findByText("Live pushed message")).toBeInTheDocument();
+    expect(screen.getAllByText("Original message")).toHaveLength(1);
+  });
+
+  it("does not duplicate a message already present when its broadcast arrives back", async () => {
+    mocked.list.mockResolvedValue([
+      makeMessage({ id: "m-1", content: "Already here" }),
+    ]);
+
+    renderThread();
+    await screen.findByText("Already here");
+
+    // The same message (same id) pushed over the hub — e.g. this agent's own
+    // reply echoing back — must not create a second bubble.
+    act(() => {
+      capturedOnReceiveMessage()(
+        makeMessage({ id: "m-1", content: "Already here" })
+      );
+    });
+
+    expect(screen.getAllByText("Already here")).toHaveLength(1);
   });
 });
 

@@ -6,6 +6,7 @@ using api_crms.Helpers;
 using api_crms.Models;
 using api_crms.Repositories;
 using api_crms.Services;
+using api_crms.Tests.Helpers;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
 
@@ -60,6 +61,102 @@ public sealed class TicketIngestionServiceTests : IDisposable
         Assert.Equal(MessageSenderType.Contact, message.SenderType);
         Assert.Equal(contact.Id, message.SenderContactId);
         Assert.Equal("Hello", message.Content);
+    }
+
+    [Fact]
+    public async Task New_conversation_broadcasts_the_message_to_its_ticket()
+    {
+        await using var context = CreateContext();
+        var service = CreateService(context);
+
+        await service.ProcessEventAsync("evt-1", "ticket.message.received",
+            MessagePayload("evt-1", "conv-1", "shopper@example.com", "Live shop chat"));
+
+        var ticket = await context.Tickets.SingleAsync();
+        var broadcast = Assert.Single(_broadcaster.Messages);
+        Assert.Equal(ticket.Id, broadcast.TicketId);
+        Assert.Equal("Live shop chat", broadcast.Message.Content);
+    }
+
+    [Fact]
+    public async Task Second_message_broadcasts_the_appended_message_to_its_ticket()
+    {
+        await using var context = CreateContext();
+        var service = CreateService(context);
+
+        await service.ProcessEventAsync("evt-1", "ticket.message.received",
+            MessagePayload("evt-1", "conv-1", "shopper@example.com", "First"));
+        await service.ProcessEventAsync("evt-2", "ticket.message.received",
+            MessagePayload("evt-2", "conv-1", "shopper@example.com", "Second"));
+
+        var ticket = await context.Tickets.SingleAsync();
+        Assert.Equal(2, _broadcaster.Messages.Count);
+        var last = _broadcaster.Messages[^1];
+        Assert.Equal(ticket.Id, last.TicketId);
+        Assert.Equal("Second", last.Message.Content);
+    }
+
+    [Fact]
+    public async Task New_conversation_broadcasts_a_new_ticket_to_the_inbox()
+    {
+        await using var context = CreateContext();
+        var service = CreateService(context);
+
+        await service.ProcessEventAsync("evt-1", "ticket.message.received",
+            MessagePayload("evt-1", "conv-1", "shopper@example.com", "Hi"));
+
+        var ticket = await context.Tickets.SingleAsync();
+        var summary = Assert.Single(_broadcaster.NewTickets);
+        Assert.Equal(ticket.Id, summary.Id);
+        Assert.Equal("Ecommerce", summary.Source);
+        Assert.Equal("Agent", summary.WaitingOn);
+        Assert.Empty(_broadcaster.StatusChanges);
+    }
+
+    [Fact]
+    public async Task Second_message_broadcasts_a_status_change_not_a_new_ticket()
+    {
+        await using var context = CreateContext();
+        var service = CreateService(context);
+
+        await service.ProcessEventAsync("evt-1", "ticket.message.received",
+            MessagePayload("evt-1", "conv-1", "shopper@example.com", "First"));
+        await service.ProcessEventAsync("evt-2", "ticket.message.received",
+            MessagePayload("evt-2", "conv-1", "shopper@example.com", "Second"));
+
+        var ticket = await context.Tickets.SingleAsync();
+        Assert.Single(_broadcaster.NewTickets);
+        var change = Assert.Single(_broadcaster.StatusChanges);
+        Assert.Equal(ticket.Id, change.Id);
+        Assert.Equal("Agent", change.WaitingOn);
+    }
+
+    [Fact]
+    public async Task Failed_ingestion_does_not_broadcast()
+    {
+        await using var context = CreateContext();
+        var service = CreateService(context);
+
+        // Missing email → InvalidOperationException, rolled back before commit.
+        var payload = JsonSerializer.Serialize(new
+        {
+            EventId = "evt-1",
+            EventType = "ticket.message.received",
+            Data = new
+            {
+                ConversationId = "conv-1",
+                CustomerEmail = "",
+                MessageBody = "Hi",
+                OccurredAt = DateTimeOffset.UtcNow.ToString("O"),
+            },
+        });
+
+        await Assert.ThrowsAsync<InvalidOperationException>(
+            () => service.ProcessEventAsync("evt-1", "ticket.message.received", payload));
+
+        Assert.Empty(_broadcaster.Messages);
+        Assert.Empty(_broadcaster.NewTickets);
+        Assert.Empty(_broadcaster.StatusChanges);
     }
 
     [Fact]
@@ -170,13 +267,15 @@ public sealed class TicketIngestionServiceTests : IDisposable
 
     public void Dispose() => File.Delete(_databasePath);
 
+    private readonly FakeConversationBroadcaster _broadcaster = new();
+
     private TicketIngestionService CreateService(AppDbContext context)
     {
         var identityService = new ContactIdentityService(
             new ContactIdentityRepository(context),
             new ContactIdentityOptions());
         return new TicketIngestionService(
-            new TicketIngestionRepository(context), identityService);
+            new TicketIngestionRepository(context), identityService, _broadcaster);
     }
 
     private AppDbContext CreateContext()
