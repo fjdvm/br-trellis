@@ -40,6 +40,12 @@ public class UserRepository : IUserRepository
             .FirstOrDefaultAsync(u => u.PasswordResetToken == token);
     }
 
+    public async Task<User?> GetByEmailVerificationTokenAsync(string token)
+    {
+        return await _context.Users
+            .FirstOrDefaultAsync(u => u.EmailVerificationToken == token);
+    }
+
     public async Task<User> CreateAsync(User user)
     {
         _context.Users.Add(user);

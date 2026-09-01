@@ -100,6 +100,9 @@ export const authApi = {
 
   resetPassword: (data: { token: string; newPassword: string }) =>
     apiClient.post<{ message: string }>("/auth/reset-password", data),
+
+  verifyEmail: (token: string) =>
+    apiClient.get<{ message: string }>(`/auth/verify-email?token=${encodeURIComponent(token)}`),
 };
 
 export const userApi = {

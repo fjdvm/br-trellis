@@ -33,7 +33,9 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ApiOos.Interfaces.Repositories.IJobPostingRepository, ApiOos.Repositories.JobPostingRepository>();
         services.AddScoped<ApiOos.Interfaces.Repositories.IJobApplicationRepository, ApiOos.Repositories.JobApplicationRepository>();
         services.AddScoped<ApiOos.Interfaces.Services.IAuthService, ApiOos.Services.AuthService>();
-        services.AddScoped<ApiOos.Interfaces.Services.IUserService, ApiOos.Services.UserService>();
+        // Dev email delivery: logs the confirmation link (mirrors forgot-password).
+        // Replace with a real sender in production.
+        services.AddScoped<ApiOos.Interfaces.Services.IEmailSender, ApiOos.Services.LoggingEmailSender>();        services.AddScoped<ApiOos.Interfaces.Services.IUserService, ApiOos.Services.UserService>();
         services.AddScoped<ApiOos.Interfaces.Services.IProductService, ApiOos.Services.ProductService>();
         services.AddScoped<ApiOos.Interfaces.Services.ICartService, ApiOos.Services.CartService>();
         services.AddScoped<ApiOos.Interfaces.Services.IOrderService, ApiOos.Services.OrderService>();

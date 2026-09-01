@@ -61,4 +61,11 @@ public class AuthController : ControllerBase
         await _authService.ResetPasswordAsync(request);
         return Ok(new { message = "Password reset successfully." });
     }
+
+    [HttpGet("verify-email")]
+    public async Task<IActionResult> VerifyEmail([FromQuery] string token)
+    {
+        await _authService.VerifyEmailAsync(token);
+        return Ok(new { message = "Email verified successfully." });
+    }
 }

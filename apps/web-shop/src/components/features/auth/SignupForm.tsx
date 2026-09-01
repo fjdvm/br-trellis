@@ -6,7 +6,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, MailCheck } from "lucide-react";
 import { registerSchema, type RegisterFormData } from "@/lib/validators/auth";
 import { authApi } from "@/lib/api/api-client";
 import { Button } from "@/components/ui/button";
@@ -20,6 +20,7 @@ export function SignupForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [registeredEmail, setRegisteredEmail] = useState<string | null>(null);
 
   const form = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
@@ -38,12 +39,14 @@ export function SignupForm() {
 
     try {
       await authApi.register({
-        fullName: data.fullName,
-        email: data.email,
+        fullName: data.fullName.trim(),
+        email: data.email.trim(),
         password: data.password,
       });
 
-      router.push("/signin?registered=true");
+      // Instead of dropping the shopper straight onto sign-in, tell them to go
+      // confirm their email. They can only log in after clicking the link.
+      setRegisteredEmail(data.email.trim());
     } catch (err: unknown) {
       const apiErr = err as { data?: { detail?: string; errors?: Record<string, string[]> } };
       if (apiErr?.data?.detail) {
@@ -58,6 +61,43 @@ export function SignupForm() {
       setIsLoading(false);
     }
   };
+
+  if (registeredEmail) {
+    return (
+      <section className="w-full max-w-lg">
+        <Card className="border border-border/70 shadow-xl bg-surface-card overflow-hidden">
+          <CardHeader className="flex flex-col items-center text-center">
+            <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+              <MailCheck className="w-8 h-8 text-primary" />
+            </div>
+            <CardTitle className="text-3xl font-bold text-primary mb-2">Check your email</CardTitle>
+            <CardDescription className="text-sm text-on-surface-variant">
+              We&apos;ve sent a confirmation link to{" "}
+              <span className="font-semibold text-foreground">{registeredEmail}</span>. Click the link
+              in that email to verify your account before signing in.
+            </CardDescription>
+          </CardHeader>
+
+          <CardContent>
+            <p className="text-sm text-on-surface-variant text-center">
+              Didn&apos;t get it? Check your spam folder, or the confirmation link may take a moment to
+              arrive.
+            </p>
+          </CardContent>
+
+          <CardFooter className="justify-center border-t border-border/50 pt-6">
+            <Button
+              type="button"
+              onClick={() => router.push("/signin")}
+              className="w-full bg-primary text-white hover:bg-primary-dark shadow-md cursor-pointer"
+            >
+              Go to Login
+            </Button>
+          </CardFooter>
+        </Card>
+      </section>
+    );
+  }
 
   return (
     <section className="w-full max-w-lg">

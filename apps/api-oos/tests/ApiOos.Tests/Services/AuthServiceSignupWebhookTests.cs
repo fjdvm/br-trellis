@@ -21,6 +21,7 @@ public sealed class AuthServiceSignupWebhookTests : IDisposable
 {
     private readonly AppDbContext _context;
     private readonly FakeEcommerceWebhookClient _webhook = new();
+    private readonly FakeEmailSender _emailSender = new();
     private readonly AuthService _authService;
 
     public AuthServiceSignupWebhookTests()
@@ -34,7 +35,12 @@ public sealed class AuthServiceSignupWebhookTests : IDisposable
 
         var jwt = new JwtTokenHelper(BuildJwtSettings());
         _authService = new AuthService(
-            new UserRepository(_context), jwt, _webhook, NullLogger<AuthService>.Instance);
+            new UserRepository(_context),
+            jwt,
+            _webhook,
+            _emailSender,
+            new Microsoft.Extensions.Configuration.ConfigurationBuilder().Build(),
+            NullLogger<AuthService>.Instance);
     }
 
     public void Dispose()
@@ -88,6 +94,18 @@ public sealed class AuthServiceSignupWebhookTests : IDisposable
         {
             if (ThrowOnSend) throw new HttpRequestException("simulated CRM outage");
             Sent.Add(webhookEvent);
+            return Task.CompletedTask;
+        }
+    }
+
+    private sealed class FakeEmailSender : IEmailSender
+    {
+        public List<(string Email, string Name, string Url)> Sent { get; } = [];
+
+        public Task SendEmailConfirmationAsync(
+            string toEmail, string fullName, string confirmationUrl, CancellationToken cancellationToken = default)
+        {
+            Sent.Add((toEmail, fullName, confirmationUrl));
             return Task.CompletedTask;
         }
     }

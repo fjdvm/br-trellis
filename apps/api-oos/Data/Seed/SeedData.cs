@@ -85,6 +85,7 @@ public static class SeedData
         if (!await context.Users.AnyAsync())
         {
             // Demo customer account for local development / first-run login.
+            // Marked verified so the demo account can sign in immediately.
             var demoUser = new User
             {
                 Id = Guid.Parse("d0000000-0000-0000-0000-000000000001"),
@@ -92,10 +93,28 @@ public static class SeedData
                 Email = "demo@brenraphael.com",
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword("Password123!"),
                 PreferredLanguage = "en",
+                IsEmailVerified = true,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow,
             };
             await context.Users.AddAsync(demoUser);
+
+            // A pending, not-yet-confirmed account to exercise the email
+            // confirmation flow: its verification link lands on /verify-email.
+            var pendingUser = new User
+            {
+                Id = Guid.Parse("d0000000-0000-0000-0000-000000000002"),
+                FullName = "Pending Customer",
+                Email = "pending@brenraphael.com",
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword("Password123!"),
+                PreferredLanguage = "en",
+                IsEmailVerified = false,
+                EmailVerificationToken = "seed-pending-verification-token",
+                EmailVerificationTokenExpiry = DateTime.UtcNow.AddDays(1),
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow,
+            };
+            await context.Users.AddAsync(pendingUser);
             await context.SaveChangesAsync();
         }
 

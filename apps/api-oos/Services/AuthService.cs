@@ -14,17 +14,23 @@ public class AuthService : IAuthService
     private readonly IUserRepository _userRepository;
     private readonly JwtTokenHelper _jwtTokenHelper;
     private readonly IEcommerceWebhookClient _ecommerceWebhookClient;
+    private readonly IEmailSender _emailSender;
+    private readonly IConfiguration _configuration;
     private readonly ILogger<AuthService> _logger;
 
     public AuthService(
         IUserRepository userRepository,
         JwtTokenHelper jwtTokenHelper,
         IEcommerceWebhookClient ecommerceWebhookClient,
+        IEmailSender emailSender,
+        IConfiguration configuration,
         ILogger<AuthService> logger)
     {
         _userRepository = userRepository;
         _jwtTokenHelper = jwtTokenHelper;
         _ecommerceWebhookClient = ecommerceWebhookClient;
+        _emailSender = emailSender;
+        _configuration = configuration;
         _logger = logger;
     }
 
@@ -37,16 +43,24 @@ public class AuthService : IAuthService
         }
 
         var passwordHash = BCrypt.HashPassword(request.Password);
+        var verificationToken = Guid.NewGuid().ToString("N");
         var user = new User
         {
             FullName = request.FullName,
             Email = request.Email.ToLower(),
             PasswordHash = passwordHash,
             RefreshToken = _jwtTokenHelper.GenerateRefreshToken(),
-            RefreshTokenExpiry = DateTime.UtcNow.AddDays(7)
+            RefreshTokenExpiry = DateTime.UtcNow.AddDays(7),
+            IsEmailVerified = false,
+            EmailVerificationToken = verificationToken,
+            EmailVerificationTokenExpiry = DateTime.UtcNow.AddDays(1)
         };
 
         await _userRepository.CreateAsync(user);
+
+        // Send the account-confirmation email. Best-effort: a mail failure must not
+        // fail signup — the shopper can still request a new link later.
+        await SendEmailConfirmationAsync(user);
 
         // Eagerly notify api-crms so the new customer surfaces in CRM Contacts
         // immediately (resolved via ContactIdentityService). Best-effort: a CRM
@@ -57,6 +71,24 @@ public class AuthService : IAuthService
         var userDto = MapToUserDto(user);
 
         return new AuthResponse(accessToken, user.RefreshToken!, userDto);
+    }
+
+    private async Task SendEmailConfirmationAsync(User user)
+    {
+        try
+        {
+            var baseUrl = _configuration["WebShop:BaseUrl"] ?? "http://localhost:3012";
+            baseUrl = baseUrl.TrimEnd('/');
+            var confirmationUrl = $"{baseUrl}/verify-email?token={user.EmailVerificationToken}";
+
+            await _emailSender.SendEmailConfirmationAsync(
+                user.Email, user.FullName, confirmationUrl);
+        }
+        catch (Exception exception)
+        {
+            _logger.LogWarning(
+                exception, "Failed to send confirmation email for {UserId}.", user.Id);
+        }
     }
 
     private async Task DispatchCustomerCreatedAsync(User user)
@@ -157,6 +189,38 @@ public class AuthService : IAuthService
         user.PasswordHash = BCrypt.HashPassword(request.NewPassword);
         user.PasswordResetToken = null;
         user.PasswordResetTokenExpiry = null;
+        await _userRepository.UpdateAsync(user);
+    }
+
+    public async Task VerifyEmailAsync(string token)
+    {
+        if (string.IsNullOrWhiteSpace(token))
+        {
+            throw new AppException("Invalid or expired confirmation link.");
+        }
+
+        var user = await _userRepository.GetByEmailVerificationTokenAsync(token);
+        if (user == null)
+        {
+            throw new AppException("Invalid or expired confirmation link.");
+        }
+
+        // Idempotent: already-verified accounts still resolve successfully so a
+        // repeat click on the link renders the "Verified User" page cleanly.
+        if (user.IsEmailVerified)
+        {
+            return;
+        }
+
+        if (user.EmailVerificationTokenExpiry == null ||
+            user.EmailVerificationTokenExpiry <= DateTime.UtcNow)
+        {
+            throw new AppException("Invalid or expired confirmation link.");
+        }
+
+        user.IsEmailVerified = true;
+        user.EmailVerificationToken = null;
+        user.EmailVerificationTokenExpiry = null;
         await _userRepository.UpdateAsync(user);
     }
 
