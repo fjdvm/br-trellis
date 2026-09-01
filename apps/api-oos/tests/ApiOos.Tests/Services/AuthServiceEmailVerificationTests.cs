@@ -37,7 +37,7 @@ public sealed class AuthServiceEmailVerificationTests : IDisposable
         var config = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
-                ["WebShop:BaseUrl"] = "http://localhost:3012",
+                ["WebShop:BaseUrl"] = "https://localhost:3012",
             })
             .Build();
 
@@ -73,7 +73,7 @@ public sealed class AuthServiceEmailVerificationTests : IDisposable
         sent.Email.Should().Be("verify@example.com");
         sent.Url.Should().Contain("/verify-email?token=");
         sent.Url.Should().Contain(user.EmailVerificationToken!);
-        sent.Url.Should().StartWith("http://localhost:3012");
+        sent.Url.Should().StartWith("https://localhost:3012");
     }
 
     [Fact]

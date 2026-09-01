@@ -77,7 +77,7 @@ public class AuthService : IAuthService
     {
         try
         {
-            var baseUrl = _configuration["WebShop:BaseUrl"] ?? "http://localhost:3012";
+            var baseUrl = _configuration["WebShop:BaseUrl"] ?? "https://localhost:3012";
             baseUrl = baseUrl.TrimEnd('/');
             var confirmationUrl = $"{baseUrl}/verify-email?token={user.EmailVerificationToken}";
 
