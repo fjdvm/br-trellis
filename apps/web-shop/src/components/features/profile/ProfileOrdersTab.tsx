@@ -33,7 +33,7 @@ export function ProfileOrdersTab() {
       </div>
 
       {error && (
-        <div className="p-4 bg-error-container/30 text-on-error-container text-xs rounded-2xl border border-error-container font-medium">
+        <div className="p-4 bg-error-container/30 text-on-error-container text-xs border border-error-container font-medium">
           {error}
         </div>
       )}
@@ -50,7 +50,7 @@ export function ProfileOrdersTab() {
           <p className="font-sans text-xs text-on-surface-variant max-w-sm mx-auto">
             When you place an order for our handcrafted Ube treats, it will appear here.
           </p>
-          <Button asChild className="rounded-full bg-primary text-on-primary font-semibold px-8 py-3 hover:bg-primary-container">
+          <Button asChild className="rounded-full bg-primary text-white font-semibold px-8 py-3 hover:bg-primary-container">
             <Link href="/products">Browse Artisanal Collection</Link>
           </Button>
         </div>
@@ -60,7 +60,7 @@ export function ProfileOrdersTab() {
             <Link
               key={order.id}
               href={`/orders/${order.id}`}
-              className="group block bg-surface-container-low rounded-2xl p-6 border border-outline-variant/30 hover:border-primary/40 transition-all duration-300 hover:shadow-md"
+              className="group block bg-surface-container-low p-6 border border-outline-variant/30 hover:border-primary/40 transition-all duration-300 hover:shadow-md"
             >
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div className="flex flex-col md:flex-row md:items-center gap-4 md:gap-8 flex-grow">

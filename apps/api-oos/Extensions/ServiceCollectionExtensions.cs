@@ -42,6 +42,10 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ApiOos.Interfaces.Services.ICrmChatbotService, ApiOos.Services.CrmChatbotService>();
         services.AddScoped<ApiOos.Interfaces.Services.IJobService, ApiOos.Services.JobService>();
 
+        // Shopper support tickets (profile "Submit Ticket") → api-crms via the
+        // Tickets webhook. api-oos stores no tickets; the CRM is the record.
+        services.AddScoped<ApiOos.Interfaces.Services.ISupportTicketService, ApiOos.Services.SupportTicketService>();
+
         // Chat hub relay + outbound Tickets webhook → api-crms (#124)
         services.AddScoped<ApiOos.Interfaces.Services.ITicketWebhookClient, ApiOos.Services.TicketWebhookClient>();
         services.AddScoped<ApiOos.Interfaces.Services.IChatBroadcaster, ApiOos.Services.SignalRChatBroadcaster>();
@@ -58,7 +62,7 @@ public static class ServiceCollectionExtensions
         services.AddHttpClient(ApiOos.Services.EcommerceWebhookClient.HttpClientName, (sp, client) =>
         {
             var config = sp.GetRequiredService<IConfiguration>();
-            var crmsUrl = config["ApiCrms:BaseUrl"] ?? "https://localhost:5005";
+            var crmsUrl = config["ApiCrms:BaseUrl"] ?? "http://localhost:5035";
             client.BaseAddress = new Uri(crmsUrl.EndsWith('/') ? crmsUrl : crmsUrl + "/");
         }).ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
         {

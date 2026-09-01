@@ -40,7 +40,7 @@ export function HomeFaqSection() {
               onClick={() => setSelectedCategory(cat)}
               className={`rounded-full px-5 py-2.5 text-xs font-sans font-semibold transition-all shadow-2xs ${
                 selectedCategory === cat
-                  ? "bg-primary text-on-primary shadow-xs"
+                  ? "bg-primary text-white shadow-xs"
                   : "bg-surface-container text-on-surface-variant hover:bg-primary-container hover:text-on-primary-container"
               }`}
             >
@@ -56,7 +56,7 @@ export function HomeFaqSection() {
             return (
               <div
                 key={item.id}
-                className="overflow-hidden rounded-2xl border border-outline-variant/30 bg-surface-container-lowest transition-all shadow-2xs hover:shadow-xs"
+                className="overflow-hidden border border-outline-variant/30 bg-surface-container-lowest transition-all shadow-2xs hover:shadow-xs"
               >
                 <button
                   onClick={() => toggle(item.id)}

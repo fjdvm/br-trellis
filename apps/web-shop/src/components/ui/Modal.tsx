@@ -22,7 +22,7 @@ export function Modal({ isOpen, onClose, title, children }: ModalProps) {
       />
 
       {/* Modal Dialog */}
-      <div className="relative z-10 w-full max-w-lg bg-surface-card rounded-2xl shadow-2xl border border-border overflow-hidden animate-in fade-in zoom-in-95 duration-200 text-foreground">
+      <div className="relative z-10 w-full max-w-lg bg-surface-card shadow-2xl border border-border overflow-hidden animate-in fade-in zoom-in-95 duration-200 text-foreground">
         <div className="flex items-center justify-between px-6 py-4 border-b border-border/60">
           <h3 className="text-lg font-bold text-primary">{title}</h3>
           <button

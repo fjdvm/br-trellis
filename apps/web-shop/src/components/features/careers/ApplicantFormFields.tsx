@@ -38,7 +38,7 @@ export function ApplicantFormFields({
             value={name}
             onChange={(e) => setName(e.target.value)}
             disabled={isSubmitting}
-            className="rounded-xl border-slate-200 text-slate-900"
+            className="border-slate-200 text-slate-900"
           />
         </div>
         <div className="space-y-1.5">
@@ -52,7 +52,7 @@ export function ApplicantFormFields({
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             disabled={isSubmitting}
-            className="rounded-xl border-slate-200 text-slate-900"
+            className="border-slate-200 text-slate-900"
           />
         </div>
       </div>
@@ -67,7 +67,7 @@ export function ApplicantFormFields({
           value={phone}
           onChange={(e) => setPhone(e.target.value)}
           disabled={isSubmitting}
-          className="rounded-xl border-slate-200 text-slate-900"
+          className="border-slate-200 text-slate-900"
         />
       </div>
 
@@ -82,7 +82,7 @@ export function ApplicantFormFields({
           value={coverLetter}
           onChange={(e) => setCoverLetter(e.target.value)}
           disabled={isSubmitting}
-          className="rounded-xl border-slate-200 text-slate-900"
+          className="border-slate-200 text-slate-900"
         />
       </div>
     </>

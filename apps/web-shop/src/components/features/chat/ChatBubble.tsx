@@ -37,7 +37,7 @@ export function ChatBubble() {
       {/* Floating Toggle Button */}
       <button
         onClick={toggleOpen}
-        className="fixed bottom-5 right-5 z-50 flex h-13 w-13 items-center justify-center rounded-full bg-[#451077] text-white shadow-xl transition-all hover:bg-[#340c5a] hover:scale-105 active:scale-95"
+        className="fixed bottom-5 right-5 z-[10001] flex h-13 w-13 items-center justify-center rounded-full bg-[#451077] text-white shadow-xl transition-all hover:bg-[#340c5a] hover:scale-105 active:scale-95"
         aria-label="Toggle Live Chat Support"
       >
         {isOpen ? (

@@ -109,8 +109,13 @@ async function isAuthServiceHealthy(): Promise<boolean> {
     authHealthCache = { healthy, checkedAt: Date.now() };
     return healthy;
   } catch {
-    authHealthCache = { healthy: false, checkedAt: Date.now() };
-    return false;
+    // Fail OPEN on a transient error (timeout / network blip). Ejecting an
+    // already-signed-in user to /auth-unavailable on a momentary hiccup — which
+    // then only "fixes" itself on a manual refresh — is far worse than briefly
+    // letting a page load while the auth service is flaky. A genuinely-down auth
+    // service still surfaces via token-refresh failure (RefreshAccessTokenError).
+    // Do NOT cache the optimistic result, so the next request re-checks promptly.
+    return true;
   }
 }
 
@@ -274,10 +279,13 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         return true;
       }
 
-      // For page navigations (not API/proxy), verify auth service is reachable.
-      // Uses cached result to avoid checking on every single request.
+      // For page navigations (not API/proxy), verify auth service is reachable —
+      // but ONLY when there's no authenticated user. An already-signed-in user
+      // must not be bounced to /auth-unavailable on a transient discovery blip
+      // (a genuine failure surfaces below as RefreshAccessTokenError). Uses a
+      // cached result to avoid checking on every request.
       const isPageRequest = !isProxyPath && !pathname.startsWith("/api/");
-      if (isPageRequest && !isSignInPage && !isAccessDeniedPage) {
+      if (isPageRequest && !isSignInPage && !isAccessDeniedPage && !auth?.user) {
         const reachable = await isAuthServiceHealthy();
         if (!reachable) {
           return Response.redirect(new URL("/auth-unavailable", request.nextUrl));

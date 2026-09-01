@@ -65,6 +65,7 @@ public sealed class OrderWebhookDispatchTests : IDisposable
         evt.EventId.Should().NotBeNullOrWhiteSpace();
         evt.Data.OrderId.Should().Be(orderDto.OrderNumber);
         evt.Data.CustomerEmail.Should().Be("buyer@example.com");
+        evt.Data.Name.Should().Be("Test Buyer", "the shopper's name lets api-crms name the Contact instead of leaving it unnamed");
         evt.Data.ContactId.Should().BeNull("api-crms resolves the Contact from the email");
         evt.Data.Total.Should().Be(orderDto.TotalAmount);
     }

@@ -103,7 +103,7 @@ export function ProfileTicketsTab({ userId, onOpenLiveChat }: ProfileTicketsTabP
         <div className="flex items-center gap-2">
           <button
             onClick={() => setIsSubmitDialogOpen(true)}
-            className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary text-on-primary text-xs font-semibold rounded-xl hover:bg-primary-container shadow-xs transition-all cursor-pointer"
+            className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary text-white text-xs font-semibold rounded-xl hover:bg-primary-container shadow-xs transition-all cursor-pointer"
           >
             <Plus className="w-4 h-4" /> Open New Ticket
           </button>
@@ -111,7 +111,7 @@ export function ProfileTicketsTab({ userId, onOpenLiveChat }: ProfileTicketsTabP
       </div>
 
       {/* Status Filters (Pill style) */}
-      <div className="flex flex-wrap gap-2 bg-surface-container-low p-1.5 rounded-xl border border-outline-variant/30 w-fit">
+      <div className="flex flex-wrap gap-2 bg-surface-container-low p-1.5 border border-outline-variant/30 w-fit">
         {["All", "Unclaimed", "Ongoing", "Completed", "Canceled"].map((status) => (
           <button
             key={status}
@@ -119,7 +119,7 @@ export function ProfileTicketsTab({ userId, onOpenLiveChat }: ProfileTicketsTabP
             onClick={() => setStatusFilter(status)}
             className={`px-4 py-2 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
               statusFilter === status
-                ? "bg-primary text-on-primary shadow-xs"
+                ? "bg-primary text-white shadow-xs"
                 : "text-on-surface-variant hover:bg-surface-container"
             }`}
           >
@@ -135,7 +135,7 @@ export function ProfileTicketsTab({ userId, onOpenLiveChat }: ProfileTicketsTabP
           Loading your support tickets...
         </div>
       ) : tickets.length === 0 ? (
-        <div className="p-10 text-center bg-surface-container-low border border-outline-variant/30 rounded-xl space-y-4">
+        <div className="p-10 text-center bg-surface-container-low border border-outline-variant/30 space-y-4">
           <ShieldCheck className="w-12 h-12 text-primary/40 mx-auto" />
           <h3 className="font-serif font-bold text-lg text-on-surface">No support tickets found</h3>
           <p className="font-sans text-xs text-on-surface-variant max-w-sm mx-auto">
@@ -144,7 +144,7 @@ export function ProfileTicketsTab({ userId, onOpenLiveChat }: ProfileTicketsTabP
           <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
             <button
               onClick={() => setIsSubmitDialogOpen(true)}
-              className="px-6 py-2.5 bg-primary text-on-primary text-xs font-semibold rounded-xl hover:bg-primary-container transition-all cursor-pointer"
+              className="px-6 py-2.5 bg-primary text-white text-xs font-semibold rounded-xl hover:bg-primary-container transition-all cursor-pointer"
             >
               Submit a Ticket
             </button>
@@ -159,7 +159,7 @@ export function ProfileTicketsTab({ userId, onOpenLiveChat }: ProfileTicketsTabP
           </div>
         </div>
       ) : filteredTickets.length === 0 ? (
-        <div className="p-12 text-center border border-dashed border-outline-variant/40 rounded-xl bg-surface-container-low text-xs text-on-surface-variant font-medium">
+        <div className="p-12 text-center border border-dashed border-outline-variant/40 bg-surface-container-low text-xs text-on-surface-variant font-medium">
           No tickets found matching the &quot;{statusFilter}&quot; filter.
         </div>
       ) : (
@@ -167,7 +167,7 @@ export function ProfileTicketsTab({ userId, onOpenLiveChat }: ProfileTicketsTabP
           {filteredTickets.map((ticket) => (
             <div
               key={ticket.id}
-              className="bg-surface-container-lowest border border-outline-variant/30 rounded-xl p-6 shadow-xs hover:border-primary/40 transition-all flex flex-col justify-between space-y-4"
+              className="bg-surface-container-lowest border border-outline-variant/30 p-6 shadow-xs hover:border-primary/40 transition-all flex flex-col justify-between space-y-4"
             >
               <div className="space-y-2">
                 <div className="flex items-center justify-between">

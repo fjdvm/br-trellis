@@ -35,7 +35,7 @@ export function OrderReviewStep({
       </h2>
 
       {/* Shipping Address Summary Card */}
-      <div className="bg-surface-container-lowest rounded-xl border border-outline-variant/30 p-5 space-y-2">
+      <div className="bg-surface-container-lowest border border-outline-variant/30 p-5 space-y-2">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 text-sm font-bold text-on-surface">
             <MapPin className="w-4 h-4 text-primary" />
@@ -52,7 +52,7 @@ export function OrderReviewStep({
       </div>
 
       {/* Items List */}
-      <div className="bg-surface-container-lowest rounded-xl border border-outline-variant/30 p-5 space-y-3">
+      <div className="bg-surface-container-lowest border border-outline-variant/30 p-5 space-y-3">
         <h3 className="font-sans text-xs font-bold text-on-surface-variant uppercase tracking-wider">
           Items ({items.reduce((acc, i) => acc + i.quantity, 0)})
         </h3>
@@ -60,7 +60,7 @@ export function OrderReviewStep({
         <div className="divide-y divide-outline-variant/20">
           {items.map((item) => (
             <div key={item.id} className="py-3.5 flex items-center gap-4">
-              <div className="relative w-14 h-14 rounded-lg overflow-hidden bg-surface-variant shrink-0 border border-outline-variant/20">
+              <div className="relative w-14 h-14 overflow-hidden bg-surface-variant shrink-0 border border-outline-variant/20">
                 <Image
                   src={item.images?.[0] || DEFAULT_IMAGE}
                   alt={item.productName}
@@ -88,7 +88,7 @@ export function OrderReviewStep({
       </div>
 
       {/* Cost Breakdown */}
-      <div className="bg-surface-container-lowest rounded-xl border border-outline-variant/30 p-5 space-y-2.5 font-sans text-xs">
+      <div className="bg-surface-container-lowest border border-outline-variant/30 p-5 space-y-2.5 font-sans text-xs">
         <div className="flex justify-between text-on-surface-variant">
           <span>Items Subtotal</span>
           <span className="font-bold text-on-surface">₱{subtotal.toFixed(2)}</span>
@@ -112,7 +112,7 @@ export function OrderReviewStep({
           <ArrowLeft className="w-4 h-4" />
           Back to Shipping
         </Button>
-        <Button type="button" onClick={onNext} className="rounded-xl px-8 py-2.5 bg-primary text-on-primary font-semibold hover:bg-primary-container shadow-sm">
+        <Button type="button" onClick={onNext} className="rounded-xl px-8 py-2.5 bg-primary text-white font-semibold hover:bg-primary-container shadow-sm">
           Proceed to Payment
         </Button>
       </div>

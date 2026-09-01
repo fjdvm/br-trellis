@@ -13,10 +13,10 @@ interface JobPostingCardProps {
 
 export function JobPostingCard({ job, onApply }: JobPostingCardProps) {
   return (
-    <Card className="group relative border border-slate-100 bg-white/80 backdrop-blur-md rounded-3xl p-6 transition-all duration-300 hover:shadow-xl hover:shadow-violet-500/5 hover:-translate-y-1 hover:border-violet-200">
+    <Card className="group relative border border-slate-100 bg-white/80 backdrop-blur-md p-6 transition-all duration-300 hover:shadow-xl hover:shadow-violet-500/5 hover:-translate-y-1 hover:border-violet-200">
       <CardHeader className="p-0 mb-4 flex flex-row items-start justify-between gap-4">
         <div>
-          <Badge className="mb-2 bg-violet-50 text-violet-700 border-none hover:bg-violet-100 font-bold px-2.5 py-0.5 rounded-full text-[10px]">
+          <Badge className="mb-2 bg-violet-50 text-violet-700 border-none hover:bg-violet-100 font-bold px-2.5 py-0.5 text-[10px]">
             {job.Department || job.department}
           </Badge>
           <h3 className="text-lg font-extrabold text-slate-800 tracking-tight group-hover:text-violet-600 transition-colors duration-300">

@@ -39,9 +39,9 @@ export function ProductImageGallery({ images, name }: ProductImageGalleryProps) 
   return (
     <div className="lg:col-span-7 grid grid-cols-1 md:grid-cols-4 gap-4 animate-page-enter">
       {/* Main Feature Image */}
-      <div className="md:col-span-4 rounded-3xl overflow-hidden shadow-2xs border border-outline-variant/30 relative aspect-[4/3] bg-surface-container-low">
+      <div className="md:col-span-4 overflow-hidden shadow-2xs border border-outline-variant/30 relative aspect-[4/3] bg-surface-container-low">
         {loadingMap[selectedImage] !== false && (
-          <Skeleton className="absolute inset-0 w-full h-full rounded-3xl bg-surface-container" />
+          <Skeleton className="absolute inset-0 w-full h-full bg-surface-container" />
         )}
         <Image
           key={selectedImage}
@@ -112,7 +112,7 @@ export function ProductImageGallery({ images, name }: ProductImageGalleryProps) 
           unoptimized={imageList[2].startsWith("http")}
         />
         <div className="absolute inset-0 bg-primary-container/10 flex items-center justify-center pointer-events-none group-hover:bg-primary-container/20 transition-colors">
-          <span className="bg-surface-container-lowest/90 px-4 py-2 rounded-full label-upper text-primary shadow-xs">
+          <span className="bg-surface-container-lowest/90 px-4 py-2 label-upper text-primary shadow-xs">
             +4 Photos
           </span>
         </div>

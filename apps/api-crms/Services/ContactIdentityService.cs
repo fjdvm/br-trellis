@@ -18,14 +18,23 @@ public sealed class ContactIdentityService(
         var existingReference = await contactIdentityRepository.FindActiveSourceReferenceAsync(
             sourceSystem, sourceId, cancellationToken);
 
-        if (existingReference is not null)
-        {
-            return new ResolveOrCreateContactResult(existingReference.ContactId, false);
-        }
-
         var email = NormalizeEmail(command.Email);
         var phone = NormalizePhone(command.Phone);
         var name = NormalizeOptional(command.Name);
+
+        if (existingReference is not null)
+        {
+            // A Contact already exists for this exact source. If it was soft-deleted
+            // in the CRM but still lives in the source system, resurrect it — a fresh
+            // source event is proof the shopper still exists. Then backfill any
+            // details it is still missing so it stops surfacing as "unnamed".
+            await contactIdentityRepository.RestoreContactAsync(
+                existingReference.ContactId, cancellationToken);
+            await contactIdentityRepository.BackfillContactDetailsAsync(
+                existingReference.ContactId, name, email, phone, cancellationToken);
+            return new ResolveOrCreateContactResult(existingReference.ContactId, false);
+        }
+
         var matchedContacts = await FindMatchingContactsAsync(email, phone, name, cancellationToken);
 
         if (matchedContacts is [var matchedContact] &&
@@ -36,8 +45,11 @@ public sealed class ContactIdentityService(
                 SourceReferenceStatus.Linked));
             var concurrentContactId = await contactIdentityRepository
                 .SaveChangesOrGetConcurrentContactIdAsync(sourceSystem, sourceId, cancellationToken);
-            return new ResolveOrCreateContactResult(
-                concurrentContactId ?? matchedContact.ContactId, false);
+            var resolvedContactId = concurrentContactId ?? matchedContact.ContactId;
+            // Fill in any details the matched Contact is missing from this source.
+            await contactIdentityRepository.BackfillContactDetailsAsync(
+                resolvedContactId, name, email, phone, cancellationToken);
+            return new ResolveOrCreateContactResult(resolvedContactId, false);
         }
 
         var reviewCandidates = matchedContacts
@@ -78,6 +90,47 @@ public sealed class ContactIdentityService(
         }
 
         return new ResolveOrCreateContactResult(contact.Id, true);
+    }
+
+    public async Task<ResolveOrCreateContactResult> UpdateContactFromSourceAsync(
+        ResolveOrCreateContactCommand command,
+        CancellationToken cancellationToken = default)
+    {
+        var sourceSystem = RequireValue(command.SourceSystem, nameof(command.SourceSystem));
+        var sourceId = RequireValue(command.SourceId, nameof(command.SourceId));
+        var name = NormalizeOptional(command.Name);
+        var phone = NormalizePhone(command.Phone);
+
+        var existingReference = await contactIdentityRepository.FindActiveSourceReferenceAsync(
+            sourceSystem, sourceId, cancellationToken);
+
+        if (existingReference is not null)
+        {
+            // Known shopper — a fresh edit is proof they still exist, so resurrect
+            // them if the CRM had soft-deleted them, then overwrite the changed details.
+            await contactIdentityRepository.RestoreContactAsync(
+                existingReference.ContactId, cancellationToken);
+            await contactIdentityRepository.OverwriteContactDetailsAsync(
+                existingReference.ContactId, name, phone, cancellationToken);
+            return new ResolveOrCreateContactResult(existingReference.ContactId, false);
+        }
+
+        // Not yet linked (e.g. the create webhook was missed): resolve/create so
+        // the edit still surfaces, then apply the change.
+        var resolved = await ResolveOrCreateContactAsync(command, cancellationToken);
+        await contactIdentityRepository.OverwriteContactDetailsAsync(
+            resolved.ContactId, name, phone, cancellationToken);
+        return resolved;
+    }
+
+    public async Task DeleteContactFromSourceAsync(
+        string sourceSystem,
+        string sourceId,
+        CancellationToken cancellationToken = default)
+    {
+        var system = RequireValue(sourceSystem, nameof(sourceSystem));
+        var id = RequireValue(sourceId, nameof(sourceId));
+        await contactIdentityRepository.DeleteContactBySourceAsync(system, id, cancellationToken);
     }
 
     public async Task<IReadOnlyList<PendingReviewContact>> ListPendingReviewContactsAsync(

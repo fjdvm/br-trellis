@@ -23,7 +23,7 @@ export function EmptyCartState({ onClose }: EmptyCartStateProps) {
       <Button
         asChild
         onClick={onClose}
-        className="rounded-none px-8 py-3 bg-primary text-on-primary hover:bg-primary-container shadow-sm font-medium transition-all"
+        className="rounded-none px-8 py-3 bg-primary text-white hover:bg-primary-container shadow-sm font-medium transition-all"
       >
         <Link href="/products">Browse Catalog</Link>
       </Button>

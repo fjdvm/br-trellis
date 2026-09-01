@@ -5,7 +5,7 @@ import Image from "next/image";
 
 export function Footer() {
   return (
-    <footer className="bg-tertiary text-on-tertiary mt-auto py-16 border-t border-outline-variant/30">
+    <footer className="bg-tertiary text-white mt-auto py-16 border-t border-outline-variant/30">
       <div className="max-w-[1440px] mx-auto px-6 sm:px-8 grid grid-cols-1 md:grid-cols-4 gap-12">
         {/* Brand story */}
         <div className="space-y-4">
@@ -15,7 +15,7 @@ export function Footer() {
               alt="Bren Raphael's Logo"
               width={36}
               height={36}
-              className="w-9 h-9 rounded-full object-cover shadow-xs border border-on-tertiary/20"
+              className="w-9 h-9 object-cover shadow-xs border border-on-tertiary/20"
             />
             <div>
               <span className="font-serif font-bold text-lg text-on-tertiary block leading-none">
@@ -40,11 +40,6 @@ export function Footer() {
             <li>
               <Link href="/products" className="hover:text-tertiary-fixed-dim transition-colors">
                 All Products
-              </Link>
-            </li>
-            <li>
-              <Link href="/about" className="hover:text-tertiary-fixed-dim transition-colors">
-                Our Heritage Story
               </Link>
             </li>
             <li>
@@ -101,11 +96,11 @@ export function Footer() {
             <input
               type="email"
               placeholder="Your email address"
-              className="px-4 py-2.5 text-xs rounded-full border border-on-tertiary/20 bg-tertiary-container/40 text-on-tertiary placeholder:text-on-tertiary/50 w-full focus:outline-none focus:ring-2 focus:ring-secondary-fixed transition-all"
+              className="px-4 py-2.5 text-xs border border-on-tertiary/20 bg-tertiary-container/40 text-on-tertiary placeholder:text-on-tertiary/50 w-full focus:outline-none focus:ring-2 focus:ring-secondary-fixed transition-all"
             />
             <button
               type="submit"
-              className="px-5 py-2.5 text-xs font-semibold rounded-full bg-secondary text-on-secondary hover:bg-secondary-container hover:text-on-secondary-container transition-colors cursor-pointer shrink-0"
+              className="px-5 py-2.5 text-xs font-semibold rounded-full bg-secondary text-white hover:bg-secondary-container hover:text-on-secondary-container transition-colors cursor-pointer shrink-0"
             >
               Join
             </button>

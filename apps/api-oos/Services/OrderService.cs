@@ -77,8 +77,24 @@ public class OrderService : IOrderService
             throw new InvalidOperationException("Cannot checkout with an empty cart.");
         }
 
-        // Validate stock
-        foreach (var item in cart.Items)
+        // Determine which cart items to order. When SelectedItemIds is provided
+        // and non-empty, only those items are checked out; otherwise the whole
+        // cart is ordered (backward compatible).
+        var hasSelection = request.SelectedItemIds != null && request.SelectedItemIds.Count > 0;
+        var selectedIds = hasSelection
+            ? new HashSet<Guid>(request.SelectedItemIds!)
+            : null;
+        var itemsToOrder = selectedIds == null
+            ? cart.Items.ToList()
+            : cart.Items.Where(i => selectedIds.Contains(i.Id)).ToList();
+
+        if (!itemsToOrder.Any())
+        {
+            throw new InvalidOperationException("No matching cart items were selected for checkout.");
+        }
+
+        // Validate stock (only for the items being ordered)
+        foreach (var item in itemsToOrder)
         {
             if (item.Product == null || !item.Product.IsActive)
             {
@@ -93,7 +109,7 @@ public class OrderService : IOrderService
         using var transaction = await _context.Database.BeginTransactionAsync();
         try
         {
-            var subtotal = cart.Items.Sum(i => i.Product.Price * i.Quantity);
+            var subtotal = itemsToOrder.Sum(i => i.Product.Price * i.Quantity);
             var tax = subtotal * TaxRate;
             var totalAmount = subtotal + FlatShippingFee + tax;
             var orderNumber = $"ORD-{DateTime.UtcNow:yyyyMMddHHmmss}-{Random.Shared.Next(1000, 9999)}";
@@ -117,7 +133,7 @@ public class OrderService : IOrderService
                 UpdatedAt = DateTime.UtcNow
             };
 
-            foreach (var cartItem in cart.Items)
+            foreach (var cartItem in itemsToOrder)
             {
                 var orderItem = new OrderItem
                 {
@@ -150,8 +166,19 @@ public class OrderService : IOrderService
             _context.Orders.Add(order);
             await _context.SaveChangesAsync();
 
-            // Clear cart
-            await _cartRepository.ClearCartAsync(cart.Id);
+            // Remove only the ordered items from the cart. If every item was
+            // ordered, clear the whole cart; otherwise keep the unselected items.
+            if (itemsToOrder.Count == cart.Items.Count)
+            {
+                await _cartRepository.ClearCartAsync(cart.Id);
+            }
+            else
+            {
+                foreach (var orderedItem in itemsToOrder)
+                {
+                    await _cartRepository.RemoveItemAsync(orderedItem.Id);
+                }
+            }
 
             await transaction.CommitAsync();
 
@@ -185,6 +212,9 @@ public class OrderService : IOrderService
                 {
                     OrderId = order.OrderNumber,
                     CustomerEmail = user?.Email,
+                    // Carry the shopper's name so api-crms can name an order-first
+                    // Contact instead of leaving it "unnamed".
+                    Name = user?.FullName,
                     Status = MapOrderStatus(order.Status),
                     Total = order.TotalAmount,
                     RefundedAmount = 0m,

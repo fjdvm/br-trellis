@@ -61,24 +61,24 @@ export function SignupForm() {
 
   return (
     <section className="w-full max-w-lg">
-      <Card className="border border-border/70 shadow-xl rounded-2xl bg-surface-card overflow-hidden">
+      <Card className="border border-border/70 shadow-xl bg-surface-card overflow-hidden">
         <CardHeader className="flex flex-col items-center text-center">
           <Image
             src="/logo.jpeg"
             alt="Bren Raphael's Logo"
             width={64}
             height={64}
-            className="w-16 h-16 rounded-full object-cover shadow-sm mb-4"
+            className="w-16 h-16 object-cover shadow-sm mb-4"
           />
           <CardTitle className="text-3xl font-bold text-primary mb-2">Bren Raphael&apos;s</CardTitle>
-          <CardDescription className="text-sm text-muted">
+          <CardDescription className="text-sm text-on-surface-variant">
             Create an account to track orders and save your details.
           </CardDescription>
         </CardHeader>
 
         <CardContent>
           {serverError && (
-            <div className="mb-6 p-4 rounded-lg bg-error-container text-on-error-container text-sm">
+            <div className="mb-6 p-4 bg-error-container text-on-error-container text-sm">
               {serverError}
             </div>
           )}
@@ -132,7 +132,7 @@ export function SignupForm() {
                           <button
                             type="button"
                             onClick={() => setShowPassword(!showPassword)}
-                            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-foreground transition-colors p-1"
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-foreground transition-colors p-1"
                             aria-label={showPassword ? "Hide password" : "Show password"}
                           >
                             {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -162,7 +162,7 @@ export function SignupForm() {
                           <button
                             type="button"
                             onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-foreground transition-colors p-1"
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-foreground transition-colors p-1"
                             aria-label={showConfirmPassword ? "Hide password" : "Show password"}
                           >
                             {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -186,11 +186,11 @@ export function SignupForm() {
                         type="checkbox"
                         checked={field.value}
                         onChange={field.onChange}
-                        className="mt-1 w-4 h-4 rounded border-border text-primary focus:ring-primary cursor-pointer"
+                        className="mt-1 w-4 h-4 border-border text-primary focus:ring-primary cursor-pointer"
                       />
                     </FormControl>
                     <div className="space-y-1 leading-none">
-                      <FormLabel className="text-xs font-normal text-muted cursor-pointer">
+                      <FormLabel className="text-xs font-normal text-on-surface-variant cursor-pointer">
                         I agree to the{" "}
                         <Link href="/terms" className="text-primary underline">
                           Terms of Service
@@ -218,7 +218,7 @@ export function SignupForm() {
         </CardContent>
 
         <CardFooter className="justify-center border-t border-border/50 pt-6">
-          <p className="text-sm text-muted">
+          <p className="text-sm text-on-surface-variant">
             Already have an account?{" "}
             <Link href="/signin" className="text-primary font-semibold hover:underline">
               Log in

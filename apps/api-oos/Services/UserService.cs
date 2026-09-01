@@ -12,10 +12,17 @@ using BCrypt.Net;
 public class UserService : IUserService
 {
     private readonly IUserRepository _userRepository;
+    private readonly IEcommerceWebhookClient _ecommerceWebhookClient;
+    private readonly ILogger<UserService> _logger;
 
-    public UserService(IUserRepository userRepository)
+    public UserService(
+        IUserRepository userRepository,
+        IEcommerceWebhookClient ecommerceWebhookClient,
+        ILogger<UserService> logger)
     {
         _userRepository = userRepository;
+        _ecommerceWebhookClient = ecommerceWebhookClient;
+        _logger = logger;
     }
 
     public async Task<UserDto> GetMeAsync(Guid userId)
@@ -44,7 +51,75 @@ public class UserService : IUserService
         }
 
         await _userRepository.UpdateAsync(user);
+
+        // Reflect the profile change (e.g. new name) into api-crms so the CRM
+        // Contact stays in sync. Best-effort: a CRM outage must not fail the edit.
+        await DispatchCustomerUpdatedAsync(user);
+
         return MapToUserDto(user);
+    }
+
+    private async Task DispatchCustomerUpdatedAsync(User user)
+    {
+        try
+        {
+            await _ecommerceWebhookClient.SendAsync(new ApiOos.DTOs.Webhooks.EcommerceWebhookEvent
+            {
+                EventId = Guid.NewGuid().ToString(),
+                EventType = "customer.updated",
+                Data = new ApiOos.DTOs.Webhooks.EcommerceWebhookData
+                {
+                    CustomerEmail = user.Email,
+                    Name = user.FullName,
+                    OccurredAt = DateTime.UtcNow.ToString("O"),
+                },
+            });
+        }
+        catch (Exception exception)
+        {
+            _logger.LogWarning(
+                exception, "Failed to deliver customer.updated webhook for {UserId}.", user.Id);
+        }
+    }
+
+    public async Task DeleteMeAsync(Guid userId)
+    {
+        var user = await _userRepository.GetByIdAsync(userId);
+        if (user == null)
+        {
+            throw new NotFoundException("User not found.");
+        }
+
+        // Capture the email before deletion so the CRM can locate the Contact.
+        var email = user.Email;
+
+        await _userRepository.DeleteAsync(user);
+
+        // Propagate the deletion to api-crms so the CRM Contact is soft-deleted too.
+        // Best-effort: a CRM outage must not fail the account deletion.
+        await DispatchCustomerDeletedAsync(userId, email);
+    }
+
+    private async Task DispatchCustomerDeletedAsync(Guid userId, string email)
+    {
+        try
+        {
+            await _ecommerceWebhookClient.SendAsync(new ApiOos.DTOs.Webhooks.EcommerceWebhookEvent
+            {
+                EventId = Guid.NewGuid().ToString(),
+                EventType = "customer.deleted",
+                Data = new ApiOos.DTOs.Webhooks.EcommerceWebhookData
+                {
+                    CustomerEmail = email,
+                    OccurredAt = DateTime.UtcNow.ToString("O"),
+                },
+            });
+        }
+        catch (Exception exception)
+        {
+            _logger.LogWarning(
+                exception, "Failed to deliver customer.deleted webhook for {UserId}.", userId);
+        }
     }
 
     public async Task ChangePasswordAsync(Guid userId, ChangePasswordRequest request)

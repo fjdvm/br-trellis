@@ -55,7 +55,7 @@ export function ResetPasswordForm() {
 
   return (
     <section className="w-full max-w-md">
-      <Card className="border border-border/70 shadow-xl rounded-2xl bg-surface-card overflow-hidden">
+      <Card className="border border-border/70 shadow-xl bg-surface-card overflow-hidden">
         <CardHeader className="text-center">
           <CardTitle className="text-3xl font-bold text-primary mb-2">Set New Password</CardTitle>
           <CardDescription className="text-sm text-muted">
@@ -65,14 +65,14 @@ export function ResetPasswordForm() {
 
         <CardContent>
           {serverError && (
-            <div className="mb-6 p-4 rounded-lg bg-error-container text-on-error-container text-sm">
+            <div className="mb-6 p-4 bg-error-container text-on-error-container text-sm">
               {serverError}
             </div>
           )}
 
           {isSuccess ? (
             <div className="text-center space-y-4">
-              <div className="p-4 rounded-lg bg-surface-container text-primary text-sm font-medium">
+              <div className="p-4 bg-surface-container text-primary text-sm font-medium">
                 Password has been reset successfully! Redirecting you to sign in...
               </div>
               <Link href="/signin" className="inline-block mt-4 text-sm font-semibold text-primary hover:underline">

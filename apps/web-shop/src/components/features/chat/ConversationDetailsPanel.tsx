@@ -80,7 +80,7 @@ export function ConversationDetailsPanel({ ticket, onClose }: ConversationDetail
           <div>
             <h3 className="text-base font-bold text-slate-900 leading-snug">{displayTitle}</h3>
             {ticketType && (
-              <span className="inline-flex items-center gap-1 mt-1.5 px-2 py-0.5 text-[11px] font-semibold bg-purple-50 text-purple-700 border border-purple-200 rounded-full">
+              <span className="inline-flex items-center gap-1 mt-1.5 px-2 py-0.5 text-[11px] font-semibold bg-purple-50 text-purple-700 border border-purple-200">
                 <Tag className="w-3 h-3" />
                 {ticketType}
               </span>
@@ -118,7 +118,7 @@ export function ConversationDetailsPanel({ ticket, onClose }: ConversationDetail
             <label className="text-[11px] font-semibold text-slate-500 uppercase tracking-wide flex items-center gap-1">
               <FileText className="w-3 h-3" /> Description
             </label>
-            <p className="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap break-words bg-slate-50 rounded-lg p-3 border border-slate-100">
+            <p className="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap break-words bg-slate-50 p-3 border border-slate-100">
               {ticket.description || "No description provided."}
             </p>
           </div>
@@ -148,7 +148,7 @@ export function ConversationDetailsPanel({ ticket, onClose }: ConversationDetail
             <label className="text-[11px] font-semibold text-slate-500 uppercase tracking-wide flex items-center gap-1">
               <Hash className="w-3 h-3" /> Ticket ID
             </label>
-            <p className="text-xs text-slate-600 font-mono bg-slate-50 rounded-md px-2.5 py-1.5 border border-slate-100 break-all">
+            <p className="text-xs text-slate-600 font-mono bg-slate-50 px-2.5 py-1.5 border border-slate-100 break-all">
               {ticket.id}
             </p>
           </div>

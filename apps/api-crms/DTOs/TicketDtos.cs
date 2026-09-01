@@ -35,7 +35,11 @@ public sealed record TicketDetailDto(
 
 public sealed record CreateTicketDto(
     string Subject,
-    Guid? ContactId);
+    // Accepted as a raw string (not Guid?) so a form that sends an empty/blank
+    // value for "no contact selected" doesn't trip System.Text.Json's Guid
+    // binder (which 400s on ""). The service normalizes: blank -> no contact,
+    // a valid Guid -> linked contact, anything else -> a clear ArgumentException.
+    string? ContactId);
 
 public sealed record ClaimTicketDto(
     string StaffId,

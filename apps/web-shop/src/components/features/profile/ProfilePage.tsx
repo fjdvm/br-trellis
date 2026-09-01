@@ -45,7 +45,7 @@ export function ProfilePage() {
           <ProfileSidebar activeTab={activeTab} onTabChange={setActiveTab} user={user} />
         </aside>
 
-        <main className="lg:col-span-9 bg-surface-container-lowest border border-outline-variant/30 rounded-3xl p-6 sm:p-10 shadow-xs">
+        <main className="lg:col-span-9 bg-surface-container-lowest border border-outline-variant/30 p-6 sm:p-10 shadow-xs">
           {isLoadingUser ? (
             <div className="p-12 text-center font-sans text-xs text-on-surface-variant">
               Loading account information...

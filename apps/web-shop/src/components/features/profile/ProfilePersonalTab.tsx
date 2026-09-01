@@ -39,20 +39,20 @@ export function ProfilePersonalTab({
         <div className="text-center sm:text-left">
           <h2 className="text-xl font-bold text-gray-900">{user?.fullName}</h2>
           <p className="text-sm text-[var(--muted)]">{user?.email}</p>
-          <span className="inline-block mt-2 px-3 py-0.5 bg-[var(--secondary-container)] text-[var(--on-secondary-container)] text-xs font-semibold rounded-full">
+          <span className="inline-block mt-2 px-3 py-0.5 bg-[var(--secondary-container)] text-[var(--on-secondary-container)] text-xs font-semibold">
             Artisanal Ube Enthusiast
           </span>
         </div>
       </div>
 
       {successMessage && (
-        <div className="p-4 rounded-lg bg-green-50 border border-green-200 text-green-800 text-sm font-medium">
+        <div className="p-4 bg-green-50 border border-green-200 text-green-800 text-sm font-medium">
           {successMessage}
         </div>
       )}
 
       {errorMessage && (
-        <div className="p-4 rounded-lg bg-[var(--error-container)] text-[var(--on-error-container)] text-sm font-medium">
+        <div className="p-4 bg-[var(--error-container)] text-[var(--on-error-container)] text-sm font-medium">
           {errorMessage}
         </div>
       )}

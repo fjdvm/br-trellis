@@ -40,7 +40,7 @@ export function OrderConfirmationPage() {
   return (
     <div className="max-w-[840px] mx-auto px-4 sm:px-6 py-12">
       <div className="text-center mb-12">
-        <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-primary-container/20 text-primary mb-6">
+        <div className="inline-flex items-center justify-center w-24 h-24 bg-primary-container/20 text-primary mb-6">
           <CheckCircle2 className="w-12 h-12 text-primary" />
         </div>
 
@@ -59,7 +59,7 @@ export function OrderConfirmationPage() {
       </div>
 
       {order && (
-        <div className="bg-surface-container-lowest border border-outline-variant/30 rounded-3xl p-6 sm:p-10 shadow-xs mb-8 space-y-6">
+        <div className="bg-surface-container-lowest border border-outline-variant/30 p-6 sm:p-10 shadow-xs mb-8 space-y-6">
           <h2 className="font-serif font-bold text-xl text-primary border-b border-outline-variant/20 pb-4">
             Order Summary
           </h2>
@@ -99,7 +99,7 @@ export function OrderConfirmationPage() {
 
       {order && (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-10 font-sans">
-          <div className="bg-surface-container-low rounded-2xl p-6 border border-outline-variant/20">
+          <div className="bg-surface-container-low p-6 border border-outline-variant/20">
             <div className="flex items-center gap-2.5 mb-3 text-primary">
               <Truck className="w-5 h-5" />
               <h3 className="font-serif font-bold text-base">Estimated Delivery</h3>
@@ -110,7 +110,7 @@ export function OrderConfirmationPage() {
             </p>
           </div>
 
-          <div className="bg-surface-container-low rounded-2xl p-6 border border-outline-variant/20">
+          <div className="bg-surface-container-low p-6 border border-outline-variant/20">
             <div className="flex items-center gap-2.5 mb-3 text-primary">
               <MapPin className="w-5 h-5" />
               <h3 className="font-serif font-bold text-base">Shipping Address</h3>
@@ -131,7 +131,7 @@ export function OrderConfirmationPage() {
             <Link href={`/orders/${order.id}`}>View Order Details</Link>
           </Button>
         )}
-        <Button asChild className="rounded-full px-8 py-3 bg-primary text-on-primary font-semibold hover:bg-primary-container shadow-sm">
+        <Button asChild className="rounded-full px-8 py-3 bg-primary text-white font-semibold hover:bg-primary-container shadow-sm">
           <Link href="/products" className="flex items-center justify-center gap-2">
             Continue Shopping
             <ArrowRight className="w-4 h-4" />

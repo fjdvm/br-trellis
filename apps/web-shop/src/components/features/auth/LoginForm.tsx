@@ -53,12 +53,12 @@ export function LoginForm() {
   };
 
   return (
-    <div className="w-full max-w-4xl bg-surface-container-low rounded-3xl overflow-hidden shadow-2xl flex flex-col md:flex-row border border-outline-variant/30 my-8">
+    <div className="w-full max-w-4xl bg-surface-container-low overflow-hidden shadow-2xl flex flex-col md:flex-row border border-outline-variant/30 my-8">
       {/* Left Column: Editorial Image */}
       <div className="hidden md:block w-1/2 relative bg-surface-container min-h-[480px]">
         <Image
-          src="https://images.unsplash.com/photo-1560343090-f0409e92791a?auto=format&fit=crop&w=800&q=80"
-          alt="Artisanal Ube Product"
+          src="https://lh3.googleusercontent.com/aida-public/AB6AXuDCK2_zvxOS8VCDQW2lb3TFCUCR7o0GIBwh8yS2xRRgXTObJM-apHisKbhmHNJf5UrKLppyh1u6CalRCqE0eT_rk342EoDPs4N6qhBICw0hiiSZUvCHxxJUA0J3UBJg8o4qYNWi2cViUfGRc-KyvqZPtS7RB_zkn6vvJLNYmkSmPMikMBYkbII502nIkMk7qThGW2LAvcdn72FE9-yNaMNvlOwcQqDWHcDbJ9SUNoQGYg2msEmBiB_K"
+          alt="Purple Yam Jam"
           fill
           unoptimized
           className="object-cover"
@@ -81,7 +81,7 @@ export function LoginForm() {
         </div>
 
         {serverError && (
-          <div className="mb-6 p-4 rounded-2xl bg-error-container/30 border border-error-container text-on-error-container text-xs font-medium">
+          <div className="mb-6 p-4 bg-error-container/30 border border-error-container text-on-error-container text-xs font-medium">
             {serverError}
           </div>
         )}
@@ -101,7 +101,7 @@ export function LoginForm() {
                       id="login-email"
                       type="email"
                       placeholder="hello@example.com"
-                      className="rounded-full px-5 py-3 bg-surface border-outline-variant/40 focus:border-primary text-on-surface"
+                      className="px-5 py-3 bg-surface border-outline-variant/40 focus:border-primary text-on-surface"
                       {...field}
                     />
                   </FormControl>
@@ -132,7 +132,7 @@ export function LoginForm() {
                         id="login-password"
                         type={showPassword ? "text" : "password"}
                         placeholder="••••••••"
-                        className="rounded-full px-5 py-3 pr-11 bg-surface border-outline-variant/40 focus:border-primary text-on-surface"
+                        className="px-5 py-3 pr-11 bg-surface border-outline-variant/40 focus:border-primary text-on-surface"
                         {...field}
                       />
                       <button
@@ -153,7 +153,7 @@ export function LoginForm() {
             <Button
               type="submit"
               disabled={isLoading}
-              className="w-full rounded-full py-3.5 bg-primary text-on-primary font-semibold hover:bg-primary-container shadow-md transition-all flex items-center justify-center gap-2 mt-6"
+              className="w-full rounded-full py-3.5 bg-primary text-white font-semibold hover:bg-primary-container shadow-md transition-all flex items-center justify-center gap-2 mt-6"
             >
               <span>{isLoading ? "Signing in..." : "Sign In"}</span>
               {!isLoading && <ArrowRight className="w-4 h-4" />}

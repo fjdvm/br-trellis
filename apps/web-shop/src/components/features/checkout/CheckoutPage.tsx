@@ -16,19 +16,29 @@ import { PaymentStep } from "./PaymentStep";
 
 export function CheckoutPage() {
   const router = useRouter();
-  const { items, subtotal, totalItems, isAuthenticated, clearCart } = useCart();
+  const {
+    selectedItems,
+    selectedSubtotal,
+    selectedTotalItems,
+    selectedItemIds,
+    isAuthenticated,
+    fetchCart,
+  } = useCart();
   const { createOrder, loading: orderLoading, error: orderError } = useOrders();
 
   const [currentStep, setCurrentStep] = useState<number>(1);
   const [shippingAddress, setShippingAddress] = useState<ShippingAddressRequest | null>(null);
 
+  const items = selectedItems;
+  const subtotal = selectedSubtotal;
+  const totalItems = selectedTotalItems;
   const shippingFee = items.length > 0 ? 100 : 0;
   const totalAmount = subtotal + shippingFee;
 
   if (!isAuthenticated) {
     return (
       <div className="max-w-[1280px] mx-auto px-4 py-20 text-center space-y-4">
-        <div className="w-20 h-20 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary mx-auto">
+        <div className="w-20 h-20 bg-primary/10 border border-primary/20 flex items-center justify-center text-primary mx-auto">
           <ShoppingBag className="w-10 h-10 text-primary" />
         </div>
         <h1 className="font-serif text-2xl sm:text-3xl font-normal text-primary">
@@ -37,7 +47,7 @@ export function CheckoutPage() {
         <p className="font-sans text-on-surface-variant text-sm max-w-md mx-auto leading-relaxed">
           You must be logged in to your account to specify shipping addresses and place orders.
         </p>
-        <Button asChild className="rounded-xl bg-primary text-on-primary px-8 py-3 hover:bg-primary-container shadow-sm font-medium">
+        <Button asChild className="rounded-xl bg-primary text-white px-8 py-3 hover:bg-primary-container shadow-sm font-medium">
           <Link href="/signin">Sign In</Link>
         </Button>
       </div>
@@ -47,14 +57,14 @@ export function CheckoutPage() {
   if (items.length === 0 && currentStep === 1) {
     return (
       <div className="max-w-[1280px] mx-auto px-4 py-20 text-center space-y-4">
-        <div className="w-20 h-20 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary mx-auto">
+        <div className="w-20 h-20 bg-primary/10 border border-primary/20 flex items-center justify-center text-primary mx-auto">
           <ShoppingBag className="w-10 h-10 text-primary" />
         </div>
         <h1 className="font-serif text-2xl sm:text-3xl font-normal text-primary">Your cart is empty</h1>
         <p className="font-sans text-on-surface-variant text-sm max-w-md mx-auto leading-relaxed">
           Add some delicious Baguio Ube Halaya to your cart before proceeding to checkout!
         </p>
-        <Button asChild className="rounded-xl bg-primary text-on-primary px-8 py-3 hover:bg-primary-container shadow-sm font-medium">
+        <Button asChild className="rounded-xl bg-primary text-white px-8 py-3 hover:bg-primary-container shadow-sm font-medium">
           <Link href="/products">Browse Catalog</Link>
         </Button>
       </div>
@@ -72,8 +82,11 @@ export function CheckoutPage() {
       const createdOrder = await createOrder({
         shippingAddress,
         paymentMethod,
+        selectedItemIds,
       });
-      await clearCart();
+      // Resync the cart from the server: the backend removes only the ordered
+      // (selected) items, so any unselected items remain in the cart.
+      await fetchCart();
       router.push(`/orders/confirmation?id=${createdOrder.id}`);
     } catch {
       // Error handled by useOrders state
@@ -101,14 +114,14 @@ export function CheckoutPage() {
       <CheckoutStepper currentStep={currentStep} />
 
       {orderError && (
-        <div className="p-4 mb-6 max-w-3xl mx-auto bg-error-container/30 text-on-error-container text-sm rounded-lg font-medium border border-error-container">
+        <div className="p-4 mb-6 max-w-3xl mx-auto bg-error-container/30 text-on-error-container text-sm font-medium border border-error-container">
           {orderError}
         </div>
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 max-w-5xl mx-auto items-start">
         {/* Step Form Container */}
-        <div className="lg:col-span-8 bg-surface-container-low rounded-xl border border-outline-variant/30 p-6 sm:p-8 shadow-xs">
+        <div className="lg:col-span-8 bg-surface-container-low border border-outline-variant/30 p-6 sm:p-8 shadow-xs">
           {currentStep === 1 && (
             <ShippingStep
               initialAddress={shippingAddress}
@@ -140,7 +153,7 @@ export function CheckoutPage() {
 
         {/* Sidebar Summary */}
         <div className="lg:col-span-4">
-          <div className="bg-primary-fixed/20 rounded-xl border border-outline-variant/20 p-6 shadow-xs sticky top-24 space-y-4">
+          <div className="bg-primary-fixed/20 border border-outline-variant/20 p-6 shadow-xs sticky top-24 space-y-4">
             <h3 className="font-serif font-bold text-base text-primary border-b border-outline-variant/20 pb-3">
               Summary ({totalItems} {totalItems === 1 ? "item" : "items"})
             </h3>

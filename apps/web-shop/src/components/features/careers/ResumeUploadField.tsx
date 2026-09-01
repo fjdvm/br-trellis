@@ -25,9 +25,9 @@ export function ResumeUploadField({
       </Label>
 
       {file ? (
-        <div className="flex items-center justify-between p-3.5 rounded-2xl border border-violet-100 bg-violet-50/50">
+        <div className="flex items-center justify-between p-3.5 border border-violet-100 bg-violet-50/50">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-violet-100 flex items-center justify-center text-violet-600">
+            <div className="w-10 h-10 bg-violet-100 flex items-center justify-center text-violet-600">
               <FileText className="w-5 h-5" />
             </div>
             <div>
@@ -41,7 +41,7 @@ export function ResumeUploadField({
               variant="ghost"
               size="icon"
               onClick={onRemoveFile}
-              className="w-8 h-8 rounded-full text-slate-400 hover:text-rose-600 hover:bg-rose-50"
+              className="w-8 h-8 text-slate-400 hover:text-rose-600 hover:bg-rose-50"
             >
               <X className="w-4 h-4" />
             </Button>
@@ -50,7 +50,7 @@ export function ResumeUploadField({
       ) : (
         <div
           onClick={() => !isSubmitting && fileInputRef.current?.click()}
-          className="border-2 border-dashed border-slate-200 rounded-2xl p-6 text-center cursor-pointer hover:border-violet-500 hover:bg-violet-50/30 transition-all duration-300 group"
+          className="border-2 border-dashed border-slate-200 p-6 text-center cursor-pointer hover:border-violet-500 hover:bg-violet-50/30 transition-all duration-300 group"
         >
           <input
             type="file"

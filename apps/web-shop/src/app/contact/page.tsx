@@ -31,14 +31,14 @@ export default function ContactPage() {
           <div className="flex flex-wrap justify-center gap-4">
             <a
               href="#chat"
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-outline-variant bg-surface text-primary font-sans text-sm font-semibold hover:bg-primary-container hover:text-on-primary-container transition-colors shadow-2xs"
+              className="inline-flex items-center gap-2 px-6 py-3 border border-outline-variant bg-surface text-primary font-sans text-sm font-semibold hover:bg-primary-container hover:text-on-primary-container transition-colors shadow-2xs"
             >
               <MessageSquare className="w-4 h-4" />
               Live Chat
             </a>
             <a
               href="tel:+639171234567"
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-outline-variant bg-surface text-primary font-sans text-sm font-semibold hover:bg-primary-container hover:text-on-primary-container transition-colors shadow-2xs"
+              className="inline-flex items-center gap-2 px-6 py-3 border border-outline-variant bg-surface text-primary font-sans text-sm font-semibold hover:bg-primary-container hover:text-on-primary-container transition-colors shadow-2xs"
             >
               <Phone className="w-4 h-4" />
               Call Us

@@ -189,6 +189,149 @@ public sealed class ContactIdentityServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task ResolveOrCreateContact_backfills_missing_name_on_matched_contact()
+    {
+        // Regression: an order-first Contact created with only an email (no name)
+        // must be named when a later source (order carrying the name, or a
+        // customer.created) resolves to it — not left "unnamed".
+        await using var context = CreateContext();
+        var existingContact = new Contact
+        {
+            Id = Guid.NewGuid(),
+            CreatedAt = DateTimeOffset.UtcNow,
+            Email = "maya@example.com",
+            Name = null,
+        };
+        context.Contacts.Add(existingContact);
+        await context.SaveChangesAsync();
+
+        var service = CreateService(context);
+        var result = await service.ResolveOrCreateContactAsync(new ResolveOrCreateContactCommand(
+            "ecommerce",
+            "buyer-200",
+            "Maya Chen",
+            "maya@example.com",
+            null));
+
+        Assert.False(result.CreatedContact);
+        Assert.Equal(existingContact.Id, result.ContactId);
+        var reloaded = await context.Contacts.SingleAsync();
+        Assert.Equal("Maya Chen", reloaded.Name);
+    }
+
+    [Fact]
+    public async Task ResolveOrCreateContact_backfills_name_when_same_source_seen_again_with_name()
+    {
+        // An order.created (email only, no name) creates the Contact unnamed.
+        // A repeat event for the SAME source that now carries the name must fill it.
+        await using var context = CreateContext();
+        var service = CreateService(context);
+
+        await service.ResolveOrCreateContactAsync(new ResolveOrCreateContactCommand(
+            "ecommerce", "customer:maya@example.com", null, "maya@example.com", null));
+        var beforeBackfill = await context.Contacts.SingleAsync();
+        Assert.Null(beforeBackfill.Name);
+
+        await service.ResolveOrCreateContactAsync(new ResolveOrCreateContactCommand(
+            "ecommerce", "customer:maya@example.com", "Maya Chen", "maya@example.com", null));
+
+        Assert.Equal(1, await context.Contacts.CountAsync());
+        Assert.Equal("Maya Chen", (await context.Contacts.SingleAsync()).Name);
+    }
+
+    [Fact]
+    public async Task ResolveOrCreateContact_does_not_overwrite_an_existing_name()
+    {
+        await using var context = CreateContext();
+        var existingContact = new Contact
+        {
+            Id = Guid.NewGuid(),
+            CreatedAt = DateTimeOffset.UtcNow,
+            Email = "maya@example.com",
+            Name = "Maya Chen",
+        };
+        context.Contacts.Add(existingContact);
+        await context.SaveChangesAsync();
+
+        var service = CreateService(context);
+        await service.ResolveOrCreateContactAsync(new ResolveOrCreateContactCommand(
+            "ecommerce", "buyer-200", "Someone Else", "maya@example.com", null));
+
+        Assert.Equal("Maya Chen", (await context.Contacts.SingleAsync()).Name);
+    }
+
+    [Fact]
+    public async Task UpdateContactFromSource_overwrites_name_for_a_linked_source()
+    {
+        // The shopper edited their name; the linked Contact must be renamed.
+        await using var context = CreateContext();
+        var service = CreateService(context);
+
+        await service.ResolveOrCreateContactAsync(new ResolveOrCreateContactCommand(
+            "ecommerce", "customer:maya@example.com", "Old Name", "maya@example.com", null));
+
+        var result = await service.UpdateContactFromSourceAsync(new ResolveOrCreateContactCommand(
+            "ecommerce", "customer:maya@example.com", "New Name", "maya@example.com", null));
+
+        Assert.False(result.CreatedContact);
+        Assert.Equal(1, await context.Contacts.CountAsync());
+        Assert.Equal("New Name", (await context.Contacts.SingleAsync()).Name);
+    }
+
+    [Fact]
+    public async Task UpdateContactFromSource_creates_then_applies_when_source_unknown()
+    {
+        // An update for a shopper the CRM hasn't seen yet still surfaces them.
+        await using var context = CreateContext();
+        var service = CreateService(context);
+
+        var result = await service.UpdateContactFromSourceAsync(new ResolveOrCreateContactCommand(
+            "ecommerce", "customer:ghost@example.com", "Ghost Name", "ghost@example.com", null));
+
+        var contact = await context.Contacts.SingleAsync();
+        Assert.Equal(contact.Id, result.ContactId);
+        Assert.Equal("Ghost Name", contact.Name);
+    }
+
+    [Fact]
+    public async Task ResolveOrCreateContact_resurrects_a_soft_deleted_contact_for_the_same_source()
+    {
+        // Deleted in the CRM but still in the shop: a fresh source event must bring
+        // the same Contact back (DeletedAt cleared), not create a duplicate.
+        await using var context = CreateContext();
+        var service = CreateService(context);
+        var cmd = new ResolveOrCreateContactCommand(
+            "ecommerce", "customer:maya@example.com", "Maya", "maya@example.com", null);
+
+        var created = await service.ResolveOrCreateContactAsync(cmd);
+
+        // Simulate a CRM-side soft delete.
+        var contact = await context.Contacts.SingleAsync();
+        contact.DeletedAt = DateTimeOffset.UtcNow;
+        await context.SaveChangesAsync();
+
+        var again = await service.ResolveOrCreateContactAsync(cmd);
+
+        Assert.Equal(created.ContactId, again.ContactId);
+        Assert.Equal(1, await context.Contacts.CountAsync());
+        Assert.Null((await context.Contacts.SingleAsync()).DeletedAt);
+    }
+
+    [Fact]
+    public async Task DeleteContactFromSource_soft_deletes_the_linked_contact()
+    {
+        await using var context = CreateContext();
+        var service = CreateService(context);
+        await service.ResolveOrCreateContactAsync(new ResolveOrCreateContactCommand(
+            "ecommerce", "customer:gone@example.com", "Gone", "gone@example.com", null));
+
+        await service.DeleteContactFromSourceAsync("ecommerce", "customer:gone@example.com");
+
+        var contact = await context.Contacts.SingleAsync();
+        Assert.NotNull(contact.DeletedAt);
+    }
+
+    [Fact]
     public async Task ListPendingReviewContacts_returns_the_pending_contact_with_its_candidate_and_confidence()
     {
         await using var context = CreateContext();

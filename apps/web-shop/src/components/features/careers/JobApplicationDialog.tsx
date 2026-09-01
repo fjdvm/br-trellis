@@ -120,10 +120,10 @@ export function JobApplicationDialog({ job, isOpen, onClose }: JobApplicationDia
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && handleReset()}>
-      <DialogContent className="sm:max-w-[550px] rounded-3xl bg-white p-6 border border-border shadow-2xl overflow-y-auto max-h-[90vh]">
+      <DialogContent className="sm:max-w-[550px] bg-white p-6 border border-border shadow-2xl overflow-y-auto max-h-[90vh]">
         {submitSuccess ? (
           <div className="flex flex-col items-center justify-center py-12 text-center">
-            <div className="w-16 h-16 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 mb-6 animate-bounce">
+            <div className="w-16 h-16 bg-emerald-100 flex items-center justify-center text-emerald-600 mb-6 animate-bounce">
               <CheckCircle2 className="w-10 h-10" />
             </div>
             <DialogTitle className="text-2xl font-extrabold text-slate-900 mb-2">
@@ -148,7 +148,7 @@ export function JobApplicationDialog({ job, isOpen, onClose }: JobApplicationDia
             </DialogHeader>
 
             {errorMsg && (
-              <div className="p-3.5 rounded-2xl bg-rose-50 text-rose-700 text-xs font-semibold border border-rose-200/50 flex items-start gap-2.5">
+              <div className="p-3.5 bg-rose-50 text-rose-700 text-xs font-semibold border border-rose-200/50 flex items-start gap-2.5">
                 <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
                 <span>{errorMsg}</span>
               </div>
@@ -181,9 +181,9 @@ export function JobApplicationDialog({ job, isOpen, onClose }: JobApplicationDia
                     <span>Uploading Resume...</span>
                     <span>{uploadProgress}%</span>
                   </div>
-                  <div className="w-full h-2 rounded-full bg-slate-100 overflow-hidden">
+                  <div className="w-full h-2 bg-slate-100 overflow-hidden">
                     <div
-                      className="h-full bg-gradient-to-r from-violet-500 to-indigo-600 rounded-full transition-all duration-300"
+                      className="h-full bg-gradient-to-r from-violet-500 to-indigo-600 transition-all duration-300"
                       style={{ width: `${uploadProgress}%` }}
                     />
                   </div>
@@ -196,7 +196,7 @@ export function JobApplicationDialog({ job, isOpen, onClose }: JobApplicationDia
                   variant="outline"
                   onClick={handleReset}
                   disabled={isSubmitting}
-                  className="rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-50 border-slate-200"
+                  className="text-xs font-bold text-slate-600 hover:bg-slate-50 border-slate-200"
                 >
                   Cancel
                 </Button>

@@ -115,6 +115,138 @@ public sealed class EcommerceWebhookIntegrationTests
         Assert.Equal(contact.Id, order.ContactId);
     }
 
+    [Fact]
+    public async Task Signed_customer_created_creates_contact_before_any_order()
+    {
+        // A new shop signup emits customer.created (email + name, no order). It must
+        // surface as a CRM Contact immediately — this is the "signup reflects in CRM"
+        // contract the shop relies on.
+        var email = $"signup-{Guid.NewGuid():N}@example.com";
+        var eventId = $"evt-{Guid.NewGuid():N}";
+        var body = System.Text.Json.JsonSerializer.Serialize(new
+        {
+            EventId = eventId,
+            EventType = "customer.created",
+            Data = new
+            {
+                CustomerEmail = email,
+                Name = "Signup Person",
+                OccurredAt = DateTimeOffset.UtcNow.ToString("O"),
+            },
+        });
+
+        var response = await PostSignedAsync(body);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+        using var scope = _factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var contact = db.Contacts.Single(c => c.Email == email);
+        Assert.Equal("Signup Person", contact.Name);
+        Assert.False(db.Orders.Any(), "no order should exist for a signup-only contact");
+        Assert.True(db.ProcessedEvents.Any(e => e.EventId == eventId));
+    }
+
+    [Fact]
+    public async Task Signed_customer_updated_overwrites_contact_name()
+    {
+        // A shopper editing their name in the shop emits customer.updated. The CRM
+        // Contact's name must change to match — this is the "edit reflects in CRM"
+        // contract.
+        var email = $"editor-{Guid.NewGuid():N}@example.com";
+
+        // First surface the contact via a signup (old name).
+        var createBody = System.Text.Json.JsonSerializer.Serialize(new
+        {
+            EventId = $"evt-{Guid.NewGuid():N}",
+            EventType = "customer.created",
+            Data = new { CustomerEmail = email, Name = "Old Name", OccurredAt = DateTimeOffset.UtcNow.ToString("O") },
+        });
+        Assert.Equal(HttpStatusCode.OK, (await PostSignedAsync(createBody)).StatusCode);
+
+        // Now the shopper renames themselves.
+        var updateBody = System.Text.Json.JsonSerializer.Serialize(new
+        {
+            EventId = $"evt-{Guid.NewGuid():N}",
+            EventType = "customer.updated",
+            Data = new { CustomerEmail = email, Name = "New Name", OccurredAt = DateTimeOffset.UtcNow.ToString("O") },
+        });
+        var response = await PostSignedAsync(updateBody);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+        using var scope = _factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var contact = db.Contacts.Single(c => c.Email == email);
+        Assert.Equal("New Name", contact.Name);
+        Assert.Equal(1, db.Contacts.Count(c => c.Email == email));
+    }
+
+    [Fact]
+    public async Task Signed_customer_deleted_soft_deletes_the_contact()
+    {
+        var email = $"del-{Guid.NewGuid():N}@example.com";
+        var createBody = System.Text.Json.JsonSerializer.Serialize(new
+        {
+            EventId = $"evt-{Guid.NewGuid():N}",
+            EventType = "customer.created",
+            Data = new { CustomerEmail = email, Name = "To Delete", OccurredAt = DateTimeOffset.UtcNow.ToString("O") },
+        });
+        Assert.Equal(HttpStatusCode.OK, (await PostSignedAsync(createBody)).StatusCode);
+
+        var deleteBody = System.Text.Json.JsonSerializer.Serialize(new
+        {
+            EventId = $"evt-{Guid.NewGuid():N}",
+            EventType = "customer.deleted",
+            Data = new { CustomerEmail = email, OccurredAt = DateTimeOffset.UtcNow.ToString("O") },
+        });
+        Assert.Equal(HttpStatusCode.OK, (await PostSignedAsync(deleteBody)).StatusCode);
+
+        using var scope = _factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var contact = db.Contacts.Single(c => c.Email == email);
+        Assert.NotNull(contact.DeletedAt);
+    }
+
+    [Fact]
+    public async Task Signed_customer_event_resurrects_a_crm_deleted_contact()
+    {
+        // Deleted in the CRM (not in the shop): the next shop event brings it back.
+        var email = $"res-{Guid.NewGuid():N}@example.com";
+        var createBody = System.Text.Json.JsonSerializer.Serialize(new
+        {
+            EventId = $"evt-{Guid.NewGuid():N}",
+            EventType = "customer.created",
+            Data = new { CustomerEmail = email, Name = "Comes Back", OccurredAt = DateTimeOffset.UtcNow.ToString("O") },
+        });
+        Assert.Equal(HttpStatusCode.OK, (await PostSignedAsync(createBody)).StatusCode);
+
+        // CRM-side soft delete (as if an agent deleted the contact in the CRM UI).
+        Guid contactId;
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            var contact = db.Contacts.Single(c => c.Email == email);
+            contact.DeletedAt = DateTimeOffset.UtcNow;
+            db.SaveChanges();
+            contactId = contact.Id;
+        }
+
+        // A later shop event for the same customer.
+        var updateBody = System.Text.Json.JsonSerializer.Serialize(new
+        {
+            EventId = $"evt-{Guid.NewGuid():N}",
+            EventType = "customer.updated",
+            Data = new { CustomerEmail = email, Name = "Comes Back", OccurredAt = DateTimeOffset.UtcNow.ToString("O") },
+        });
+        Assert.Equal(HttpStatusCode.OK, (await PostSignedAsync(updateBody)).StatusCode);
+
+        using var verifyScope = _factory.Services.CreateScope();
+        var verifyDb = verifyScope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var restored = verifyDb.Contacts.Single(c => c.Id == contactId);
+        Assert.Null(restored.DeletedAt);
+    }
+
     private async Task<HttpResponseMessage> PostSignedAsync(string body)
     {
         var content = new StringContent(body, Encoding.UTF8, "application/json");

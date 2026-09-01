@@ -13,15 +13,18 @@ public class AuthService : IAuthService
 {
     private readonly IUserRepository _userRepository;
     private readonly JwtTokenHelper _jwtTokenHelper;
+    private readonly IEcommerceWebhookClient _ecommerceWebhookClient;
     private readonly ILogger<AuthService> _logger;
 
     public AuthService(
         IUserRepository userRepository,
         JwtTokenHelper jwtTokenHelper,
+        IEcommerceWebhookClient ecommerceWebhookClient,
         ILogger<AuthService> logger)
     {
         _userRepository = userRepository;
         _jwtTokenHelper = jwtTokenHelper;
+        _ecommerceWebhookClient = ecommerceWebhookClient;
         _logger = logger;
     }
 
@@ -45,13 +48,38 @@ public class AuthService : IAuthService
 
         await _userRepository.CreateAsync(user);
 
-        // Contact creation/resolution in api-crms now happens lazily via order (and
-        // later ticket) ingestion — no explicit signup webhook is sent (#121).
+        // Eagerly notify api-crms so the new customer surfaces in CRM Contacts
+        // immediately (resolved via ContactIdentityService). Best-effort: a CRM
+        // outage must never fail signup — api-crms is a passive receiver.
+        await DispatchCustomerCreatedAsync(user);
 
         var accessToken = _jwtTokenHelper.GenerateAccessToken(user);
         var userDto = MapToUserDto(user);
 
         return new AuthResponse(accessToken, user.RefreshToken!, userDto);
+    }
+
+    private async Task DispatchCustomerCreatedAsync(User user)
+    {
+        try
+        {
+            await _ecommerceWebhookClient.SendAsync(new ApiOos.DTOs.Webhooks.EcommerceWebhookEvent
+            {
+                EventId = Guid.NewGuid().ToString(),
+                EventType = "customer.created",
+                Data = new ApiOos.DTOs.Webhooks.EcommerceWebhookData
+                {
+                    CustomerEmail = user.Email,
+                    Name = user.FullName,
+                    OccurredAt = user.CreatedAt.ToUniversalTime().ToString("O"),
+                },
+            });
+        }
+        catch (Exception exception)
+        {
+            _logger.LogWarning(
+                exception, "Failed to deliver customer.created webhook for {UserId}.", user.Id);
+        }
     }
 
     public async Task<AuthResponse> LoginAsync(LoginRequest request)

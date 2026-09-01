@@ -23,7 +23,7 @@ export function ProfileSidebar({ activeTab, onTabChange, user }: ProfileSidebarP
 
   return (
     <div className="w-full">
-      <nav className="flex flex-col gap-1 bg-surface-container-lowest p-5 rounded-3xl border border-outline-variant/30 shadow-xs">
+      <nav className="flex flex-col gap-1 bg-surface-container-lowest p-5 border border-outline-variant/30 shadow-xs">
         {/* User Summary Block */}
         <div className="flex flex-col items-center text-center pb-5 mb-4 border-b border-outline-variant/20">
           <Avatar className="w-16 h-16 border-2 border-primary/20 text-xl font-serif font-bold bg-primary-container/20 text-primary mb-3">
@@ -48,7 +48,7 @@ export function ProfileSidebar({ activeTab, onTabChange, user }: ProfileSidebarP
                 onClick={() => onTabChange(tab.id)}
                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-full text-xs font-semibold transition-all cursor-pointer ${
                   isActive
-                    ? "bg-primary text-on-primary shadow-xs"
+                    ? "bg-primary text-white shadow-xs"
                     : "text-on-surface-variant hover:text-primary hover:bg-surface-container-low"
                 }`}
               >

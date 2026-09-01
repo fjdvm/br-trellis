@@ -46,6 +46,14 @@ public class UsersController : ControllerBase
         return Ok(new { message = "Password updated successfully." });
     }
 
+    [HttpDelete("me")]
+    public async Task<IActionResult> DeleteMe()
+    {
+        var userId = GetCurrentUserId();
+        await _userService.DeleteMeAsync(userId);
+        return NoContent();
+    }
+
     [HttpGet("me/addresses")]
     public async Task<ActionResult<IEnumerable<AddressDto>>> GetAddresses()
     {

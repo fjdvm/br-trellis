@@ -269,8 +269,13 @@ export function TicketListPage({
     [excludeTerminal, terminalOnly, assignedToMe, currentAgentId]
   );
 
-  const loadTickets = useCallback(async () => {
-    setIsLoading(true);
+  const loadTickets = useCallback(async (options?: { background?: boolean }) => {
+    // Only show the full-page loading state on the initial/explicit load. A
+    // focus-triggered background refresh keeps the current rows on screen and
+    // updates them in place, so returning to the tab doesn't blank the list.
+    if (!options?.background) {
+      setIsLoading(true);
+    }
     try {
       const result = await crmClient.conversationTickets.list(
         statusFilter,
@@ -282,7 +287,9 @@ export function TicketListPage({
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unable to load tickets.");
     } finally {
-      setIsLoading(false);
+      if (!options?.background) {
+        setIsLoading(false);
+      }
     }
   }, [statusFilter, waitingOnFilter, sourceFilter, applyResultFilter]);
 
@@ -292,8 +299,12 @@ export function TicketListPage({
 
   // Re-sync when returning to this list from another screen (e.g. after
   // claiming a ticket on the detail page) so My Assigned / the Tickets list
-  // don't show stale, pre-mutation rows. loadTickets is stable via useCallback.
-  useRefetchOnFocus(loadTickets);
+  // don't show stale, pre-mutation rows. Runs as a BACKGROUND refresh so the
+  // list stays visible while it re-syncs. loadTickets is stable via useCallback.
+  const refreshInBackground = useCallback(() => {
+    void loadTickets({ background: true });
+  }, [loadTickets]);
+  useRefetchOnFocus(refreshInBackground);
 
   /** Replace a single row from a mutation's response body (no full refetch). */
   function applyRowUpdate(updated: TicketListItem) {

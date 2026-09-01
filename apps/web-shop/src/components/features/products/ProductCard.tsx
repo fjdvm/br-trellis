@@ -31,8 +31,8 @@ export function ProductCard({ product }: ProductCardProps) {
 
   return (
     <Link href={`/products/${product.id}`} className="group block h-full">
-      <Card className="flex flex-col h-full bg-surface-container-lowest border border-outline-variant/30 rounded-2xl overflow-hidden shadow-2xs hover:shadow-md transition-all duration-300 p-0">
-        <div className="relative aspect-square bg-surface-container overflow-hidden rounded-t-2xl">
+      <Card className="flex flex-col h-full bg-surface-container-lowest border border-outline-variant/30 overflow-hidden shadow-2xs hover:shadow-md transition-all duration-300 p-0">
+        <div className="relative aspect-square bg-surface-container overflow-hidden">
           <Image
             src={primaryImage}
             alt={product.name}
@@ -42,13 +42,13 @@ export function ProductCard({ product }: ProductCardProps) {
             unoptimized={primaryImage.startsWith("http")}
           />
           <div className="absolute top-3 left-3 flex flex-wrap gap-1.5 z-10">
-            <Badge className="bg-primary text-on-primary label-upper text-[10px] px-3 py-1 rounded-full border-none shadow-2xs">
+            <Badge className="bg-primary text-white label-upper text-[10px] px-3 py-1 border-none shadow-2xs">
               {categoryLabel}
             </Badge>
           </div>
           {product.stock <= 0 && (
             <div className="absolute inset-0 bg-inverse-surface/60 backdrop-blur-xs flex items-center justify-center z-20">
-              <Badge variant="destructive" className="label-upper text-xs font-bold px-4 py-1.5 rounded-full">
+              <Badge variant="destructive" className="label-upper text-xs font-bold px-4 py-1.5">
                 Out of Stock
               </Badge>
             </div>
@@ -71,7 +71,7 @@ export function ProductCard({ product }: ProductCardProps) {
             </span>
             <Button
               size="icon"
-              className="bg-primary text-on-primary hover:bg-primary-container p-2.5 h-10 w-10 rounded-full transition-all active:scale-95 shadow-2xs"
+              className="bg-primary text-white hover:bg-primary-container p-2.5 h-10 w-10 rounded-full transition-all active:scale-95 shadow-2xs"
               aria-label="Add to Cart"
             >
               <ShoppingCart className="w-4 h-4" />

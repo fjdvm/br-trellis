@@ -132,7 +132,7 @@ export function ConversationPage({ ticketId }: ConversationPageProps) {
         {/* Messages area */}
         <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-3 bg-slate-50/50">
           {chatError && (
-            <div className="p-3 text-xs text-red-600 bg-red-50 border border-red-200 rounded-lg">
+            <div className="p-3 text-xs text-red-600 bg-red-50 border border-red-200">
               {chatError}
             </div>
           )}
@@ -187,7 +187,7 @@ export function ConversationPage({ ticketId }: ConversationPageProps) {
                 placeholder="Type your message..."
                 disabled={isSending}
                 rows={1}
-                className="flex-1 px-4 py-2.5 text-xs sm:text-sm border border-slate-200 rounded-xl focus:outline-none focus:border-[#451077] focus:ring-1 focus:ring-[#451077] disabled:opacity-50 resize-none overflow-y-auto max-h-32"
+                className="flex-1 px-4 py-2.5 text-xs sm:text-sm border border-slate-200 focus:outline-none focus:border-[#451077] focus:ring-1 focus:ring-[#451077] disabled:opacity-50 resize-none overflow-y-auto max-h-32"
               />
               <button
                 type="submit"

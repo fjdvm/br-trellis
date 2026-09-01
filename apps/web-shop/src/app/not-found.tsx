@@ -5,7 +5,7 @@ import { FileQuestion, Home, ShoppingBag } from "lucide-react";
 export default function NotFound() {
   return (
     <div className="min-h-[70vh] flex flex-col items-center justify-center text-center px-4 py-16">
-      <div className="w-20 h-20 rounded-full bg-primary/10 text-primary flex items-center justify-center mb-6 animate-pulse">
+      <div className="w-20 h-20 bg-primary/10 text-primary flex items-center justify-center mb-6 animate-pulse">
         <FileQuestion className="w-10 h-10" />
       </div>
       <span className="text-xs font-bold uppercase tracking-widest text-primary mb-2 block">

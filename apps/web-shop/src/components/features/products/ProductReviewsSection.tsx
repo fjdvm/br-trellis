@@ -50,7 +50,7 @@ export function ProductReviewsSection({ productId }: ProductReviewsSectionProps)
         </div>
 
         {/* Summary Rating Badge */}
-        <div className="flex items-center gap-3 bg-secondary-container/40 border border-outline-variant/30 px-5 py-3 rounded-2xl">
+        <div className="flex items-center gap-3 bg-secondary-container/40 border border-outline-variant/30 px-5 py-3">
           <div className="flex items-center text-primary">
             {[1, 2, 3, 4, 5].map((star) => (
               <Star
@@ -76,24 +76,24 @@ export function ProductReviewsSection({ productId }: ProductReviewsSectionProps)
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         {/* Left Column: Review Form */}
-        <div className="lg:col-span-5 bg-surface-container-lowest border border-outline-variant/30 rounded-3xl p-6 shadow-2xs">
+        <div className="lg:col-span-5 bg-surface-container-lowest border border-outline-variant/30 p-6 shadow-2xs">
           <h3 className="font-serif font-bold text-lg text-on-surface mb-4">Write a Review</h3>
 
           {!isAuthenticated ? (
-            <div className="text-center py-6 bg-surface-container-low rounded-2xl border border-outline-variant/30 p-5">
+            <div className="text-center py-6 bg-surface-container-low border border-outline-variant/30 p-5">
               <Lock className="w-8 h-8 text-primary mx-auto mb-2" />
               <p className="text-xs text-on-surface-variant font-medium mb-4">
                 You must be logged in to leave feedback or rate this product.
               </p>
               <Link
                 href="/signin"
-                className="inline-block w-full py-3 bg-primary text-on-primary text-xs font-semibold rounded-full hover:bg-primary-container transition-all"
+                className="inline-block w-full py-3 bg-primary text-white text-xs font-semibold hover:bg-primary-container transition-all"
               >
                 Sign In to Review
               </Link>
             </div>
           ) : hasUserReviewed ? (
-            <div className="p-5 bg-secondary-container/40 border border-outline-variant/30 rounded-2xl text-center">
+            <div className="p-5 bg-secondary-container/40 border border-outline-variant/30 text-center">
               <CheckCircle2 className="w-8 h-8 text-primary mx-auto mb-2" />
               <p className="text-xs font-bold text-on-surface">Thank you for your feedback!</p>
               <p className="text-xs text-on-surface-variant mt-1">
@@ -103,12 +103,12 @@ export function ProductReviewsSection({ productId }: ProductReviewsSectionProps)
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4">
               {error && (
-                <div className="p-3 text-xs text-on-error-container bg-error-container border border-error/20 rounded-2xl">
+                <div className="p-3 text-xs text-on-error-container bg-error-container border border-error/20">
                   {error}
                 </div>
               )}
               {successMessage && (
-                <div className="p-3 text-xs text-on-primary-container bg-primary-container/20 border border-primary/20 rounded-2xl">
+                <div className="p-3 text-xs text-on-primary-container bg-primary-container/20 border border-primary/20">
                   {successMessage}
                 </div>
               )}
@@ -161,7 +161,7 @@ export function ProductReviewsSection({ productId }: ProductReviewsSectionProps)
                   maxLength={500}
                   rows={4}
                   placeholder="Share your thoughts about this product's taste, quality, packaging..."
-                  className="w-full p-4 text-xs border border-outline-variant/40 rounded-2xl bg-surface-container-low text-on-surface placeholder:text-on-surface-variant/60 focus:outline-none focus:ring-2 focus:ring-primary"
+                  className="w-full p-4 text-xs border border-outline-variant/40 bg-surface-container-low text-on-surface placeholder:text-on-surface-variant/60 focus:outline-none focus:ring-2 focus:ring-primary"
                   required
                 />
               </div>
@@ -169,7 +169,7 @@ export function ProductReviewsSection({ productId }: ProductReviewsSectionProps)
               <button
                 type="submit"
                 disabled={!comment.trim() || isSubmitting || comment.length > 500}
-                className="w-full py-3 bg-primary text-on-primary text-xs font-semibold rounded-full hover:bg-primary-container transition-all disabled:opacity-50 cursor-pointer flex items-center justify-center gap-2 shadow-2xs"
+                className="w-full py-3 bg-primary text-white text-xs font-semibold rounded-full hover:bg-primary-container transition-all disabled:opacity-50 cursor-pointer flex items-center justify-center gap-2 shadow-2xs"
               >
                 {isSubmitting ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
@@ -193,14 +193,14 @@ export function ProductReviewsSection({ productId }: ProductReviewsSectionProps)
               Loading reviews...
             </div>
           ) : reviews.length === 0 ? (
-            <div className="p-8 text-center bg-surface-container-low border border-outline-variant/30 rounded-3xl text-on-surface-variant text-xs">
+            <div className="p-8 text-center bg-surface-container-low border border-outline-variant/30 text-on-surface-variant text-xs">
               No reviews yet for this product. Be the first to leave feedback!
             </div>
           ) : (
             reviews.map((review) => (
               <div
                 key={review.id}
-                className="p-5 bg-surface-container-lowest border border-outline-variant/30 rounded-3xl shadow-2xs space-y-2"
+                className="p-5 bg-surface-container-lowest border border-outline-variant/30 shadow-2xs space-y-2"
               >
                 {/* Rating Stars & Date */}
                 <div className="flex items-center justify-between">

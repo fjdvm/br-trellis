@@ -22,7 +22,7 @@ export function AddressCard({ address, onEdit, onDelete }: AddressCardProps) {
           <div className="flex items-center gap-2">
             <p className="font-bold text-[var(--primary)] text-sm">{address.label}</p>
             {address.isDefault && (
-              <span className="text-[10px] bg-[var(--primary)] text-white px-2 py-0.5 rounded font-bold uppercase tracking-wider">
+              <span className="text-[10px] bg-[var(--primary)] text-white px-2 py-0.5 font-bold uppercase tracking-wider">
                 Default
               </span>
             )}

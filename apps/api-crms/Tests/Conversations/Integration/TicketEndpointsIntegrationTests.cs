@@ -84,6 +84,34 @@ public sealed class TicketEndpointsIntegrationTests
     }
 
     [Fact]
+    public async Task Post_ticket_with_empty_string_contact_creates_unlinked_ticket()
+    {
+        // Regression for "can't submit a ticket": a client sending contactId as
+        // an empty string (e.g. an unselected picker) must create an unlinked
+        // ticket, not fail with a 400 Guid-deserialization error.
+        ResetTickets();
+
+        var response = await _client.PostAsJsonAsync(
+            "/api/v1/tickets", new { subject = "Empty contact string", contactId = "" });
+
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+        var body = await response.Content.ReadFromJsonAsync<JsonElement>();
+        Assert.Equal("Empty contact string", body.GetProperty("subject").GetString());
+        Assert.Equal(JsonValueKind.Null, body.GetProperty("contactId").ValueKind);
+    }
+
+    [Fact]
+    public async Task Post_ticket_with_malformed_contact_returns_400()
+    {
+        ResetTickets();
+
+        var response = await _client.PostAsJsonAsync(
+            "/api/v1/tickets", new { subject = "Bad id", contactId = "not-a-guid" });
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
     public async Task Post_ticket_with_nonexistent_contact_returns_400()
     {
         ResetTickets();

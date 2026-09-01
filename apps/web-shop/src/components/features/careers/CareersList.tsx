@@ -61,14 +61,14 @@ export function CareersList() {
     <div className="space-y-8 font-sans">
       {/* Department Tabs */}
       {!loading && !error && jobs.length > 0 && (
-        <div className="flex flex-wrap items-center gap-2 p-1.5 bg-surface-container-low rounded-full border border-outline-variant/30 w-fit">
+        <div className="flex flex-wrap items-center gap-2 p-1.5 bg-surface-container-low border border-outline-variant/30 w-fit">
           {departments.map((dept) => (
             <button
               key={dept}
               onClick={() => setSelectedDept(dept)}
               className={`px-5 py-2 rounded-full text-xs font-semibold transition-all duration-300 ${
                 selectedDept === dept
-                  ? "bg-primary text-on-primary shadow-xs"
+                  ? "bg-primary text-white shadow-xs"
                   : "text-on-surface-variant hover:bg-surface-container"
               }`}
             >
@@ -82,22 +82,22 @@ export function CareersList() {
       {loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {[1, 2, 3, 4].map((n) => (
-            <div key={n} className="border border-outline-variant/30 rounded-3xl p-6 space-y-4 bg-surface-container-lowest">
+            <div key={n} className="border border-outline-variant/30 p-6 space-y-4 bg-surface-container-lowest">
               <div className="space-y-2">
-                <Skeleton className="h-4 w-20 rounded-full bg-surface-container" />
-                <Skeleton className="h-6 w-3/4 rounded-2xl bg-surface-container" />
+                <Skeleton className="h-4 w-20 bg-surface-container" />
+                <Skeleton className="h-6 w-3/4 bg-surface-container" />
               </div>
-              <Skeleton className="h-12 w-full rounded-2xl bg-surface-container" />
+              <Skeleton className="h-12 w-full bg-surface-container" />
               <div className="flex justify-between items-center pt-2">
-                <Skeleton className="h-4 w-24 rounded-full bg-surface-container" />
-                <Skeleton className="h-8 w-28 rounded-full bg-surface-container" />
+                <Skeleton className="h-4 w-24 bg-surface-container" />
+                <Skeleton className="h-8 w-28 bg-surface-container" />
               </div>
             </div>
           ))}
         </div>
       ) : error ? (
-        <div className="flex flex-col items-center justify-center py-16 text-center border border-outline-variant/30 rounded-3xl bg-surface-container-lowest">
-          <div className="w-12 h-12 rounded-full bg-error-container/40 text-error flex items-center justify-center mb-4">
+        <div className="flex flex-col items-center justify-center py-16 text-center border border-outline-variant/30 bg-surface-container-lowest">
+          <div className="w-12 h-12 bg-error-container/40 text-error flex items-center justify-center mb-4">
             <RefreshCw className="w-6 h-6 animate-spin" />
           </div>
           <p className="font-sans text-sm font-semibold text-on-surface">
@@ -108,7 +108,7 @@ export function CareersList() {
           </Button>
         </div>
       ) : filteredJobs.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20 text-center border border-outline-variant/30 rounded-3xl bg-surface-container-lowest">
+        <div className="flex flex-col items-center justify-center py-20 text-center border border-outline-variant/30 bg-surface-container-lowest">
           <Building2 className="w-12 h-12 text-outline mb-4" />
           <p className="font-serif font-bold text-lg text-on-surface">
             No open positions found.

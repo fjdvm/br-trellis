@@ -2,7 +2,7 @@ import { MapPin, Phone, Mail, Clock } from "lucide-react";
 
 export function ContactInfo() {
   return (
-    <div className="space-y-6 rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm">
+    <div className="space-y-6 border border-slate-200/80 bg-white p-6 shadow-sm">
       <div>
         <h2 className="text-xl font-bold text-slate-900">Get in Touch</h2>
         <p className="mt-1 text-sm text-slate-500">
@@ -12,7 +12,7 @@ export function ContactInfo() {
 
       <div className="space-y-4">
         <div className="flex items-start space-x-3.5">
-          <div className="rounded-xl bg-purple-50 p-2.5 text-[#451077]">
+          <div className="bg-purple-50 p-2.5 text-[#451077]">
             <MapPin className="h-5 w-5" />
           </div>
           <div>
@@ -22,7 +22,7 @@ export function ContactInfo() {
         </div>
 
         <div className="flex items-start space-x-3.5">
-          <div className="rounded-xl bg-purple-50 p-2.5 text-[#451077]">
+          <div className="bg-purple-50 p-2.5 text-[#451077]">
             <Phone className="h-5 w-5" />
           </div>
           <div>
@@ -32,7 +32,7 @@ export function ContactInfo() {
         </div>
 
         <div className="flex items-start space-x-3.5">
-          <div className="rounded-xl bg-purple-50 p-2.5 text-[#451077]">
+          <div className="bg-purple-50 p-2.5 text-[#451077]">
             <Mail className="h-5 w-5" />
           </div>
           <div>
@@ -42,7 +42,7 @@ export function ContactInfo() {
         </div>
 
         <div className="flex items-start space-x-3.5">
-          <div className="rounded-xl bg-purple-50 p-2.5 text-[#451077]">
+          <div className="bg-purple-50 p-2.5 text-[#451077]">
             <Clock className="h-5 w-5" />
           </div>
           <div>
@@ -53,7 +53,7 @@ export function ContactInfo() {
       </div>
 
       {/* Map Embed Placeholder */}
-      <div className="overflow-hidden rounded-xl border border-slate-200 bg-slate-100 h-44 flex items-center justify-center text-slate-400 text-xs">
+      <div className="overflow-hidden border border-slate-200 bg-slate-100 h-44 flex items-center justify-center text-slate-400 text-xs">
         <div className="text-center p-4">
           <MapPin className="mx-auto h-6 w-6 mb-1 text-purple-400" />
           <p className="font-medium text-slate-600">Baguio City Store Location</p>

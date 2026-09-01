@@ -42,9 +42,20 @@ async function request<T>(endpoint: string, options: ApiOptions = {}): Promise<T
     } catch {
       errorData = null;
     }
+
+    // Surface the method, URL, and any server-provided detail so a failing
+    // request is identifiable from the message alone (not just "Bad Request").
+    const method = (customOptions.method ?? "GET").toUpperCase();
+    const serverDetail =
+      errorData && typeof errorData === "object"
+        ? ((errorData as { detail?: string; title?: string }).detail ??
+           (errorData as { title?: string }).title)
+        : undefined;
+    const suffix = serverDetail ? ` — ${serverDetail}` : "";
+
     throw new ApiError(
       response.status,
-      `API Request Failed: ${response.statusText} (${response.status})`,
+      `API ${method} ${url} failed: ${response.statusText} (${response.status})${suffix}`,
       errorData
     );
   }

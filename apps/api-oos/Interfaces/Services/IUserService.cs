@@ -8,6 +8,7 @@ public interface IUserService
 {
     Task<UserDto> GetMeAsync(Guid userId);
     Task<UserDto> UpdateMeAsync(Guid userId, UpdateProfileRequest request);
+    Task DeleteMeAsync(Guid userId);
     Task ChangePasswordAsync(Guid userId, ChangePasswordRequest request);
 
     Task<IEnumerable<AddressDto>> GetAddressesAsync(Guid userId);

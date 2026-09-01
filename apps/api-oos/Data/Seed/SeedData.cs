@@ -82,6 +82,88 @@ public static class SeedData
         await context.Products.AddRangeAsync(products);
         await context.SaveChangesAsync();
 
+        if (!await context.Users.AnyAsync())
+        {
+            // Demo customer account for local development / first-run login.
+            var demoUser = new User
+            {
+                Id = Guid.Parse("d0000000-0000-0000-0000-000000000001"),
+                FullName = "Demo Customer",
+                Email = "demo@brenraphael.com",
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword("Password123!"),
+                PreferredLanguage = "en",
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow,
+            };
+            await context.Users.AddAsync(demoUser);
+            await context.SaveChangesAsync();
+        }
+
+        if (!await context.Orders.AnyAsync())
+        {
+            var demoUserId = Guid.Parse("d0000000-0000-0000-0000-000000000001");
+            if (await context.Users.AnyAsync(u => u.Id == demoUserId))
+            {
+                var ubeCream = products[0];
+                var purpleYamJam = products[1];
+                var ubeCake = products[2];
+
+                // A spread of orders across every status so the detailed order
+                // history page has rich, varied data to display.
+                var seededOrders = new List<Order>
+                {
+                    BuildSeedOrder(
+                        Guid.Parse("0a000000-0000-0000-0000-000000000001"),
+                        "ORD-2026-0001",
+                        demoUserId,
+                        OrderStatus.Delivered,
+                        PaymentMethod.CreditCard,
+                        PaymentStatus.Paid,
+                        DateTime.UtcNow.AddDays(-30),
+                        new[] { (ubeCream, 2), (purpleYamJam, 1) }),
+                    BuildSeedOrder(
+                        Guid.Parse("0a000000-0000-0000-0000-000000000002"),
+                        "ORD-2026-0002",
+                        demoUserId,
+                        OrderStatus.Shipped,
+                        PaymentMethod.MockPayment,
+                        PaymentStatus.Paid,
+                        DateTime.UtcNow.AddDays(-12),
+                        new[] { (ubeCake, 1) }),
+                    BuildSeedOrder(
+                        Guid.Parse("0a000000-0000-0000-0000-000000000003"),
+                        "ORD-2026-0003",
+                        demoUserId,
+                        OrderStatus.Processing,
+                        PaymentMethod.CashOnDelivery,
+                        PaymentStatus.Pending,
+                        DateTime.UtcNow.AddDays(-3),
+                        new[] { (purpleYamJam, 3), (ubeCream, 1) }),
+                    BuildSeedOrder(
+                        Guid.Parse("0a000000-0000-0000-0000-000000000004"),
+                        "ORD-2026-0004",
+                        demoUserId,
+                        OrderStatus.Pending,
+                        PaymentMethod.CashOnDelivery,
+                        PaymentStatus.Pending,
+                        DateTime.UtcNow.AddDays(-1),
+                        new[] { (ubeCream, 1) }),
+                    BuildSeedOrder(
+                        Guid.Parse("0a000000-0000-0000-0000-000000000005"),
+                        "ORD-2026-0005",
+                        demoUserId,
+                        OrderStatus.Cancelled,
+                        PaymentMethod.CreditCard,
+                        PaymentStatus.Refunded,
+                        DateTime.UtcNow.AddDays(-20),
+                        new[] { (ubeCake, 2) }),
+                };
+
+                await context.Orders.AddRangeAsync(seededOrders);
+                await context.SaveChangesAsync();
+            }
+        }
+
         if (!await context.JobPostings.AnyAsync())
         {
             var jobs = new List<JobPosting>
@@ -124,5 +206,73 @@ public static class SeedData
             await context.JobPostings.AddRangeAsync(jobs);
             await context.SaveChangesAsync();
         }
+    }
+
+    /// <summary>
+    /// Builds a fully-populated seed order (line items + pricing breakdown +
+    /// payment) for the demo customer. Shipping fee and tax mirror simple,
+    /// deterministic rules so totals stay consistent across seeds.
+    /// </summary>
+    private static Order BuildSeedOrder(
+        Guid orderId,
+        string orderNumber,
+        Guid userId,
+        OrderStatus status,
+        PaymentMethod paymentMethod,
+        PaymentStatus paymentStatus,
+        DateTime createdAt,
+        IEnumerable<(Product Product, int Quantity)> lines)
+    {
+        var items = lines
+            .Select(line => new OrderItem
+            {
+                Id = Guid.NewGuid(),
+                OrderId = orderId,
+                ProductId = line.Product.Id,
+                ProductName = line.Product.Name,
+                ProductSKU = line.Product.SKU,
+                UnitPrice = line.Product.Price,
+                Quantity = line.Quantity,
+            })
+            .ToList();
+
+        var subtotal = items.Sum(i => i.UnitPrice * i.Quantity);
+        var shippingFee = 5.00m;
+        var tax = Math.Round(subtotal * 0.12m, 2);
+        var totalAmount = subtotal + shippingFee + tax;
+
+        return new Order
+        {
+            Id = orderId,
+            OrderNumber = orderNumber,
+            UserId = userId,
+            Status = status,
+            ShippingRecipientName = "Demo Customer",
+            ShippingStreet = "123 Katipunan Ave",
+            ShippingCity = "Quezon City",
+            ShippingProvince = "Metro Manila",
+            ShippingPostalCode = "1108",
+            ShippingPhone = "+63 917 123 4567",
+            Subtotal = subtotal,
+            ShippingFee = shippingFee,
+            Tax = tax,
+            TotalAmount = totalAmount,
+            CreatedAt = createdAt,
+            UpdatedAt = createdAt,
+            Items = items,
+            Payment = new Payment
+            {
+                Id = Guid.NewGuid(),
+                OrderId = orderId,
+                PaymentMethod = paymentMethod,
+                Status = paymentStatus,
+                TransactionId = paymentMethod == PaymentMethod.CashOnDelivery
+                    ? string.Empty
+                    : $"TXN-{orderNumber}",
+                Amount = totalAmount,
+                CreatedAt = createdAt,
+                UpdatedAt = createdAt,
+            },
+        };
     }
 }

@@ -3,39 +3,31 @@
 import { toast } from "sonner";
 import { useEffect, useCallback } from "react";
 import { useSession } from "next-auth/react";
+import { useRouter, usePathname } from "next/navigation";
 import { cartApi } from "@/lib/api/cart-api";
 import { useCartStore } from "@/lib/stores/useCartStore";
 import type { CartItemDto } from "@/types/cart";
 
-const CATALOG_LOOKUP: Record<string, { name: string; price: number; image: string }> = {
-  "ube-cream": {
-    name: "Ube Cream",
-    price: 24,
-    image:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuDPJvudR-coJQnmXn0SG18CIXNB-geEbE3ML_K2e4pWAZxNR1HVPPHvwv-kWegsvycGiDm5Ho4OxW8voPvRdfa_gXF9rqPZzo8O3VIiJJ9pCOreYZEJ6xIz0eFq8ucte45mDeoNtipXfMjX-FVajoJIn5eqi9PGiynrvl5RspVeLccOTq9M0m1iWXih0sA-TlwoOm5eFTFHR2JE8AspBqp7WxWNuopCb5XK8SRldm0kA0aLU67_1PRR",
-  },
-  "purple-yam-jam": {
-    name: "Purple Yam Jam",
-    price: 18,
-    image:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuDCK2_zvxOS8VCDQW2lb3TFCUCR7o0GIBwh8yS2xRRgXTObJM-apHisKbhmHNJf5UrKLppyh1u6CalRCqE0eT_rk342EoDPs4N6qhBICw0hiiSZUvCHxxJUA0J3UBJg8o4qYNWi2cViUfGRc-KyvqZPtS7RB_zkn6vvJLNYmkSmPMikMBYkbII502nIkMk7qThGW2LAvcdn72FE9-yNaMNvlOwcQqDWHcDbJ9SUNoQGYg2msEmBiB_K",
-  },
-  "artisanal-ube-cake": {
-    name: "Artisanal Ube Cake",
-    price: 45,
-    image:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuB8dVsNjfWWVxdoTRjlc-DOFYwkKOOX7fDVZ8HFFecc9S1u3Ct1iPp-zrpb6mGPDwTXALlL1e3EGT8HT_3kLhfQWnYPq3xMjlckQXGxcJ16k-VNztmRSHVIq0ErC89E2ZSltVPjvm824AlgHI8mpGwZ_tSMDuYO9fXCIlLtJalqjiP3Lpa-PnYv1S_tM0Y9_eHFfQ6JwOFraKD76yzjVisMPkcDewrhj7rj_Cf0jbcemN-O_bXIxEFk",
-  },
-  "ube-extract": {
-    name: "Ube Extract",
-    price: 32,
-    image:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuC07hmWOl5y_trOgbx-WOMR4jE0zUBRYFZT3lOmeTa1gAvPwDNx0wMfSl907bdzH_Y7T-QaDCcHiTs-Yl1ni2shw5TAUc921nu-KeFG49S9-5VA3wFjobGFvyHN8iBcHiIt4GFVJp30_EPIf_VIcLM_gRrPhErEKfW5dNqlra55sj7aIBbw_yuQ8Wjumoy-dr30zSY53ob-duZs0Vxp4WYgkJHqSBnATNhPIRWwq6dLFaAJqdLx9omF",
-  },
-};
+/**
+ * Display details for a product, supplied by the caller (which already has the
+ * product loaded from the API) so the guest cart can render real name/price/image
+ * without any hardcoded catalog data in the frontend.
+ */
+export interface AddToCartProductInfo {
+  name: string;
+  price: number;
+  image?: string;
+  sku?: string;
+  stock?: number;
+}
+
+const FALLBACK_IMAGE =
+  "https://images.unsplash.com/photo-1560343090-f0409e92791a?auto=format&fit=crop&w=800&q=80";
 
 export function useCart() {
   const { data: session, status } = useSession();
+  const router = useRouter();
+  const pathname = usePathname();
   const token = (session as { accessToken?: string })?.accessToken;
   const isAuthenticated = status === "authenticated" && !!token;
 
@@ -45,16 +37,21 @@ export function useCart() {
     isOpen,
     loading,
     error,
+    deselectedItemIds,
     setCart,
     setIsOpen,
     setLoading,
     setError,
     openCart,
     closeCart,
-    addGuestItem,
+    toggleItemSelected,
+    setAllSelected,
     updateGuestQuantity,
     removeGuestItem,
     clearGuestCart,
+    optimisticAddItem,
+    optimisticUpdateQuantity,
+    optimisticRemoveItem,
   } = useCartStore();
 
   const fetchCart = useCallback(async () => {
@@ -82,45 +79,70 @@ export function useCart() {
   const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
   const subtotal = items.reduce((sum, item) => sum + item.totalPrice, 0);
 
-  const addToCart = async (productId: string, quantity = 1) => {
-    if (!isAuthenticated || !token) {
-      const product = CATALOG_LOOKUP[productId] || {
-        name: "Artisanal Ube Product",
-        price: 24,
-        image: "https://images.unsplash.com/photo-1560343090-f0409e92791a?auto=format&fit=crop&w=800&q=80",
-      };
+  // Checkout selection derivations. An item is selected unless it appears in
+  // deselectedItemIds, so newly added items default to selected.
+  const isItemSelected = (itemId: string) => !deselectedItemIds.includes(itemId);
+  const selectedItems = items.filter((item) => isItemSelected(item.id));
+  const selectedItemIds = selectedItems.map((item) => item.id);
+  const selectedTotalItems = selectedItems.reduce((sum, item) => sum + item.quantity, 0);
+  const selectedSubtotal = selectedItems.reduce((sum, item) => sum + item.totalPrice, 0);
+  const allSelected = items.length > 0 && selectedItems.length === items.length;
+  const noneSelected = selectedItems.length === 0;
 
-      const newItem: CartItemDto = {
-        id: `guest-${productId}-${Date.now()}`,
-        productId,
-        productName: product.name,
-        productSKU: productId.toUpperCase(),
-        unitPrice: product.price,
-        images: [product.image],
-        quantity,
-        stock: 99,
-        totalPrice: product.price * quantity,
-      };
+  const toggleSelectAll = () =>
+    setAllSelected(
+      items.map((item) => item.id),
+      !allSelected
+    );
 
-      addGuestItem(newItem);
-      toast.success("Item added to cart!");
-      openCart();
+  const addToCart = async (productId: string, quantity = 1, productInfo?: AddToCartProductInfo) => {
+    // Guard against a missing product id (e.g. a not-yet-loaded product). Sending
+    // an empty/invalid id makes api-oos reject the GUID bind with a 400.
+    if (!productId || !productId.trim()) {
+      const msg = "This product isn't ready yet. Please try again in a moment.";
+      setError(msg);
+      toast.error(msg);
       return;
     }
 
-    setLoading(true);
+    if (!isAuthenticated || !token) {
+      // Adding to cart requires an authenticated shopper — the cart is
+      // server-owned (api-oos /cart is [Authorize]-only). Rather than build a
+      // guest cart, prompt the user to sign in and send them there, returning
+      // to the current page afterwards so they can complete the add.
+      toast.error("Please sign in to add items to your cart.");
+      const callbackUrl = encodeURIComponent(pathname || "/");
+      router.push(`/signin?callbackUrl=${callbackUrl}`);
+      return;
+    }
+
+    // Authenticated: update the UI optimistically so it feels instant, then
+    // reconcile with the server in the background (rolling back on failure).
+    const previousCart = cart;
+    const unitPrice = productInfo?.price ?? 0;
+    optimisticAddItem({
+      id: `optimistic-${productId}-${Date.now()}`,
+      productId,
+      productName: productInfo?.name ?? "Product",
+      productSKU: productInfo?.sku ?? "",
+      unitPrice,
+      images: [productInfo?.image || FALLBACK_IMAGE],
+      quantity,
+      stock: productInfo?.stock ?? 99,
+      totalPrice: unitPrice * quantity,
+    });
+    openCart();
     setError(null);
+    toast.success("Item added to cart!");
+
     try {
       const updatedCart = await cartApi.addItem({ productId, quantity }, token);
       setCart(updatedCart);
-      toast.success("Item added to cart!");
-      openCart();
     } catch (err: unknown) {
+      setCart(previousCart);
       const msg = err instanceof Error ? err.message : "Failed to add item to cart";
       setError(msg);
       toast.error(msg);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -129,17 +151,17 @@ export function useCart() {
       updateGuestQuantity(itemId, quantity);
       return;
     }
-    setLoading(true);
+    const previousCart = cart;
+    optimisticUpdateQuantity(itemId, quantity);
     setError(null);
     try {
       const updatedCart = await cartApi.updateItem(itemId, { quantity }, token);
       setCart(updatedCart);
     } catch (err: unknown) {
+      setCart(previousCart);
       const msg = err instanceof Error ? err.message : "Failed to update item quantity";
       setError(msg);
       toast.error(msg);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -149,18 +171,18 @@ export function useCart() {
       toast.success("Item removed from cart");
       return;
     }
-    setLoading(true);
+    const previousCart = cart;
+    optimisticRemoveItem(itemId);
     setError(null);
+    toast.success("Item removed from cart");
     try {
       const updatedCart = await cartApi.removeItem(itemId, token);
       setCart(updatedCart);
-      toast.success("Item removed from cart");
     } catch (err: unknown) {
+      setCart(previousCart);
       const msg = err instanceof Error ? err.message : "Failed to remove item";
       setError(msg);
       toast.error(msg);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -196,6 +218,16 @@ export function useCart() {
     items,
     totalItems,
     subtotal,
+    // Selection for checkout
+    selectedItems,
+    selectedItemIds,
+    selectedTotalItems,
+    selectedSubtotal,
+    allSelected,
+    noneSelected,
+    isItemSelected,
+    toggleItemSelected,
+    toggleSelectAll,
     isOpen,
     loading,
     error,

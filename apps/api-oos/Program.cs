@@ -24,7 +24,15 @@ Log.Logger = new LoggerConfiguration()
 builder.Host.UseSerilog();
 
 // Add services to the container
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        // Accept and emit enum values by their string names (e.g. "CashOnDelivery")
+        // rather than only their numeric values. The web-shop sends enums as
+        // strings, so without this the JSON binder rejects them with a 400.
+        options.JsonSerializerOptions.Converters.Add(
+            new System.Text.Json.Serialization.JsonStringEnumConverter());
+    });
 builder.Services.AddSignalR();
 builder.Services.AddHostedService<ApiOos.Services.StaffReplyPollingService>();
 builder.Services.AddFluentValidationAutoValidation();

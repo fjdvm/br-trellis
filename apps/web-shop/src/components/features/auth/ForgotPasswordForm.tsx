@@ -37,7 +37,7 @@ export function ForgotPasswordForm() {
 
   return (
     <section className="w-full max-w-md">
-      <Card className="border border-border/70 shadow-xl rounded-2xl bg-surface-card overflow-hidden">
+      <Card className="border border-border/70 shadow-xl bg-surface-card overflow-hidden">
         <CardHeader className="text-center">
           <CardTitle className="text-3xl font-bold text-[var(--primary)] mb-2">Reset Password</CardTitle>
           <CardDescription className="text-sm text-[var(--muted)]">
@@ -48,7 +48,7 @@ export function ForgotPasswordForm() {
         <CardContent>
           {isSuccess ? (
             <div className="text-center space-y-4">
-              <div className="p-4 rounded-lg bg-[var(--surface-container)] text-[var(--primary)] text-sm font-medium">
+              <div className="p-4 bg-[var(--surface-container)] text-[var(--primary)] text-sm font-medium">
                 If an account exists with that email address, password reset instructions have been sent.
               </div>
               <Link

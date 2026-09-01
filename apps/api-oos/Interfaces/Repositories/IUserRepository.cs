@@ -10,6 +10,7 @@ public interface IUserRepository
     Task<User?> GetByResetTokenAsync(string token);
     Task<User> CreateAsync(User user);
     Task<User> UpdateAsync(User user);
+    Task DeleteAsync(User user);
 
     Task<IEnumerable<Address>> GetAddressesAsync(Guid userId);
     Task<Address> AddAddressAsync(Address address);

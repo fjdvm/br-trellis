@@ -44,7 +44,7 @@ export function ProductFilterBar({ params, onChange }: ProductFilterBarProps) {
   };
 
   return (
-    <div className="flex flex-col md:flex-row gap-4 items-stretch md:items-center justify-between bg-surface-container-low p-4 rounded-3xl border border-outline-variant/30 shadow-2xs">
+    <div className="flex flex-col md:flex-row gap-4 items-stretch md:items-center justify-between bg-surface-container-low p-4 border border-outline-variant/30 shadow-2xs">
       {/* Category Pills */}
       <div className="flex items-center gap-2 overflow-x-auto pb-2 md:pb-0 scrollbar-none font-sans">
         {categories.map((cat) => {
@@ -55,7 +55,7 @@ export function ProductFilterBar({ params, onChange }: ProductFilterBarProps) {
               onClick={() => handleCategoryClick(cat)}
               className={`px-5 py-2 rounded-full text-xs font-semibold uppercase tracking-wider transition-all whitespace-nowrap cursor-pointer ${
                 isActive
-                  ? "bg-primary text-on-primary shadow-xs"
+                  ? "bg-primary text-white shadow-xs"
                   : "bg-surface-container-lowest text-on-surface-variant hover:bg-surface-container-high hover:text-primary border border-outline-variant/30"
               }`}
             >
@@ -73,16 +73,16 @@ export function ProductFilterBar({ params, onChange }: ProductFilterBarProps) {
             placeholder="Search catalog..."
             value={params.search || ""}
             onChange={handleSearchChange}
-            className="pl-9 text-xs rounded-full border-outline-variant/40 bg-surface-container-lowest text-on-surface focus-visible:ring-primary h-10"
+            className="pl-9 text-xs border-outline-variant/40 bg-surface-container-lowest text-on-surface focus-visible:ring-primary h-10"
           />
           <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-on-surface-variant" />
         </div>
 
         <Select value={params.sort || "featured"} onValueChange={handleSortChange}>
-          <SelectTrigger className="w-[180px] text-xs rounded-full border-outline-variant/40 bg-surface-container-lowest text-on-surface h-10">
+          <SelectTrigger className="w-[180px] text-xs border-outline-variant/40 bg-surface-container-lowest text-on-surface h-10">
             <SelectValue placeholder="Sort by" />
           </SelectTrigger>
-          <SelectContent className="rounded-2xl border-outline-variant/40 bg-surface-container-lowest">
+          <SelectContent className="border-outline-variant/40 bg-surface-container-lowest">
             <SelectItem value="featured">Sort: Featured</SelectItem>
             <SelectItem value="price_asc">Price: Low to High</SelectItem>
             <SelectItem value="price_desc">Price: High to Low</SelectItem>

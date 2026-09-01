@@ -5,16 +5,15 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { ShoppingBag, Headphones, User, LogIn, Menu, X, ChevronRight } from "lucide-react";
+import { ShoppingBag, Headphones, User, LogIn, Menu, X, ChevronRight, History } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/hooks/useCart";
-import { CartSheet } from "@/components/features/cart/CartSheet";
 
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const pathname = usePathname();
   const { data: session, status } = useSession();
-  const { totalItems, openCart } = useCart();
+  const { totalItems, openCart, isOpen: isCartOpen, closeCart } = useCart();
 
   const hasUser = Boolean((session as { user?: unknown })?.user);
   const isAuthenticated = status === "authenticated" || hasUser;
@@ -45,8 +44,12 @@ export function Header() {
   ];
 
   return (
-    <header className="sticky top-0 z-40 bg-surface/90 backdrop-blur-md border-b border-outline-variant/60 transition-colors">
-        <div className="max-w-[1440px] mx-auto px-4 sm:px-8 h-20 flex items-center justify-between">
+    <header className="sticky top-0 z-40 bg-surface/90 backdrop-blur-md border-b border-outline-variant/60 transition-colors relative">
+        <div
+          className={`max-w-[1440px] mx-auto px-4 sm:px-8 h-20 flex items-center justify-between transition-[filter] duration-300 ${
+            isCartOpen ? "blur-md" : "blur-none"
+          }`}
+        >
           {/* Brand Logo */}
           <Link href="/" className="flex items-center gap-3 group">
             <Image
@@ -54,7 +57,7 @@ export function Header() {
               alt="Bren Raphael's Ube Jam & Halaya Logo"
               width={42}
               height={42}
-              className="w-10 h-10 rounded-full object-cover shadow-xs transition-transform group-hover:scale-105"
+              className="w-10 h-10 object-cover shadow-xs transition-transform group-hover:scale-105"
             />
             <div>
               <span className="font-serif font-bold text-lg leading-tight tracking-tight block text-primary group-hover:text-primary-container transition-colors">
@@ -80,7 +83,7 @@ export function Header() {
                 >
                   {link.label}
                   {isActive && (
-                    <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full animate-fade-in" />
+                    <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary animate-fade-in" />
                   )}
                 </Link>
               );
@@ -95,7 +98,7 @@ export function Header() {
                 variant="ghost"
                 size="icon"
                 aria-label="Contact Support"
-                className="rounded-full text-on-surface-variant hover:text-primary hover:bg-surface-container-high hidden sm:flex"
+                className="text-on-surface-variant hover:text-primary hover:bg-surface-container-high hidden sm:flex"
               >
                 <Link href="/support">
                   <Headphones className="w-5 h-5" />
@@ -108,8 +111,22 @@ export function Header() {
                 asChild
                 variant="ghost"
                 size="icon"
+                aria-label="Order History"
+                className="text-on-surface-variant hover:text-primary hover:bg-surface-container-high hidden sm:flex"
+              >
+                <Link href="/order-history">
+                  <History className="w-5 h-5" />
+                </Link>
+              </Button>
+            )}
+
+            {isAuthenticated && (
+              <Button
+                asChild
+                variant="ghost"
+                size="icon"
                 aria-label="My Profile"
-                className="rounded-full text-on-surface-variant hover:text-primary hover:bg-surface-container-high hidden sm:flex"
+                className="text-on-surface-variant hover:text-primary hover:bg-surface-container-high hidden sm:flex"
               >
                 <Link href="/profile">
                   <User className="w-5 h-5" />
@@ -123,7 +140,7 @@ export function Header() {
                 variant="ghost"
                 size="icon"
                 aria-label="Sign In"
-                className="rounded-full text-on-surface-variant hover:text-primary hover:bg-surface-container-high hidden sm:flex"
+                className="text-on-surface-variant hover:text-primary hover:bg-surface-container-high hidden sm:flex"
               >
                 <Link href="/signin">
                   <LogIn className="w-5 h-5" />
@@ -135,11 +152,11 @@ export function Header() {
               size="icon"
               onClick={openCart}
               aria-label="Shopping Cart"
-              className="relative rounded-full bg-primary text-on-primary hover:bg-primary-container transition-colors shadow-xs"
+              className="relative bg-primary text-white hover:bg-primary-container transition-colors shadow-xs"
             >
               <ShoppingBag className="w-5 h-5" />
               {totalItems > 0 && (
-                <span className="absolute -top-1 -right-1 bg-secondary-container text-on-secondary-container text-[11px] font-bold min-w-5 h-5 px-1 rounded-full flex items-center justify-center border-2 border-surface">
+                <span className="absolute -top-1 -right-1 bg-secondary-container text-on-secondary-container text-[11px] font-bold min-w-5 h-5 px-1 flex items-center justify-center border-2 border-surface">
                   {totalItems}
                 </span>
               )}
@@ -151,15 +168,21 @@ export function Header() {
               size="icon"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               aria-label="Toggle Navigation Menu"
-              className="md:hidden rounded-full text-on-surface hover:bg-surface-container-high p-2"
+              className="md:hidden text-on-surface hover:bg-surface-container-high p-2"
             >
               {mobileMenuOpen ? <X className="w-6 h-6 text-primary" /> : <Menu className="w-6 h-6 text-primary" />}
             </Button>
           </div>
         </div>
 
-        {/* Cart Drawer */}
-        <CartSheet />
+        {/* Cart-open overlay: darkens the header and closes the cart on click */}
+        {isCartOpen && (
+          <div
+            className="absolute inset-0 z-50 cursor-pointer bg-inverse-surface/60 transition-opacity animate-fade-in"
+            onClick={closeCart}
+            aria-hidden="true"
+          />
+        )}
 
         {/* Mobile Sidebar Navigation Drawer */}
       {mobileMenuOpen && (
@@ -180,7 +203,7 @@ export function Header() {
                   alt="Logo"
                   width={36}
                   height={36}
-                  className="w-9 h-9 rounded-full object-cover shadow-xs"
+                  className="w-9 h-9 object-cover shadow-xs"
                 />
                 <div>
                   <span className="font-serif font-bold text-sm block text-primary">
@@ -195,7 +218,7 @@ export function Header() {
                 variant="ghost"
                 size="icon"
                 onClick={() => setMobileMenuOpen(false)}
-                className="rounded-full hover:bg-surface-container-high text-on-surface-variant"
+                className="hover:bg-surface-container-high text-on-surface-variant"
                 aria-label="Close menu"
               >
                 <X className="w-5 h-5" />
@@ -213,7 +236,7 @@ export function Header() {
                     onClick={() => setMobileMenuOpen(false)}
                     className={`flex items-center justify-between px-5 py-3.5 rounded-full text-sm font-semibold transition-all ${
                       isActive
-                        ? "bg-primary text-on-primary shadow-xs"
+                        ? "bg-primary text-white shadow-xs"
                         : "text-on-surface hover:bg-surface-container-high hover:text-primary"
                     }`}
                   >
@@ -228,7 +251,7 @@ export function Header() {
                 onClick={() => setMobileMenuOpen(false)}
                 className={`flex items-center justify-between px-5 py-3.5 rounded-full text-sm font-semibold transition-all ${
                   pathname === "/contact"
-                    ? "bg-primary text-on-primary shadow-xs"
+                    ? "bg-primary text-white shadow-xs"
                     : "text-on-surface hover:bg-surface-container-high hover:text-primary"
                 }`}
               >
@@ -242,7 +265,7 @@ export function Header() {
                   onClick={() => setMobileMenuOpen(false)}
                   className={`flex items-center justify-between px-5 py-3.5 rounded-full text-sm font-semibold transition-all ${
                     pathname === "/profile"
-                      ? "bg-primary text-on-primary shadow-xs"
+                      ? "bg-primary text-white shadow-xs"
                       : "text-on-surface hover:bg-surface-container-high hover:text-primary"
                   }`}
                 >
@@ -255,7 +278,7 @@ export function Header() {
                   onClick={() => setMobileMenuOpen(false)}
                   className={`flex items-center justify-between px-5 py-3.5 rounded-full text-sm font-semibold transition-all ${
                     pathname === "/signin"
-                      ? "bg-primary text-on-primary shadow-xs"
+                      ? "bg-primary text-white shadow-xs"
                       : "text-on-surface hover:bg-surface-container-high hover:text-primary"
                   }`}
                 >
@@ -270,7 +293,7 @@ export function Header() {
               <Link
                 href="/products"
                 onClick={() => setMobileMenuOpen(false)}
-                className="w-full bg-primary text-on-primary font-semibold py-3 px-6 rounded-full flex items-center justify-center gap-2 shadow-xs text-sm hover:bg-primary-container transition-colors"
+                className="w-full bg-primary text-white font-semibold py-3 px-6 flex items-center justify-center gap-2 shadow-xs text-sm hover:bg-primary-container transition-colors"
               >
                 <ShoppingBag className="w-4 h-4" />
                 Browse Catalog

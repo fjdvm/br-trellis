@@ -47,7 +47,7 @@ export function SupportClientPage() {
       </header>
 
       {/* Standalone Support Tickets Hub */}
-      <div className="bg-surface-container-lowest border border-outline-variant/30 rounded-xl p-6 sm:p-10 shadow-xs">
+      <div className="bg-surface-container-lowest border border-outline-variant/30 p-6 sm:p-10 shadow-xs">
         <ProfileTicketsTab userId={userId} onOpenLiveChat={toggleLiveChat} />
       </div>
     </main>

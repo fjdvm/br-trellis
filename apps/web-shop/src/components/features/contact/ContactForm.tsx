@@ -64,7 +64,7 @@ export function ContactForm() {
 
   if (isSuccess) {
     return (
-      <div className="bg-surface-container rounded-[2rem] p-8 md:p-12 shadow-xs border border-outline-variant/20 text-center">
+      <div className="bg-surface-container p-8 md:p-12 shadow-xs border border-outline-variant/20 text-center">
         <CheckCircle2 className="mx-auto h-12 w-12 text-primary mb-3" />
         <h3 className="font-serif font-bold text-2xl text-primary">Ticket Submitted!</h3>
         <p className="mt-2 body-md text-on-surface-variant max-w-md mx-auto">
@@ -72,7 +72,7 @@ export function ContactForm() {
         </p>
         <button
           onClick={() => setIsSuccess(false)}
-          className="mt-6 px-8 py-3 bg-primary text-on-primary rounded-full font-sans text-sm font-semibold hover:bg-primary/90 transition-colors"
+          className="mt-6 px-8 py-3 bg-primary text-white rounded-full font-sans text-sm font-semibold hover:bg-primary/90 transition-colors"
         >
           Submit Another Ticket
         </button>
@@ -81,13 +81,13 @@ export function ContactForm() {
   }
 
   return (
-    <div className="bg-surface-container rounded-[2rem] p-8 md:p-12 shadow-xs border border-outline-variant/20 relative overflow-hidden">
+    <div className="bg-surface-container p-8 md:p-12 shadow-xs border border-outline-variant/20 relative overflow-hidden">
       {/* Decorative background blob */}
-      <div className="absolute top-0 right-0 w-64 h-64 bg-primary-fixed-dim/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
+      <div className="absolute top-0 right-0 w-64 h-64 bg-primary-fixed-dim/20 blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
 
       <form onSubmit={handleSubmit} className="relative z-10 flex flex-col gap-6">
         {errorMessage && (
-          <div className="flex items-center gap-2 rounded-2xl border border-error/20 bg-error-container p-4 text-xs text-on-error-container">
+          <div className="flex items-center gap-2 border border-error/20 bg-error-container p-4 text-xs text-on-error-container">
             <AlertCircle className="h-4 w-4 shrink-0 text-error" />
             <span>{errorMessage}</span>
           </div>
@@ -106,7 +106,7 @@ export function ContactForm() {
                 type="text"
                 value={formData.orderRef}
                 onChange={(e) => setFormData({ ...formData, orderRef: e.target.value })}
-                className="w-full pl-12 pr-4 py-4 rounded-full bg-surface border border-outline-variant text-on-surface body-md focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all shadow-2xs"
+                className="w-full pl-12 pr-4 py-4 bg-surface border border-outline-variant text-on-surface body-md focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all shadow-2xs"
               />
             </div>
           </div>
@@ -125,7 +125,7 @@ export function ContactForm() {
                 placeholder="hello@example.com"
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                className="w-full pl-12 pr-4 py-4 rounded-full bg-surface border border-outline-variant text-on-surface body-md focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all shadow-2xs"
+                className="w-full pl-12 pr-4 py-4 bg-surface border border-outline-variant text-on-surface body-md focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all shadow-2xs"
               />
             </div>
           </div>
@@ -142,7 +142,7 @@ export function ContactForm() {
               required
               value={formData.category}
               onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-              className="w-full px-4 py-4 rounded-full bg-surface border border-outline-variant text-on-surface body-md appearance-none focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all shadow-2xs pr-12 cursor-pointer"
+              className="w-full px-4 py-4 bg-surface border border-outline-variant text-on-surface body-md appearance-none focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all shadow-2xs pr-12 cursor-pointer"
             >
               <option value="" disabled>
                 Select an issue category
@@ -169,14 +169,14 @@ export function ContactForm() {
             placeholder="Please describe your issue in detail..."
             value={formData.message}
             onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-            className="w-full px-5 py-4 rounded-[1.5rem] bg-surface border border-outline-variant text-on-surface body-md focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all shadow-2xs resize-y min-h-[120px]"
+            className="w-full px-5 py-4 .5rem] bg-surface border border-outline-variant text-on-surface body-md focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all shadow-2xs resize-y min-h-[120px]"
           />
         </div>
 
         {/* File Upload */}
         <div className="flex flex-col gap-2">
           <label className="label-upper text-on-surface-variant">Attachments (Optional)</label>
-          <div className="border-2 border-dashed border-outline-variant rounded-[1.5rem] p-6 text-center hover:bg-surface-variant/50 transition-colors cursor-pointer group">
+          <div className="border-2 border-dashed border-outline-variant .5rem] p-6 text-center hover:bg-surface-variant/50 transition-colors cursor-pointer group">
             <input
               id="fileUpload"
               type="file"
@@ -184,7 +184,7 @@ export function ContactForm() {
               className="hidden"
             />
             <label htmlFor="fileUpload" className="cursor-pointer flex flex-col items-center gap-2">
-              <div className="w-12 h-12 rounded-full bg-surface-container-highest flex items-center justify-center text-primary group-hover:bg-primary-fixed transition-colors">
+              <div className="w-12 h-12 bg-surface-container-highest flex items-center justify-center text-primary group-hover:bg-primary-fixed transition-colors">
                 <Upload className="w-5 h-5" />
               </div>
               <span className="font-sans text-sm font-semibold text-primary">
@@ -200,7 +200,7 @@ export function ContactForm() {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="bg-primary hover:bg-primary/90 text-on-primary font-sans text-sm font-semibold py-4 px-8 rounded-full shadow-xs hover:scale-[1.02] transition-all flex items-center gap-2 disabled:opacity-50"
+            className="bg-primary hover:bg-primary/90 text-white font-sans text-sm font-semibold py-4 px-8 rounded-full shadow-xs hover:scale-[1.02] transition-all flex items-center gap-2 disabled:opacity-50"
           >
             {isSubmitting ? (
               <>

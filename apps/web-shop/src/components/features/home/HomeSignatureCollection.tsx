@@ -4,131 +4,107 @@ import Link from "next/link";
 import Image from "next/image";
 import { ArrowLeft, ArrowRight, ShoppingBag, Star } from "lucide-react";
 import { useCart } from "@/hooks/useCart";
+import { useProducts } from "@/hooks/useProducts";
+import type { Product } from "@/types/product";
 
-export interface BentoProduct {
-  id: string;
-  name: string;
-  category: string;
-  price: number;
-  formattedPrice: string;
-  image: string;
-  badge?: {
-    text: string;
-    variant: "primary" | "secondary";
-  };
-  rating?: number;
-}
+const CATEGORY_NAMES: Record<number | string, string> = {
+  0: "Jams",
+  1: "Pastries",
+  2: "GiftSets",
+  3: "Sweets",
+  Jams: "Jams",
+  Pastries: "Pastries",
+  GiftSets: "GiftSets",
+  Sweets: "Sweets",
+};
 
-export const UBE_PRODUCTS: BentoProduct[] = [
-  {
-    id: "ube-cream",
-    name: "Ube Cream",
-    category: "Signature Spread",
-    price: 24,
-    formattedPrice: "$24.00",
-    image:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuDPJvudR-coJQnmXn0SG18CIXNB-geEbE3ML_K2e4pWAZxNR1HVPPHvwv-kWegsvycGiDm5Ho4OxW8voPvRdfa_gXF9rqPZzo8O3VIiJJ9pCOreYZEJ6xIz0eFq8ucte45mDeoNtipXfMjX-FVajoJIn5eqi9PGiynrvl5RspVeLccOTq9M0m1iWXih0sA-TlwoOm5eFTFHR2JE8AspBqp7WxWNuopCb5XK8SRldm0kA0aLU67_1PRR",
-    badge: { text: "Bestseller", variant: "secondary" },
-    rating: 4.5,
-  },
-  {
-    id: "purple-yam-jam",
-    name: "Purple Yam Jam",
-    category: "Preserves",
-    price: 18,
-    formattedPrice: "$18.00",
-    image:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuDCK2_zvxOS8VCDQW2lb3TFCUCR7o0GIBwh8yS2xRRgXTObJM-apHisKbhmHNJf5UrKLppyh1u6CalRCqE0eT_rk342EoDPs4N6qhBICw0hiiSZUvCHxxJUA0J3UBJg8o4qYNWi2cViUfGRc-KyvqZPtS7RB_zkn6vvJLNYmkSmPMikMBYkbII502nIkMk7qThGW2LAvcdn72FE9-yNaMNvlOwcQqDWHcDbJ9SUNoQGYg2msEmBiB_K",
-  },
-  {
-    id: "artisanal-ube-cake",
-    name: "Artisanal Ube Cake",
-    category: "Bakery",
-    price: 45,
-    formattedPrice: "$45.00",
-    image:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuB8dVsNjfWWVxdoTRjlc-DOFYwkKOOX7fDVZ8HFFecc9S1u3Ct1iPp-zrpb6mGPDwTXALlL1e3EGT8HT_3kLhfQWnYPq3xMjlckQXGxcJ16k-VNztmRSHVIq0ErC89E2ZSltVPjvm824AlgHI8mpGwZ_tSMDuYO9fXCIlLtJalqjiP3Lpa-PnYv1S_tM0Y9_eHFfQ6JwOFraKD76yzjVisMPkcDewrhj7rj_Cf0jbcemN-O_bXIxEFk",
-    badge: { text: "New", variant: "primary" },
-  },
-  {
-    id: "ube-extract",
-    name: "Ube Extract",
-    category: "Essentials",
-    price: 32,
-    formattedPrice: "$32.00",
-    image:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuC07hmWOl5y_trOgbx-WOMR4jE0zUBRYFZT3lOmeTa1gAvPwDNx0wMfSl907bdzH_Y7T-QaDCcHiTs-Yl1ni2shw5TAUc921nu-KeFG49S9-5VA3wFjobGFvyHN8iBcHiIt4GFVJp30_EPIf_VIcLM_gRrPhErEKfW5dNqlra55sj7aIBbw_yuQ8Wjumoy-dr30zSY53ob-duZs0Vxp4WYgkJHqSBnATNhPIRWwq6dLFaAJqdLx9omF",
-    rating: 5,
-  },
-];
+const DEFAULT_IMAGE =
+  "https://images.unsplash.com/photo-1560343090-f0409e92791a?auto=format&fit=crop&w=800&q=80";
 
-export function BentoProductCard({ product }: { product: BentoProduct }) {
+export function BentoProductCard({ product }: { product: Product }) {
   const { addToCart } = useCart();
 
+  const primaryImage = product.images?.[0] || DEFAULT_IMAGE;
+  const categoryLabel = CATEGORY_NAMES[product.category] || "Artisanal";
+  const inStock = product.stock > 0;
+
   const handleAddToCart = () => {
-    addToCart(product.id);
+    if (!inStock) return;
+    addToCart(product.id, 1, {
+      name: product.name,
+      price: product.price,
+      image: primaryImage,
+      sku: product.sku,
+      stock: product.stock,
+    });
   };
 
   return (
-    <article className="group flex flex-col relative bg-surface-container-low rounded-xl p-6 transition-all duration-500 hover:shadow-lg hover:-translate-y-1 hover:bg-surface-container">
-      {/* Badge */}
-      {product.badge && (
-        <div className="absolute top-6 left-6 z-10">
-          <span
-            className={`px-3 py-1 text-[10px] uppercase font-bold tracking-widest rounded-full shadow-xs ${
-              product.badge.variant === "primary"
-                ? "bg-primary text-on-primary"
-                : "bg-secondary-fixed text-on-secondary-fixed"
-            }`}
-          >
-            {product.badge.text}
-          </span>
-        </div>
-      )}
-
+    <article className="group flex flex-col relative bg-surface-container-low p-6 transition-all duration-500 hover:shadow-lg hover:-translate-y-1 hover:bg-surface-container">
       {/* Image Area */}
-      <div className="relative w-full aspect-[4/5] mb-6 overflow-hidden rounded-lg bg-surface flex items-center justify-center">
+      <Link
+        href={`/products/${product.id}`}
+        className="relative w-full aspect-[4/5] mb-6 overflow-hidden bg-surface flex items-center justify-center"
+      >
         <Image
-          src={product.image}
+          src={primaryImage}
           alt={product.name}
           fill
-          unoptimized
+          unoptimized={primaryImage.startsWith("http")}
           className="object-contain w-3/4 h-3/4 transition-transform duration-700 group-hover:scale-105"
         />
+
+        {/* Out of Stock Overlay */}
+        {!inStock && (
+          <div className="absolute inset-0 bg-inverse-surface/60 backdrop-blur-xs flex items-center justify-center z-20">
+            <span className="px-4 py-1.5 text-xs uppercase font-bold tracking-widest rounded-full bg-surface text-on-surface">
+              Out of Stock
+            </span>
+          </div>
+        )}
 
         {/* Desktop Quick Add Glassmorphism Overlay */}
         <div className="absolute inset-x-0 bottom-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out hidden md:block">
           <button
-            onClick={handleAddToCart}
-            className="w-full py-3 bg-surface/80 backdrop-blur-md border border-white/20 text-primary font-sans text-sm font-semibold rounded-full flex items-center justify-center gap-2 hover:bg-primary hover:text-on-primary transition-colors shadow-xs"
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              handleAddToCart();
+            }}
+            disabled={!inStock}
+            className="w-full py-3 bg-surface/80 backdrop-blur-md border border-white/20 text-primary font-sans text-sm font-semibold rounded-full flex items-center justify-center gap-2 hover:bg-primary hover:text-white transition-colors shadow-xs disabled:opacity-50"
           >
             <ShoppingBag className="w-4 h-4" />
             Add to Cart
           </button>
         </div>
-      </div>
+      </Link>
 
       {/* Text Info */}
       <div className="flex flex-col flex-grow">
-        <p className="label-upper text-on-surface-variant mb-1">{product.category}</p>
-        <h3 className="font-serif font-bold text-xl text-primary mb-2 line-clamp-1">{product.name}</h3>
+        <p className="label-upper text-on-surface-variant mb-1">{categoryLabel}</p>
+        <Link href={`/products/${product.id}`}>
+          <h3 className="font-serif font-bold text-xl text-primary mb-2 line-clamp-1 hover:underline">
+            {product.name}
+          </h3>
+        </Link>
         <div className="mt-auto flex items-center justify-between">
-          <p className="body-lg font-bold text-on-surface">{product.formattedPrice}</p>
-          {product.rating && (
-            <div className="flex items-center text-amber-500 text-xs gap-0.5">
-              {Array.from({ length: Math.floor(product.rating) }).map((_, i) => (
-                <Star key={i} className="w-4 h-4 fill-amber-500 stroke-amber-500" />
-              ))}
-            </div>
-          )}
+          <p className="body-lg font-bold text-on-surface">₱{product.price.toFixed(2)}</p>
+          <div className="flex items-center text-amber-500 text-xs gap-0.5">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <Star key={i} className="w-4 h-4 fill-amber-500 stroke-amber-500" />
+            ))}
+          </div>
         </div>
       </div>
 
       {/* Mobile Add to Cart Button (Always Visible) */}
       <div className="block md:hidden mt-4">
         <button
+          type="button"
           onClick={handleAddToCart}
-          className="w-full py-3 bg-primary text-on-primary font-sans text-sm font-semibold rounded-full flex items-center justify-center gap-2 shadow-xs active:scale-98 transition-transform"
+          disabled={!inStock}
+          className="w-full py-3 bg-primary text-white font-sans text-sm font-semibold rounded-full flex items-center justify-center gap-2 shadow-xs active:scale-98 transition-transform disabled:opacity-50"
         >
           <ShoppingBag className="w-4 h-4" />
           Add to Cart
@@ -139,6 +115,8 @@ export function BentoProductCard({ product }: { product: BentoProduct }) {
 }
 
 export function HomeSignatureCollection() {
+  const { products, loading, error } = useProducts({ page: 1, pageSize: 4 });
+
   return (
     <section className="py-[120px] bg-surface" id="shop">
       <div className="max-w-[1440px] mx-auto px-5 md:px-[64px]">
@@ -160,7 +138,7 @@ export function HomeSignatureCollection() {
             </button>
             <button
               aria-label="Next slide"
-              className="w-12 h-12 rounded-full bg-primary text-on-primary flex items-center justify-center hover:bg-primary/90 transition-colors shadow-xs hover:scale-105 duration-300"
+              className="w-12 h-12 rounded-full bg-primary text-white flex items-center justify-center hover:bg-primary/90 transition-colors shadow-xs hover:scale-105 duration-300"
             >
               <ArrowRight className="w-5 h-5" />
             </button>
@@ -168,17 +146,40 @@ export function HomeSignatureCollection() {
         </div>
 
         {/* Product Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-          {UBE_PRODUCTS.map((product) => (
-            <BentoProductCard key={product.id} product={product} />
-          ))}
-        </div>
+        {loading ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div
+                key={i}
+                className="bg-surface-container-low p-6 animate-pulse h-[420px]"
+              >
+                <div className="w-full aspect-[4/5] bg-surface-container mb-6" />
+                <div className="h-4 bg-surface-container w-1/3 mb-2" />
+                <div className="h-6 bg-surface-container w-2/3" />
+              </div>
+            ))}
+          </div>
+        ) : error ? (
+          <p className="body-md text-on-surface-variant text-center py-12">
+            Unable to load products right now. Please try again later.
+          </p>
+        ) : products.length === 0 ? (
+          <p className="body-md text-on-surface-variant text-center py-12">
+            No products available yet.
+          </p>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+            {products.map((product) => (
+              <BentoProductCard key={product.id} product={product} />
+            ))}
+          </div>
+        )}
 
         {/* View All Products Button */}
         <div className="mt-16 text-center">
           <Link
             href="/products"
-            className="inline-flex items-center justify-center border border-primary text-primary px-8 py-3 rounded-full font-sans text-sm font-semibold hover:bg-primary hover:text-on-primary transition-colors duration-300"
+            className="inline-flex items-center justify-center border border-primary text-primary px-8 py-3 font-sans text-sm font-semibold hover:bg-primary hover:text-white transition-colors duration-300"
           >
             View All Products
           </Link>

@@ -71,8 +71,12 @@ export function ConversationsInbox({ selectedTicketId }: ConversationsInboxProps
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const loadConversations = useCallback(async () => {
-    setIsLoading(true);
+  const loadConversations = useCallback(async (options?: { background?: boolean }) => {
+    // Skip the full-page loading flip on a focus-triggered background refresh so
+    // the worklist stays visible while it re-syncs.
+    if (!options?.background) {
+      setIsLoading(true);
+    }
     try {
       // The existing ticket-list endpoint, unchanged — the Visibility Rule is a
       // client-side filter over the full list, no new query params.
@@ -84,7 +88,9 @@ export function ConversationsInbox({ selectedTicketId }: ConversationsInboxProps
         err instanceof Error ? err.message : "Unable to load conversations."
       );
     } finally {
-      setIsLoading(false);
+      if (!options?.background) {
+        setIsLoading(false);
+      }
     }
   }, []);
 
@@ -94,8 +100,11 @@ export function ConversationsInbox({ selectedTicketId }: ConversationsInboxProps
 
   // Re-sync the worklist when the tab regains focus so a ticket claimed on
   // another screen (ticket detail, tasks) shows up here without a manual
-  // refresh. loadConversations is stable via useCallback.
-  useRefetchOnFocus(loadConversations);
+  // refresh. Runs as a background refresh so the list stays visible.
+  const refreshInBackground = useCallback(() => {
+    void loadConversations({ background: true });
+  }, [loadConversations]);
+  useRefetchOnFocus(refreshInBackground);
 
   /**
    * The Visibility Rule: my active conversations, most-recently-updated first.

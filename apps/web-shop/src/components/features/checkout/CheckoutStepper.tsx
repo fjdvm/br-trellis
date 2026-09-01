@@ -33,9 +33,9 @@ export function CheckoutStepper({ currentStep }: CheckoutStepperProps) {
               <div
                 className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold text-sm transition-all duration-300 ${
                   isCompleted
-                    ? "bg-primary text-on-primary shadow-xs"
+                    ? "bg-primary text-white shadow-xs"
                     : isCurrent
-                    ? "bg-primary text-on-primary ring-4 ring-primary/20 shadow-md"
+                    ? "bg-primary text-white ring-4 ring-primary/20 shadow-md"
                     : "bg-surface border border-outline-variant text-on-surface-variant"
                 }`}
               >

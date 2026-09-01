@@ -19,8 +19,8 @@ export function CancelTicketModal({
 
   return (
     <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-150">
-      <div className="bg-white rounded-xl max-w-md w-full p-6 shadow-2xl border border-slate-100 text-center">
-        <div className="w-12 h-12 rounded-xl bg-red-100 text-red-600 flex items-center justify-center mx-auto mb-4">
+      <div className="bg-white max-w-md w-full p-6 shadow-2xl border border-slate-100 text-center">
+        <div className="w-12 h-12 bg-red-100 text-red-600 flex items-center justify-center mx-auto mb-4">
           <AlertTriangle className="w-6 h-6" />
         </div>
         <h3 className="text-lg font-extrabold text-slate-900">Cancel Support Ticket?</h3>

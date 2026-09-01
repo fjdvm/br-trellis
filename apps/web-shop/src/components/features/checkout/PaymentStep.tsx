@@ -42,7 +42,7 @@ export function PaymentStep({ totalAmount, loading, onBack, onPlaceOrder }: Paym
               : "border-outline-variant/30 bg-surface-container-lowest hover:border-primary/40"
           }`}
         >
-          <div className="w-10 h-10 rounded-xl bg-secondary-container text-on-secondary-container flex items-center justify-center shrink-0">
+          <div className="w-10 h-10 bg-secondary-container text-on-secondary-container flex items-center justify-center shrink-0">
             <Banknote className="w-5 h-5" />
           </div>
           <div>
@@ -61,7 +61,7 @@ export function PaymentStep({ totalAmount, loading, onBack, onPlaceOrder }: Paym
               : "border-outline-variant/30 bg-surface-container-lowest hover:border-primary/40"
           }`}
         >
-          <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+          <div className="w-10 h-10 bg-primary/10 text-primary flex items-center justify-center shrink-0">
             <CreditCard className="w-5 h-5" />
           </div>
           <div>
@@ -75,12 +75,12 @@ export function PaymentStep({ totalAmount, loading, onBack, onPlaceOrder }: Paym
 
       {/* Credit Card Mock Form (if Card selected) */}
       {selectedMethod === "CreditCard" && (
-        <div className="bg-surface-container-lowest rounded-xl border border-outline-variant/30 p-5 space-y-4 font-sans animate-fade-in">
+        <div className="bg-surface-container-lowest border border-outline-variant/30 p-5 space-y-4 font-sans animate-fade-in">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-on-surface-variant uppercase tracking-wider">
               Test Card Details (Sandbox)
             </span>
-            <span className="text-[10px] font-bold bg-primary/10 text-primary px-2.5 py-0.5 rounded-md">
+            <span className="text-[10px] font-bold bg-primary/10 text-primary px-2.5 py-0.5">
               Demo Mode
             </span>
           </div>
@@ -91,7 +91,7 @@ export function PaymentStep({ totalAmount, loading, onBack, onPlaceOrder }: Paym
               id="cardNum"
               value={cardNumber}
               onChange={(e) => setCardNumber(e.target.value)}
-              className="mt-1.5 rounded-lg px-5 py-3 bg-surface-container-low border-outline-variant/40"
+              className="mt-1.5 px-5 py-3 bg-surface-container-low border-outline-variant/40"
             />
           </div>
 
@@ -102,7 +102,7 @@ export function PaymentStep({ totalAmount, loading, onBack, onPlaceOrder }: Paym
                 id="cardExp"
                 value={cardExpiry}
                 onChange={(e) => setCardExpiry(e.target.value)}
-                className="mt-1.5 rounded-lg px-5 py-3 bg-surface-container-low border-outline-variant/40"
+                className="mt-1.5 px-5 py-3 bg-surface-container-low border-outline-variant/40"
               />
             </div>
             <div>
@@ -113,7 +113,7 @@ export function PaymentStep({ totalAmount, loading, onBack, onPlaceOrder }: Paym
                 maxLength={4}
                 value={cardCvc}
                 onChange={(e) => setCardCvc(e.target.value)}
-                className="mt-1.5 rounded-lg px-5 py-3 bg-surface-container-low border-outline-variant/40"
+                className="mt-1.5 px-5 py-3 bg-surface-container-low border-outline-variant/40"
               />
             </div>
           </div>
@@ -121,7 +121,7 @@ export function PaymentStep({ totalAmount, loading, onBack, onPlaceOrder }: Paym
       )}
 
       {/* Security & Total Summary */}
-      <div className="bg-surface-container-lowest rounded-xl border border-outline-variant/30 p-4 flex items-center justify-between font-sans">
+      <div className="bg-surface-container-lowest border border-outline-variant/30 p-4 flex items-center justify-between font-sans">
         <div className="flex items-center gap-3">
           <ShieldCheck className="w-6 h-6 text-emerald-600" />
           <div>
@@ -141,7 +141,7 @@ export function PaymentStep({ totalAmount, loading, onBack, onPlaceOrder }: Paym
           variant="outline"
           onClick={onBack}
           disabled={loading}
-          className="rounded-xl px-6 py-2.5 text-xs font-semibold gap-2 border-outline-variant/40 hover:bg-surface-container"
+          className="px-6 py-2.5 text-xs font-semibold gap-2 border-outline-variant/40 hover:bg-surface-container"
         >
           <ArrowLeft className="w-4 h-4" />
           Back to Review
@@ -150,7 +150,7 @@ export function PaymentStep({ totalAmount, loading, onBack, onPlaceOrder }: Paym
         <Button
           type="submit"
           disabled={loading}
-          className="rounded-xl px-8 py-2.5 bg-primary text-on-primary font-semibold hover:bg-primary-container shadow-md"
+          className="rounded-xl px-8 py-2.5 bg-primary text-white font-semibold hover:bg-primary-container shadow-md"
         >
           {loading ? (
             <>

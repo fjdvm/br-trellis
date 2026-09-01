@@ -46,7 +46,7 @@ export function TicketImageUploader({
         <span className="text-[11px] text-muted-foreground font-normal">Max 5 photos</span>
       </Label>
 
-      <div className="border-2 border-dashed border-border rounded-lg p-3 text-center bg-surface-low hover:bg-slate-50 transition-colors">
+      <div className="border-2 border-dashed border-border p-3 text-center bg-surface-low hover:bg-slate-50 transition-colors">
         <input
           type="file"
           id="ticket-pictures"
@@ -75,7 +75,7 @@ export function TicketImageUploader({
           {images.map((img, idx) => (
             <div
               key={idx}
-              className="relative w-14 h-14 rounded-md overflow-hidden border border-border group"
+              className="relative w-14 h-14 overflow-hidden border border-border group"
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img

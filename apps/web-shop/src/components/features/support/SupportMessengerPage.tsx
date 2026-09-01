@@ -28,7 +28,7 @@ export function SupportMessengerPage() {
   return (
     <ConversationLayout>
       <div className="flex flex-col items-center justify-center h-full bg-slate-50/50 text-center px-6">
-        <div className="w-16 h-16 rounded-xl bg-purple-100 flex items-center justify-center mb-4">
+        <div className="w-16 h-16 bg-purple-100 flex items-center justify-center mb-4">
           <MessageSquare className="w-8 h-8 text-[#451077]" />
         </div>
         <h2 className="text-lg font-bold text-slate-800">Welcome to Support</h2>

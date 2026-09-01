@@ -92,7 +92,7 @@ public class CartServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task AddItemAsync_WhenQuantityExceedsStock_ThrowsInvalidOperationException()
+    public async Task AddItemAsync_WhenQuantityExceedsStock_ThrowsAppException()
     {
         var user = await CreateTestUserAsync();
         var product = new Product
@@ -111,7 +111,8 @@ public class CartServiceTests : IDisposable
 
         var act = async () => await _cartService.AddItemAsync(user.Id, request);
 
-        await act.Should().ThrowAsync<InvalidOperationException>()
-            .WithMessage("*Insufficient stock*");
+        await act.Should().ThrowAsync<ApiOos.Exceptions.AppException>()
+            .WithMessage("*Insufficient stock*")
+            .Where(ex => ex.StatusCode == 400);
     }
 }

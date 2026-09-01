@@ -7,8 +7,8 @@ export function HomeHeroSection() {
     <section className="relative w-full h-[819px] min-h-[600px] flex items-center justify-center overflow-hidden bg-surface-container-low border-b border-outline-variant/30">
       <div className="absolute inset-0 w-full h-full">
         <Image
-          src="https://lh3.googleusercontent.com/aida-public/AB6AXuBTYYfgRS8gG_CxCZ40q_H__Ckh68X6a-aTJQ1cuxEEeiIRxCx-RKHWGJ3GPpXLUCjzgzHAG-K-zjnU17EywoLQXG89j_unVbIhh8hMTNNp-M2CDjxK2bZe-qKCqn_CM048dZ6EKUwCH_DKVsr18FMa1rF9KwEXC36UJCxj3SThyJ0N9gAeVDORZTx_j-d0vxHasCq1F59l-siHoWmpyJOJDM2_6QIiCbJAnHSklK9MM_un2iZvHQxr"
-          alt="Artisanal Ube Slices & Delicacies"
+          src="https://lh3.googleusercontent.com/aida-public/AB6AXuDCK2_zvxOS8VCDQW2lb3TFCUCR7o0GIBwh8yS2xRRgXTObJM-apHisKbhmHNJf5UrKLppyh1u6CalRCqE0eT_rk342EoDPs4N6qhBICw0hiiSZUvCHxxJUA0J3UBJg8o4qYNWi2cViUfGRc-KyvqZPtS7RB_zkn6vvJLNYmkSmPMikMBYkbII502nIkMk7qThGW2LAvcdn72FE9-yNaMNvlOwcQqDWHcDbJ9SUNoQGYg2msEmBiB_K"
+          alt="Purple Yam Jam"
           fill
           priority
           unoptimized
@@ -33,7 +33,7 @@ export function HomeHeroSection() {
 
         <Link
           href="/products"
-          className="mt-8 px-8 py-4 bg-primary text-on-primary rounded-full font-sans text-sm font-semibold uppercase tracking-widest hover:bg-primary/90 hover:scale-[1.02] transition-all duration-300 shadow-md inline-flex items-center gap-2"
+          className="mt-8 px-8 py-4 bg-primary text-white font-sans text-sm font-semibold uppercase tracking-widest hover:bg-primary/90 hover:scale-[1.02] transition-all duration-300 shadow-md inline-flex items-center gap-2"
         >
           Explore Collection
           <ArrowRight className="w-4 h-4" />

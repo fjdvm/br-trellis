@@ -29,7 +29,7 @@ export function ProfileAddressesTab({
       </div>
 
       {addresses.length === 0 ? (
-        <div className="text-center py-12 border border-dashed border-[var(--border)] rounded-xl p-8">
+        <div className="text-center py-12 border border-dashed border-[var(--border)] p-8">
           <p className="text-gray-500">No saved addresses yet.</p>
           <button
             onClick={onAddNew}

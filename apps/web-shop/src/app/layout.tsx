@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { Libre_Caslon_Text, Hanken_Grotesk } from "next/font/google";
 import { Header } from "@/components/shared/Header";
-import { Footer } from "@/components/shared/Footer";
+import { MainContent } from "@/components/shared/MainContent";
+import { CartSheet } from "@/components/features/cart/CartSheet";
 import { Providers } from "@/components/shared/Providers";
 import { ChatBubble } from "@/components/features/chat/ChatBubble";
 import "./globals.css";
@@ -50,8 +51,8 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col bg-[var(--background)] text-[var(--on-background)] font-sans">
         <Providers>
           <Header />
-          <main className="flex-1">{children}</main>
-          <Footer />
+          <MainContent>{children}</MainContent>
+          <CartSheet />
           <ChatBubble />
         </Providers>
       </body>

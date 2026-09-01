@@ -102,7 +102,7 @@ export function ShippingStep({ initialAddress, onNext }: ShippingStepProps) {
                   <div className="flex items-center justify-between mb-1">
                     <span className="font-sans font-bold text-xs text-on-surface uppercase">{addr.label}</span>
                     {addr.isDefault && (
-                      <span className="text-[10px] bg-secondary-container text-on-secondary-container font-bold px-2 py-0.5 rounded-md">
+                      <span className="text-[10px] bg-secondary-container text-on-secondary-container font-bold px-2 py-0.5">
                         Default
                       </span>
                     )}
@@ -124,7 +124,7 @@ export function ShippingStep({ initialAddress, onNext }: ShippingStepProps) {
               setUseCustomAddress(true);
               setSelectedAddressId(null);
             }}
-            className="rounded-xl text-xs font-semibold gap-1.5 border-dashed border-outline-variant/50 hover:bg-surface-container"
+            className="text-xs font-semibold gap-1.5 border-dashed border-outline-variant/50 hover:bg-surface-container"
           >
             <Plus className="w-4 h-4" />
             Enter Custom Address
@@ -133,7 +133,7 @@ export function ShippingStep({ initialAddress, onNext }: ShippingStepProps) {
       )}
 
       {formError && (
-        <div className="p-3 bg-error-container/30 text-on-error-container text-xs rounded-lg font-medium border border-error-container">
+        <div className="p-3 bg-error-container/30 text-on-error-container text-xs font-medium border border-error-container">
           {formError}
         </div>
       )}
@@ -148,7 +148,7 @@ export function ShippingStep({ initialAddress, onNext }: ShippingStepProps) {
             value={recipientName}
             onChange={(e) => setRecipientName(e.target.value)}
             placeholder="e.g. Bren Raphael"
-            className="mt-1.5 rounded-lg px-5 py-3 bg-surface-container-lowest border-outline-variant/40 focus:border-primary"
+            className="mt-1.5 px-5 py-3 bg-surface-container-lowest border-outline-variant/40 focus:border-primary"
             required
           />
         </div>
@@ -162,7 +162,7 @@ export function ShippingStep({ initialAddress, onNext }: ShippingStepProps) {
             value={street}
             onChange={(e) => setStreet(e.target.value)}
             placeholder="House/Unit #, Street name"
-            className="mt-1.5 rounded-lg px-5 py-3 bg-surface-container-lowest border-outline-variant/40 focus:border-primary"
+            className="mt-1.5 px-5 py-3 bg-surface-container-lowest border-outline-variant/40 focus:border-primary"
             required
           />
         </div>
@@ -177,7 +177,7 @@ export function ShippingStep({ initialAddress, onNext }: ShippingStepProps) {
               value={city}
               onChange={(e) => setCity(e.target.value)}
               placeholder="e.g. Baguio City"
-              className="mt-1.5 rounded-lg px-5 py-3 bg-surface-container-lowest border-outline-variant/40 focus:border-primary"
+              className="mt-1.5 px-5 py-3 bg-surface-container-lowest border-outline-variant/40 focus:border-primary"
               required
             />
           </div>
@@ -190,7 +190,7 @@ export function ShippingStep({ initialAddress, onNext }: ShippingStepProps) {
               value={province}
               onChange={(e) => setProvince(e.target.value)}
               placeholder="e.g. Benguet"
-              className="mt-1.5 rounded-lg px-5 py-3 bg-surface-container-lowest border-outline-variant/40 focus:border-primary"
+              className="mt-1.5 px-5 py-3 bg-surface-container-lowest border-outline-variant/40 focus:border-primary"
               required
             />
           </div>
@@ -206,7 +206,7 @@ export function ShippingStep({ initialAddress, onNext }: ShippingStepProps) {
               value={postalCode}
               onChange={(e) => setPostalCode(e.target.value)}
               placeholder="e.g. 2600"
-              className="mt-1.5 rounded-lg px-5 py-3 bg-surface-container-lowest border-outline-variant/40 focus:border-primary"
+              className="mt-1.5 px-5 py-3 bg-surface-container-lowest border-outline-variant/40 focus:border-primary"
             />
           </div>
           <div>
@@ -218,7 +218,7 @@ export function ShippingStep({ initialAddress, onNext }: ShippingStepProps) {
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               placeholder="0917XXXXXXX"
-              className="mt-1.5 rounded-lg px-5 py-3 bg-surface-container-lowest border-outline-variant/40 focus:border-primary"
+              className="mt-1.5 px-5 py-3 bg-surface-container-lowest border-outline-variant/40 focus:border-primary"
               required
             />
           </div>
@@ -226,7 +226,7 @@ export function ShippingStep({ initialAddress, onNext }: ShippingStepProps) {
       </div>
 
       <div className="pt-4 flex justify-end">
-        <Button type="submit" className="rounded-xl px-8 py-3 bg-primary text-on-primary font-semibold hover:bg-primary-container shadow-sm">
+        <Button type="submit" className="rounded-xl px-8 py-3 bg-primary text-white font-semibold hover:bg-primary-container shadow-sm">
           Continue to Order Review
         </Button>
       </div>

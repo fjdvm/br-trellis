@@ -50,6 +50,15 @@ public sealed class EcommerceIngestionService(
             case "product.updated":
                 await ProcessProductUpdatedAsync(data, cancellationToken);
                 break;
+            case "customer.created":
+                await ProcessCustomerCreatedAsync(data, cancellationToken);
+                break;
+            case "customer.updated":
+                await ProcessCustomerUpdatedAsync(data, cancellationToken);
+                break;
+            case "customer.deleted":
+                await ProcessCustomerDeletedAsync(data, cancellationToken);
+                break;
             default:
                 throw new InvalidOperationException($"Unknown event type: {eventType}");
         }
@@ -154,10 +163,77 @@ public sealed class EcommerceIngestionService(
         await ecommerceRepository.UpsertCartAsync(cart, items, cancellationToken);
     }
 
-    private async Task ProcessProductUpdatedAsync(
+    /// <summary>
+    /// Eagerly resolves/creates a Contact when a shop customer registers, so a new
+    /// signup surfaces in CRM Contacts without waiting for their first order or chat.
+    /// Resolution goes through <see cref="IContactIdentityService"/> (email in, Contact
+    /// out) — the single identity-resolution path shared with orders and tickets.
+    /// </summary>
+    private async Task ProcessCustomerCreatedAsync(
         EcommerceEventData data, CancellationToken cancellationToken)
     {
-        var now = ParseTimestamp(data.OccurredAt);
+        var email = data.CustomerEmail?.Trim();
+        if (string.IsNullOrWhiteSpace(email))
+        {
+            throw new InvalidOperationException("A customer.created event requires a CustomerEmail.");
+        }
+
+        await contactIdentityService.ResolveOrCreateContactAsync(
+            new ResolveOrCreateContactCommand(
+                SourceSystem: EcommerceSourceSystem,
+                SourceId: $"customer:{email.ToLowerInvariant()}",
+                Name: data.Name,
+                Email: email,
+                Phone: null),
+            cancellationToken);
+    }
+
+    /// <summary>
+    /// Reflects a shopper's profile edit (e.g. a changed name) onto their CRM
+    /// Contact. Keyed on the same email-based source id as create/orders so it
+    /// targets the same Contact, and overwrites the details they changed.
+    /// </summary>
+    private async Task ProcessCustomerUpdatedAsync(
+        EcommerceEventData data, CancellationToken cancellationToken)
+    {
+        var email = data.CustomerEmail?.Trim();
+        if (string.IsNullOrWhiteSpace(email))
+        {
+            throw new InvalidOperationException("A customer.updated event requires a CustomerEmail.");
+        }
+
+        await contactIdentityService.UpdateContactFromSourceAsync(
+            new ResolveOrCreateContactCommand(
+                SourceSystem: EcommerceSourceSystem,
+                SourceId: $"customer:{email.ToLowerInvariant()}",
+                Name: data.Name,
+                Email: email,
+                Phone: null),
+            cancellationToken);
+    }
+
+    /// <summary>
+    /// Propagates a shop account deletion to the CRM: soft-deletes the linked
+    /// Contact (and retires the ecommerce source reference) so it won't resurrect.
+    /// </summary>
+    private async Task ProcessCustomerDeletedAsync(
+        EcommerceEventData data, CancellationToken cancellationToken)
+    {
+        var email = data.CustomerEmail?.Trim();
+        if (string.IsNullOrWhiteSpace(email))
+        {
+            throw new InvalidOperationException("A customer.deleted event requires a CustomerEmail.");
+        }
+
+        await contactIdentityService.DeleteContactFromSourceAsync(
+            EcommerceSourceSystem,
+            $"customer:{email.ToLowerInvariant()}",
+            cancellationToken);
+    }
+
+    private async Task ProcessProductUpdatedAsync(
+        EcommerceEventData data, CancellationToken cancellationToken)
+    {        var now = ParseTimestamp(data.OccurredAt);
 
         var product = new Product
         {
@@ -235,13 +311,15 @@ public sealed class EcommerceIngestionService(
         }
 
         // Key the source reference on the customer's email so repeated orders from the
-        // same shopper resolve to a single Contact, independent of the order id.
+        // same shopper resolve to a single Contact, independent of the order id. Pass the
+        // customer's name through so an order-first Contact isn't left "unnamed" when the
+        // shop already knows who they are.
         var sourceId = $"customer:{email.ToLowerInvariant()}";
         var result = await contactIdentityService.ResolveOrCreateContactAsync(
             new ResolveOrCreateContactCommand(
                 SourceSystem: EcommerceSourceSystem,
                 SourceId: sourceId,
-                Name: null,
+                Name: data.Name,
                 Email: email,
                 Phone: null),
             cancellationToken);

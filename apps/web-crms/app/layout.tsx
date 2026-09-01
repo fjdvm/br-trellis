@@ -29,7 +29,7 @@ export default async function RootLayout({
       className={`${hankenGrotesk.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-screen bg-background text-foreground font-sans">
-        <SessionProvider>
+        <SessionProvider refetchOnWindowFocus={false}>
           <AppShell>{children}</AppShell>
         </SessionProvider>
       </body>

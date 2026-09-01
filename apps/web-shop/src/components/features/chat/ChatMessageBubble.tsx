@@ -31,7 +31,7 @@ export function ChatMessageBubble({ message, isSelf }: ChatMessageBubbleProps) {
   if (isSystem) {
     return (
       <div className="my-2 flex justify-center">
-        <span className="rounded-full bg-purple-50 px-3 py-1 text-[11px] font-medium text-purple-700 border border-purple-100 shadow-2xs">
+        <span className="bg-purple-50 px-3 py-1 text-[11px] font-medium text-purple-700 border border-purple-100 shadow-2xs">
           {message.content}
         </span>
       </div>
@@ -44,11 +44,11 @@ export function ChatMessageBubble({ message, isSelf }: ChatMessageBubbleProps) {
       {!isSelf && (
         <div className="mb-1 flex items-center gap-1.5 text-[11px] font-semibold text-slate-600">
           {isBot ? (
-            <div className="flex h-4 w-4 items-center justify-center rounded-full bg-purple-100 text-[#451077]">
+            <div className="flex h-4 w-4 items-center justify-center bg-purple-100 text-[#451077]">
               <Bot className="h-3 w-3" />
             </div>
           ) : (
-            <div className="flex h-4 w-4 items-center justify-center rounded-full bg-slate-200 text-slate-600">
+            <div className="flex h-4 w-4 items-center justify-center bg-slate-200 text-slate-600">
               <UserIcon className="h-2.5 w-2.5" />
             </div>
           )}
@@ -62,10 +62,10 @@ export function ChatMessageBubble({ message, isSelf }: ChatMessageBubbleProps) {
         title="Click to view message details"
         className={`group relative max-w-[82%] cursor-pointer rounded-2xl px-4 py-2.5 text-sm shadow-sm transition-all hover:shadow-md ${
           isSelf
-            ? "bg-[#451077] text-white rounded-br-none"
+            ? "bg-[#451077] text-white"
             : isBot
-            ? "bg-purple-50 text-slate-900 border border-purple-200/90 rounded-bl-none"
-            : "bg-slate-100 text-slate-900 border border-slate-200/80 rounded-bl-none"
+            ? "bg-purple-50 text-slate-900 border border-purple-200/90"
+            : "bg-slate-100 text-slate-900 border border-slate-200/80"
         }`}
       >
         <p className="whitespace-pre-wrap break-words leading-relaxed text-xs sm:text-sm">

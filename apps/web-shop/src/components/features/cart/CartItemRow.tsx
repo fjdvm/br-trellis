@@ -3,21 +3,58 @@
 import Image from "next/image";
 import { Minus, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import type { CartItemDto } from "@/types/cart";
 
 interface CartItemRowProps {
   item: CartItemDto;
   onUpdateQuantity: (id: string, quantity: number) => void;
   onRemove: (id: string) => void;
+  selected?: boolean;
+  onToggleSelected?: (id: string) => void;
 }
 
 const DEFAULT_IMAGE = "https://images.unsplash.com/photo-1560343090-f0409e92791a?auto=format&fit=crop&w=800&q=80";
 
-export function CartItemRow({ item, onUpdateQuantity, onRemove }: CartItemRowProps) {
+export function CartItemRow({
+  item,
+  onUpdateQuantity,
+  onRemove,
+  selected,
+  onToggleSelected,
+}: CartItemRowProps) {
   const imageUrl = item.images?.[0] || DEFAULT_IMAGE;
+  const showSelection = typeof onToggleSelected === "function";
+
+  const handleContainerClick = () => {
+    if (showSelection) onToggleSelected?.(item.id);
+  };
+
+  // Stops a click on an interactive control (checkbox, quantity, remove) from
+  // bubbling up to the container's selection toggle.
+  const stop = (e: React.MouseEvent) => e.stopPropagation();
 
   return (
-    <div className="flex flex-col md:flex-row items-start md:items-center gap-6 p-6 bg-surface-container-low rounded-none border border-outline-variant/30 transition-all duration-300">
+    <div
+      onClick={handleContainerClick}
+      className={`flex flex-col md:flex-row items-start md:items-center gap-6 p-6 bg-surface-container-low rounded-none border transition-all duration-300 ${
+        showSelection ? "cursor-pointer" : ""
+      } ${
+        showSelection && !selected
+          ? "border-outline-variant/30 opacity-60"
+          : "border-outline-variant/30"
+      }`}
+    >
+      {showSelection && (
+        <Checkbox
+          checked={selected}
+          onClick={stop}
+          onCheckedChange={() => onToggleSelected?.(item.id)}
+          aria-label={`Select ${item.productName} for checkout`}
+          className="mt-1 md:mt-0 shrink-0"
+        />
+      )}
+
       <div className="relative w-full md:w-32 h-32 rounded-none overflow-hidden bg-surface-variant shrink-0 border border-outline-variant/20 flex items-center justify-center">
         <Image
           src={imageUrl}
@@ -39,7 +76,10 @@ export function CartItemRow({ item, onUpdateQuantity, onRemove }: CartItemRowPro
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => onRemove(item.id)}
+            onClick={(e) => {
+              stop(e);
+              onRemove(item.id);
+            }}
             aria-label="Remove item"
             className="text-on-surface-variant hover:text-error hover:bg-error-container/20 rounded-none shrink-0"
           >
@@ -48,7 +88,7 @@ export function CartItemRow({ item, onUpdateQuantity, onRemove }: CartItemRowPro
         </div>
 
         <div className="flex justify-between items-end mt-4">
-          <div className="flex items-center border border-outline-variant/40 rounded-none p-1 bg-surface shadow-2xs">
+          <div onClick={stop} className="flex items-center border border-outline-variant/40 rounded-none p-1 bg-surface shadow-2xs">
             <Button
               variant="ghost"
               size="icon"

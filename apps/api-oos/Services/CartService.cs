@@ -42,12 +42,12 @@ public class CartService : ICartService
         var product = await _productRepository.GetByIdAsync(request.ProductId);
         if (product == null || !product.IsActive)
         {
-            throw new KeyNotFoundException("Product not found or unavailable.");
+            throw new NotFoundException("Product not found or unavailable.");
         }
 
         if (request.Quantity <= 0)
         {
-            throw new InvalidOperationException("Quantity must be greater than zero.");
+            throw new AppException("Quantity must be greater than zero.");
         }
 
         var cart = await _cartRepository.GetOrCreateCartAsync(userId);
@@ -56,7 +56,7 @@ public class CartService : ICartService
 
         if (totalDesiredQuantity > product.Stock)
         {
-            throw new InvalidOperationException($"Insufficient stock available. Maximum stock is {product.Stock}.");
+            throw new AppException($"Insufficient stock available. Maximum stock is {product.Stock}.");
         }
 
         await _cartRepository.AddItemAsync(cart.Id, request.ProductId, request.Quantity);

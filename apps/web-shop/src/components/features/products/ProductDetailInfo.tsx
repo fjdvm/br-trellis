@@ -27,13 +27,19 @@ export function ProductDetailInfo({ product }: ProductDetailInfoProps) {
   const [openHeritage, setOpenHeritage] = useState(false);
   const [openIngredients, setOpenIngredients] = useState(false);
 
-  const { addToCart, loading } = useCart();
+  const { addToCart } = useCart();
   const inStock = product.stock > 0;
   const categoryLabel = CATEGORY_NAMES[product.category] || "Artisanal";
 
   const handleAddToCart = () => {
     if (!inStock) return;
-    addToCart(product.id, quantity);
+    addToCart(product.id, quantity, {
+      name: product.name,
+      price: product.price,
+      image: product.images?.[0],
+      sku: product.sku,
+      stock: product.stock,
+    });
   };
 
   return (
@@ -41,10 +47,10 @@ export function ProductDetailInfo({ product }: ProductDetailInfoProps) {
       {/* Category & Badge Header */}
       <div>
         <div className="flex gap-2 mb-3">
-          <Badge className="bg-secondary-container text-on-secondary-container border-none px-3.5 py-1 rounded-full label-upper">
+          <Badge className="bg-secondary-container text-on-secondary-container border-none px-3.5 py-1 label-upper">
             {categoryLabel}
           </Badge>
-          <Badge className="bg-primary-fixed text-on-primary-fixed border-none px-3.5 py-1 rounded-full label-upper">
+          <Badge className="bg-primary-fixed text-on-primary-fixed border-none px-3.5 py-1 label-upper">
             Artisanal
           </Badge>
         </div>
@@ -81,7 +87,7 @@ export function ProductDetailInfo({ product }: ProductDetailInfoProps) {
       <div className="space-y-4 pt-2">
         <div className="flex items-center gap-4">
           <span className="label-upper text-on-surface-variant">Quantity:</span>
-          <div className="flex items-center border border-outline-variant/40 rounded-full overflow-hidden h-12 bg-surface-container-lowest shadow-2xs">
+          <div className="flex items-center border border-outline-variant/40 overflow-hidden h-12 bg-surface-container-lowest shadow-2xs">
             <button
               onClick={() => setQuantity((q) => Math.max(1, q - 1))}
               disabled={quantity <= 1 || !inStock}
@@ -108,12 +114,12 @@ export function ProductDetailInfo({ product }: ProductDetailInfoProps) {
         {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row gap-3 pt-2">
           <button
-            disabled={!inStock || loading}
+            disabled={!inStock}
             onClick={handleAddToCart}
-            className="flex-1 bg-primary text-on-primary font-semibold py-4 rounded-full hover:bg-primary-container shadow-2xs active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
+            className="flex-1 bg-primary text-white font-semibold py-4 rounded-full hover:bg-primary-container shadow-2xs active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
           >
             <ShoppingBag className="w-5 h-5" />
-            {loading ? "Adding..." : inStock ? `Add ${quantity} to Cart` : "Out of Stock"}
+            {inStock ? `Add ${quantity} to Cart` : "Out of Stock"}
           </button>
 
           <button
@@ -128,14 +134,14 @@ export function ProductDetailInfo({ product }: ProductDetailInfoProps) {
 
       {/* Info Cards */}
       <div className="grid grid-cols-2 gap-4 pt-4">
-        <div className="p-4 rounded-2xl border border-outline-variant/30 bg-surface-container-low flex items-center gap-3 shadow-2xs">
+        <div className="p-4 border border-outline-variant/30 bg-surface-container-low flex items-center gap-3 shadow-2xs">
           <Truck className="w-7 h-7 text-secondary shrink-0" />
           <div>
             <p className="text-xs font-bold text-on-surface">Fast Delivery</p>
             <p className="text-[11px] text-on-surface-variant">Metro Manila 24h</p>
           </div>
         </div>
-        <div className="p-4 rounded-2xl border border-outline-variant/30 bg-surface-container-low flex items-center gap-3 shadow-2xs">
+        <div className="p-4 border border-outline-variant/30 bg-surface-container-low flex items-center gap-3 shadow-2xs">
           <Leaf className="w-7 h-7 text-secondary shrink-0" />
           <div>
             <p className="text-xs font-bold text-on-surface">Organic</p>

@@ -69,8 +69,22 @@ public sealed class TicketService(
             throw new ArgumentException("Ticket subject is required.");
         }
 
-        if (input.ContactId.HasValue
-            && !await ticketRepository.ContactExistsAsync(input.ContactId.Value, cancellationToken))
+        // Normalize the optional contact link. A blank/omitted value means
+        // "no contact" (a valid, unlinked ticket). A non-blank value must be a
+        // well-formed Guid — reject anything else with a clear message rather
+        // than letting a malformed id fall through as "no contact".
+        Guid? contactId = null;
+        if (!string.IsNullOrWhiteSpace(input.ContactId))
+        {
+            if (!Guid.TryParse(input.ContactId.Trim(), out var parsedContactId))
+            {
+                throw new ArgumentException("ContactId must be a valid identifier.");
+            }
+            contactId = parsedContactId;
+        }
+
+        if (contactId.HasValue
+            && !await ticketRepository.ContactExistsAsync(contactId.Value, cancellationToken))
         {
             throw new ArgumentException("Contact does not exist.");
         }
@@ -79,7 +93,7 @@ public sealed class TicketService(
         var ticket = new Ticket
         {
             Id = Guid.NewGuid(),
-            ContactId = input.ContactId,
+            ContactId = contactId,
             Subject = input.Subject.Trim(),
             Status = TicketStatus.Unclaimed,
             WaitingOn = WaitingOn.None,

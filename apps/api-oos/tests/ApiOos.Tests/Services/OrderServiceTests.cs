@@ -119,4 +119,70 @@ public class OrderServiceTests : IDisposable
         cart.Items.Should().BeEmpty();
     }
 
+    [Fact]
+    public async Task CreateOrderAsync_WithSelectedItemIds_OrdersOnlySelectedAndKeepsRest()
+    {
+        var user = await CreateTestUserAsync();
+
+        var selectedProduct = new Product
+        {
+            Id = Guid.NewGuid(),
+            Name = "Ube Cream Spread",
+            Price = 250.00m,
+            Stock = 10,
+            SKU = "UBE-CREAM",
+            IsActive = true
+        };
+        var unselectedProduct = new Product
+        {
+            Id = Guid.NewGuid(),
+            Name = "Purple Yam Jam",
+            Price = 100.00m,
+            Stock = 10,
+            SKU = "UBE-JAM",
+            IsActive = true
+        };
+        _context.Products.AddRange(selectedProduct, unselectedProduct);
+        await _context.SaveChangesAsync();
+
+        await _cartService.AddItemAsync(user.Id, new AddCartItemRequest { ProductId = selectedProduct.Id, Quantity = 2 });
+        await _cartService.AddItemAsync(user.Id, new AddCartItemRequest { ProductId = unselectedProduct.Id, Quantity = 1 });
+
+        // Grab the cart item id for the product we intend to check out.
+        var cartBefore = await _cartService.GetCartAsync(user.Id);
+        var selectedCartItem = cartBefore.Items.Single(i => i.ProductId == selectedProduct.Id);
+        var unselectedCartItem = cartBefore.Items.Single(i => i.ProductId == unselectedProduct.Id);
+
+        var request = new CreateOrderRequest
+        {
+            ShippingAddress = new ShippingAddressRequest
+            {
+                RecipientName = "Bren Raphael",
+                Street = "123 Session Rd",
+                City = "Baguio City",
+                Province = "Benguet",
+                PostalCode = "2600",
+                Phone = "09171234567"
+            },
+            PaymentMethod = PaymentMethod.CashOnDelivery,
+            SelectedItemIds = new List<Guid> { selectedCartItem.Id }
+        };
+
+        var orderDto = await _orderService.CreateOrderAsync(user.Id, request);
+
+        // Order contains only the selected product.
+        orderDto.Items.Should().HaveCount(1);
+        orderDto.Items.Single().ProductSKU.Should().Be("UBE-CREAM");
+        orderDto.Subtotal.Should().Be(500.00m);
+
+        // Selected product stock decremented; unselected untouched.
+        (await _context.Products.FindAsync(selectedProduct.Id))!.Stock.Should().Be(8);
+        (await _context.Products.FindAsync(unselectedProduct.Id))!.Stock.Should().Be(10);
+
+        // Unselected item remains in the cart; selected item removed.
+        var cartAfter = await _cartService.GetCartAsync(user.Id);
+        cartAfter.Items.Should().ContainSingle();
+        cartAfter.Items.Single().Id.Should().Be(unselectedCartItem.Id);
+    }
+
 }

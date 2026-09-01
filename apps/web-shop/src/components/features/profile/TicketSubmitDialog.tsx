@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
+import { useSession } from "next-auth/react";
 import {
   Dialog,
   DialogContent,
@@ -36,6 +37,8 @@ export function TicketSubmitDialog({
   userId,
   onSuccess,
 }: TicketSubmitDialogProps) {
+  const { data: session } = useSession();
+  const token = (session as { accessToken?: string })?.accessToken;
   const [subject, setSubject] = useState("");
   const [type, setType] = useState<string>("Inquiry");
   const [description, setDescription] = useState("");
@@ -67,6 +70,7 @@ export function TicketSubmitDialog({
         description: description.trim(),
         userId,
         images: imagePreviews,
+        token,
       });
 
       if (res.success) {
@@ -88,7 +92,7 @@ export function TicketSubmitDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-[500px] rounded-xl bg-white p-6 border border-border shadow-xl">
+      <DialogContent className="sm:max-w-[500px] bg-white p-6 border border-border shadow-xl">
         <DialogHeader className="space-y-1">
           <DialogTitle className="text-xl font-extrabold text-foreground">
             Submit Support Ticket
@@ -99,7 +103,7 @@ export function TicketSubmitDialog({
         </DialogHeader>
 
         {errorMessage && (
-          <div className="p-3 rounded-lg bg-destructive/10 text-destructive text-xs font-medium border border-destructive/20">
+          <div className="p-3 bg-destructive/10 text-destructive text-xs font-medium border border-destructive/20">
             {errorMessage}
           </div>
         )}
@@ -160,7 +164,7 @@ export function TicketSubmitDialog({
               variant="outline"
               onClick={onClose}
               disabled={isSubmitting}
-              className="rounded-lg text-xs"
+              className="text-xs"
             >
               Cancel
             </Button>

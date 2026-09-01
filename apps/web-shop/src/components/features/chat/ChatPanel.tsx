@@ -78,7 +78,7 @@ export function ChatPanel({
   };
 
   return (
-    <div className="fixed bottom-20 right-5 z-50 flex h-[530px] w-80 flex-col overflow-hidden rounded-2xl border border-purple-200/80 bg-white shadow-2xl transition-all sm:w-96">
+    <div className="fixed bottom-20 right-5 z-[10001] flex h-[530px] w-80 flex-col overflow-hidden border border-purple-200/80 bg-white shadow-2xl transition-all sm:w-96">
       {/* Header */}
       <div className="flex items-center justify-between bg-[#451077] px-4 py-3 text-white">
         <div className="flex items-center space-x-2">
@@ -128,7 +128,7 @@ export function ChatPanel({
           {/* Messages List */}
           <div className="flex-1 overflow-y-auto p-4 space-y-2">
             {error && (
-              <div className="rounded-lg bg-red-50 p-3 text-xs text-red-600 border border-red-200">
+              <div className="bg-red-50 p-3 text-xs text-red-600 border border-red-200">
                 {error}
               </div>
             )}
@@ -151,7 +151,7 @@ export function ChatPanel({
 
             {/* Escalation Prompt Card */}
             {(botPhase === "ESCALATE_PROMPT" || botPhase === "BOT_RESPONDED") && (
-              <div className="my-3 rounded-xl border border-purple-200 bg-purple-50/70 p-3.5 text-center shadow-2xs">
+              <div className="my-3 border border-purple-200 bg-purple-50/70 p-3.5 text-center shadow-2xs">
                 <p className="text-xs font-semibold text-purple-900 mb-2">
                   Need more help? Connect to a human agent.
                 </p>
@@ -168,7 +168,7 @@ export function ChatPanel({
                     <p className="text-[11px] text-purple-700">Sign in required to talk to live staff.</p>
                     <Link
                       href="/signin"
-                      className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-[#451077] px-3.5 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-[#340c5a]"
+                      className="inline-flex items-center justify-center gap-1.5 bg-[#451077] px-3.5 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-[#340c5a]"
                     >
                       <Lock className="h-3.5 w-3.5" />
                       Sign In to Connect
@@ -199,7 +199,7 @@ export function ChatPanel({
                   onChange={(e) => setHandshakeInput(e.target.value)}
                   placeholder="you@example.com"
                   aria-label="Your email"
-                  className="flex-1 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs text-slate-900 placeholder-slate-400 focus:border-[#451077] focus:outline-none focus:ring-1 focus:ring-[#451077]"
+                  className="flex-1 border border-slate-200 bg-white px-3.5 py-2 text-xs text-slate-900 placeholder-slate-400 focus:border-[#451077] focus:outline-none focus:ring-1 focus:ring-[#451077]"
                 />
                 <button
                   type="submit"
@@ -219,7 +219,7 @@ export function ChatPanel({
                   onChange={(e) => setInput(e.target.value)}
                   placeholder={isLive ? "Type a message to agent..." : "Ask AI support assistant..."}
                   disabled={isBotReplying}
-                  className="flex-1 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs text-slate-900 placeholder-slate-400 focus:border-[#451077] focus:outline-none focus:ring-1 focus:ring-[#451077] disabled:opacity-50"
+                  className="flex-1 border border-slate-200 bg-white px-3.5 py-2 text-xs text-slate-900 placeholder-slate-400 focus:border-[#451077] focus:outline-none focus:ring-1 focus:ring-[#451077] disabled:opacity-50"
                 />
                 <button
                   type="submit"

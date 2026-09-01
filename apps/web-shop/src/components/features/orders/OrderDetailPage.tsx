@@ -51,7 +51,7 @@ export function OrderDetailPage({ orderId }: OrderDetailPageProps) {
         <p className="font-sans text-on-surface-variant text-sm max-w-md mx-auto">
           {error || "We couldn't find the requested order."}
         </p>
-        <Button asChild className="rounded-full bg-primary text-on-primary px-8 py-3">
+        <Button asChild className="rounded-full bg-primary text-white px-8 py-3">
           <Link href="/profile">Back to Profile</Link>
         </Button>
       </div>
@@ -77,8 +77,8 @@ export function OrderDetailPage({ orderId }: OrderDetailPageProps) {
     <main className="max-w-[1440px] mx-auto px-4 sm:px-8 py-12 space-y-8 bg-surface font-sans">
       <div>
         <Link
-          href="/profile"
-          className="inline-flex items-center gap-2 text-xs font-semibold text-primary hover:text-primary-container transition-all bg-surface-container-lowest hover:bg-surface-container-high px-5 py-2.5 rounded-full border border-outline-variant/30 shadow-2xs mb-6"
+          href="/order-history"
+          className="inline-flex items-center gap-2 text-xs font-semibold text-primary hover:text-primary-container transition-all bg-surface-container-lowest hover:bg-surface-container-high px-5 py-2.5 border border-outline-variant/30 shadow-2xs mb-6"
         >
           <ArrowLeft className="w-4 h-4" />
           <span>Back to Order History</span>
@@ -95,8 +95,8 @@ export function OrderDetailPage({ orderId }: OrderDetailPageProps) {
         {/* Left Column: Status & Items */}
         <div className="lg:col-span-8 space-y-6">
           {/* Status Banner */}
-          <div className="bg-primary-fixed-dim/20 rounded-2xl p-6 border border-primary-fixed-dim/30 flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center text-on-primary shrink-0 shadow-xs">
+          <div className="bg-primary-fixed-dim/20 p-6 border border-primary-fixed-dim/30 flex items-center gap-4">
+            <div className="w-12 h-12 bg-primary flex items-center justify-center text-white shrink-0 shadow-xs">
               <Truck className="w-6 h-6" />
             </div>
             <div>
@@ -113,7 +113,7 @@ export function OrderDetailPage({ orderId }: OrderDetailPageProps) {
           </div>
 
           {/* Items Purchased List */}
-          <div className="bg-surface-container-lowest border border-outline-variant/30 rounded-3xl p-6 sm:p-8 shadow-xs">
+          <div className="bg-surface-container-lowest border border-outline-variant/30 p-6 sm:p-8 shadow-xs">
             <h2 className="font-serif font-bold text-xl text-primary mb-6 border-b border-outline-variant/20 pb-4">
               Items Purchased
             </h2>
@@ -140,7 +140,7 @@ export function OrderDetailPage({ orderId }: OrderDetailPageProps) {
         {/* Right Column: Order Summary & Shipping Details */}
         <div className="lg:col-span-4 space-y-6">
           {/* Order Summary */}
-          <div className="bg-surface-container-lowest border border-outline-variant/30 rounded-3xl p-6 sm:p-8 shadow-xs space-y-3 font-sans text-xs">
+          <div className="bg-surface-container-lowest border border-outline-variant/30 p-6 sm:p-8 shadow-xs space-y-3 font-sans text-xs">
             <h2 className="font-serif font-bold text-xl text-primary border-b border-outline-variant/20 pb-4">
               Order Summary
             </h2>
@@ -163,7 +163,7 @@ export function OrderDetailPage({ orderId }: OrderDetailPageProps) {
           </div>
 
           {/* Shipping Address */}
-          <div className="bg-surface-container-lowest border border-outline-variant/30 rounded-3xl p-6 sm:p-8 shadow-xs space-y-3 font-sans text-xs">
+          <div className="bg-surface-container-lowest border border-outline-variant/30 p-6 sm:p-8 shadow-xs space-y-3 font-sans text-xs">
             <div className="flex items-center gap-2 text-primary border-b border-outline-variant/20 pb-3">
               <MapPin className="w-4 h-4" />
               <h3 className="font-serif font-bold text-base">Shipping Details</h3>
@@ -177,7 +177,7 @@ export function OrderDetailPage({ orderId }: OrderDetailPageProps) {
           </div>
 
           {/* Payment Method */}
-          <div className="bg-surface-container-lowest border border-outline-variant/30 rounded-3xl p-6 sm:p-8 shadow-xs space-y-3 font-sans text-xs">
+          <div className="bg-surface-container-lowest border border-outline-variant/30 p-6 sm:p-8 shadow-xs space-y-3 font-sans text-xs">
             <div className="flex items-center gap-2 text-primary border-b border-outline-variant/20 pb-3">
               <CreditCard className="w-4 h-4" />
               <h3 className="font-serif font-bold text-base">Payment Method</h3>

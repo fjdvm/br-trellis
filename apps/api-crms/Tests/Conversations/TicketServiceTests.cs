@@ -56,7 +56,7 @@ public sealed class TicketServiceTests : IDisposable
         var service = CreateService(context);
 
         var result = await service.CreateTicketAsync(
-            new CreateTicketDto("Order delayed", contactId),
+            new CreateTicketDto("Order delayed", contactId.ToString()),
             CancellationToken.None);
 
         Assert.Equal(contactId, result.ContactId);
@@ -85,7 +85,39 @@ public sealed class TicketServiceTests : IDisposable
 
         await Assert.ThrowsAsync<ArgumentException>(
             () => service.CreateTicketAsync(
-                new CreateTicketDto("Ghost contact", Guid.NewGuid()),
+                new CreateTicketDto("Ghost contact", Guid.NewGuid().ToString()),
+                CancellationToken.None));
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("   ")]
+    public async Task CreateTicket_treats_blank_contactId_as_no_contact(string blank)
+    {
+        // Regression: a form submitting "no contact selected" as an empty/blank
+        // string must create an unlinked ticket, not 400. Previously ContactId
+        // was Guid? and System.Text.Json rejected "" before the service ran.
+        await using var context = CreateContext();
+        var service = CreateService(context);
+
+        var result = await service.CreateTicketAsync(
+            new CreateTicketDto("Blank contact", blank),
+            CancellationToken.None);
+
+        Assert.Equal("Blank contact", result.Subject);
+        Assert.Null(result.ContactId);
+        Assert.Null(result.Contact);
+    }
+
+    [Fact]
+    public async Task CreateTicket_throws_for_malformed_contactId()
+    {
+        await using var context = CreateContext();
+        var service = CreateService(context);
+
+        await Assert.ThrowsAsync<ArgumentException>(
+            () => service.CreateTicketAsync(
+                new CreateTicketDto("Bad id", "not-a-guid"),
                 CancellationToken.None));
     }
 

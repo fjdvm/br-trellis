@@ -44,7 +44,7 @@ export function FaqAccordion() {
           return (
             <div
               key={item.id}
-              className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white transition-all shadow-xs"
+              className="overflow-hidden border border-slate-200/80 bg-white transition-all shadow-xs"
             >
               <button
                 onClick={() => toggle(item.id)}

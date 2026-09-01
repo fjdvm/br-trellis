@@ -177,7 +177,7 @@ export function AddressModal({
                       type="checkbox"
                       checked={field.value}
                       onChange={field.onChange}
-                      className="w-4 h-4 rounded border-[var(--border)] text-[var(--primary)] focus:ring-[var(--primary)] cursor-pointer"
+                      className="w-4 h-4 border-[var(--border)] text-[var(--primary)] focus:ring-[var(--primary)] cursor-pointer"
                     />
                   </FormControl>
                   <FormLabel htmlFor="addr-default" className="text-sm font-medium text-gray-700 cursor-pointer">

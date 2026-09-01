@@ -51,4 +51,10 @@ export interface ShippingAddressRequest {
 export interface CreateOrderRequest {
   shippingAddress: ShippingAddressRequest;
   paymentMethod: PaymentMethod;
+  /**
+   * Ids of the cart items to check out. When omitted or empty, the entire cart
+   * is ordered (backward compatible). When provided, only these items are
+   * ordered and removed from the cart; the rest stay in the cart.
+   */
+  selectedItemIds?: string[];
 }
