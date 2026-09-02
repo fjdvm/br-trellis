@@ -30,6 +30,11 @@ export function useConversationMessages(ticketId: string) {
           return;
         }
       } else {
+        // Foreground load (initial mount or a conversation switch): clear the
+        // previous ticket's messages first so a newly-opened conversation never
+        // briefly renders the prior thread's messages under its header, and show
+        // the scoped in-viewport loading state while the new list arrives.
+        setMessages([]);
         setIsLoading(true);
       }
 
