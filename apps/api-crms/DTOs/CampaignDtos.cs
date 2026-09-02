@@ -38,7 +38,8 @@ public sealed record CampaignDetailDto(
     DateTimeOffset CreatedAt,
     CampaignScheduleDto? Schedule,
     IReadOnlyList<CampaignChannelContentDto> ChannelContents,
-    string? CreatedById);
+    string? CreatedById,
+    CampaignDispatchResultDto? DispatchResult);
 
 // Input records. The wizard sends per-Channel content under ChannelContents.
 public sealed record CampaignChannelContentInput(
@@ -72,3 +73,23 @@ public sealed record UpdateCampaignDto(
     DateTimeOffset? StartDate,
     DateTimeOffset? EndDate,
     IReadOnlyList<CampaignChannelContentInput>? ChannelContents);
+
+// --- Cross-service dispatch contract (api-oos polls + reports back, #162) ---
+
+// A Campaign that is due to send now, with its resolved (deduped, opt-out-filtered)
+// recipient list and Email content already prepared by api-crms.
+public sealed record DueCampaignDto(
+    Guid Id,
+    string Title,
+    string Subject,
+    string Body,
+    IReadOnlyList<string> Recipients);
+
+// The outcome api-oos reports back after a bulk send.
+public sealed record CampaignDispatchResultDto(
+    int TotalRecipients,
+    int SentCount,
+    int FailedCount,
+    IReadOnlyList<string> Errors);
+
+public sealed record MarketingOptOutDto(string Email);

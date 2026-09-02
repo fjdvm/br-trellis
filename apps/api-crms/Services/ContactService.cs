@@ -3,6 +3,7 @@ using api_crms.DTOs;
 using api_crms.Interfaces;
 using api_crms.Mappers;
 using api_crms.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace api_crms.Services;
 
@@ -88,6 +89,30 @@ public sealed class ContactService(
         contact.DeletedAt = DateTimeOffset.UtcNow;
         await dbContext.SaveChangesAsync(cancellationToken);
         return true;
+    }
+
+    public async Task<int> SetMarketingOptOutByEmailAsync(string email, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(email))
+        {
+            return 0;
+        }
+
+        var normalized = email.Trim().ToLowerInvariant();
+        var matches = await dbContext.Contacts
+            .Where(c => c.DeletedAt == null && c.Email == normalized)
+            .ToListAsync(cancellationToken);
+
+        foreach (var contact in matches)
+        {
+            contact.MarketingOptOut = true;
+        }
+
+        if (matches.Count > 0)
+        {
+            await dbContext.SaveChangesAsync(cancellationToken);
+        }
+        return matches.Count;
     }
 
     private static string? NormalizePhone(string? phone)

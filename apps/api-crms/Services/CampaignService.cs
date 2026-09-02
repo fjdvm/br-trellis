@@ -346,6 +346,86 @@ public sealed class CampaignService(
         return CampaignMapper.SerializeEmails(recipients) is { Length: > 0 } json ? json : null;
     }
 
+    public async Task<IReadOnlyList<DueCampaignDto>> GetDueEmailCampaignsAsync(CancellationToken cancellationToken)
+    {
+        var now = DateTimeOffset.UtcNow;
+        var active = await dbContext.Campaigns
+            .Include(c => c.ChannelContents)
+            .Where(c => c.Status == CampaignStatus.Active && !c.EmailTerminal)
+            .ToListAsync(cancellationToken);
+
+        // Opt-out set: emails of Contacts who opted out of marketing.
+        var optedOut = await dbContext.Contacts
+            .Where(c => c.MarketingOptOut && c.Email != null)
+            .Select(c => c.Email!)
+            .ToListAsync(cancellationToken);
+        var optOutSet = optedOut
+            .Select(e => e.Trim().ToLowerInvariant())
+            .ToHashSet();
+
+        var due = new List<DueCampaignDto>();
+        foreach (var campaign in active)
+        {
+            var channels = CampaignMapper.ParseChannels(campaign.Channels);
+            if (!channels.Contains(nameof(CampaignChannel.Email)))
+            {
+                continue;
+            }
+            // NextRunAt null is treated as "not scheduled yet"; only send when due.
+            if (campaign.NextRunAt is null || campaign.NextRunAt > now)
+            {
+                continue;
+            }
+
+            var snapshot = CampaignMapper.ParseEmails(campaign.ResolvedRecipients) ?? new List<string>();
+            var recipients = snapshot
+                .Select(e => e.Trim().ToLowerInvariant())
+                .Where(e => e.Length > 0 && !optOutSet.Contains(e))
+                .Distinct()
+                .ToList();
+
+            var emailContent = campaign.ChannelContents
+                .FirstOrDefault(cc => cc.Channel == CampaignChannel.Email);
+
+            due.Add(new DueCampaignDto(
+                campaign.Id,
+                campaign.Title,
+                emailContent?.Subject ?? campaign.Title,
+                emailContent?.Body ?? string.Empty,
+                recipients));
+        }
+
+        return due;
+    }
+
+    public async Task<bool> RecordDispatchResultAsync(
+        Guid id,
+        CampaignDispatchResultDto result,
+        CancellationToken cancellationToken)
+    {
+        var campaign = await dbContext.Campaigns.FindAsync([id], cancellationToken);
+        if (campaign is null)
+        {
+            return false;
+        }
+
+        campaign.DispatchSentCount = result.SentCount;
+        campaign.DispatchFailedCount = result.FailedCount;
+        campaign.DispatchErrors = result.Errors is { Count: > 0 }
+            ? System.Text.Json.JsonSerializer.Serialize(result.Errors)
+            : null;
+        campaign.DispatchedAt = DateTimeOffset.UtcNow;
+        // The Email channel is now terminal (sent-or-failed), regardless of
+        // individual failures — feeds the cross-Channel Ended aggregation.
+        campaign.EmailTerminal = true;
+        // Don't pick it up again on the next sweep.
+        campaign.NextRunAt = null;
+        campaign.UpdatedAt = DateTimeOffset.UtcNow;
+
+        await dbContext.SaveChangesAsync(cancellationToken);
+        return true;
+    }
+
     // --- helpers ---
 
     private static List<CampaignChannel> ParseAndValidateChannels(IReadOnlyList<string>? channels)

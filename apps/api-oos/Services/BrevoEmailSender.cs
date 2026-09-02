@@ -77,6 +77,77 @@ public class BrevoEmailSender : IEmailSender
             _logger.LogError(ex, "Failed to send confirmation email via Brevo SMTP to {Email}", toEmail);
         }
     }
+    public async Task<BulkEmailResult> SendBulkAsync(
+        IReadOnlyList<string> recipients,
+        string subject,
+        string htmlBody,
+        CancellationToken cancellationToken = default)
+    {
+        var sent = 0;
+        var failed = 0;
+        var errors = new List<string>();
+
+        foreach (var recipient in recipients)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            try
+            {
+                await SendSingleAsync(recipient, subject, htmlBody, cancellationToken);
+                sent++;
+            }
+            catch (Exception ex)
+            {
+                failed++;
+                errors.Add($"{recipient}: {ex.Message}");
+                _logger.LogWarning(ex, "Bulk send to {Recipient} failed", recipient);
+            }
+        }
+
+        return new BulkEmailResult(sent, failed, errors);
+    }
+
+    /// <summary>
+    /// Sends a single marketing message over Brevo SMTP. Virtual so tests can
+    /// intercept the actual network call while still exercising the bulk loop's
+    /// success/failure accumulation. Throws when credentials are missing so the
+    /// bulk result reflects that recipients weren't delivered.
+    /// </summary>
+    protected virtual async Task SendSingleAsync(
+        string toEmail,
+        string subject,
+        string htmlBody,
+        CancellationToken cancellationToken)
+    {
+        var host = _configuration["Brevo:SmtpHost"] ?? "smtp-relay.brevo.com";
+        var portStr = _configuration["Brevo:SmtpPort"];
+        int.TryParse(portStr, out var port);
+        if (port == 0) port = 587;
+
+        var username = _configuration["Brevo:Username"];
+        var password = _configuration["Brevo:Password"];
+        var fromEmail = _configuration["Brevo:FromEmail"] ?? "jude.nitram08@gmail.com";
+
+        if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password))
+        {
+            throw new InvalidOperationException("Brevo SMTP credentials are not configured.");
+        }
+
+        using var client = new SmtpClient(host, port)
+        {
+            Credentials = new NetworkCredential(username, password),
+            EnableSsl = true,
+        };
+        var mailMessage = new MailMessage
+        {
+            From = new MailAddress(fromEmail, "Bren Raphael's"),
+            Subject = subject,
+            Body = htmlBody,
+            IsBodyHtml = true,
+        };
+        mailMessage.To.Add(new MailAddress(toEmail));
+        await client.SendMailAsync(mailMessage, cancellationToken);
+    }
+
 
     private static string BuildHtmlBody(string fullName, string confirmationUrl)
     {

@@ -99,6 +99,29 @@ public sealed class CampaignController(ICampaignService campaignService) : Contr
         }
     }
 
+    // --- Cross-service dispatch (api-oos polls these; ADR 0008) ---
+
+    // Active Email campaigns due to send now, with resolved recipients + content.
+    [HttpGet("due")]
+    [AllowAnonymous]
+    public async Task<ActionResult<IReadOnlyList<DueCampaignDto>>> GetDueCampaigns(
+        CancellationToken cancellationToken)
+    {
+        return Ok(await campaignService.GetDueEmailCampaignsAsync(cancellationToken));
+    }
+
+    // api-oos reports the bulk-send outcome back here.
+    [HttpPost("{id:guid}/dispatch-result")]
+    [AllowAnonymous]
+    public async Task<IActionResult> RecordDispatchResult(
+        Guid id,
+        CampaignDispatchResultDto result,
+        CancellationToken cancellationToken)
+    {
+        var recorded = await campaignService.RecordDispatchResultAsync(id, result, cancellationToken);
+        return recorded ? NoContent() : NotFound();
+    }
+
     private string? CurrentUserId() =>
         User?.FindFirst(ClaimTypes.NameIdentifier)?.Value
         ?? User?.FindFirst("sub")?.Value;

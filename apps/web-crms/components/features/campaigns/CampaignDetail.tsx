@@ -108,6 +108,37 @@ export function CampaignDetail({ id }: { id: string }) {
         </Card>
       )}
 
+      {campaign.dispatchResult && (
+        <Card className="shadow-none border-border">
+          <CardHeader className="p-lg pb-md">
+            <CardTitle className="text-title-lg font-bold">Dispatch Result</CardTitle>
+          </CardHeader>
+          <CardContent className="p-lg pt-0 space-y-sm text-base">
+            <div className="flex flex-wrap gap-lg">
+              <div>
+                <span className="text-muted-foreground">Recipients: </span>
+                {campaign.dispatchResult.totalRecipients}
+              </div>
+              <div>
+                <span className="text-muted-foreground">Sent: </span>
+                {campaign.dispatchResult.sentCount}
+              </div>
+              <div>
+                <span className="text-muted-foreground">Failed: </span>
+                {campaign.dispatchResult.failedCount}
+              </div>
+            </div>
+            {campaign.dispatchResult.errors.length > 0 && (
+              <ul className="text-sm text-destructive list-disc pl-5">
+                {campaign.dispatchResult.errors.map((e, i) => (
+                  <li key={i}>{e}</li>
+                ))}
+              </ul>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
       {campaign.channelContents.map((content) => (
         <ChannelContentCard key={content.channel} content={content} />
       ))}

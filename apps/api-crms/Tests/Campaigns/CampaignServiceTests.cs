@@ -1,6 +1,7 @@
 using api_crms.Data;
 using api_crms.DTOs;
 using api_crms.Enums;
+using api_crms.Models;
 using api_crms.Repositories;
 using api_crms.Services;
 using Microsoft.EntityFrameworkCore;
@@ -169,6 +170,83 @@ public sealed class CampaignServiceTests : IDisposable
         Assert.Equal("Shop", popup.CtaText);
         // No audience for a Banner/Popup-only campaign.
         Assert.Null(result.TargetAudience);
+    }
+
+    [Fact]
+    public async Task GetDueEmailCampaignsAsync_returns_due_active_email_campaigns_filtering_opt_outs()
+    {
+        // A launched Email campaign due now, with an opted-out contact among recipients.
+        await using (var ctx = CreateContext())
+        {
+            ctx.Contacts.Add(new Contact
+            {
+                Id = Guid.NewGuid(),
+                Email = "optout@example.com",
+                MarketingOptOut = true,
+                CreatedAt = DateTimeOffset.UtcNow,
+            });
+            await ctx.SaveChangesAsync();
+        }
+
+        var created = await CreateService().CreateCampaignAsync(
+            new CreateCampaignDto("Due blast", new[] { "Email" }, null,
+                new[] { "keep@example.com", "optout@example.com" }, "SendNow", null, null,
+                new[] { new CampaignChannelContentInput("Email", null, "Hello", null, "Body text", null, null, null, null) }),
+            null, CancellationToken.None);
+        await CreateService().LaunchCampaignAsync(created.Id, CancellationToken.None);
+
+        var due = await CreateService().GetDueEmailCampaignsAsync(CancellationToken.None);
+
+        var dueCampaign = Assert.Single(due);
+        Assert.Equal(created.Id, dueCampaign.Id);
+        Assert.Equal("Hello", dueCampaign.Subject);
+        Assert.Equal("Body text", dueCampaign.Body);
+        Assert.Contains("keep@example.com", dueCampaign.Recipients);
+        Assert.DoesNotContain("optout@example.com", dueCampaign.Recipients);
+    }
+
+    [Fact]
+    public async Task GetDueEmailCampaignsAsync_excludes_draft_and_not_yet_due_campaigns()
+    {
+        // Draft (never launched) — not due.
+        await CreateService().CreateCampaignAsync(
+            new CreateCampaignDto("Draft", new[] { "Email" }, null, new[] { "a@b.io" }, "SendNow", null, null, null),
+            null, CancellationToken.None);
+
+        // Launched but scheduled in the future — not due yet.
+        var future = await CreateService().CreateCampaignAsync(
+            new CreateCampaignDto("Future", new[] { "Email" }, null, new[] { "a@b.io" }, "Scheduled",
+                DateTimeOffset.UtcNow.AddDays(3), DateTimeOffset.UtcNow.AddDays(4), null),
+            null, CancellationToken.None);
+        await CreateService().LaunchCampaignAsync(future.Id, CancellationToken.None);
+
+        var due = await CreateService().GetDueEmailCampaignsAsync(CancellationToken.None);
+        Assert.Empty(due);
+    }
+
+    [Fact]
+    public async Task RecordDispatchResultAsync_records_counts_and_marks_email_terminal()
+    {
+        var created = await CreateService().CreateCampaignAsync(
+            new CreateCampaignDto("Sent blast", new[] { "Email" }, null, new[] { "a@b.io" }, "SendNow", null, null, null),
+            null, CancellationToken.None);
+        await CreateService().LaunchCampaignAsync(created.Id, CancellationToken.None);
+
+        var recorded = await CreateService().RecordDispatchResultAsync(
+            created.Id, new CampaignDispatchResultDto(2, 1, 1, new[] { "550 mailbox full" }),
+            CancellationToken.None);
+
+        Assert.True(recorded);
+        var detail = await CreateService().GetCampaignByIdAsync(created.Id, CancellationToken.None);
+        Assert.NotNull(detail!.DispatchResult);
+        Assert.Equal(1, detail.DispatchResult!.SentCount);
+        Assert.Equal(1, detail.DispatchResult.FailedCount);
+        Assert.Contains("550 mailbox full", detail.DispatchResult.Errors);
+
+        // Email is terminal now; a single-Email campaign should end on the next sweep.
+        await CreateService().SweepCampaignLifecycleAsync(CancellationToken.None);
+        var after = await CreateService().GetCampaignByIdAsync(created.Id, CancellationToken.None);
+        Assert.Equal("Ended", after!.Status);
     }
 
     [Fact]

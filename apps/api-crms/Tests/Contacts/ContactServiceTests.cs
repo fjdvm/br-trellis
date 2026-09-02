@@ -266,6 +266,38 @@ public sealed class ContactServiceTests : IDisposable
                 CancellationToken.None));
     }
 
+    [Fact]
+    public async Task SetMarketingOptOutByEmail_flags_matching_contacts_case_insensitively()
+    {
+        await using var context = CreateContext();
+        context.Contacts.Add(new Contact
+        {
+            Id = Guid.NewGuid(),
+            CreatedAt = DateTimeOffset.UtcNow,
+            Email = "shopper@example.com",
+        });
+        await context.SaveChangesAsync();
+        var service = new ContactService(new ContactRepository(context), context);
+
+        var updated = await service.SetMarketingOptOutByEmailAsync("Shopper@Example.com", CancellationToken.None);
+
+        Assert.Equal(1, updated);
+        await using var check = CreateContext();
+        var contact = await check.Contacts.SingleAsync(c => c.Email == "shopper@example.com");
+        Assert.True(contact.MarketingOptOut);
+    }
+
+    [Fact]
+    public async Task SetMarketingOptOutByEmail_is_idempotent_when_no_match()
+    {
+        await using var context = CreateContext();
+        var service = new ContactService(new ContactRepository(context), context);
+
+        var updated = await service.SetMarketingOptOutByEmailAsync("nobody@example.com", CancellationToken.None);
+
+        Assert.Equal(0, updated);
+    }
+
     private AppDbContext CreateContext()
     {
         var options = new DbContextOptionsBuilder<AppDbContext>()

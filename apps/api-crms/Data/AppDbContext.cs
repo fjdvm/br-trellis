@@ -102,6 +102,7 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
             contact.Property(e => e.Phone).HasColumnName("phone");
             contact.Property(e => e.SentimentScore).HasColumnName("sentiment_score");
             contact.Property(e => e.LifetimeValue).HasColumnName("lifetime_value");
+            contact.Property(e => e.MarketingOptOut).HasColumnName("marketing_opt_out");
             contact.Property(e => e.CompanyId).HasColumnName("company_id");
             contact.Property(e => e.DeletedAt).HasColumnName("deleted_at");
 
@@ -657,6 +658,10 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
             campaign.Property(e => e.EndDate).HasColumnName("end_date");
             campaign.Property(e => e.NextRunAt).HasColumnName("next_run_at");
             campaign.Property(e => e.EmailTerminal).HasColumnName("email_terminal");
+            campaign.Property(e => e.DispatchSentCount).HasColumnName("dispatch_sent_count");
+            campaign.Property(e => e.DispatchFailedCount).HasColumnName("dispatch_failed_count");
+            campaign.Property(e => e.DispatchErrors).HasColumnName("dispatch_errors");
+            campaign.Property(e => e.DispatchedAt).HasColumnName("dispatched_at");
             campaign.Property(e => e.CreatedById).HasColumnName("created_by_id");
             campaign.Property(e => e.CreatedAt).HasColumnName("created_at");
             campaign.Property(e => e.UpdatedAt).HasColumnName("updated_at");

@@ -76,6 +76,14 @@ public static class CampaignMapper
 
     public static CampaignDetailDto ToDetail(Campaign campaign)
     {
+        CampaignDispatchResultDto? dispatch = campaign.DispatchedAt.HasValue
+            ? new CampaignDispatchResultDto(
+                (campaign.DispatchSentCount ?? 0) + (campaign.DispatchFailedCount ?? 0),
+                campaign.DispatchSentCount ?? 0,
+                campaign.DispatchFailedCount ?? 0,
+                ParseErrors(campaign.DispatchErrors))
+            : null;
+
         return new CampaignDetailDto(
             campaign.Id,
             campaign.Title,
@@ -89,7 +97,17 @@ public static class CampaignMapper
                 .OrderBy(c => c.Channel)
                 .Select(ToContentDto)
                 .ToList(),
-            campaign.CreatedById);
+            campaign.CreatedById,
+            dispatch);
+    }
+
+    private static IReadOnlyList<string> ParseErrors(string? errorsJson)
+    {
+        if (string.IsNullOrWhiteSpace(errorsJson))
+        {
+            return Array.Empty<string>();
+        }
+        return JsonSerializer.Deserialize<List<string>>(errorsJson, JsonOptions) ?? new List<string>();
     }
 
     public static string SerializeEmails(IReadOnlyList<string>? emails)

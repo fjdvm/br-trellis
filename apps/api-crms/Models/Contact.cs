@@ -16,6 +16,11 @@ public sealed class Contact
 
     public decimal LifetimeValue { get; set; }
 
+    // Whether this Contact has opted out of marketing email. Set via the
+    // unsubscribe link in a Campaign email (an unauthenticated api-oos endpoint
+    // relays the opt-out here). Excluded from resolved recipient lists.
+    public bool MarketingOptOut { get; set; }
+
     public Guid? CompanyId { get; set; }
 
     public DateTimeOffset? DeletedAt { get; set; }

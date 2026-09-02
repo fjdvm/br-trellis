@@ -44,6 +44,13 @@ public sealed class Campaign
     // Feeds the cross-Channel status aggregation (#161/#162).
     public bool EmailTerminal { get; set; }
 
+    // Email dispatch outcome, recorded by api-oos after a bulk send (#162).
+    public int? DispatchSentCount { get; set; }
+    public int? DispatchFailedCount { get; set; }
+    // JSON array of per-recipient error strings.
+    public string? DispatchErrors { get; set; }
+    public DateTimeOffset? DispatchedAt { get; set; }
+
     public string? CreatedById { get; set; }
 
     public DateTimeOffset CreatedAt { get; set; }

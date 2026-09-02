@@ -91,4 +91,22 @@ describe("CampaignDetail", () => {
     render(<CampaignDetail id="c1" />);
     expect(screen.queryByRole("button", { name: /launch/i })).not.toBeInTheDocument();
   });
+
+  it("shows the dispatch result (sent/failed counts) when the email has been dispatched", () => {
+    (useCampaign as jest.Mock).mockReturnValue({
+      data: {
+        ...campaign,
+        status: "Active",
+        dispatchResult: { totalRecipients: 3, sentCount: 2, failedCount: 1, errors: ["bad@x.io: bounced"] },
+      },
+      isLoading: false,
+      error: null,
+      refetch: jest.fn(),
+    });
+    render(<CampaignDetail id="c1" />);
+    expect(screen.getByText(/dispatch result/i)).toBeInTheDocument();
+    expect(screen.getByText("Sent:")).toBeInTheDocument();
+    expect(screen.getByText("Failed:")).toBeInTheDocument();
+    expect(screen.getByText(/bad@x.io: bounced/)).toBeInTheDocument();
+  });
 });

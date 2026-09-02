@@ -26,4 +26,16 @@ public interface ICampaignService
     // terminal once their EndDate passes and moves a Campaign to Ended once every
     // targeted channel is terminal. Returns the ids of campaigns moved to Ended.
     Task<IReadOnlyList<Guid>> SweepCampaignLifecycleAsync(CancellationToken cancellationToken);
+
+    // Active Email campaigns due to send now (NextRunAt <= now, not yet terminal),
+    // with recipients resolved from the launch snapshot, deduped and opt-out-filtered,
+    // plus the Email subject/body. Polled by api-oos's dispatch sweep (ADR 0008).
+    Task<IReadOnlyList<DueCampaignDto>> GetDueEmailCampaignsAsync(CancellationToken cancellationToken);
+
+    // Records the outcome of a bulk Email dispatch reported by api-oos, marks the
+    // Email channel terminal (feeds #161 aggregation), and clears NextRunAt.
+    Task<bool> RecordDispatchResultAsync(
+        Guid id,
+        CampaignDispatchResultDto result,
+        CancellationToken cancellationToken);
 }

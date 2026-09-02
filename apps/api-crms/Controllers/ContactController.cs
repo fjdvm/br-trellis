@@ -63,4 +63,17 @@ public sealed class ContactController(
         var deleted = await contactService.DeleteContactAsync(id, cancellationToken);
         return deleted ? NoContent() : NotFound();
     }
+
+    // Marketing unsubscribe target (#162). Called server-to-server by api-oos when
+    // a shopper clicks the unsubscribe link in a Campaign email. Unauthenticated,
+    // idempotent — succeeds even when no matching Contact exists.
+    [Microsoft.AspNetCore.Authorization.AllowAnonymous]
+    [HttpPost("opt-out")]
+    public async Task<IActionResult> OptOut(
+        MarketingOptOutDto input,
+        CancellationToken cancellationToken)
+    {
+        await contactService.SetMarketingOptOutByEmailAsync(input.Email, cancellationToken);
+        return NoContent();
+    }
 }

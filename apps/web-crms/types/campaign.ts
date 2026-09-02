@@ -41,6 +41,7 @@ export interface Campaign extends CampaignListItem {
   channelContents: CampaignChannelContent[];
   createdById?: string | null;
   schedule?: CampaignSchedule | null;
+  dispatchResult?: CampaignDispatchResult | null;
 }
 
 export interface CampaignChannelContentInput {
@@ -94,7 +95,7 @@ export interface CampaignDispatchResult {
   sentCount: number;
   failedCount: number;
   errors: string[];
-  message: string;
+  message?: string;
 }
 
 

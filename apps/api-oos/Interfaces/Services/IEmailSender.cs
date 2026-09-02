@@ -17,4 +17,18 @@ public interface IEmailSender
         string fullName,
         string confirmationUrl,
         CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Sends the same marketing email body to many recipients, one message per
+    /// recipient over the existing Brevo SMTP relay. Individual failures are
+    /// recorded (not retried) and accumulated into the returned result.
+    /// </summary>
+    Task<BulkEmailResult> SendBulkAsync(
+        IReadOnlyList<string> recipients,
+        string subject,
+        string htmlBody,
+        CancellationToken cancellationToken = default);
 }
+
+/// <summary>Outcome of a bulk send: how many succeeded/failed and the errors.</summary>
+public sealed record BulkEmailResult(int SentCount, int FailedCount, IReadOnlyList<string> Errors);
