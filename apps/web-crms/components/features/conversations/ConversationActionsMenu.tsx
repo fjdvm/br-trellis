@@ -167,7 +167,7 @@ export function ConversationActionsMenu({
           if (!open) setPendingAction(null);
         }}
       >
-        <DialogContent className="border-0 sm:max-w-[440px]">
+        <DialogContent className="border border-border sm:max-w-[440px]">
           {copy && (
             <>
               <DialogHeader>
