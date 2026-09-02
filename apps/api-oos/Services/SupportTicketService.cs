@@ -35,7 +35,9 @@ public sealed class SupportTicketService(
             throw new AppException("Your account has no email on file; cannot create a ticket.");
         }
 
-        // A new conversation per submitted ticket. api-crms keys the Ticket on this.
+        // A new conversation per submitted ticket. api-crms adopts this Guid as the
+        // Ticket's own id (ADR 0006 Option 1), so the value returned to the shopper is
+        // the canonical CRM Ticket id — the single key used for re-entry and reads.
         var conversationId = Guid.NewGuid().ToString();
 
         await ticketWebhookClient.SendAsync(new TicketWebhookEvent

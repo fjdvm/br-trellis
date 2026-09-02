@@ -9,10 +9,12 @@ using Microsoft.AspNetCore.Mvc;
 
 /// <summary>
 /// Issues a chat conversation id for an authenticated customer starting a live-agent
-/// chat session. Previously created a ticket in SentraCX; now the conversation is
-/// created lazily in api-crms via the Tickets webhook when the first message is sent
-/// through the chat hub. This endpoint just mints the conversation id the browser
-/// uses to join the hub group.
+/// chat session. The conversation is created lazily in api-crms via the Tickets webhook
+/// when the first message is sent through the chat hub; this endpoint mints the
+/// conversation key the browser uses to join the hub group and to send that first
+/// message. Per ADR 0006 (Option 1) that key is a Guid, and api-crms ingestion adopts
+/// it as the new Ticket's own id — so this single key is the CRM Ticket id end to end,
+/// with no throwaway conversationId and no response from api-crms.
 /// </summary>
 [Authorize(AuthenticationSchemes = AuthSchemes.Customer)]
 [ApiController]
@@ -26,7 +28,9 @@ public class SupportWebhookController : ControllerBase
         // Handshake when messages are sent through the hub).
         _ = GetCurrentUserId();
 
-        // Deterministic-enough unique conversation id for this chat session.
+        // The conversation key is a Guid; api-crms ingestion adopts it as the Ticket's
+        // own id (ADR 0006 Option 1), so this is the canonical Ticket id — not a
+        // throwaway conversationId. api-oos knows it up front, with no api-crms reply.
         var conversationId = Guid.NewGuid().ToString();
         return Ok(new SupportTicketResponseDto { TicketId = conversationId });
     }

@@ -63,6 +63,10 @@ public sealed class SupportTicketServiceTests : IDisposable
             user.Id, new CreateSupportTicketRequest("Where is my order?", "Inquiry", "It's late."));
 
         result.TicketId.Should().NotBeNullOrWhiteSpace();
+        // #149 / ADR 0006 Option 1: the returned id is the conversation key api-oos
+        // mints, relayed as the ConversationId and adopted by api-crms as the Ticket's
+        // own id — so it must be a well-formed Guid and match what was sent.
+        Guid.TryParse(result.TicketId, out _).Should().BeTrue();
 
         _webhook.Sent.Should().ContainSingle();
         var evt = _webhook.Sent.Single();
