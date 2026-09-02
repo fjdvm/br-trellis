@@ -1,21 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import {
-  MoreVertical,
-  ChevronRight,
-  CheckCircle2,
-  XCircle,
-  UserMinus,
-  Loader2,
-} from "lucide-react";
+import { MoreVertical, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
@@ -103,13 +94,6 @@ function availableActions(status: TicketStatus): ConversationAction[] {
   return actions;
 }
 
-const ACTION_ICON: Record<ConversationAction, typeof ChevronRight> = {
-  ongoing: ChevronRight,
-  complete: CheckCircle2,
-  cancel: XCircle,
-  unclaim: UserMinus,
-};
-
 /**
  * The conversation header's 3-dot lifecycle menu. Opening it lists the actions
  * valid for the ticket's current status; picking one opens a confirmation modal
@@ -157,29 +141,23 @@ export function ConversationActionsMenu({
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="min-w-[200px]">
-          <DropdownMenuLabel>Manage conversation</DropdownMenuLabel>
-          <DropdownMenuSeparator />
-          {actions.map((action) => {
-            const Icon = ACTION_ICON[action];
-            return (
-              <DropdownMenuItem
-                key={action}
-                className={
-                  action === "cancel"
-                    ? "text-destructive focus:text-destructive"
-                    : undefined
-                }
-                onSelect={(event) => {
-                  // Keep the modal open cleanly after the menu closes.
-                  event.preventDefault();
-                  setPendingAction(action);
-                }}
-              >
-                <Icon className="h-4 w-4" />
-                <span>{ACTION_COPY[action].label}</span>
-              </DropdownMenuItem>
-            );
-          })}
+          {actions.map((action) => (
+            <DropdownMenuItem
+              key={action}
+              className={
+                action === "cancel"
+                  ? "text-base font-normal text-destructive focus:text-destructive"
+                  : "text-base font-normal"
+              }
+              onSelect={(event) => {
+                // Keep the modal open cleanly after the menu closes.
+                event.preventDefault();
+                setPendingAction(action);
+              }}
+            >
+              <span>{ACTION_COPY[action].label}</span>
+            </DropdownMenuItem>
+          ))}
         </DropdownMenuContent>
       </DropdownMenu>
 
@@ -189,11 +167,13 @@ export function ConversationActionsMenu({
           if (!open) setPendingAction(null);
         }}
       >
-        <DialogContent className="sm:max-w-[440px]">
+        <DialogContent className="border-0 sm:max-w-[440px]">
           {copy && (
             <>
               <DialogHeader>
-                <DialogTitle>{copy.title}</DialogTitle>
+                <DialogTitle className="text-xl font-medium">
+                  {copy.title}
+                </DialogTitle>
                 <DialogDescription>{copy.description}</DialogDescription>
               </DialogHeader>
               <DialogFooter>
