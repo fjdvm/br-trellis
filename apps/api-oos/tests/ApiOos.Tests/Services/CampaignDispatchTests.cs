@@ -60,6 +60,7 @@ public sealed class CampaignDispatchTests
         public List<DueCampaign> Due { get; init; } = new();
         public List<(Guid Id, CampaignDispatchReport Report)> Reports { get; } = new();
         public List<string> OptOuts { get; } = new();
+        public List<(Guid Id, CampaignEventReport Report)> Events { get; } = new();
 
         public Task<IReadOnlyList<DueCampaign>> GetDueCampaignsAsync(CancellationToken ct = default)
             => Task.FromResult<IReadOnlyList<DueCampaign>>(Due);
@@ -73,6 +74,12 @@ public sealed class CampaignDispatchTests
         public Task ReportOptOutAsync(string email, CancellationToken ct = default)
         {
             OptOuts.Add(email);
+            return Task.CompletedTask;
+        }
+
+        public Task ReportEventAsync(Guid campaignId, CampaignEventReport report, CancellationToken ct = default)
+        {
+            Events.Add((campaignId, report));
             return Task.CompletedTask;
         }
     }

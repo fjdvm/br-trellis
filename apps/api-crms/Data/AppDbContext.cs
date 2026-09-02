@@ -58,6 +58,8 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
 
     public DbSet<CampaignChannelContent> CampaignChannelContents => Set<CampaignChannelContent>();
 
+    public DbSet<CampaignEvent> CampaignEvents => Set<CampaignEvent>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         ConfigureContact(modelBuilder);
@@ -87,6 +89,7 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
         ConfigureTemplate(modelBuilder);
         ConfigureCampaign(modelBuilder);
         ConfigureCampaignChannelContent(modelBuilder);
+        ConfigureCampaignEvent(modelBuilder);
     }
 
     private static void ConfigureContact(ModelBuilder modelBuilder)
@@ -695,6 +698,29 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
             content.Property(e => e.CtaUrl).HasColumnName("cta_url");
             content.Property(e => e.Dismissible).HasColumnName("dismissible");
             content.HasIndex(e => new { e.CampaignId, e.Channel }).IsUnique();
+        });
+    }
+
+    private static void ConfigureCampaignEvent(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<CampaignEvent>(evt =>
+        {
+            evt.ToTable("campaign_event");
+            evt.HasKey(e => e.Id);
+            evt.Property(e => e.Id).HasColumnName("id");
+            evt.Property(e => e.CampaignId).HasColumnName("campaign_id");
+            evt.Property(e => e.EventType)
+                .HasColumnName("event_type")
+                .HasConversion<string>();
+            evt.Property(e => e.Email).HasColumnName("email");
+            evt.Property(e => e.Url).HasColumnName("url");
+            evt.Property(e => e.OccurredAt).HasColumnName("occurred_at");
+            evt.HasIndex(e => e.CampaignId);
+
+            evt.HasOne(e => e.Campaign)
+                .WithMany()
+                .HasForeignKey(e => e.CampaignId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
     }
 }

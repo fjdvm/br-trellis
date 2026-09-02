@@ -12,7 +12,7 @@ jest.mock("next/navigation", () => ({
 jest.mock("@/hooks/useCampaign", () => ({ useCampaign: jest.fn() }));
 jest.mock("@/hooks/useSegments", () => ({ useSegments: jest.fn(() => ({ data: [], isLoading: false })) }));
 jest.mock("@/lib/api/crm-client", () => ({
-  crmClient: { campaigns: { updateStatus: jest.fn() } },
+  crmClient: { campaigns: { updateStatus: jest.fn(), getAnalytics: jest.fn() } },
 }));
 
 const campaign: Campaign = {
@@ -37,6 +37,7 @@ const campaign: Campaign = {
 describe("CampaignDetail", () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    (crmClient.campaigns.getAnalytics as jest.Mock).mockResolvedValue(null);
   });
 
   it("shows the campaign title, status and channels", () => {
@@ -108,5 +109,34 @@ describe("CampaignDetail", () => {
     expect(screen.getByText("Sent:")).toBeInTheDocument();
     expect(screen.getByText("Failed:")).toBeInTheDocument();
     expect(screen.getByText(/bad@x.io: bounced/)).toBeInTheDocument();
+  });
+
+  it("shows open/click analytics for a dispatched Email campaign", async () => {
+    (useCampaign as jest.Mock).mockReturnValue({
+      data: {
+        ...campaign,
+        status: "Active",
+        dispatchResult: { totalRecipients: 4, sentCount: 4, failedCount: 0, errors: [] },
+      },
+      isLoading: false,
+      error: null,
+      refetch: jest.fn(),
+    });
+    (crmClient.campaigns.getAnalytics as jest.Mock).mockResolvedValue({
+      sentCount: 4,
+      openedCount: 2,
+      clickedCount: 1,
+      openRate: 50,
+      clickRate: 25,
+      engagementByDay: [],
+      linkPerformance: [{ destinationUrl: "https://shop/sale", totalClicks: 1, uniqueClicks: 1, shareOfTotalClicks: 100 }],
+    });
+
+    render(<CampaignDetail id="c1" />);
+
+    expect(await screen.findByText(/analytics/i)).toBeInTheDocument();
+    expect(screen.getByText("50%")).toBeInTheDocument(); // open rate
+    expect(screen.getByText("25%")).toBeInTheDocument(); // click rate
+    expect(screen.getByText("https://shop/sale")).toBeInTheDocument();
   });
 });

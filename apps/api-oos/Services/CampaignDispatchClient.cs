@@ -68,4 +68,17 @@ public sealed class CampaignDispatchClient(
             logger.LogWarning("api-crms rejected opt-out for {Email}: {Status}", email, (int)response.StatusCode);
         }
     }
+
+    public async Task ReportEventAsync(
+        Guid campaignId, CampaignEventReport report, CancellationToken cancellationToken = default)
+    {
+        var client = httpClientFactory.CreateClient(EcommerceWebhookClient.HttpClientName);
+        using var response = await client.PostAsJsonAsync(
+            $"api/v1/campaigns/{campaignId}/events", report, cancellationToken);
+        if (!response.IsSuccessStatusCode)
+        {
+            logger.LogWarning(
+                "api-crms rejected event for {CampaignId}: {Status}", campaignId, (int)response.StatusCode);
+        }
+    }
 }

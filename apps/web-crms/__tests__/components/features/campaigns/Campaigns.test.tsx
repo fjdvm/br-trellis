@@ -3,12 +3,16 @@ import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { Campaigns } from "@/components/features/campaigns/Campaigns";
 import { useCampaigns } from "@/hooks/useCampaigns";
+import { crmClient } from "@/lib/api/crm-client";
 import type { CampaignListItem } from "@/types/campaign";
 
 jest.mock("next/navigation", () => ({
   useRouter: () => ({ push: jest.fn() }),
 }));
 jest.mock("@/hooks/useCampaigns", () => ({ useCampaigns: jest.fn() }));
+jest.mock("@/lib/api/crm-client", () => ({
+  crmClient: { campaigns: { getEngagementMetrics: jest.fn() } },
+}));
 
 const draft: CampaignListItem = {
   id: "c-draft",
@@ -34,6 +38,7 @@ describe("Campaigns list", () => {
       error: null,
       refetch: jest.fn(),
     });
+    (crmClient.campaigns.getEngagementMetrics as jest.Mock).mockResolvedValue([]);
   });
 
   it("renders the real lifecycle status tabs (All/Draft/Active/Ended) and no legacy tabs", () => {
@@ -75,5 +80,20 @@ describe("Campaigns list", () => {
     });
     render(<Campaigns />);
     expect(screen.getByText(/no campaigns/i)).toBeInTheDocument();
+  });
+
+  it("shows Open Rate / Click Rate columns and fills them from engagement metrics", async () => {
+    (crmClient.campaigns.getEngagementMetrics as jest.Mock).mockResolvedValue([
+      { campaignId: "c-draft", sentCount: 4, openedCount: 2, clickedCount: 1, openRate: 50, clickRate: 25 },
+    ]);
+    render(<Campaigns />);
+
+    expect(screen.getByRole("columnheader", { name: /open rate/i })).toBeInTheDocument();
+    expect(screen.getByRole("columnheader", { name: /click rate/i })).toBeInTheDocument();
+    await waitFor(() =>
+      expect(crmClient.campaigns.getEngagementMetrics).toHaveBeenCalledWith(["c-draft", "c-active"])
+    );
+    expect(await screen.findByText("50%")).toBeInTheDocument();
+    expect(screen.getByText("25%")).toBeInTheDocument();
   });
 });

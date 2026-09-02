@@ -45,4 +45,16 @@ public interface ICampaignService
     Task<ActiveChannelContentDto?> GetActiveChannelContentAsync(
         string channel,
         CancellationToken cancellationToken);
+
+    // Records an open/click engagement event relayed from Brevo via api-oos (#164).
+    // Returns false if the campaign doesn't exist.
+    Task<bool> RecordEventAsync(Guid campaignId, CampaignEventDto input, CancellationToken cancellationToken);
+
+    // Full open/click/engagement analytics for one Campaign.
+    Task<CampaignAnalyticsDto?> GetAnalyticsAsync(Guid campaignId, CancellationToken cancellationToken);
+
+    // Lightweight engagement metrics for a set of campaigns (Campaigns list).
+    Task<IReadOnlyList<CampaignEngagementMetricsDto>> GetEngagementMetricsAsync(
+        IReadOnlyList<Guid> ids,
+        CancellationToken cancellationToken);
 }

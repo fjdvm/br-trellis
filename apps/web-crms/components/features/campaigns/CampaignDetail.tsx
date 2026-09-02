@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Pencil, Rocket } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -11,7 +11,7 @@ import { CampaignStatusBadge } from "@/components/features/campaigns/CampaignSta
 import { crmClient } from "@/lib/api/crm-client";
 import { useCampaign } from "@/hooks/useCampaign";
 import { useSegments } from "@/hooks/useSegments";
-import type { CampaignChannelContent } from "@/types/campaign";
+import type { CampaignAnalytics, CampaignChannelContent } from "@/types/campaign";
 
 export function CampaignDetail({ id }: { id: string }) {
   const router = useRouter();
@@ -19,6 +19,24 @@ export function CampaignDetail({ id }: { id: string }) {
   const { data: segments } = useSegments();
   const [launching, setLaunching] = useState(false);
   const [launchError, setLaunchError] = useState<string | null>(null);
+  const [analytics, setAnalytics] = useState<CampaignAnalytics | null>(null);
+
+  const hasDispatch = Boolean(campaign?.dispatchResult);
+
+  useEffect(() => {
+    if (!campaign || !campaign.channels.includes("Email") || !hasDispatch) {
+      setAnalytics(null);
+      return;
+    }
+    let mounted = true;
+    crmClient.campaigns
+      .getAnalytics(campaign.id)
+      .then((a) => mounted && setAnalytics(a))
+      .catch(() => mounted && setAnalytics(null));
+    return () => {
+      mounted = false;
+    };
+  }, [campaign, hasDispatch]);
 
   if (isLoading) {
     return (
@@ -134,6 +152,49 @@ export function CampaignDetail({ id }: { id: string }) {
                   <li key={i}>{e}</li>
                 ))}
               </ul>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {analytics && (
+        <Card className="shadow-none border-border">
+          <CardHeader className="p-lg pb-md">
+            <CardTitle className="text-title-lg font-bold">Analytics</CardTitle>
+          </CardHeader>
+          <CardContent className="p-lg pt-0 space-y-md text-base">
+            <div className="flex flex-wrap gap-lg">
+              <div>
+                <span className="text-muted-foreground">Open Rate: </span>
+                {analytics.openRate}%
+              </div>
+              <div>
+                <span className="text-muted-foreground">Click Rate: </span>
+                {analytics.clickRate}%
+              </div>
+              <div>
+                <span className="text-muted-foreground">Opened: </span>
+                {analytics.openedCount}
+              </div>
+              <div>
+                <span className="text-muted-foreground">Clicked: </span>
+                {analytics.clickedCount}
+              </div>
+            </div>
+            {analytics.linkPerformance.length > 0 && (
+              <div>
+                <p className="text-sm font-medium text-muted-foreground mb-1">Link performance</p>
+                <ul className="text-sm space-y-1">
+                  {analytics.linkPerformance.map((l) => (
+                    <li key={l.destinationUrl} className="flex justify-between gap-4">
+                      <span className="truncate">{l.destinationUrl}</span>
+                      <span className="text-muted-foreground whitespace-nowrap">
+                        {l.totalClicks} clicks ({l.shareOfTotalClicks}%)
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             )}
           </CardContent>
         </Card>

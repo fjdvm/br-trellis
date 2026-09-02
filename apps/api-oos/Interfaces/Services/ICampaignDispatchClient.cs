@@ -16,7 +16,17 @@ public interface ICampaignDispatchClient
 
     /// <summary>Relays a shopper's unsubscribe to api-crms (sets the opt-out flag).</summary>
     Task ReportOptOutAsync(string email, CancellationToken cancellationToken = default);
+
+    /// <summary>Relays a parsed Brevo open/click event to api-crms (#164).</summary>
+    Task ReportEventAsync(Guid campaignId, CampaignEventReport report, CancellationToken cancellationToken = default);
 }
+
+/// <summary>A parsed Brevo engagement event relayed to api-crms.</summary>
+public sealed record CampaignEventReport(
+    string EventType,
+    string Email,
+    string? Url,
+    DateTimeOffset? OccurredAt);
 
 /// <summary>A due Email campaign as returned by api-crms (recipients pre-resolved).</summary>
 public sealed record DueCampaign(

@@ -134,6 +134,44 @@ public sealed class CampaignController(ICampaignService campaignService) : Contr
         return content is null ? NoContent() : Ok(content);
     }
 
+    // --- Analytics (#164) ---
+
+    // Open/click event relayed from Brevo via api-oos, attributed to this Campaign.
+    [HttpPost("{id:guid}/events")]
+    [AllowAnonymous]
+    public async Task<IActionResult> RecordEvent(
+        Guid id,
+        CampaignEventDto input,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var recorded = await campaignService.RecordEventAsync(id, input, cancellationToken);
+            return recorded ? NoContent() : NotFound();
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+    }
+
+    [HttpGet("{id:guid}/analytics")]
+    public async Task<ActionResult<CampaignAnalyticsDto>> GetAnalytics(
+        Guid id,
+        CancellationToken cancellationToken)
+    {
+        var analytics = await campaignService.GetAnalyticsAsync(id, cancellationToken);
+        return analytics is null ? NotFound() : Ok(analytics);
+    }
+
+    [HttpGet("metrics")]
+    public async Task<ActionResult<IReadOnlyList<CampaignEngagementMetricsDto>>> GetMetrics(
+        [FromQuery(Name = "ids")] Guid[]? ids,
+        CancellationToken cancellationToken)
+    {
+        return Ok(await campaignService.GetEngagementMetricsAsync(ids ?? Array.Empty<Guid>(), cancellationToken));
+    }
+
     private string? CurrentUserId() =>
         User?.FindFirst(ClaimTypes.NameIdentifier)?.Value
         ?? User?.FindFirst("sub")?.Value;

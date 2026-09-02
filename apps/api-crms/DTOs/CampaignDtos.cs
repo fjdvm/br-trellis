@@ -106,3 +106,39 @@ public sealed record ActiveChannelContentDto(
     string? CtaText,
     string? CtaUrl,
     bool Dismissible);
+
+// --- Analytics (#164) ---
+
+// An open/click event relayed from Brevo via api-oos, attributed to a Campaign.
+public sealed record CampaignEventDto(
+    string EventType,
+    string Email,
+    string? Url,
+    DateTimeOffset? OccurredAt);
+
+// Lightweight per-Campaign engagement summary (Campaigns list).
+public sealed record CampaignEngagementMetricsDto(
+    Guid CampaignId,
+    int SentCount,
+    int OpenedCount,
+    int ClickedCount,
+    double OpenRate,
+    double ClickRate);
+
+public sealed record EngagementByDayDto(string Date, int Opens, int Clicks);
+
+public sealed record LinkPerformanceDto(
+    string DestinationUrl,
+    int TotalClicks,
+    int UniqueClicks,
+    double ShareOfTotalClicks);
+
+// Full analytics for a single Campaign (CampaignDetail).
+public sealed record CampaignAnalyticsDto(
+    int SentCount,
+    int OpenedCount,
+    int ClickedCount,
+    double OpenRate,
+    double ClickRate,
+    IReadOnlyList<EngagementByDayDto> EngagementByDay,
+    IReadOnlyList<LinkPerformanceDto> LinkPerformance);
