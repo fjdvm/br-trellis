@@ -2,9 +2,16 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Inbox as InboxIcon, ListFilter, MessagesSquare } from "lucide-react";
+import { Inbox as InboxIcon, MessagesSquare } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { crmClient } from "@/lib/api/crm-client";
 import { useCurrentAgentId } from "@/hooks/useCurrentAgentId";
 import { useRefetchOnFocus } from "@/hooks/useRefetchOnFocus";
@@ -14,6 +21,24 @@ import { STATUS_BADGE_VARIANT, isActiveStatus, isTerminalStatus } from "@/lib/ti
 import { formatConversationTime } from "@/lib/format-conversation-time";
 import { formatName, formatEmail } from "@/lib/format-display";
 import type { TicketListItem } from "@/types/ticket-list";
+
+/**
+ * The Inbox's status filter. The worklist only ever contains active
+ * (Claimed/Ongoing) conversations under the Visibility Rule — terminal
+ * (Completed/Canceled) tickets are never shown here — so the filter narrows
+ * *within* the active set:
+ *  - `Active` (the default): both Claimed and Ongoing.
+ *  - `Claimed`: only Claimed.
+ *  - `Ongoing`: only Ongoing.
+ */
+type InboxStatusFilter = "Active" | "Claimed" | "Ongoing";
+
+/** Human labels for the status filter dropdown, in display order. */
+const INBOX_STATUS_FILTER_LABELS: Record<InboxStatusFilter, string> = {
+  Active: "Active (Claimed & Ongoing)",
+  Claimed: "Claimed",
+  Ongoing: "Ongoing",
+};
 
 interface ConversationsInboxProps {
   /**
@@ -58,7 +83,9 @@ function conversationInitials(ticket: TicketListItem): string {
  * (resolved via the shared `useCurrentAgentId` hook, exactly as My Assigned and
  * Claim resolve identity) AND its Status is Claimed or Ongoing. Unclaimed
  * tickets, tickets owned by someone else, and terminal (Completed/Canceled)
- * tickets never appear.
+ * tickets never appear. A header status filter narrows within the active set;
+ * it defaults to "Active" so the inbox opens showing every Claimed/Ongoing
+ * conversation and hiding all terminal ones.
  *
  * The list loads once on mount (no background poll, matching the Tickets/My
  * Assigned lists); only the opened conversation pane polls, inside the reused
@@ -71,6 +98,10 @@ export function ConversationsInbox({ selectedTicketId }: ConversationsInboxProps
   const [tickets, setTickets] = useState<TicketListItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  // The active-status filter. Defaults to "Active" so the worklist opens
+  // showing every Claimed/Ongoing conversation and hiding all terminal
+  // (Completed/Canceled) ones; narrowing to Claimed or Ongoing filters within.
+  const [statusFilter, setStatusFilter] = useState<InboxStatusFilter>("Active");
 
   const loadConversations = useCallback(async (options?: { background?: boolean }) => {
     // Skip the full-page loading flip on a focus-triggered background refresh so
@@ -139,6 +170,10 @@ export function ConversationsInbox({ selectedTicketId }: ConversationsInboxProps
    * The Visibility Rule: my active conversations, most-recently-updated first.
    * `currentAgentId === null` (no session) matches nothing, so an
    * unauthenticated view shows an empty worklist rather than everyone's tickets.
+   *
+   * Terminal (Completed/Canceled) tickets are always excluded here via
+   * `isActiveStatus`; the `statusFilter` then narrows within the active set
+   * (its default, "Active", keeps both Claimed and Ongoing).
    */
   const conversations = useMemo(() => {
     return tickets
@@ -146,13 +181,14 @@ export function ConversationsInbox({ selectedTicketId }: ConversationsInboxProps
         (t) =>
           t.assignedToId !== null &&
           t.assignedToId === currentAgentId &&
-          isActiveStatus(t.status)
+          isActiveStatus(t.status) &&
+          (statusFilter === "Active" || t.status === statusFilter)
       )
       .sort(
         (a, b) =>
           new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
       );
-  }, [tickets, currentAgentId]);
+  }, [tickets, currentAgentId, statusFilter]);
 
   /**
    * The open conversation's ticket. Prefer the row already in the loaded list
@@ -171,18 +207,33 @@ export function ConversationsInbox({ selectedTicketId }: ConversationsInboxProps
       {/* Left panel: the conversation list (~30%, clamped 320–400px). */}
       <div className="w-[30%] min-w-[320px] max-w-[400px] border-r border-border flex flex-col bg-background">
         {/* Panel header. */}
-        <div className="p-md border-b border-border flex justify-between items-center shrink-0">
+        <div className="p-md border-b border-border flex justify-between items-center gap-2 shrink-0">
           <h1 className="text-title-lg font-bold flex items-center gap-2">
             <InboxIcon className="w-5 h-5" />
             Inbox
           </h1>
-          <button
-            type="button"
-            aria-label="Filter conversations"
-            className="p-1 rounded text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+          <Select
+            value={statusFilter}
+            onValueChange={(value) =>
+              setStatusFilter(value as InboxStatusFilter)
+            }
           >
-            <ListFilter className="w-4 h-4" />
-          </button>
+            <SelectTrigger
+              className="h-8 w-auto min-w-[130px] text-sm"
+              aria-label="Filter conversations by status"
+            >
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {(
+                Object.keys(INBOX_STATUS_FILTER_LABELS) as InboxStatusFilter[]
+              ).map((key) => (
+                <SelectItem key={key} value={key}>
+                  {INBOX_STATUS_FILTER_LABELS[key]}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
         {/* Conversation list body. */}

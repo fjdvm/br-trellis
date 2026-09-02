@@ -10,6 +10,16 @@ beforeAll(() => {
   if (!Element.prototype.scrollIntoView) {
     Element.prototype.scrollIntoView = () => {};
   }
+  // Radix Select relies on pointer-capture APIs that jsdom does not implement.
+  if (!Element.prototype.hasPointerCapture) {
+    Element.prototype.hasPointerCapture = () => false;
+  }
+  if (!Element.prototype.setPointerCapture) {
+    Element.prototype.setPointerCapture = () => {};
+  }
+  if (!Element.prototype.releasePointerCapture) {
+    Element.prototype.releasePointerCapture = () => {};
+  }
 });
 
 const mockPush = jest.fn();
@@ -153,6 +163,93 @@ describe("ConversationsInbox — Visibility Rule", () => {
     const items = list.querySelectorAll("li");
     expect(items[0]).toHaveTextContent("Newer Contact");
     expect(items[1]).toHaveTextContent("Older Contact");
+  });
+});
+
+describe("ConversationsInbox — status filter", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockUser = {
+      id: "auth|amelia",
+      username: "amelia",
+      name: "amelia ward",
+      email: "amelia.ward@trellis.io",
+    };
+    mocked.listMessages.mockResolvedValue([]);
+  });
+
+  it("defaults to the Active filter, showing both Claimed and Ongoing", async () => {
+    mocked.list.mockResolvedValue([
+      makeTicket({ id: "c", subject: "Claimed one", status: "Claimed", contact: { id: "c1", name: "claimed contact", email: "cl@x.com" } }),
+      makeTicket({ id: "o", subject: "Ongoing one", status: "Ongoing", contact: { id: "c2", name: "ongoing contact", email: "on@x.com" } }),
+    ]);
+
+    render(<ConversationsInbox />);
+
+    // Default filter shows the whole active set.
+    expect(await screen.findByText("Claimed Contact")).toBeInTheDocument();
+    expect(screen.getByText("Ongoing Contact")).toBeInTheDocument();
+    // The trigger reflects the default "Active" selection.
+    expect(
+      screen.getByLabelText("Filter conversations by status")
+    ).toHaveTextContent("Active");
+  });
+
+  it("narrows to Claimed only when that filter is chosen", async () => {
+    mocked.list.mockResolvedValue([
+      makeTicket({ id: "c", subject: "Claimed one", status: "Claimed", contact: { id: "c1", name: "claimed contact", email: "cl@x.com" } }),
+      makeTicket({ id: "o", subject: "Ongoing one", status: "Ongoing", contact: { id: "c2", name: "ongoing contact", email: "on@x.com" } }),
+    ]);
+    const user = userEvent.setup();
+
+    render(<ConversationsInbox />);
+    await screen.findByText("Claimed Contact");
+
+    await user.click(screen.getByLabelText("Filter conversations by status"));
+    await user.click(await screen.findByRole("option", { name: "Claimed" }));
+
+    expect(screen.getByText("Claimed Contact")).toBeInTheDocument();
+    expect(screen.queryByText("Ongoing Contact")).not.toBeInTheDocument();
+  });
+
+  it("narrows to Ongoing only when that filter is chosen", async () => {
+    mocked.list.mockResolvedValue([
+      makeTicket({ id: "c", subject: "Claimed one", status: "Claimed", contact: { id: "c1", name: "claimed contact", email: "cl@x.com" } }),
+      makeTicket({ id: "o", subject: "Ongoing one", status: "Ongoing", contact: { id: "c2", name: "ongoing contact", email: "on@x.com" } }),
+    ]);
+    const user = userEvent.setup();
+
+    render(<ConversationsInbox />);
+    await screen.findByText("Ongoing Contact");
+
+    await user.click(screen.getByLabelText("Filter conversations by status"));
+    await user.click(await screen.findByRole("option", { name: "Ongoing" }));
+
+    expect(screen.getByText("Ongoing Contact")).toBeInTheDocument();
+    expect(screen.queryByText("Claimed Contact")).not.toBeInTheDocument();
+  });
+
+  it("never shows terminal tickets regardless of the chosen filter", async () => {
+    mocked.list.mockResolvedValue([
+      makeTicket({ id: "c", subject: "Claimed one", status: "Claimed", contact: { id: "c1", name: "claimed contact", email: "cl@x.com" } }),
+      makeTicket({ id: "done", subject: "Done", status: "Completed", contact: { id: "c2", name: "done contact", email: "d@x.com" } }),
+      makeTicket({ id: "cancel", subject: "Canceled", status: "Canceled", contact: { id: "c3", name: "cancel contact", email: "x@x.com" } }),
+    ]);
+    const user = userEvent.setup();
+
+    render(<ConversationsInbox />);
+
+    // Default (Active): terminal tickets hidden.
+    expect(await screen.findByText("Claimed Contact")).toBeInTheDocument();
+    expect(screen.queryByText("Done Contact")).not.toBeInTheDocument();
+    expect(screen.queryByText("Cancel Contact")).not.toBeInTheDocument();
+
+    // Narrowing to Claimed still hides terminal tickets.
+    await user.click(screen.getByLabelText("Filter conversations by status"));
+    await user.click(await screen.findByRole("option", { name: "Claimed" }));
+    expect(screen.getByText("Claimed Contact")).toBeInTheDocument();
+    expect(screen.queryByText("Done Contact")).not.toBeInTheDocument();
+    expect(screen.queryByText("Cancel Contact")).not.toBeInTheDocument();
   });
 });
 
