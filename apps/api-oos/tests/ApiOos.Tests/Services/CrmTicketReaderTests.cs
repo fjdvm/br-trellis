@@ -74,16 +74,17 @@ public sealed class CrmTicketReaderTests
     [Fact]
     public async Task GetTicketsByEmail_sets_HasStaffReplied_from_the_tickets_messages()
     {
-        // The caller's ticket (11111...) has a Staff message; another ticket has none.
-        var messages = new Dictionary<string, IReadOnlyList<CrmMessage>>
+        // The caller's ticket (11111...) has a Staff message.
+        var messagesByTicket = new Dictionary<string, string>
         {
-            ["11111111-1111-1111-1111-111111111111"] = new[]
-            {
-                new CrmMessage { Id = "m1", SenderType = "Contact", Content = "hi", SentAt = DateTimeOffset.UtcNow },
-                new CrmMessage { Id = "m2", SenderType = "Staff", Content = "reply", SentAt = DateTimeOffset.UtcNow },
-            },
+            ["11111111-1111-1111-1111-111111111111"] = """
+            [
+              { "id": "m1", "senderType": "Contact", "content": "hi", "sentAt": "2026-09-01T10:00:00+00:00" },
+              { "id": "m2", "senderType": "Staff", "content": "reply", "sentAt": "2026-09-01T10:05:00+00:00" }
+            ]
+            """,
         };
-        var reader = BuildReader(HttpStatusCode.OK, CrmJson, new StubMessageReader(messages));
+        var reader = BuildReader(HttpStatusCode.OK, CrmJson, messagesByTicket);
 
         var ticket = (await reader.GetTicketsByEmailAsync("me@example.com")).Single();
 
@@ -93,14 +94,15 @@ public sealed class CrmTicketReaderTests
     [Fact]
     public async Task GetTicketsByEmail_HasStaffReplied_is_false_when_only_contact_messages()
     {
-        var messages = new Dictionary<string, IReadOnlyList<CrmMessage>>
+        var messagesByTicket = new Dictionary<string, string>
         {
-            ["11111111-1111-1111-1111-111111111111"] = new[]
-            {
-                new CrmMessage { Id = "m1", SenderType = "Contact", Content = "hi", SentAt = DateTimeOffset.UtcNow },
-            },
+            ["11111111-1111-1111-1111-111111111111"] = """
+            [
+              { "id": "m1", "senderType": "Contact", "content": "hi", "sentAt": "2026-09-01T10:00:00+00:00" }
+            ]
+            """,
         };
-        var reader = BuildReader(HttpStatusCode.OK, CrmJson, new StubMessageReader(messages));
+        var reader = BuildReader(HttpStatusCode.OK, CrmJson, messagesByTicket);
 
         var ticket = (await reader.GetTicketsByEmailAsync("me@example.com")).Single();
 
@@ -108,15 +110,13 @@ public sealed class CrmTicketReaderTests
     }
 
     private static ISupportTicketReader BuildReader(
-        HttpStatusCode status, string body, ICrmMessageReader? messageReader = null)
+        HttpStatusCode ticketListStatus, string ticketListBody,
+        Dictionary<string, string>? messagesByTicket = null)
     {
-        var handler = new StubHandler(status, body);
+        var handler = new RoutingHandler(ticketListStatus, ticketListBody, messagesByTicket ?? new());
         var client = new HttpClient(handler) { BaseAddress = new Uri("http://localhost:5035/") };
         var factory = new StubHttpClientFactory(client);
-        return new CrmTicketReader(
-            factory,
-            messageReader ?? new StubMessageReader(new Dictionary<string, IReadOnlyList<CrmMessage>>()),
-            NullLogger<CrmTicketReader>.Instance);
+        return new CrmTicketReader(factory, NullLogger<CrmTicketReader>.Instance);
     }
 
     private sealed class StubHttpClientFactory(HttpClient client) : IHttpClientFactory
@@ -124,24 +124,39 @@ public sealed class CrmTicketReaderTests
         public HttpClient CreateClient(string name) => client;
     }
 
-    private sealed class StubMessageReader(Dictionary<string, IReadOnlyList<CrmMessage>> byTicket)
-        : ICrmMessageReader
-    {
-        public Task<IReadOnlyList<CrmMessage>> GetMessagesSinceAsync(
-            string conversationId, DateTimeOffset? since, CancellationToken cancellationToken = default) =>
-            Task.FromResult(byTicket.TryGetValue(conversationId, out var m) ? m : []);
-    }
-
-    private sealed class StubHandler(HttpStatusCode status, string body) : HttpMessageHandler
+    /// <summary>
+    /// Routes the two calls CrmTicketReader makes: the ticket list
+    /// (<c>GET api/v1/tickets</c>) and the per-ticket, ticket-GUID-keyed message list
+    /// (<c>GET api/v1/tickets/{id}/messages</c>). Tickets with no configured messages
+    /// return an empty array.
+    /// </summary>
+    private sealed class RoutingHandler(
+        HttpStatusCode ticketListStatus,
+        string ticketListBody,
+        Dictionary<string, string> messagesByTicket) : HttpMessageHandler
     {
         protected override Task<HttpResponseMessage> SendAsync(
             HttpRequestMessage request, CancellationToken cancellationToken)
         {
-            var response = new HttpResponseMessage(status)
+            var path = request.RequestUri!.AbsolutePath;
+
+            if (path.EndsWith("/messages", StringComparison.Ordinal))
             {
-                Content = new StringContent(body, Encoding.UTF8, "application/json"),
-            };
-            return Task.FromResult(response);
+                // Extract the ticket id from /api/v1/tickets/{id}/messages.
+                var segments = path.Split('/', StringSplitOptions.RemoveEmptyEntries);
+                var idIndex = Array.IndexOf(segments, "messages") - 1;
+                var ticketId = idIndex >= 0 ? segments[idIndex] : string.Empty;
+                var body = messagesByTicket.TryGetValue(ticketId, out var m) ? m : "[]";
+                return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent(body, Encoding.UTF8, "application/json"),
+                });
+            }
+
+            return Task.FromResult(new HttpResponseMessage(ticketListStatus)
+            {
+                Content = new StringContent(ticketListBody, Encoding.UTF8, "application/json"),
+            });
         }
     }
 }

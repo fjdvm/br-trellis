@@ -12,7 +12,6 @@ using Microsoft.Extensions.Logging;
 /// </summary>
 public sealed class CrmTicketReader(
     IHttpClientFactory httpClientFactory,
-    ICrmMessageReader messageReader,
     ILogger<CrmTicketReader> logger) : ISupportTicketReader
 {
     private static readonly JsonSerializerOptions JsonOptions = new()
@@ -55,7 +54,7 @@ public sealed class CrmTicketReader(
             // shopper's own tickets (a handful), not the whole CRM inbox, so the extra
             // per-ticket message reads are cheap. Run them concurrently.
             var staffReplyChecks = await Task.WhenAll(
-                mine.Select(t => HasStaffRepliedAsync(t.Id.ToString(), cancellationToken)));
+                mine.Select(t => HasStaffRepliedAsync(client, t.Id.ToString(), cancellationToken)));
 
             return mine
                 .Select((t, i) => new ShopperTicket
@@ -79,16 +78,39 @@ public sealed class CrmTicketReader(
     }
 
     /// <summary>
-    /// True once at least one Staff-authored Message exists on the ticket. Reuses the
-    /// same server-to-server messages read the staff-reply relay uses; a read failure
-    /// resolves to false (fail closed → the "Message Staff" link stays hidden rather
-    /// than appearing prematurely).
+    /// True once at least one Staff-authored Message exists on the ticket. Reads
+    /// api-crms's <c>GET api/v1/tickets/{id}/messages</c> — keyed by the ticket GUID,
+    /// the same endpoint <see cref="CustomerTicketDetailReader"/> uses. (The
+    /// conversation-messages endpoint is keyed by the external thread id, not the
+    /// ticket GUID, so it must not be used here.) A read failure resolves to false
+    /// (fail closed → the "Message Staff" link stays hidden rather than appearing
+    /// prematurely).
     /// </summary>
-    private async Task<bool> HasStaffRepliedAsync(string ticketId, CancellationToken cancellationToken)
+    private async Task<bool> HasStaffRepliedAsync(
+        HttpClient client, string ticketId, CancellationToken cancellationToken)
     {
-        var messages = await messageReader.GetMessagesSinceAsync(ticketId, null, cancellationToken);
-        return messages.Any(m =>
-            string.Equals(m.SenderType, "Staff", StringComparison.OrdinalIgnoreCase));
+        try
+        {
+            var path = $"api/v1/tickets/{Uri.EscapeDataString(ticketId)}/messages";
+            using var response = await client.GetAsync(path, cancellationToken);
+            if (!response.IsSuccessStatusCode)
+            {
+                return false;
+            }
+
+            await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken);
+            var messages = await JsonSerializer.DeserializeAsync<List<CrmMessageItem>>(
+                stream, JsonOptions, cancellationToken) ?? [];
+
+            return messages.Any(m =>
+                string.Equals(m.SenderType, "Staff", StringComparison.OrdinalIgnoreCase));
+        }
+        catch (Exception exception)
+        {
+            logger.LogWarning(
+                exception, "Failed to read messages for ticket {TicketId} (staff-reply check)", ticketId);
+            return false;
+        }
     }
 
     /// <summary>
@@ -132,5 +154,10 @@ public sealed class CrmTicketReader(
         public Guid Id { get; init; }
         public string? Name { get; init; }
         public string? Email { get; init; }
+    }
+
+    private sealed class CrmMessageItem
+    {
+        public string? SenderType { get; init; }
     }
 }
