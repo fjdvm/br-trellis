@@ -3,12 +3,10 @@
 import { useEffect, useState, useRef, useCallback, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { Send, Loader2, ShieldCheck } from "lucide-react";
+import { Send, Loader2, ShieldCheck, Ban } from "lucide-react";
 import { useChat } from "@/hooks/useChat";
 import { ChatMessageBubble } from "./ChatMessageBubble";
-import { ConversationHeader } from "./ConversationHeader";
 import { CancelTicketModal } from "./CancelTicketModal";
-import { ConversationDetailsPanel } from "./ConversationDetailsPanel";
 import { ConversationLayout } from "./ConversationLayout";
 import { supportApi } from "@/lib/api/support-api";
 import type { TicketSummary, ChatMessage } from "@/types/chat";
@@ -27,7 +25,6 @@ export function ConversationPage({ ticketId, ticket: initialTicket, initialMessa
   const [ticket, setTicket] = useState<TicketSummary | null>(initialTicket);
   const [isCancelling, setIsCancelling] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
-  const [showDetails, setShowDetails] = useState(false);
   const [input, setInput] = useState("");
   const [isSending, setIsSending] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -90,14 +87,6 @@ export function ConversationPage({ ticketId, ticket: initialTicket, initialMessa
   return (
     <ConversationLayout activeTicketId={ticketId}>
       <div className="flex flex-col h-full relative">
-        {/* Ticket Header */}
-        <ConversationHeader
-          ticket={ticket}
-          ticketId={ticketId}
-          onToggleDetails={() => setShowDetails((prev) => !prev)}
-          onCancelTicket={!isClosed ? () => setShowCancelModal(true) : undefined}
-        />
-
         {/* Connection status banner */}
         <div className="bg-purple-50 px-4 sm:px-6 py-2 border-b border-purple-100 flex items-center justify-between text-xs text-purple-900 font-medium shrink-0">
           <span className="flex items-center gap-2">
@@ -108,7 +97,20 @@ export function ConversationPage({ ticketId, ticket: initialTicket, initialMessa
             />
             {isConnected ? "Real-time chat active" : "Connecting..."}
           </span>
-          <span className="text-[11px] text-purple-600 hidden sm:block">Bren Raphael Support</span>
+          <span className="flex items-center gap-3">
+            {!isClosed && (
+              <button
+                onClick={() => setShowCancelModal(true)}
+                className="inline-flex items-center gap-1 text-red-600 hover:text-red-700 transition-colors cursor-pointer"
+                aria-label="Cancel ticket"
+                title="Cancel ticket"
+              >
+                <Ban className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Cancel ticket</span>
+              </button>
+            )}
+            <span className="text-[11px] text-purple-600 hidden sm:block">Bren Raphael Support</span>
+          </span>
         </div>
 
         {/* Messages area */}
@@ -187,14 +189,6 @@ export function ConversationPage({ ticketId, ticket: initialTicket, initialMessa
               </button>
             </div>
           </form>
-        )}
-
-        {/* Ticket Details Panel */}
-        {showDetails && ticket && (
-          <ConversationDetailsPanel
-            ticket={ticket}
-            onClose={() => setShowDetails(false)}
-          />
         )}
 
         {/* Cancel Modal */}

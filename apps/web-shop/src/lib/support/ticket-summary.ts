@@ -19,8 +19,8 @@ export function stripTypePrefix(subject: string): string {
 
 /**
  * Adapts the server-verified {@link ConversationDetail} into the {@link TicketSummary}
- * shape the existing ConversationHeader/details panel render. The Conversation view
- * only needs id/title/status; the remaining TicketSummary fields aren't surfaced here.
+ * shape the Conversation view consumes. The view only needs id/title/status; the
+ * remaining TicketSummary fields aren't surfaced here.
  */
 export function toTicketSummary(conversation: ConversationDetail): TicketSummary {
   return {

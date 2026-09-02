@@ -6,7 +6,6 @@ import * as signalR from "@microsoft/signalr";
 import { Clock, ShieldCheck } from "lucide-react";
 import { createSignalRConnection } from "@/lib/signalr";
 import { ConversationLayout } from "./ConversationLayout";
-import { ConversationHeader } from "./ConversationHeader";
 import type { ChatMessage, TicketSummary } from "@/types/chat";
 
 interface ConversationWaitingProps {
@@ -25,7 +24,7 @@ interface ConversationWaitingProps {
  * refresh. It does NOT reconstruct conversation state on the client; the server stays
  * the single source of truth for the gate.
  */
-export function ConversationWaiting({ ticketId, ticket }: ConversationWaitingProps) {
+export function ConversationWaiting({ ticketId }: ConversationWaitingProps) {
   const router = useRouter();
 
   useEffect(() => {
@@ -69,8 +68,6 @@ export function ConversationWaiting({ ticketId, ticket }: ConversationWaitingPro
   return (
     <ConversationLayout activeTicketId={ticketId}>
       <div className="flex flex-col h-full">
-        <ConversationHeader ticket={ticket} ticketId={ticketId} />
-
         <div className="flex-1 flex flex-col items-center justify-center p-6 text-center bg-slate-50/50">
           <div className="flex items-center justify-center w-16 h-16 rounded-full bg-purple-100 mb-4">
             <Clock className="w-8 h-8 text-[#451077] animate-pulse" />
