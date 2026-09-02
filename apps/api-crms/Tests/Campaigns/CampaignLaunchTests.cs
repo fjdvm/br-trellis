@@ -159,6 +159,53 @@ public sealed class CampaignLaunchTests : IDisposable
         Assert.Equal("Ended", afterSecond!.Status);
     }
 
+    [Fact]
+    public async Task GetActiveChannelContent_returns_the_active_banner_content()
+    {
+        var start = DateTimeOffset.UtcNow.AddMinutes(-5);
+        var end = DateTimeOffset.UtcNow.AddDays(3);
+        var created = await CreateService().CreateCampaignAsync(
+            new CreateCampaignDto("Banner promo", new[] { "Banner" }, null, null, "Scheduled", start, end,
+                new[] { new CampaignChannelContentInput("Banner", null, null, null, "Free shipping!", null, "/sale", null, null, Dismissible: true) }),
+            null, CancellationToken.None);
+        await CreateService().LaunchCampaignAsync(created.Id, CancellationToken.None);
+
+        var content = await CreateService().GetActiveChannelContentAsync("Banner", CancellationToken.None);
+
+        Assert.NotNull(content);
+        Assert.Equal("Banner", content!.Channel);
+        Assert.Equal("Free shipping!", content.Body);
+        Assert.Equal("/sale", content.LinkUrl);
+        Assert.True(content.Dismissible);
+    }
+
+    [Fact]
+    public async Task GetActiveChannelContent_returns_null_when_no_active_campaign_for_channel()
+    {
+        // An active Banner exists, but Popup has nothing active.
+        var created = await CreateService().CreateCampaignAsync(
+            new CreateCampaignDto("Banner only", new[] { "Banner" }, null, null, "SendNow", null, null,
+                new[] { new CampaignChannelContentInput("Banner", null, null, null, "msg", null, "/x", null, null) }),
+            null, CancellationToken.None);
+        await CreateService().LaunchCampaignAsync(created.Id, CancellationToken.None);
+
+        var popup = await CreateService().GetActiveChannelContentAsync("Popup", CancellationToken.None);
+        Assert.Null(popup);
+    }
+
+    [Fact]
+    public async Task GetActiveChannelContent_ignores_a_draft_campaign()
+    {
+        // Draft (never launched) banner should not be served.
+        await CreateService().CreateCampaignAsync(
+            new CreateCampaignDto("Draft banner", new[] { "Banner" }, null, null, "SendNow", null, null,
+                new[] { new CampaignChannelContentInput("Banner", null, null, null, "msg", null, "/x", null, null) }),
+            null, CancellationToken.None);
+
+        var content = await CreateService().GetActiveChannelContentAsync("Banner", CancellationToken.None);
+        Assert.Null(content);
+    }
+
     public void Dispose()
     {
         File.Delete(_databasePath);

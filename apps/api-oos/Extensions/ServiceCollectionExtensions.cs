@@ -70,6 +70,8 @@ public static class ServiceCollectionExtensions
         // campaigns, sends via Brevo, and reports the outcome back.
         services.AddScoped<ApiOos.Interfaces.Services.ICampaignDispatchClient, ApiOos.Services.CampaignDispatchClient>();
         services.AddScoped<ApiOos.Services.ICampaignDispatchService, ApiOos.Services.CampaignDispatchService>();
+        // Storefront Banner/Popup delivery (#163): reads Active content from api-crms.
+        services.AddScoped<ApiOos.Interfaces.Services.IActiveContentReader, ApiOos.Services.ActiveContentReader>();
         services.AddHttpClient(ApiOos.Services.EcommerceWebhookClient.HttpClientName, (sp, client) =>
         {
             var config = sp.GetRequiredService<IConfiguration>();

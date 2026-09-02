@@ -426,6 +426,51 @@ public sealed class CampaignService(
         return true;
     }
 
+    public async Task<ActiveChannelContentDto?> GetActiveChannelContentAsync(
+        string channel,
+        CancellationToken cancellationToken)
+    {
+        if (!Enum.TryParse<CampaignChannel>(channel?.Trim(), ignoreCase: true, out var parsed)
+            || parsed == CampaignChannel.Email)
+        {
+            // Only Banner/Popup are storefront channels.
+            return null;
+        }
+
+        var now = DateTimeOffset.UtcNow;
+        var channelName = parsed.ToString();
+
+        var actives = await dbContext.Campaigns
+            .Include(c => c.ChannelContents)
+            .Where(c => c.Status == CampaignStatus.Active)
+            .ToListAsync(cancellationToken);
+
+        // The single Active campaign targeting this channel whose window covers now.
+        var match = actives
+            .Where(c => CampaignMapper.ParseChannels(c.Channels).Contains(channelName))
+            .Where(c => (c.StartDate is null || c.StartDate <= now)
+                     && (c.EndDate is null || c.EndDate > now))
+            .OrderBy(c => c.StartDate ?? c.CreatedAt)
+            .FirstOrDefault();
+
+        var content = match?.ChannelContents.FirstOrDefault(cc => cc.Channel == parsed);
+        if (match is null || content is null)
+        {
+            return null;
+        }
+
+        return new ActiveChannelContentDto(
+            match.Id,
+            channelName,
+            content.Heading,
+            content.Body,
+            content.ImageUrl,
+            content.LinkUrl,
+            content.CtaText,
+            content.CtaUrl,
+            content.Dismissible);
+    }
+
     // --- helpers ---
 
     private static List<CampaignChannel> ParseAndValidateChannels(IReadOnlyList<string>? channels)

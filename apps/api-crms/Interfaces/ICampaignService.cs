@@ -38,4 +38,11 @@ public interface ICampaignService
         Guid id,
         CampaignDispatchResultDto result,
         CancellationToken cancellationToken);
+
+    // The currently-Active content for a storefront Channel (Banner or Popup):
+    // the single Active campaign targeting that channel whose window covers now.
+    // Returns null when nothing is active. Served to web-shop via api-oos (#163).
+    Task<ActiveChannelContentDto?> GetActiveChannelContentAsync(
+        string channel,
+        CancellationToken cancellationToken);
 }

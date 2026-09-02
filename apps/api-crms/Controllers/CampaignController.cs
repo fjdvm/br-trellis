@@ -122,6 +122,18 @@ public sealed class CampaignController(ICampaignService campaignService) : Contr
         return recorded ? NoContent() : NotFound();
     }
 
+    // Currently-Active Banner/Popup content for the storefront (served to web-shop
+    // via api-oos, ADR 0008). 204 when nothing is active for that channel.
+    [HttpGet("active-content")]
+    [AllowAnonymous]
+    public async Task<ActionResult<ActiveChannelContentDto>> GetActiveContent(
+        [FromQuery] string channel,
+        CancellationToken cancellationToken)
+    {
+        var content = await campaignService.GetActiveChannelContentAsync(channel, cancellationToken);
+        return content is null ? NoContent() : Ok(content);
+    }
+
     private string? CurrentUserId() =>
         User?.FindFirst(ClaimTypes.NameIdentifier)?.Value
         ?? User?.FindFirst("sub")?.Value;

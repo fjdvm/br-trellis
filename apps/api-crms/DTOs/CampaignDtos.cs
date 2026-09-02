@@ -93,3 +93,16 @@ public sealed record CampaignDispatchResultDto(
     IReadOnlyList<string> Errors);
 
 public sealed record MarketingOptOutDto(string Email);
+
+// The currently-Active Banner/Popup content served to the storefront (#163).
+// Null is represented by a 204/absent response, not this record.
+public sealed record ActiveChannelContentDto(
+    Guid CampaignId,
+    string Channel,
+    string? Heading,
+    string? Body,
+    string? ImageUrl,
+    string? LinkUrl,
+    string? CtaText,
+    string? CtaUrl,
+    bool Dismissible);
