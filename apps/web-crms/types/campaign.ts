@@ -5,10 +5,16 @@ export type ScheduleType = "SendNow" | "Scheduled";
 export type TemplateFormat = "Html" | "Blocks";
 
 export interface CampaignChannelContent {
-  subject: string;
-  description: string;
-  templateId: string;
-  imageUrl: string;
+  channel: CampaignChannel;
+  templateId?: string | null;
+  subject?: string | null;
+  heading?: string | null;
+  body?: string | null;
+  imageUrl?: string | null;
+  linkUrl?: string | null;
+  ctaText?: string | null;
+  ctaUrl?: string | null;
+  dismissible?: boolean;
 }
 
 export interface CampaignSchedule {
@@ -32,49 +38,44 @@ export interface CampaignListItem {
 }
 
 export interface Campaign extends CampaignListItem {
-  subject: string;
-  description: string;
-  templateId?: string | null;
-  imageUrl?: string | null;
-  channelContents?: Partial<Record<CampaignChannel, CampaignChannelContent>>;
-  createdById?: string;
+  channelContents: CampaignChannelContent[];
+  createdById?: string | null;
   schedule?: CampaignSchedule | null;
+}
+
+export interface CampaignChannelContentInput {
+  channel: CampaignChannel;
+  templateId?: string | null;
+  subject?: string | null;
+  heading?: string | null;
+  body?: string | null;
+  imageUrl?: string | null;
+  linkUrl?: string | null;
+  ctaText?: string | null;
+  ctaUrl?: string | null;
+  dismissible?: boolean;
 }
 
 export interface CreateCampaignInput {
   title: string;
-  subject: string;
-  description: string;
-  campaignType?: CampaignType;
   channels: CampaignChannel[];
   targetAudience?: string;
-  targetCustomerIds?: string[];
-  targetEmails?: string[];
-  scheduleType: ScheduleType;
-  startDate?: string;
-  endDate?: string;
-  imageUrl?: string;
-  templateId?: string;
-  channelContents?: Partial<Record<CampaignChannel, CampaignChannelContent>>;
-  status?: CampaignStatus;
-}
-
-export interface UpdateCampaignInput {
-  title?: string;
-  subject?: string;
-  description?: string;
-  campaignType?: CampaignType;
-  channels?: CampaignChannel[];
-  targetAudience?: string;
-  targetCustomerIds?: string[];
   targetEmails?: string[];
   scheduleType?: ScheduleType;
   startDate?: string;
   endDate?: string;
-  imageUrl?: string;
-  templateId?: string;
-  channelContents?: Partial<Record<CampaignChannel, CampaignChannelContent>>;
-  status?: CampaignStatus;
+  channelContents?: CampaignChannelContentInput[];
+}
+
+export interface UpdateCampaignInput {
+  title?: string;
+  channels?: CampaignChannel[];
+  targetAudience?: string;
+  targetEmails?: string[];
+  scheduleType?: ScheduleType;
+  startDate?: string;
+  endDate?: string;
+  channelContents?: CampaignChannelContentInput[];
 }
 
 export interface Template {

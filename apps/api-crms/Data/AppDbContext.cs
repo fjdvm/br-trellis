@@ -54,6 +54,10 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
 
     public DbSet<Template> Templates => Set<Template>();
 
+    public DbSet<Campaign> Campaigns => Set<Campaign>();
+
+    public DbSet<CampaignChannelContent> CampaignChannelContents => Set<CampaignChannelContent>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         ConfigureContact(modelBuilder);
@@ -81,6 +85,8 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
         ConfigureCannedReplyCategory(modelBuilder);
         ConfigureCannedReply(modelBuilder);
         ConfigureTemplate(modelBuilder);
+        ConfigureCampaign(modelBuilder);
+        ConfigureCampaignChannelContent(modelBuilder);
     }
 
     private static void ConfigureContact(ModelBuilder modelBuilder)
@@ -626,6 +632,64 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
             template.Property(e => e.ThumbnailUrl).HasColumnName("thumbnail_url");
             template.Property(e => e.CreatedAt).HasColumnName("created_at");
             template.HasIndex(e => e.Channel);
+        });
+    }
+
+    private static void ConfigureCampaign(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<Campaign>(campaign =>
+        {
+            campaign.ToTable("campaign");
+            campaign.HasKey(e => e.Id);
+            campaign.Property(e => e.Id).HasColumnName("id");
+            campaign.Property(e => e.Title).HasColumnName("title");
+            campaign.Property(e => e.Status)
+                .HasColumnName("status")
+                .HasConversion<string>();
+            campaign.Property(e => e.Channels).HasColumnName("channels");
+            campaign.Property(e => e.TargetSegmentId).HasColumnName("target_segment_id");
+            campaign.Property(e => e.TargetEmails).HasColumnName("target_emails");
+            campaign.Property(e => e.ResolvedRecipients).HasColumnName("resolved_recipients");
+            campaign.Property(e => e.ScheduleType)
+                .HasColumnName("schedule_type")
+                .HasConversion<string>();
+            campaign.Property(e => e.StartDate).HasColumnName("start_date");
+            campaign.Property(e => e.EndDate).HasColumnName("end_date");
+            campaign.Property(e => e.NextRunAt).HasColumnName("next_run_at");
+            campaign.Property(e => e.EmailTerminal).HasColumnName("email_terminal");
+            campaign.Property(e => e.CreatedById).HasColumnName("created_by_id");
+            campaign.Property(e => e.CreatedAt).HasColumnName("created_at");
+            campaign.Property(e => e.UpdatedAt).HasColumnName("updated_at");
+            campaign.HasIndex(e => e.Status);
+
+            campaign.HasMany(e => e.ChannelContents)
+                .WithOne(e => e.Campaign)
+                .HasForeignKey(e => e.CampaignId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+    }
+
+    private static void ConfigureCampaignChannelContent(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<CampaignChannelContent>(content =>
+        {
+            content.ToTable("campaign_channel_content");
+            content.HasKey(e => e.Id);
+            content.Property(e => e.Id).HasColumnName("id");
+            content.Property(e => e.CampaignId).HasColumnName("campaign_id");
+            content.Property(e => e.Channel)
+                .HasColumnName("channel")
+                .HasConversion<string>();
+            content.Property(e => e.TemplateId).HasColumnName("template_id");
+            content.Property(e => e.Subject).HasColumnName("subject");
+            content.Property(e => e.Heading).HasColumnName("heading");
+            content.Property(e => e.Body).HasColumnName("body");
+            content.Property(e => e.ImageUrl).HasColumnName("image_url");
+            content.Property(e => e.LinkUrl).HasColumnName("link_url");
+            content.Property(e => e.CtaText).HasColumnName("cta_text");
+            content.Property(e => e.CtaUrl).HasColumnName("cta_url");
+            content.Property(e => e.Dismissible).HasColumnName("dismissible");
+            content.HasIndex(e => new { e.CampaignId, e.Channel }).IsUnique();
         });
     }
 }

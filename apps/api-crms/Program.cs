@@ -86,6 +86,10 @@ builder.Services.AddScoped<ICannedReplyService, CannedReplyService>();
 builder.Services.AddScoped<ITemplateRepository, TemplateRepository>();
 builder.Services.AddScoped<ITemplateService, TemplateService>();
 
+// Campaigns
+builder.Services.AddScoped<ICampaignRepository, CampaignRepository>();
+builder.Services.AddScoped<ICampaignService, CampaignService>();
+
 builder.Services.AddControllers();
 builder.Services.AddOpenApi(options =>
 {
