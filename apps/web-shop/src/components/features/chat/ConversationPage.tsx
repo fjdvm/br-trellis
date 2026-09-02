@@ -44,7 +44,6 @@ export function ConversationPage({ ticketId, ticket: initialTicket, initialMessa
 
   const {
     messages,
-    isConnected,
     error: chatError,
     sendMessage,
   } = useChat(ticketId, { onTicketStatusChanged: handleTicketStatusChanged, initialMessages });
@@ -84,34 +83,23 @@ export function ConversationPage({ ticketId, ticket: initialTicket, initialMessa
   const isClosed = ticket?.status === "Completed" || ticket?.status === "Canceled";
 
   return (
-    <ConversationLayout activeTicketId={ticketId}>
+    <ConversationLayout
+      activeTicketId={ticketId}
+      headerActions={
+        !isClosed ? (
+          <button
+            onClick={() => setShowCancelModal(true)}
+            className="inline-flex items-center gap-1 text-red-600 hover:text-red-700 transition-colors cursor-pointer text-xs font-medium"
+            aria-label="Cancel ticket"
+            title="Cancel ticket"
+          >
+            <Ban className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Cancel ticket</span>
+          </button>
+        ) : undefined
+      }
+    >
       <div className="flex flex-col h-full relative">
-        {/* Connection status banner */}
-        <div className="bg-purple-50 px-4 sm:px-6 py-2 border-b border-purple-100 flex items-center justify-between text-xs text-purple-900 font-medium shrink-0">
-          <span className="flex items-center gap-2">
-            <span
-              className={`h-2 w-2 rounded-full ${
-                isConnected ? "bg-emerald-500 animate-pulse" : "bg-amber-500"
-              }`}
-            />
-            {isConnected ? "Real-time chat active" : "Connecting..."}
-          </span>
-          <span className="flex items-center gap-3">
-            {!isClosed && (
-              <button
-                onClick={() => setShowCancelModal(true)}
-                className="inline-flex items-center gap-1 text-red-600 hover:text-red-700 transition-colors cursor-pointer"
-                aria-label="Cancel ticket"
-                title="Cancel ticket"
-              >
-                <Ban className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">Cancel ticket</span>
-              </button>
-            )}
-            <span className="text-[11px] text-purple-600 hidden sm:block">Bren Raphael Support</span>
-          </span>
-        </div>
-
         {/* Messages area */}
         <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-3 bg-slate-50/50">
           {chatError && (

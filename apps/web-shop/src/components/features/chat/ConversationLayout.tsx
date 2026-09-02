@@ -9,10 +9,16 @@ import { TicketSubmitDialog } from "@/components/features/profile/TicketSubmitDi
 
 interface ConversationLayoutProps {
   activeTicketId?: string;
+  /**
+   * Optional actions rendered on the right of the conversation header row,
+   * sharing the same row as the back button (e.g. the Cancel-ticket action on
+   * the live ConversationPage). Omitted by callers with no header action.
+   */
+  headerActions?: React.ReactNode;
   children: React.ReactNode;
 }
 
-export function ConversationLayout({ activeTicketId, children }: ConversationLayoutProps) {
+export function ConversationLayout({ activeTicketId, headerActions, children }: ConversationLayoutProps) {
   const { data: session } = useSession();
   const router = useRouter();
   const [isSubmitDialogOpen, setIsSubmitDialogOpen] = useState(false);
@@ -35,8 +41,14 @@ export function ConversationLayout({ activeTicketId, children }: ConversationLay
 
       {/* Main content area */}
       <div className="flex-1 flex flex-col min-w-0">
-        {/* Mobile header with back-to-tickets button */}
-        <div className="lg:hidden flex items-center gap-3 px-4 py-2.5 border-b border-slate-200 bg-white shrink-0">
+        {/* Conversation header: back-to-tickets button + optional page actions on
+            the same row. Shown on mobile always (the sidebar is hidden there);
+            on desktop it appears only when the page supplies header actions. */}
+        <div
+          className={`${
+            headerActions ? "flex" : "flex lg:hidden"
+          } items-center gap-3 px-4 py-2.5 border-b border-slate-200 bg-white shrink-0`}
+        >
           <button
             onClick={() => router.push("/support")}
             className="p-2 rounded-lg text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
@@ -45,6 +57,9 @@ export function ConversationLayout({ activeTicketId, children }: ConversationLay
             <ArrowLeft className="w-5 h-5" />
           </button>
           <span className="text-xs font-bold text-slate-700">Support Conversations</span>
+          {headerActions && (
+            <span className="ml-auto flex items-center gap-3">{headerActions}</span>
+          )}
         </div>
 
         {/* Chat content */}
