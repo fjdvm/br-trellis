@@ -2,6 +2,13 @@
 
 import { useState } from "react";
 import { LayoutTemplate } from "lucide-react";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -23,10 +30,19 @@ export function TemplatesGallery() {
   return (
     <div className="w-full min-h-full py-xl px-lg md:px-xl space-y-lg max-w-7xl mx-auto">
       <div className="space-y-sm">
+        <Breadcrumb>
+          <BreadcrumbList>
+            <BreadcrumbItem>Marketing &amp; Campaigns</BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbPage>Templates</BreadcrumbPage>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
         <h1 className="text-headline-md font-bold tracking-tight text-foreground">
-          Templates
+          Content Templates
         </h1>
-        <p className="text-body-md text-muted-foreground">
+        <p className="text-body-md text-muted-foreground max-w-2xl">
           Browse the available pre-defined content templates for each channel.
         </p>
       </div>
@@ -55,7 +71,7 @@ export function TemplatesGallery() {
           {CHANNELS.map((c) => {
             const forChannel = templates.filter((t) => t.channel === c);
             return (
-              <TabsContent key={c} value={c}>
+              <TabsContent key={c} value={c} className="mt-lg">
                 {forChannel.length === 0 ? (
                   <div className="p-xl text-muted-foreground">
                     No templates available for this channel.

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { ChevronRight } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -21,6 +22,22 @@ function formatDate(iso: string): string {
   return Number.isNaN(d.getTime()) ? "—" : d.toLocaleDateString();
 }
 
+// A short, human-readable campaign reference derived from the id — the
+// wireframe surfaces an "ID:" line under each campaign name.
+function shortRef(id: string): string {
+  return `CMP-${id.slice(0, 8).toUpperCase()}`;
+}
+
+// Summarise the campaign's audience for the table's Audience column.
+function audienceLabel(campaign: CampaignListItem): string {
+  const segment = campaign.targetAudience ? "Segment" : null;
+  const extra = campaign.targetEmails?.length ?? 0;
+  if (segment && extra > 0) return `${segment} + ${extra} direct`;
+  if (segment) return segment;
+  if (extra > 0) return `${extra} direct recipient${extra === 1 ? "" : "s"}`;
+  return "—";
+}
+
 export function CampaignTable({ campaigns }: { campaigns: CampaignListItem[] }) {
   const router = useRouter();
   const [metrics, setMetrics] = useState<Record<string, CampaignEngagementMetrics>>({});
@@ -28,7 +45,6 @@ export function CampaignTable({ campaigns }: { campaigns: CampaignListItem[] }) 
   const ids = campaigns.map((c) => c.id).join(",");
   useEffect(() => {
     if (campaigns.length === 0) {
-      setMetrics({});
       return;
     }
     let mounted = true;
@@ -65,22 +81,31 @@ export function CampaignTable({ campaigns }: { campaigns: CampaignListItem[] }) 
       <Table>
         <TableHeader className="sticky top-0 bg-background z-10">
           <TableRow>
-            <TableHead className="min-w-[220px]">Title</TableHead>
+            <TableHead className="min-w-[240px]">Campaign Name</TableHead>
             <TableHead className="min-w-[160px]">Channels</TableHead>
             <TableHead className="min-w-[120px]">Status</TableHead>
+            <TableHead className="min-w-[180px]">Audience</TableHead>
             <TableHead className="min-w-[110px]">Open Rate</TableHead>
             <TableHead className="min-w-[110px]">Click Rate</TableHead>
-            <TableHead className="min-w-[140px]">Created</TableHead>
+            <TableHead className="min-w-[140px]">Created Date</TableHead>
+            <TableHead className="min-w-[100px] text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {campaigns.map((campaign) => (
             <TableRow
               key={campaign.id}
-              className="cursor-pointer hover:bg-muted/50"
+              className="cursor-pointer hover:bg-muted/50 group"
               onClick={() => router.push(`/campaigns/${campaign.id}`)}
             >
-              <TableCell className="text-base font-medium">{campaign.title}</TableCell>
+              <TableCell className="text-base">
+                <div className="flex flex-col">
+                  <span className="font-medium text-foreground group-hover:underline underline-offset-4">
+                    {campaign.title}
+                  </span>
+                  <span className="text-sm text-muted-foreground">ID: {shortRef(campaign.id)}</span>
+                </div>
+              </TableCell>
               <TableCell className="text-base">
                 <span className="flex flex-wrap gap-1">
                   {campaign.channels.map((c) => (
@@ -91,10 +116,17 @@ export function CampaignTable({ campaigns }: { campaigns: CampaignListItem[] }) 
               <TableCell className="text-base">
                 <CampaignStatusBadge status={campaign.status} />
               </TableCell>
+              <TableCell className="text-base text-foreground">{audienceLabel(campaign)}</TableCell>
               <TableCell className="text-base">{rate(campaign, "openRate")}</TableCell>
               <TableCell className="text-base">{rate(campaign, "clickRate")}</TableCell>
               <TableCell className="text-sm text-muted-foreground">
                 {formatDate(campaign.createdAt)}
+              </TableCell>
+              <TableCell className="text-right">
+                <span className="inline-flex items-center gap-1 text-sm font-medium text-muted-foreground group-hover:text-foreground">
+                  View
+                  <ChevronRight className="w-4 h-4" />
+                </span>
               </TableCell>
             </TableRow>
           ))}

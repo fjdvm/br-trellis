@@ -1,5 +1,6 @@
 "use client";
 
+import { Mail, PanelTop, AppWindow } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -26,6 +27,12 @@ export type ChannelContentState = {
   dismissible?: boolean;
 };
 
+const CHANNEL_ICON: Record<CampaignChannel, React.ComponentType<{ className?: string }>> = {
+  Email: Mail,
+  Banner: PanelTop,
+  Popup: AppWindow,
+};
+
 /**
  * Per-Channel content sub-form used by the CampaignWizard's Content step.
  * The visible fields depend on the Channel:
@@ -43,10 +50,16 @@ export function ChannelContentForm({
   onChange: (patch: Partial<ChannelContentState>) => void;
 }) {
   const { data: templates } = useTemplates(channel);
+  const Icon = CHANNEL_ICON[channel];
 
   return (
-    <div className="space-y-md border border-border rounded-lg p-md">
-      <h3 className="text-title-lg font-bold">{channel} Content</h3>
+    <div className="space-y-md rounded-lg border border-border p-lg">
+      <div className="flex items-center gap-2 pb-md border-b border-border">
+        <div className="w-8 h-8 rounded bg-muted flex items-center justify-center">
+          <Icon className="w-4 h-4 text-foreground" />
+        </div>
+        <h3 className="text-title-lg font-bold text-foreground">{channel} Content</h3>
+      </div>
 
       <div className="space-y-sm">
         <Label htmlFor={`${channel}-template`}>Template</Label>

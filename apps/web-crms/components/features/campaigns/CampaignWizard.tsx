@@ -2,12 +2,14 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { ArrowLeft, ArrowRight, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "@/components/ui/badge";
 import {
   Select,
   SelectContent,
@@ -26,6 +28,11 @@ import {
   toLocalInput,
   type ScheduleState,
 } from "@/components/features/campaigns/ScheduleStep";
+import { CampaignStepper } from "@/components/features/campaigns/CampaignStepper";
+import {
+  CHANNEL_META,
+  ChannelSelectCard,
+} from "@/components/features/campaigns/ChannelSelectCard";
 import type {
   Campaign,
   CampaignChannel,
@@ -38,8 +45,17 @@ const NO_SEGMENT = "__none__";
 
 type Step = "Platform" | "Audience" | "Content" | "Schedule" | "Review";
 
-/** The Channels selectable in the wizard. */
-const ALL_CHANNELS: CampaignChannel[] = ["Email", "Banner", "Popup"];
+// The stepper the wireframe shows is a 3-phase flow: Channels, Audience,
+// Content. Schedule + Review are folded into the "Content" phase visually
+// (they're still discrete steps in the machine so scheduling and a final
+// confirmation remain available before saving the Draft).
+const STEP_PHASE: Record<Step, 0 | 1 | 2> = {
+  Platform: 0,
+  Audience: 1,
+  Content: 2,
+  Schedule: 2,
+  Review: 2,
+};
 
 export function CampaignWizard({ existing }: { existing?: Campaign }) {
   const router = useRouter();
@@ -158,28 +174,58 @@ export function CampaignWizard({ existing }: { existing?: Campaign }) {
   }
 
   const canProceedPlatform = title.trim().length > 0 && channels.length > 0;
+  const stepNumber = steps.indexOf(step) + 1;
+  const currentPhase = STEP_PHASE[step];
 
   return (
-    <div className="w-full min-h-full py-xl px-lg md:px-xl space-y-lg max-w-4xl mx-auto">
-      <div className="space-y-sm">
-        <h1 className="text-headline-md font-bold tracking-tight text-foreground">
-          {existing ? "Edit Campaign" : "New Campaign"}
-        </h1>
-        <p className="text-body-md text-muted-foreground">
-          Step {steps.indexOf(step) + 1} of {steps.length}: {step}
-        </p>
+    <div className="w-full min-h-full py-xl px-lg md:px-xl space-y-lg max-w-5xl mx-auto">
+      {/* Back link + draft badge */}
+      <div className="flex items-center justify-between">
+        <Link
+          href="/campaigns"
+          className="inline-flex items-center gap-1 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Back to Campaigns
+        </Link>
+        <Badge variant="secondary" className="uppercase tracking-wider">
+          {existing ? "Editing Draft" : "Draft"}
+        </Badge>
+      </div>
+
+      {/* Title + stepper */}
+      <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-md">
+        <div className="space-y-sm">
+          <h1 className="text-headline-md font-bold tracking-tight text-foreground">
+            {existing ? "Edit Campaign" : "Create Campaign"}
+          </h1>
+          <p className="text-body-md text-muted-foreground">
+            Configure delivery channels, target audience, and creative content.
+          </p>
+        </div>
+        <CampaignStepper current={currentPhase} />
       </div>
 
       {error && <div className="p-md text-destructive text-base">{error}</div>}
 
-      <Card className="shadow-none border-border">
-        <CardHeader className="p-lg pb-md">
-          <CardTitle data-testid="wizard-step-title" className="text-title-lg font-bold">{step}</CardTitle>
-        </CardHeader>
-        <CardContent className="p-lg pt-0 space-y-lg">
+      <Card className="shadow-none border-border overflow-hidden">
+        {/* Section header inside card */}
+        <div className="px-lg py-md bg-muted/40 border-b border-border">
+          <span className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+            Step {stepNumber} of {steps.length}
+          </span>
+          <h2
+            data-testid="wizard-step-title"
+            className="text-title-lg font-bold text-foreground mt-0.5"
+          >
+            {step}
+          </h2>
+        </div>
+
+        <CardContent className="p-lg space-y-lg">
           {step === "Platform" && (
             <div className="space-y-lg">
-              <div className="space-y-sm">
+              <div className="space-y-sm max-w-xl">
                 <Label htmlFor="campaign-title">Campaign Title</Label>
                 <Input
                   id="campaign-title"
@@ -190,19 +236,19 @@ export function CampaignWizard({ existing }: { existing?: Campaign }) {
               </div>
               <div className="space-y-sm">
                 <Label>Distribution Channels</Label>
-                <div className="flex flex-col gap-sm">
-                  {ALL_CHANNELS.map((channel) => (
-                    <label key={channel} className="flex items-center gap-2 cursor-pointer">
-                      <Checkbox
-                        id={`channel-${channel}`}
-                        aria-label={channel}
-                        checked={channels.includes(channel)}
-                        onCheckedChange={() => toggleChannel(channel)}
-                      />
-                      <span className="text-base">{channel}</span>
-                    </label>
+                <div className="flex flex-col gap-md">
+                  {CHANNEL_META.map((meta) => (
+                    <ChannelSelectCard
+                      key={meta.channel}
+                      meta={meta}
+                      checked={channels.includes(meta.channel)}
+                      onToggle={() => toggleChannel(meta.channel)}
+                    />
                   ))}
                 </div>
+                {channels.length === 0 && (
+                  <p className="text-sm text-muted-foreground">At least one channel required.</p>
+                )}
               </div>
             </div>
           )}
@@ -210,7 +256,7 @@ export function CampaignWizard({ existing }: { existing?: Campaign }) {
           {step === "Audience" && emailSelected && (
             <div className="space-y-lg">
               <div className="space-y-sm">
-                <Label htmlFor="segment-select">Segment</Label>
+                <Label htmlFor="segment-select">Customer Segment</Label>
                 <Select value={segmentId} onValueChange={setSegmentId}>
                   <SelectTrigger id="segment-select" aria-label="Segment">
                     <SelectValue placeholder="Choose a segment" />
@@ -226,27 +272,46 @@ export function CampaignWizard({ existing }: { existing?: Campaign }) {
                 </Select>
               </div>
               <div className="space-y-sm">
-                <Label htmlFor="additional-emails">Additional Emails</Label>
+                <div className="flex items-center gap-2">
+                  <Label htmlFor="additional-emails">Additional Emails</Label>
+                  <Badge variant="secondary">Optional</Badge>
+                </div>
                 <Textarea
                   id="additional-emails"
                   value={emails}
                   onChange={(e) => setEmails(e.target.value)}
-                  placeholder="Comma-separated addresses for recipients not in a segment"
+                  placeholder="Enter one email per line or separate by commas"
+                  rows={4}
                 />
+                <p className="text-sm text-muted-foreground">
+                  Manually append ad-hoc recipients not currently in a CRM segment.
+                </p>
               </div>
             </div>
           )}
 
           {step === "Content" && (
-            <div className="space-y-xl">
-              {channels.map((channel) => (
-                <ChannelContentForm
-                  key={channel}
-                  channel={channel}
-                  value={contents[channel] ?? {}}
-                  onChange={(patch) => updateContent(channel, patch)}
-                />
-              ))}
+            <div className="space-y-lg">
+              <div className="flex items-start gap-3 rounded-lg border border-border bg-muted/40 p-md">
+                <Info className="w-5 h-5 text-foreground shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-base font-semibold text-foreground">Draft-First Policy</p>
+                  <p className="text-sm text-muted-foreground">
+                    All campaigns are saved as a Draft. Review and explicit launch happen from the
+                    Campaign Detail view.
+                  </p>
+                </div>
+              </div>
+              <div className="space-y-xl">
+                {channels.map((channel) => (
+                  <ChannelContentForm
+                    key={channel}
+                    channel={channel}
+                    value={contents[channel] ?? {}}
+                    onChange={(patch) => updateContent(channel, patch)}
+                  />
+                ))}
+              </div>
             </div>
           )}
 
@@ -283,25 +348,41 @@ export function CampaignWizard({ existing }: { existing?: Campaign }) {
               </p>
             </div>
           )}
+        </CardContent>
 
-          <div className="flex items-center justify-between pt-md border-t border-border">
+        {/* Footer action bar */}
+        <div className="px-lg py-md bg-muted/40 border-t border-border flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              onClick={() => router.push("/campaigns")}
+              className="text-muted-foreground"
+            >
+              Cancel
+            </Button>
             <Button variant="outline" onClick={goBack} disabled={steps.indexOf(step) === 0}>
+              <ArrowLeft className="w-4 h-4 mr-1" />
               Back
             </Button>
+          </div>
+          <div className="flex items-center gap-3">
+            {step === "Platform" && channels.length === 0 && (
+              <span className="hidden sm:inline text-sm text-muted-foreground">
+                At least one channel required
+              </span>
+            )}
             {step === "Review" ? (
               <Button onClick={saveDraft} disabled={submitting}>
                 {submitting ? "Saving…" : "Save Draft"}
               </Button>
             ) : (
-              <Button
-                onClick={goNext}
-                disabled={step === "Platform" && !canProceedPlatform}
-              >
+              <Button onClick={goNext} disabled={step === "Platform" && !canProceedPlatform}>
                 Next
+                <ArrowRight className="w-4 h-4 ml-1" />
               </Button>
             )}
           </div>
-        </CardContent>
+        </div>
       </Card>
     </div>
   );
