@@ -381,7 +381,7 @@ export function TicketListPage({
               <TicketIcon className="w-5 h-5" />
               {cardTitle}
             </CardTitle>
-            <div className="flex items-center gap-md">
+            <div className="flex flex-wrap items-center gap-md min-w-0">
               <Select
                 value={statusFilter}
                 onValueChange={(value) => {
@@ -389,7 +389,7 @@ export function TicketListPage({
                   pagination.setPage(1);
                 }}
               >
-                <SelectTrigger className="w-[160px]" aria-label="Filter by status">
+                <SelectTrigger className="w-full sm:w-[160px]" aria-label="Filter by status">
                   <SelectValue placeholder="Status" />
                 </SelectTrigger>
                 <SelectContent>
@@ -408,7 +408,7 @@ export function TicketListPage({
                 }}
               >
                 <SelectTrigger
-                  className="w-[170px]"
+                  className="w-full sm:w-[170px]"
                   aria-label="Filter by waiting on"
                 >
                   <SelectValue placeholder="Waiting On" />
@@ -429,7 +429,7 @@ export function TicketListPage({
                     pagination.setPage(1);
                   }}
                 >
-                  <SelectTrigger className="w-[150px]" aria-label="Filter by source">
+                  <SelectTrigger className="w-full sm:w-[150px]" aria-label="Filter by source">
                     <SelectValue placeholder="Source" />
                   </SelectTrigger>
                   <SelectContent>
