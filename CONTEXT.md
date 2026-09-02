@@ -165,11 +165,28 @@ which are the same ownership stage repeated with different waiting-sides.
 A Conversation also has a **Source** — the channel through which it
 originated: `Email` (arrived via inbound email ingestion), `Manual` (a
 staff member opened it directly, with no external triggering event), or
-`Ecommerce` (reserved for a future ecommerce-initiated ticket path; no
-Conversation is created this way yet). Source is set once at creation
-and does not change over a Conversation's life — unlike Status and
-WaitingOn, it isn't a lifecycle field, just a fixed record of how the
-Conversation came to exist.
+`Ecommerce` (opened from the web-shop chat channel — the bot escalation /
+live-agent widget and the profile "Submit Ticket" flow, relayed in
+server-to-server via api-oos). Source is set once at creation and does not
+change over a Conversation's life — unlike Status and WaitingOn, it isn't a
+lifecycle field, just a fixed record of how the Conversation came to exist.
+
+Each Conversation is keyed to its originating channel by an **External
+Thread Id** — the stable identifier that groups inbound messages of one
+channel exchange into a single Ticket. Its value policy differs by Source,
+and the difference is intrinsic, not an inconsistency (see ADR 0006):
+
+- For an `Email` Conversation it is the upstream mail thread id, assigned by
+  the outside world and independent of the Ticket's own id — distinct emails
+  fold into one Ticket by matching it, and it exists before any Ticket does.
+- For an `Ecommerce` (shop-chat) Conversation it **equals the Ticket's own
+  id**: shop chat's identity is not externally assigned, so the Ticket id is
+  the single conversation key end to end (the browser joins, relays, polls
+  for staff replies, and re-enters from the profile all under it). There is
+  no separate shop-chat conversation id.
+_Avoid_: treating the shop-chat conversation key and the Ticket id as two
+different values — for `Ecommerce` they are the same id by decision
+(ADR 0006). That is the distinction the `Email` case does *not* share.
 
 A Conversation appears in an agent's personal Inbox only while they
 actively own it: Status is `Claimed` or `Ongoing` and they are the
