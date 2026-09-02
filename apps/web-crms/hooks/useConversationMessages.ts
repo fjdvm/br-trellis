@@ -102,9 +102,20 @@ export function useConversationMessages(ticketId: string) {
           input
         );
         lastOptimisticUpdateRef.current = Date.now();
-        setMessages((prev) =>
-          prev.map((message) => (message.id === tempId ? saved : message))
-        );
+        setMessages((prev) => {
+          // The same saved message may already be in the list if its real-time
+          // broadcast arrived over the hub before this POST response resolved
+          // (a race between the SignalR push and the HTTP reply). In that case,
+          // renaming the temp message to the saved id would create two entries
+          // with the same id (the duplicate-key crash). Instead: if the saved id
+          // is already present, just drop the temp message; otherwise reconcile
+          // the temp entry into the saved one.
+          const alreadyPresent = prev.some((m) => m.id === saved.id);
+          if (alreadyPresent) {
+            return prev.filter((message) => message.id !== tempId);
+          }
+          return prev.map((message) => (message.id === tempId ? saved : message));
+        });
         return saved;
       } catch (err) {
         // Roll back the optimistic message and surface the real error.
