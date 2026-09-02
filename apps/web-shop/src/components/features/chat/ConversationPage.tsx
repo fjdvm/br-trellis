@@ -2,7 +2,6 @@
 
 import { useEffect, useState, useRef, useCallback, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
-import { useSession } from "next-auth/react";
 import { Send, Loader2, ShieldCheck, Ban } from "lucide-react";
 import { useChat } from "@/hooks/useChat";
 import { ChatMessageBubble } from "./ChatMessageBubble";
@@ -21,7 +20,6 @@ interface ConversationPageProps {
 
 export function ConversationPage({ ticketId, ticket: initialTicket, initialMessages }: ConversationPageProps) {
   const router = useRouter();
-  const { data: session } = useSession();
   const [ticket, setTicket] = useState<TicketSummary | null>(initialTicket);
   const [isCancelling, setIsCancelling] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
@@ -29,8 +27,6 @@ export function ConversationPage({ ticketId, ticket: initialTicket, initialMessa
   const [isSending, setIsSending] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-
-  const userId = session?.user?.id;
 
   const handleTicketStatusChanged = useCallback(
     (payload: { ticketId: string; status: string; assignedToId?: string | null }) => {
@@ -131,7 +127,7 @@ export function ConversationPage({ ticketId, ticket: initialTicket, initialMessa
             </div>
           ) : (
             messages.map((msg) => (
-              <ChatMessageBubble key={msg.id} message={msg} isSelf={msg.senderId === userId} />
+              <ChatMessageBubble key={msg.id} message={msg} isSelf={msg.senderType === "user"} />
             ))
           )}
           <div ref={messagesEndRef} />
