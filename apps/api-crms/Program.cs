@@ -82,6 +82,10 @@ builder.Services.AddScoped<ICannedReplyCategoryService, CannedReplyCategoryServi
 builder.Services.AddScoped<ICannedReplyRepository, CannedReplyRepository>();
 builder.Services.AddScoped<ICannedReplyService, CannedReplyService>();
 
+// Campaign Templates (read-only, seeded reference data)
+builder.Services.AddScoped<ITemplateRepository, TemplateRepository>();
+builder.Services.AddScoped<ITemplateService, TemplateService>();
+
 builder.Services.AddControllers();
 builder.Services.AddOpenApi(options =>
 {

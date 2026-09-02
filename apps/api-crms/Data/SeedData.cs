@@ -8,6 +8,11 @@ public static class SeedData
 {
     public static void Seed(AppDbContext dbContext)
     {
+        // Templates are curated reference data with their own idempotency guard,
+        // seeded independently of the demo Contacts/Ecommerce/Tickets data so they
+        // still appear on databases created before the Campaign module existed.
+        SeedTemplates(dbContext);
+
         if (dbContext.Contacts.Any())
         {
             return;
@@ -1031,5 +1036,75 @@ public static class SeedData
             });
         }
         return order;
+    }
+
+    private static void SeedTemplates(AppDbContext dbContext)
+    {
+        if (dbContext.Templates.Any())
+        {
+            return;
+        }
+
+        var createdAt = DateTimeOffset.UtcNow.AddDays(-30);
+
+        dbContext.Templates.AddRange(
+            // ---- Email templates ----
+            new Template
+            {
+                Id = Guid.NewGuid(),
+                Name = "Simple Announcement",
+                Description = "A clean, single-column email for product news and general announcements.",
+                Channel = CampaignChannel.Email,
+                Format = TemplateFormat.Html,
+                Content = "<div style=\"font-family:sans-serif;max-width:600px;margin:0 auto;\">"
+                    + "<h1>{{subject}}</h1><p>{{body}}</p>"
+                    + "<p style=\"font-size:12px;color:#888;\"><a href=\"{{unsubscribe_url}}\">Unsubscribe</a></p></div>",
+                ThumbnailUrl = "/templates/email-simple-announcement.png",
+                CreatedAt = createdAt,
+            },
+            new Template
+            {
+                Id = Guid.NewGuid(),
+                Name = "Promotional Offer",
+                Description = "A bold promotional email with a hero image and prominent call to action.",
+                Channel = CampaignChannel.Email,
+                Format = TemplateFormat.Html,
+                Content = "<div style=\"font-family:sans-serif;max-width:600px;margin:0 auto;\">"
+                    + "<img src=\"{{image_url}}\" alt=\"\" style=\"width:100%;\"/>"
+                    + "<h1>{{subject}}</h1><p>{{body}}</p>"
+                    + "<p style=\"font-size:12px;color:#888;\"><a href=\"{{unsubscribe_url}}\">Unsubscribe</a></p></div>",
+                ThumbnailUrl = "/templates/email-promotional-offer.png",
+                CreatedAt = createdAt,
+            },
+            // ---- Banner templates ----
+            new Template
+            {
+                Id = Guid.NewGuid(),
+                Name = "Top Strip Banner",
+                Description = "A slim, full-width strip pinned to the top of the storefront homepage.",
+                Channel = CampaignChannel.Banner,
+                Format = TemplateFormat.Html,
+                Content = "<div style=\"background:#1a1a1a;color:#fff;text-align:center;padding:8px;\">"
+                    + "{{message}} <a href=\"{{link_url}}\" style=\"color:#fff;text-decoration:underline;\">Learn more</a></div>",
+                ThumbnailUrl = "/templates/banner-top-strip.png",
+                CreatedAt = createdAt,
+            },
+            // ---- Popup templates ----
+            new Template
+            {
+                Id = Guid.NewGuid(),
+                Name = "Centered Modal Popup",
+                Description = "A centered, dismissible modal overlay with an image and call-to-action button.",
+                Channel = CampaignChannel.Popup,
+                Format = TemplateFormat.Html,
+                Content = "<div style=\"max-width:420px;text-align:center;padding:24px;\">"
+                    + "<img src=\"{{image_url}}\" alt=\"\" style=\"width:100%;\"/>"
+                    + "<h2>{{heading}}</h2><p>{{message}}</p>"
+                    + "<a href=\"{{cta_url}}\" style=\"display:inline-block;padding:10px 20px;background:#1a1a1a;color:#fff;border-radius:6px;\">{{cta_text}}</a></div>",
+                ThumbnailUrl = "/templates/popup-centered-modal.png",
+                CreatedAt = createdAt,
+            });
+
+        dbContext.SaveChanges();
     }
 }

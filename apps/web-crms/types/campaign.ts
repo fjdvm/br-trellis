@@ -1,8 +1,8 @@
 export type CampaignStatus = "Draft" | "Active" | "Ended";
 export type CampaignType = "Regular";
-export type CampaignChannel = "Email" | "InApp";
-export type ScheduleType = "SendNow" | "Scheduled" | "Recurring";
-export type RecurrenceDay = "Monday" | "Tuesday" | "Wednesday" | "Thursday" | "Friday" | "Saturday" | "Sunday";
+export type CampaignChannel = "Email" | "Banner" | "Popup";
+export type ScheduleType = "SendNow" | "Scheduled";
+export type TemplateFormat = "Html" | "Blocks";
 
 export interface CampaignChannelContent {
   subject: string;
@@ -13,7 +13,6 @@ export interface CampaignChannelContent {
 
 export interface CampaignSchedule {
   scheduleType: ScheduleType;
-  recurrenceDays?: RecurrenceDay[];
   startDate?: string | null;
   endDate?: string | null;
   nextRunAt?: string | null;
@@ -52,7 +51,6 @@ export interface CreateCampaignInput {
   targetCustomerIds?: string[];
   targetEmails?: string[];
   scheduleType: ScheduleType;
-  recurrenceDays?: RecurrenceDay[];
   startDate?: string;
   endDate?: string;
   imageUrl?: string;
@@ -71,7 +69,6 @@ export interface UpdateCampaignInput {
   targetCustomerIds?: string[];
   targetEmails?: string[];
   scheduleType?: ScheduleType;
-  recurrenceDays?: RecurrenceDay[];
   startDate?: string;
   endDate?: string;
   imageUrl?: string;
@@ -84,9 +81,10 @@ export interface Template {
   id: string;
   name: string;
   description?: string | null;
-  contentHtml: string;
+  content: string;
+  format: TemplateFormat;
   thumbnailUrl?: string | null;
-  channel: string;
+  channel: CampaignChannel;
   createdAt: string;
 }
 

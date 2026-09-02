@@ -52,6 +52,8 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
 
     public DbSet<CannedReply> CannedReplies => Set<CannedReply>();
 
+    public DbSet<Template> Templates => Set<Template>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         ConfigureContact(modelBuilder);
@@ -78,6 +80,7 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
         ConfigureMessage(modelBuilder);
         ConfigureCannedReplyCategory(modelBuilder);
         ConfigureCannedReply(modelBuilder);
+        ConfigureTemplate(modelBuilder);
     }
 
     private static void ConfigureContact(ModelBuilder modelBuilder)
@@ -601,6 +604,28 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
                 .WithMany(e => e.CannedReplies)
                 .HasForeignKey(e => e.CategoryId)
                 .OnDelete(DeleteBehavior.Restrict);
+        });
+    }
+
+    private static void ConfigureTemplate(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<Template>(template =>
+        {
+            template.ToTable("template");
+            template.HasKey(e => e.Id);
+            template.Property(e => e.Id).HasColumnName("id");
+            template.Property(e => e.Name).HasColumnName("name");
+            template.Property(e => e.Description).HasColumnName("description");
+            template.Property(e => e.Channel)
+                .HasColumnName("channel")
+                .HasConversion<string>();
+            template.Property(e => e.Content).HasColumnName("content");
+            template.Property(e => e.Format)
+                .HasColumnName("format")
+                .HasConversion<string>();
+            template.Property(e => e.ThumbnailUrl).HasColumnName("thumbnail_url");
+            template.Property(e => e.CreatedAt).HasColumnName("created_at");
+            template.HasIndex(e => e.Channel);
         });
     }
 }
