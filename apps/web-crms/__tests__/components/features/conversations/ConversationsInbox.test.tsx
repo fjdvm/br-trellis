@@ -166,7 +166,7 @@ describe("ConversationsInbox — Visibility Rule", () => {
   });
 });
 
-describe("ConversationsInbox — status filter", () => {
+describe("ConversationsInbox — conversation filter", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockUser = {
@@ -178,7 +178,7 @@ describe("ConversationsInbox — status filter", () => {
     mocked.listMessages.mockResolvedValue([]);
   });
 
-  it("defaults to the Active filter, showing both Claimed and Ongoing", async () => {
+  it("defaults to All, showing every active conversation", async () => {
     mocked.list.mockResolvedValue([
       makeTicket({ id: "c", subject: "Claimed one", status: "Claimed", contact: { id: "c1", name: "claimed contact", email: "cl@x.com" } }),
       makeTicket({ id: "o", subject: "Ongoing one", status: "Ongoing", contact: { id: "c2", name: "ongoing contact", email: "on@x.com" } }),
@@ -186,13 +186,31 @@ describe("ConversationsInbox — status filter", () => {
 
     render(<ConversationsInbox />);
 
-    // Default filter shows the whole active set.
     expect(await screen.findByText("Claimed Contact")).toBeInTheDocument();
     expect(screen.getByText("Ongoing Contact")).toBeInTheDocument();
-    // The trigger reflects the default "Active" selection.
+    // The trigger reflects the default "All" selection.
     expect(
-      screen.getByLabelText("Filter conversations by status")
-    ).toHaveTextContent("Active");
+      screen.getByLabelText("Filter conversations")
+    ).toHaveTextContent("All");
+  });
+
+  it("offers exactly All, Claimed, Ongoing, Read, Unread as options", async () => {
+    mocked.list.mockResolvedValue([makeTicket({ id: "c", status: "Claimed" })]);
+    const user = userEvent.setup();
+
+    render(<ConversationsInbox />);
+    await screen.findByLabelText("Filter conversations");
+
+    await user.click(screen.getByLabelText("Filter conversations"));
+
+    const options = await screen.findAllByRole("option");
+    expect(options.map((o) => o.textContent)).toEqual([
+      "All",
+      "Claimed",
+      "Ongoing",
+      "Read",
+      "Unread",
+    ]);
   });
 
   it("narrows to Claimed only when that filter is chosen", async () => {
@@ -205,7 +223,7 @@ describe("ConversationsInbox — status filter", () => {
     render(<ConversationsInbox />);
     await screen.findByText("Claimed Contact");
 
-    await user.click(screen.getByLabelText("Filter conversations by status"));
+    await user.click(screen.getByLabelText("Filter conversations"));
     await user.click(await screen.findByRole("option", { name: "Claimed" }));
 
     expect(screen.getByText("Claimed Contact")).toBeInTheDocument();
@@ -222,11 +240,47 @@ describe("ConversationsInbox — status filter", () => {
     render(<ConversationsInbox />);
     await screen.findByText("Ongoing Contact");
 
-    await user.click(screen.getByLabelText("Filter conversations by status"));
+    await user.click(screen.getByLabelText("Filter conversations"));
     await user.click(await screen.findByRole("option", { name: "Ongoing" }));
 
     expect(screen.getByText("Ongoing Contact")).toBeInTheDocument();
     expect(screen.queryByText("Claimed Contact")).not.toBeInTheDocument();
+  });
+
+  it("Unread keeps only conversations awaiting the agent (waitingOn Agent)", async () => {
+    mocked.list.mockResolvedValue([
+      makeTicket({ id: "u", subject: "Awaiting agent", status: "Ongoing", waitingOn: "Agent", contact: { id: "c1", name: "unread contact", email: "u@x.com" } }),
+      makeTicket({ id: "r", subject: "Waiting on customer", status: "Ongoing", waitingOn: "Customer", contact: { id: "c2", name: "read contact", email: "r@x.com" } }),
+    ]);
+    const user = userEvent.setup();
+
+    render(<ConversationsInbox />);
+    await screen.findByText("Unread Contact");
+
+    await user.click(screen.getByLabelText("Filter conversations"));
+    await user.click(await screen.findByRole("option", { name: "Unread" }));
+
+    expect(screen.getByText("Unread Contact")).toBeInTheDocument();
+    expect(screen.queryByText("Read Contact")).not.toBeInTheDocument();
+  });
+
+  it("Read keeps only conversations not awaiting the agent", async () => {
+    mocked.list.mockResolvedValue([
+      makeTicket({ id: "u", subject: "Awaiting agent", status: "Ongoing", waitingOn: "Agent", contact: { id: "c1", name: "unread contact", email: "u@x.com" } }),
+      makeTicket({ id: "r", subject: "Waiting on customer", status: "Ongoing", waitingOn: "Customer", contact: { id: "c2", name: "read contact", email: "r@x.com" } }),
+      makeTicket({ id: "n", subject: "Nobody waiting", status: "Ongoing", waitingOn: "None", contact: { id: "c3", name: "none contact", email: "n@x.com" } }),
+    ]);
+    const user = userEvent.setup();
+
+    render(<ConversationsInbox />);
+    await screen.findByText("Read Contact");
+
+    await user.click(screen.getByLabelText("Filter conversations"));
+    await user.click(await screen.findByRole("option", { name: "Read" }));
+
+    expect(screen.getByText("Read Contact")).toBeInTheDocument();
+    expect(screen.getByText("None Contact")).toBeInTheDocument();
+    expect(screen.queryByText("Unread Contact")).not.toBeInTheDocument();
   });
 
   it("never shows terminal tickets regardless of the chosen filter", async () => {
@@ -239,13 +293,13 @@ describe("ConversationsInbox — status filter", () => {
 
     render(<ConversationsInbox />);
 
-    // Default (Active): terminal tickets hidden.
+    // Default (All): terminal tickets hidden.
     expect(await screen.findByText("Claimed Contact")).toBeInTheDocument();
     expect(screen.queryByText("Done Contact")).not.toBeInTheDocument();
     expect(screen.queryByText("Cancel Contact")).not.toBeInTheDocument();
 
     // Narrowing to Claimed still hides terminal tickets.
-    await user.click(screen.getByLabelText("Filter conversations by status"));
+    await user.click(screen.getByLabelText("Filter conversations"));
     await user.click(await screen.findByRole("option", { name: "Claimed" }));
     expect(screen.getByText("Claimed Contact")).toBeInTheDocument();
     expect(screen.queryByText("Done Contact")).not.toBeInTheDocument();

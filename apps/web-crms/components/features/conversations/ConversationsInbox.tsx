@@ -23,21 +23,26 @@ import { formatName, formatEmail } from "@/lib/format-display";
 import type { TicketListItem } from "@/types/ticket-list";
 
 /**
- * The Inbox's status filter. The worklist only ever contains active
+ * The Inbox's conversation filter. The worklist only ever contains active
  * (Claimed/Ongoing) conversations under the Visibility Rule — terminal
  * (Completed/Canceled) tickets are never shown here — so the filter narrows
- * *within* the active set:
- *  - `Active` (the default): both Claimed and Ongoing.
- *  - `Claimed`: only Claimed.
- *  - `Ongoing`: only Ongoing.
+ * *within* the active set along two dimensions:
+ *  - status: `All` (the default) shows every active conversation; `Claimed`
+ *    and `Ongoing` narrow to that single status.
+ *  - read state: `Unread` keeps conversations awaiting the agent
+ *    (`waitingOn === "Agent"` — the same signal behind the "Waiting on you"
+ *    badge), `Read` keeps the rest (the agent has already replied, so the
+ *    turn is the customer's or nobody's).
  */
-type InboxStatusFilter = "Active" | "Claimed" | "Ongoing";
+type InboxFilter = "All" | "Claimed" | "Ongoing" | "Read" | "Unread";
 
-/** Human labels for the status filter dropdown, in display order. */
-const INBOX_STATUS_FILTER_LABELS: Record<InboxStatusFilter, string> = {
-  Active: "Active (Claimed & Ongoing)",
+/** Human labels for the filter dropdown, in display order. */
+const INBOX_FILTER_LABELS: Record<InboxFilter, string> = {
+  All: "All",
   Claimed: "Claimed",
   Ongoing: "Ongoing",
+  Read: "Read",
+  Unread: "Unread",
 };
 
 interface ConversationsInboxProps {
@@ -83,9 +88,11 @@ function conversationInitials(ticket: TicketListItem): string {
  * (resolved via the shared `useCurrentAgentId` hook, exactly as My Assigned and
  * Claim resolve identity) AND its Status is Claimed or Ongoing. Unclaimed
  * tickets, tickets owned by someone else, and terminal (Completed/Canceled)
- * tickets never appear. A header status filter narrows within the active set;
- * it defaults to "Active" so the inbox opens showing every Claimed/Ongoing
- * conversation and hiding all terminal ones.
+ * tickets never appear. A header filter narrows within the active set; it
+ * defaults to "All" so the inbox opens showing every Claimed/Ongoing
+ * conversation and hiding all terminal ones. The other options narrow by
+ * status ("Claimed"/"Ongoing") or read state ("Unread" = awaiting the agent,
+ * "Read" = already replied to).
  *
  * The list loads once on mount (no background poll, matching the Tickets/My
  * Assigned lists); only the opened conversation pane polls, inside the reused
@@ -98,10 +105,10 @@ export function ConversationsInbox({ selectedTicketId }: ConversationsInboxProps
   const [tickets, setTickets] = useState<TicketListItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  // The active-status filter. Defaults to "Active" so the worklist opens
-  // showing every Claimed/Ongoing conversation and hiding all terminal
-  // (Completed/Canceled) ones; narrowing to Claimed or Ongoing filters within.
-  const [statusFilter, setStatusFilter] = useState<InboxStatusFilter>("Active");
+  // The conversation filter. Defaults to "All" so the worklist opens showing
+  // every active (Claimed/Ongoing) conversation and hiding all terminal
+  // (Completed/Canceled) ones; the other options narrow by status or read state.
+  const [filter, setFilter] = useState<InboxFilter>("All");
 
   const loadConversations = useCallback(async (options?: { background?: boolean }) => {
     // Skip the full-page loading flip on a focus-triggered background refresh so
@@ -172,23 +179,40 @@ export function ConversationsInbox({ selectedTicketId }: ConversationsInboxProps
    * unauthenticated view shows an empty worklist rather than everyone's tickets.
    *
    * Terminal (Completed/Canceled) tickets are always excluded here via
-   * `isActiveStatus`; the `statusFilter` then narrows within the active set
-   * (its default, "Active", keeps both Claimed and Ongoing).
+   * `isActiveStatus`; the `filter` then narrows within the active set. "All"
+   * (the default) keeps every active conversation; "Claimed"/"Ongoing" match on
+   * status; "Unread"/"Read" match on whether the conversation is awaiting the
+   * agent (`waitingOn === "Agent"`).
    */
   const conversations = useMemo(() => {
+    const matchesFilter = (t: TicketListItem) => {
+      switch (filter) {
+        case "Claimed":
+          return t.status === "Claimed";
+        case "Ongoing":
+          return t.status === "Ongoing";
+        case "Unread":
+          return t.waitingOn === "Agent";
+        case "Read":
+          return t.waitingOn !== "Agent";
+        case "All":
+        default:
+          return true;
+      }
+    };
     return tickets
       .filter(
         (t) =>
           t.assignedToId !== null &&
           t.assignedToId === currentAgentId &&
           isActiveStatus(t.status) &&
-          (statusFilter === "Active" || t.status === statusFilter)
+          matchesFilter(t)
       )
       .sort(
         (a, b) =>
           new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
       );
-  }, [tickets, currentAgentId, statusFilter]);
+  }, [tickets, currentAgentId, filter]);
 
   /**
    * The open conversation's ticket. Prefer the row already in the loaded list
@@ -213,25 +237,23 @@ export function ConversationsInbox({ selectedTicketId }: ConversationsInboxProps
             Inbox
           </h1>
           <Select
-            value={statusFilter}
-            onValueChange={(value) =>
-              setStatusFilter(value as InboxStatusFilter)
-            }
+            value={filter}
+            onValueChange={(value) => setFilter(value as InboxFilter)}
           >
             <SelectTrigger
-              className="h-8 w-auto min-w-[130px] text-sm"
-              aria-label="Filter conversations by status"
+              className="h-8 w-auto min-w-[110px] text-sm"
+              aria-label="Filter conversations"
             >
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {(
-                Object.keys(INBOX_STATUS_FILTER_LABELS) as InboxStatusFilter[]
-              ).map((key) => (
-                <SelectItem key={key} value={key}>
-                  {INBOX_STATUS_FILTER_LABELS[key]}
-                </SelectItem>
-              ))}
+              {(Object.keys(INBOX_FILTER_LABELS) as InboxFilter[]).map(
+                (key) => (
+                  <SelectItem key={key} value={key}>
+                    {INBOX_FILTER_LABELS[key]}
+                  </SelectItem>
+                )
+              )}
             </SelectContent>
           </Select>
         </div>
