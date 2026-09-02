@@ -138,6 +138,40 @@ public sealed class CampaignServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task CreateCampaignAsync_persists_independent_content_per_channel()
+    {
+        var input = new CreateCampaignDto(
+            Title: "Multi promo",
+            Channels: new[] { "Banner", "Popup" },
+            TargetAudience: null,
+            TargetEmails: null,
+            ScheduleType: "SendNow",
+            StartDate: null,
+            EndDate: null,
+            ChannelContents: new[]
+            {
+                new CampaignChannelContentInput("Banner", null, null, null, "Free shipping",
+                    ImageUrl: null, LinkUrl: "/sale", CtaText: null, CtaUrl: null, Dismissible: true),
+                new CampaignChannelContentInput("Popup", null, null, Heading: "Welcome!", Body: "Join us",
+                    ImageUrl: "/hero.png", LinkUrl: null, CtaText: "Shop", CtaUrl: "/shop"),
+            });
+
+        var result = await CreateService().CreateCampaignAsync(input, null, CancellationToken.None);
+
+        Assert.Equal(2, result.ChannelContents.Count);
+        var banner = result.ChannelContents.Single(c => c.Channel == "Banner");
+        var popup = result.ChannelContents.Single(c => c.Channel == "Popup");
+        Assert.Equal("Free shipping", banner.Body);
+        Assert.Equal("/sale", banner.LinkUrl);
+        Assert.True(banner.Dismissible);
+        Assert.Equal("Welcome!", popup.Heading);
+        Assert.Equal("Join us", popup.Body);
+        Assert.Equal("Shop", popup.CtaText);
+        // No audience for a Banner/Popup-only campaign.
+        Assert.Null(result.TargetAudience);
+    }
+
+    [Fact]
     public async Task GetCampaignByIdAsync_returns_null_when_missing()
     {
         Assert.Null(await CreateService().GetCampaignByIdAsync(Guid.NewGuid(), CancellationToken.None));
