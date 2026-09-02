@@ -36,7 +36,11 @@ public sealed class ChatConversationService(
             ConversationId = conversationId,
             SenderId = email,
             SenderName = input.CustomerName,
-            SenderType = "customer",
+            // "user" is the shop customer's own self-marker — the same vocabulary the
+            // server-hydrated history uses (Contact → "user"). Keeping the live echo
+            // and the reloaded history in sync is what lets the web-shop align the
+            // customer's own messages to the right without needing a refresh.
+            SenderType = "user",
             Content = content,
             SentAt = now.ToString("O"),
         };

@@ -58,7 +58,10 @@ public sealed class ChatConversationServiceTests
         var (conversationId, message) = broadcaster.Broadcasts.Single();
         conversationId.Should().Be("conv-1");
         message.Content.Should().Be("Hello there");
-        message.SenderType.Should().Be("customer");
+        // The customer's own live message must carry the "user" self-marker so the
+        // web-shop right-aligns it immediately — matching the server-hydrated history
+        // (Contact → "user"), so a sent message doesn't jump sides on refresh.
+        message.SenderType.Should().Be("user");
         message.Id.Should().Be(result.Id);
     }
 

@@ -11,7 +11,7 @@ public sealed class ChatMessageDto
     public required string SenderId { get; init; }
     public string? SenderName { get; init; }
 
-    /// <summary>"customer", "agent", or "bot".</summary>
+    /// <summary>"user" (the shop customer), "agent", or "bot".</summary>
     public required string SenderType { get; init; }
 
     public required string Content { get; init; }
