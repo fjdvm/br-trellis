@@ -28,6 +28,12 @@ export interface TicketDetail {
   contact: TicketListContact | null;
   createdAt: string;
   updatedAt: string;
+  /**
+   * Who cancelled the ticket (e.g. "Customer" or "Super Admin Alice"), for the
+   * "{who} cancelled the ticket" attribution shown on a canceled ticket. Null/absent
+   * unless the ticket is Canceled. Mirrors TicketDetailDto.CanceledBy.
+   */
+  canceledBy?: string | null;
 }
 
 /** Body for POST /tickets/{id}/claim — all fields required (ClaimTicketDto). */

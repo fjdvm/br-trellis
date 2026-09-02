@@ -124,7 +124,8 @@ public sealed class TicketController(ITicketService ticketService) : ControllerB
     {
         try
         {
-            var ticket = await ticketService.ChangeStatusAsync(id, input, cancellationToken, CurrentUserId());
+            var ticket = await ticketService.ChangeStatusAsync(
+                id, input, cancellationToken, CurrentUserId(), CurrentActorLabel());
             return ticket is null ? NotFound() : Ok(ticket);
         }
         catch (UnauthorizedAccessException ex)
@@ -170,4 +171,26 @@ public sealed class TicketController(ITicketService ticketService) : ControllerB
     private string? CurrentUserId() =>
         User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
         ?? User?.FindFirst("sub")?.Value;
+
+    /// <summary>
+    /// A human-readable attribution for the acting staff member, composed from the
+    /// validated bearer token as "{Role} {Name}" (e.g. "Super Admin Alice"), falling
+    /// back to just the name, then null when unauthenticated. Used to record who
+    /// cancelled a ticket for display in the CRMS.
+    /// </summary>
+    private string? CurrentActorLabel()
+    {
+        var name = User?.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value
+                   ?? User?.FindFirst("name")?.Value;
+
+        var role = User?.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value
+                   ?? User?.FindFirst("role")?.Value;
+
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            return string.IsNullOrWhiteSpace(role) ? null : role.Trim();
+        }
+
+        return string.IsNullOrWhiteSpace(role) ? name.Trim() : $"{role.Trim()} {name.Trim()}";
+    }
 }

@@ -281,6 +281,7 @@ public sealed class TicketIngestionServiceTests : IDisposable
         Assert.True(processed);
         var ticket = await context.Tickets.SingleAsync();
         Assert.Equal(TicketStatus.Canceled, ticket.Status);
+        Assert.Equal("Customer", ticket.CanceledBy);
     }
 
     [Fact]

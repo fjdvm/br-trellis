@@ -116,6 +116,7 @@ public sealed class TicketIngestionService(
         }
 
         ticket.Status = TicketStatus.Canceled;
+        ticket.CanceledBy = "Customer";
         ticket.UpdatedAt = ParseTimestamp(data.OccurredAt);
         await ticketRepository.SaveChangesAsync(cancellationToken);
         return ticket;

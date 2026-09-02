@@ -187,7 +187,8 @@ public sealed class TicketService(
         Guid id,
         ChangeTicketStatusDto input,
         CancellationToken cancellationToken,
-        string? callerId = null)
+        string? callerId = null,
+        string? actorLabel = null)
     {
         if (!Enum.TryParse<TicketStatus>(input.Status, ignoreCase: true, out var target))
         {
@@ -210,6 +211,15 @@ public sealed class TicketService(
 
         ticket.Status = target;
         ticket.UpdatedAt = DateTimeOffset.UtcNow;
+
+        // Attribute the cancellation for display in the CRMS ("{who} cancelled the
+        // ticket"). Only set on the transition into Canceled; a blank actor falls back
+        // to a generic "Staff" so the attribution is never empty on a staff-driven
+        // cancel. Non-cancel transitions never touch this field.
+        if (target == TicketStatus.Canceled)
+        {
+            ticket.CanceledBy = string.IsNullOrWhiteSpace(actorLabel) ? "Staff" : actorLabel.Trim();
+        }
 
         await dbContext.SaveChangesAsync(cancellationToken);
 

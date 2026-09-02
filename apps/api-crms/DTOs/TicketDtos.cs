@@ -31,7 +31,8 @@ public sealed record TicketDetailDto(
     Guid? ContactId,
     TicketContactDto? Contact,
     DateTimeOffset CreatedAt,
-    DateTimeOffset UpdatedAt);
+    DateTimeOffset UpdatedAt,
+    string? CanceledBy = null);
 
 public sealed record CreateTicketDto(
     string Subject,

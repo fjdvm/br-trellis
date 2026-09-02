@@ -219,6 +219,11 @@ export function TicketDetailPage({ ticketId }: TicketDetailPageProps) {
                 ? ` \u00b7 ${formatEmail(ticket.assignedToEmail)}`
                 : ""}
             </p>
+            {ticket.status === "Canceled" && ticket.canceledBy && (
+              <p className="text-body-md font-medium text-destructive" data-testid="cancel-attribution">
+                {ticket.canceledBy} cancelled the ticket
+              </p>
+            )}
           </div>
 
           {!isTerminal(ticket) && (

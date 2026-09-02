@@ -287,6 +287,41 @@ public sealed class TicketClaimAndTransitionTests : IDisposable
         File.Delete(_databasePath);
     }
 
+    // --- Cancellation attribution (CanceledBy) ---
+
+    [Fact]
+    public async Task Staff_cancel_records_the_actor_as_CanceledBy()
+    {
+        await using var context = CreateContext();
+        var service = CreateService(context);
+        var id = await SeedTicketAsync(context, TicketStatus.Unclaimed);
+
+        var result = await service.ChangeStatusAsync(
+            id, new ChangeTicketStatusDto("Canceled"), CancellationToken.None,
+            callerId: null, actorLabel: "Super Admin Alice");
+
+        Assert.NotNull(result);
+        Assert.Equal("Canceled", result!.Status);
+        Assert.Equal("Super Admin Alice", result.CanceledBy);
+        var stored = await context.Tickets.FindAsync(id);
+        Assert.Equal("Super Admin Alice", stored!.CanceledBy);
+    }
+
+    [Fact]
+    public async Task Non_cancel_transition_does_not_set_CanceledBy()
+    {
+        await using var context = CreateContext();
+        var service = CreateService(context);
+        var id = await SeedTicketAsync(context, TicketStatus.Claimed);
+
+        var result = await service.ChangeStatusAsync(
+            id, new ChangeTicketStatusDto("Ongoing"), CancellationToken.None,
+            callerId: null, actorLabel: "Super Admin Alice");
+
+        Assert.NotNull(result);
+        Assert.Null(result!.CanceledBy);
+    }
+
     private TicketService CreateService(AppDbContext context)
     {
         return new TicketService(

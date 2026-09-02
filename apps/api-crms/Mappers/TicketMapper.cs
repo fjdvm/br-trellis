@@ -41,7 +41,8 @@ public static class TicketMapper
             ticket.ContactId,
             ticket.Contact is null ? null : ToTicketContact(ticket.Contact),
             ticket.CreatedAt,
-            ticket.UpdatedAt);
+            ticket.UpdatedAt,
+            ticket.CanceledBy);
     }
 
     public static TicketContactDto ToTicketContact(Contact contact)

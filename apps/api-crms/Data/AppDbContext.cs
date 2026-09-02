@@ -524,6 +524,7 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
             ticket.Property(e => e.AssignedToId).HasColumnName("assigned_to_id");
             ticket.Property(e => e.AssignedToName).HasColumnName("assigned_to_name");
             ticket.Property(e => e.AssignedToEmail).HasColumnName("assigned_to_email");
+            ticket.Property(e => e.CanceledBy).HasColumnName("canceled_by");
             ticket.Property(e => e.CreatedAt).HasColumnName("created_at");
             ticket.Property(e => e.UpdatedAt).HasColumnName("updated_at");
             ticket.HasIndex(e => e.Status);

@@ -31,6 +31,14 @@ public sealed class Ticket
 
     public string? AssignedToEmail { get; set; }
 
+    /// <summary>
+    /// Who cancelled the ticket, as a human-readable attribution for display
+    /// (e.g. "Customer" for a shop-side cancel, or "Super Admin Alice" for a
+    /// staff cancel). Null unless the ticket was cancelled. Set once when the
+    /// ticket transitions to <see cref="TicketStatus.Canceled"/>.
+    /// </summary>
+    public string? CanceledBy { get; set; }
+
     public DateTimeOffset CreatedAt { get; set; }
 
     public DateTimeOffset UpdatedAt { get; set; }

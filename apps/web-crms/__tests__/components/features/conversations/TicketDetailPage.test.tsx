@@ -70,6 +70,7 @@ function makeTicket(overrides: Partial<TicketDetail> = {}): TicketDetail {
     contact: { id: "c-1", name: "jane doe", email: "JANE@EXAMPLE.COM" },
     createdAt: "2025-01-15T00:00:00Z",
     updatedAt: "2025-01-16T00:00:00Z",
+    canceledBy: null,
     ...overrides,
   };
 }
@@ -138,6 +139,41 @@ describe("TicketDetailPage", () => {
     expect(
       screen.queryByRole("button", { name: /^Mark / })
     ).not.toBeInTheDocument();
+  });
+
+  it("shows who cancelled the ticket (customer) when canceled", async () => {
+    mocked.getById.mockResolvedValue(
+      makeTicket({ status: "Canceled", canceledBy: "Customer" })
+    );
+
+    render(<TicketDetailPage ticketId="t-1" />);
+
+    await screen.findByText("Cannot log in");
+    expect(await screen.findByTestId("cancel-attribution")).toHaveTextContent(
+      "Customer cancelled the ticket"
+    );
+  });
+
+  it("shows who cancelled the ticket (staff role + name) when canceled", async () => {
+    mocked.getById.mockResolvedValue(
+      makeTicket({ status: "Canceled", canceledBy: "Super Admin Alice" })
+    );
+
+    render(<TicketDetailPage ticketId="t-1" />);
+
+    await screen.findByText("Cannot log in");
+    expect(screen.getByTestId("cancel-attribution")).toHaveTextContent(
+      "Super Admin Alice cancelled the ticket"
+    );
+  });
+
+  it("does not show a cancel attribution on a non-canceled ticket", async () => {
+    mocked.getById.mockResolvedValue(makeTicket({ status: "Claimed" }));
+
+    render(<TicketDetailPage ticketId="t-1" />);
+
+    await screen.findByText("Cannot log in");
+    expect(screen.queryByTestId("cancel-attribution")).not.toBeInTheDocument();
   });
 
   it("shows owner lifecycle actions when the signed-in agent owns the ticket", async () => {
