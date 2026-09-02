@@ -36,7 +36,9 @@ public sealed class TicketIngestionServiceTests : IDisposable
 
         Assert.True(processed);
         var ticket = await context.Tickets.SingleAsync();
-        Assert.Equal("conv-1", ticket.ExternalThreadId);
+        // #148 / ADR 0006: a shop-chat ticket is keyed on its own id — ExternalThreadId
+        // equals Ticket.Id, not the inbound conversationId.
+        Assert.Equal(ticket.Id.ToString(), ticket.ExternalThreadId);
         Assert.Equal(TicketSource.Ecommerce, ticket.Source);
         Assert.Equal(TicketStatus.Unclaimed, ticket.Status);
         Assert.Equal(WaitingOn.Agent, ticket.WaitingOn);
@@ -86,8 +88,11 @@ public sealed class TicketIngestionServiceTests : IDisposable
 
         await service.ProcessEventAsync("evt-1", "ticket.message.received",
             MessagePayload("evt-1", "conv-1", "shopper@example.com", "First"));
+        // The client now holds the canonical ticket id and sends it as the conversation
+        // key on subsequent messages (#148/#149, ADR 0006).
+        var ticketKey = (await context.Tickets.SingleAsync()).Id.ToString();
         await service.ProcessEventAsync("evt-2", "ticket.message.received",
-            MessagePayload("evt-2", "conv-1", "shopper@example.com", "Second"));
+            MessagePayload("evt-2", ticketKey, "shopper@example.com", "Second"));
 
         var ticket = await context.Tickets.SingleAsync();
         Assert.Equal(2, _broadcaster.Messages.Count);
@@ -121,8 +126,9 @@ public sealed class TicketIngestionServiceTests : IDisposable
 
         await service.ProcessEventAsync("evt-1", "ticket.message.received",
             MessagePayload("evt-1", "conv-1", "shopper@example.com", "First"));
+        var ticketKey = (await context.Tickets.SingleAsync()).Id.ToString();
         await service.ProcessEventAsync("evt-2", "ticket.message.received",
-            MessagePayload("evt-2", "conv-1", "shopper@example.com", "Second"));
+            MessagePayload("evt-2", ticketKey, "shopper@example.com", "Second"));
 
         var ticket = await context.Tickets.SingleAsync();
         Assert.Single(_broadcaster.NewTickets);
@@ -182,8 +188,9 @@ public sealed class TicketIngestionServiceTests : IDisposable
 
         await service.ProcessEventAsync("evt-1", "ticket.message.received",
             MessagePayload("evt-1", "conv-1", "shopper@example.com", "First"));
+        var ticketKey = (await context.Tickets.SingleAsync()).Id.ToString();
         await service.ProcessEventAsync("evt-2", "ticket.message.received",
-            MessagePayload("evt-2", "conv-1", "shopper@example.com", "Second"));
+            MessagePayload("evt-2", ticketKey, "shopper@example.com", "Second"));
 
         Assert.Equal(1, await context.Tickets.CountAsync());
         var messages = (await context.Messages.ToListAsync())

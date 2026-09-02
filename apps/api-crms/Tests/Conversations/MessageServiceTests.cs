@@ -382,6 +382,55 @@ public sealed class MessageServiceTests : IDisposable
         Assert.Null(result);
     }
 
+    // --- Reads resolve by EITHER conversation key (#148, ADR 0006) ---
+    // A shop-chat conversation is reachable both by its ExternalThreadId and by the
+    // Ticket's own GUID (for shop chat the two are equal, but a customer that only
+    // holds the ticket id — e.g. re-entering from the profile — must still resolve).
+
+    [Fact]
+    public async Task ListByConversation_resolves_by_external_thread_id()
+    {
+        await using var context = CreateContext();
+        var ticketId = await SeedTicketAsync(context, contactId: null, externalThreadId: "conv-abc");
+        await SeedMessageAsync(context, ticketId, "hello", DateTimeOffset.UtcNow);
+        var service = CreateService(context);
+
+        var result = await service.ListMessagesByConversationSinceAsync(
+            "conv-abc", null, CancellationToken.None);
+
+        Assert.NotNull(result);
+        Assert.Equal("hello", Assert.Single(result!).Content);
+    }
+
+    [Fact]
+    public async Task ListByConversation_resolves_by_ticket_id_when_key_is_the_ticket_guid()
+    {
+        await using var context = CreateContext();
+        // ExternalThreadId deliberately differs from the ticket GUID here to prove the
+        // resolution genuinely matches on Ticket.Id, not just the stored thread id.
+        var ticketId = await SeedTicketAsync(context, contactId: null, externalThreadId: "some-other-thread");
+        await SeedMessageAsync(context, ticketId, "via ticket id", DateTimeOffset.UtcNow);
+        var service = CreateService(context);
+
+        var result = await service.ListMessagesByConversationSinceAsync(
+            ticketId.ToString(), null, CancellationToken.None);
+
+        Assert.NotNull(result);
+        Assert.Equal("via ticket id", Assert.Single(result!).Content);
+    }
+
+    [Fact]
+    public async Task ListByConversation_returns_null_for_unknown_key()
+    {
+        await using var context = CreateContext();
+        var service = CreateService(context);
+
+        var result = await service.ListMessagesByConversationSinceAsync(
+            "no-such-conversation", null, CancellationToken.None);
+
+        Assert.Null(result);
+    }
+
     private readonly FakeConversationBroadcaster _broadcaster = new();
 
     private MessageService CreateService(AppDbContext context)
@@ -413,13 +462,15 @@ public sealed class MessageServiceTests : IDisposable
         return contact.Id;
     }
 
-    private static async Task<Guid> SeedTicketAsync(AppDbContext context, Guid? contactId)
+    private static async Task<Guid> SeedTicketAsync(
+        AppDbContext context, Guid? contactId, string? externalThreadId = null)
     {
         var ticket = new Ticket
         {
             Id = Guid.NewGuid(),
             ContactId = contactId,
             Subject = "Test ticket",
+            ExternalThreadId = externalThreadId,
             Status = TicketStatus.Unclaimed,
             WaitingOn = WaitingOn.None,
             CreatedAt = DateTimeOffset.UtcNow,

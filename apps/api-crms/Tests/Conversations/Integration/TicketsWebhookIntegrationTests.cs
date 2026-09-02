@@ -67,11 +67,11 @@ public sealed class TicketsWebhookIntegrationTests
 
         using var scope = _factory.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-        var ticket = db.Tickets.Single(t => t.ExternalThreadId == conv);
+        var contact = db.Contacts.Single(c => c.Email == email);
+        var ticket = db.Tickets.Single(t => t.ContactId == contact.Id);
         Assert.Equal(TicketSource.Ecommerce, ticket.Source);
-        Assert.NotNull(ticket.ContactId);
-        var contact = db.Contacts.Single(c => c.Id == ticket.ContactId);
-        Assert.Equal(email, contact.Email);
+        // #148 / ADR 0006: shop-chat ticket is keyed on its own id.
+        Assert.Equal(ticket.Id.ToString(), ticket.ExternalThreadId);
         var msg = db.Messages.Single(m => m.TicketId == ticket.Id);
         Assert.Equal(MessageSenderType.Contact, msg.SenderType);
         Assert.Equal("Where is my order?", msg.Content);
@@ -93,7 +93,8 @@ public sealed class TicketsWebhookIntegrationTests
 
         using var scope = _factory.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-        var ticketIds = db.Tickets.Where(t => t.ExternalThreadId == conv).Select(t => t.Id).ToList();
+        var contact = db.Contacts.Single(c => c.Email == email);
+        var ticketIds = db.Tickets.Where(t => t.ContactId == contact.Id).Select(t => t.Id).ToList();
         Assert.Single(ticketIds);
         Assert.Equal(1, db.Messages.Count(m => ticketIds.Contains(m.TicketId)));
     }
@@ -105,13 +106,57 @@ public sealed class TicketsWebhookIntegrationTests
         var conv = $"conv-{Guid.NewGuid():N}";
 
         await PostSignedAsync(BuildPayload($"evt-{Guid.NewGuid():N}", conv, email, "First"));
-        await PostSignedAsync(BuildPayload($"evt-{Guid.NewGuid():N}", conv, email, "Second"));
 
-        using var scope = _factory.Services.CreateScope();
-        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-        var ticketIds = db.Tickets.Where(t => t.ExternalThreadId == conv).Select(t => t.Id).ToList();
-        Assert.Single(ticketIds);
-        Assert.Equal(2, db.Messages.Count(m => ticketIds.Contains(m.TicketId)));
+        // After the opening message the ticket is keyed on its own id (#148, ADR 0006);
+        // the client sends that id as the conversation key from then on.
+        Guid ticketId;
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            var ticket = db.Tickets.Single(t => t.ExternalThreadId != null && t.Messages.Any(m => m.Content == "First"));
+            ticketId = ticket.Id;
+            Assert.Equal(ticketId.ToString(), ticket.ExternalThreadId);
+        }
+
+        await PostSignedAsync(BuildPayload($"evt-{Guid.NewGuid():N}", ticketId.ToString(), email, "Second"));
+
+        using var verifyScope = _factory.Services.CreateScope();
+        var verifyDb = verifyScope.ServiceProvider.GetRequiredService<AppDbContext>();
+        Assert.Equal(2, verifyDb.Messages.Count(m => m.TicketId == ticketId));
+        // No second ticket was spawned for this conversation.
+        Assert.Single(verifyDb.Tickets.Where(t => t.Id == ticketId || t.ExternalThreadId == conv));
+    }
+
+    [Fact]
+    public async Task Both_read_endpoints_resolve_the_same_ticket_for_the_ticket_id()
+    {
+        var email = $"both-{Guid.NewGuid():N}@example.com";
+        var conv = $"conv-{Guid.NewGuid():N}";
+        await PostSignedAsync(BuildPayload($"evt-{Guid.NewGuid():N}", conv, email, "Opening"));
+
+        Guid ticketId;
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            ticketId = db.Tickets.Single(t => t.Messages.Any(m => m.Content == "Opening")).Id;
+        }
+
+        // Agent-facing read, keyed by the ticket GUID.
+        var byTicket = await _client.GetAsync($"/api/v1/tickets/{ticketId}/messages");
+        // Staff-reply-poll read, keyed by the conversation id — which is now the ticket id.
+        var byConversation = await _client.GetAsync($"/api/v1/conversations/{ticketId}/messages");
+
+        Assert.Equal(HttpStatusCode.OK, byTicket.StatusCode);
+        Assert.Equal(HttpStatusCode.OK, byConversation.StatusCode);
+
+        var ticketDoc = JsonDocument.Parse(await byTicket.Content.ReadAsStringAsync());
+        var convDoc = JsonDocument.Parse(await byConversation.Content.ReadAsStringAsync());
+        // Same single message, same id, from both endpoints → same underlying ticket.
+        Assert.Equal(1, ticketDoc.RootElement.GetArrayLength());
+        Assert.Equal(1, convDoc.RootElement.GetArrayLength());
+        Assert.Equal(
+            ticketDoc.RootElement[0].GetProperty("id").GetString(),
+            convDoc.RootElement[0].GetProperty("id").GetString());
     }
 
     private async Task<HttpResponseMessage> PostSignedAsync(string body, string? signatureOverride = null)

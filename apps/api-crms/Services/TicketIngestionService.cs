@@ -94,11 +94,15 @@ public sealed class TicketIngestionService(
         var existing = await ticketRepository.GetTicketByThreadIdAsync(conversationId, cancellationToken);
         if (existing is null)
         {
+            var ticketId = Guid.NewGuid();
             var ticket = new Ticket
             {
-                Id = Guid.NewGuid(),
+                Id = ticketId,
                 ContactId = contactId,
-                ExternalThreadId = conversationId,
+                // #148 / ADR 0006: a shop-chat conversation is keyed on the Ticket's own
+                // id — the single conversation key end to end. (Email keeps its upstream
+                // thread id; only shop chat adopts Ticket.Id.)
+                ExternalThreadId = ticketId.ToString(),
                 Subject = (data.Subject ?? string.Empty).Trim(),
                 Status = TicketStatus.Unclaimed,
                 WaitingOn = WaitingOn.Agent,

@@ -34,8 +34,19 @@ public sealed class TicketIngestionRepository(AppDbContext dbContext) : ITicketI
     public async Task<Ticket?> GetTicketByThreadIdAsync(
         string threadId, CancellationToken cancellationToken)
     {
-        return await dbContext.Tickets
+        // #148 / ADR 0006: a shop-chat conversation key may be the stored
+        // ExternalThreadId or the Ticket's own id (they are equal for shop chat, but a
+        // client that only holds the ticket id must still resolve). Match either.
+        var byThread = await dbContext.Tickets
             .FirstOrDefaultAsync(t => t.ExternalThreadId == threadId, cancellationToken);
+        if (byThread is not null)
+        {
+            return byThread;
+        }
+
+        return Guid.TryParse(threadId, out var ticketId)
+            ? await dbContext.Tickets.FirstOrDefaultAsync(t => t.Id == ticketId, cancellationToken)
+            : null;
     }
 
     public async Task AddTicketAsync(Ticket ticket, CancellationToken cancellationToken)

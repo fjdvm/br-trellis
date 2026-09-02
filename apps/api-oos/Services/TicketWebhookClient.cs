@@ -41,9 +41,14 @@ public sealed class TicketWebhookClient(
         var response = await client.SendAsync(request, cancellationToken);
         if (!response.IsSuccessStatusCode)
         {
-            logger.LogWarning(
+            // #151: fail loud. A rejected relay must never look like a successful send,
+            // so we log at Error (monitorable) and surface the failure to the caller
+            // rather than swallowing it with a warning. (Echo-gating and retry/backoff
+            // are deliberately out of scope here — see #147.)
+            logger.LogError(
                 "api-crms rejected {EventType} ticket webhook {EventId}: {Status}",
                 webhookEvent.EventType, webhookEvent.EventId, (int)response.StatusCode);
+            response.EnsureSuccessStatusCode();
         }
     }
 
