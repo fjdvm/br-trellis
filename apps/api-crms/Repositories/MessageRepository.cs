@@ -55,22 +55,12 @@ public sealed class MessageRepository(AppDbContext dbContext) : IMessageReposito
     public async Task<Guid?> GetTicketIdByExternalThreadAsync(
         string conversationId, CancellationToken cancellationToken)
     {
-        // #148 / ADR 0006: resolve a shop-chat conversation key by either the stored
-        // ExternalThreadId or the Ticket's own id. Both read surfaces
-        // (/conversations/{id} and /tickets/{id}) therefore land on the same Ticket.
-        var byThread = await dbContext.Tickets.AsNoTracking()
-            .FirstOrDefaultAsync(t => t.ExternalThreadId == conversationId, cancellationToken);
-        if (byThread is not null)
-        {
-            return byThread.Id;
-        }
-
-        if (Guid.TryParse(conversationId, out var ticketId)
-            && await dbContext.Tickets.AsNoTracking().AnyAsync(t => t.Id == ticketId, cancellationToken))
-        {
-            return ticketId;
-        }
-
-        return null;
+        // #148 / ADR 0006: resolve by either the stored ExternalThreadId or the Ticket's
+        // own id — the single definition lives in TicketQueryExtensions. Both read
+        // surfaces (/conversations/{id} and /tickets/{id}) therefore land on the same
+        // Ticket.
+        var ticket = await dbContext.Tickets.AsNoTracking()
+            .ResolveByConversationKeyAsync(conversationId, cancellationToken);
+        return ticket?.Id;
     }
 }
