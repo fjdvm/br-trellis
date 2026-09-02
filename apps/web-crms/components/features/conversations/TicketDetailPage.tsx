@@ -316,7 +316,7 @@ export function TicketDetailPage({ ticketId }: TicketDetailPageProps) {
             <CardContent className="p-lg pt-0 space-y-md">
               <div className="grid grid-cols-2 gap-md text-base items-center">
                 <div className="text-muted-foreground">Waiting On</div>
-                <div>
+                <div className="min-w-0">
                   <Select
                     value={ticket.waitingOn}
                     onValueChange={(value) =>
@@ -325,7 +325,7 @@ export function TicketDetailPage({ ticketId }: TicketDetailPageProps) {
                     disabled={pending === "waitingOn" || isTerminal(ticket)}
                   >
                     <SelectTrigger
-                      className="w-[160px]"
+                      className="w-full max-w-[200px]"
                       aria-label="Set waiting on"
                     >
                       <SelectValue />
@@ -340,9 +340,9 @@ export function TicketDetailPage({ ticketId }: TicketDetailPageProps) {
                   </Select>
                 </div>
                 <div className="text-muted-foreground">Assignee</div>
-                <div>{formatName(ticket.assignedToName) ?? "\u2014"}</div>
+                <div className="min-w-0 break-words">{formatName(ticket.assignedToName) ?? "\u2014"}</div>
                 <div className="text-muted-foreground">Assignee email</div>
-                <div>{formatEmail(ticket.assignedToEmail) ?? "\u2014"}</div>
+                <div className="min-w-0 break-words">{formatEmail(ticket.assignedToEmail) ?? "\u2014"}</div>
               </div>
 
               {ticket.contact && (
@@ -350,9 +350,9 @@ export function TicketDetailPage({ ticketId }: TicketDetailPageProps) {
                   <Separator />
                   <div className="grid grid-cols-2 gap-md text-base">
                     <div className="text-muted-foreground">Contact</div>
-                    <div>{formatName(ticket.contact.name) ?? "\u2014"}</div>
+                    <div className="min-w-0 break-words">{formatName(ticket.contact.name) ?? "\u2014"}</div>
                     <div className="text-muted-foreground">Contact email</div>
-                    <div>{formatEmail(ticket.contact.email) ?? "\u2014"}</div>
+                    <div className="min-w-0 break-words">{formatEmail(ticket.contact.email) ?? "\u2014"}</div>
                   </div>
                 </>
               )}
