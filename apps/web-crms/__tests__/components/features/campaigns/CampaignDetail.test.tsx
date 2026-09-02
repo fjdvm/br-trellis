@@ -1,13 +1,19 @@
 import React from "react";
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { CampaignDetail } from "@/components/features/campaigns/CampaignDetail";
 import { useCampaign } from "@/hooks/useCampaign";
+import { crmClient } from "@/lib/api/crm-client";
 import type { Campaign } from "@/types/campaign";
 
 jest.mock("next/navigation", () => ({
   useRouter: () => ({ push: jest.fn() }),
 }));
 jest.mock("@/hooks/useCampaign", () => ({ useCampaign: jest.fn() }));
+jest.mock("@/hooks/useSegments", () => ({ useSegments: jest.fn(() => ({ data: [], isLoading: false })) }));
+jest.mock("@/lib/api/crm-client", () => ({
+  crmClient: { campaigns: { updateStatus: jest.fn() } },
+}));
 
 const campaign: Campaign = {
   id: "c1",
@@ -59,5 +65,30 @@ describe("CampaignDetail", () => {
     (useCampaign as jest.Mock).mockReturnValue({ data: null, isLoading: false, error: null, refetch: jest.fn() });
     render(<CampaignDetail id="c1" />);
     expect(screen.getByText(/not found/i)).toBeInTheDocument();
+  });
+
+  it("shows a Launch button for a Draft campaign and calls updateStatus(Active) on click", async () => {
+    const refetch = jest.fn();
+    (useCampaign as jest.Mock).mockReturnValue({ data: campaign, isLoading: false, error: null, refetch });
+    (crmClient.campaigns.updateStatus as jest.Mock).mockResolvedValue({ id: "c1", status: "Active" });
+    const user = userEvent.setup({ delay: null });
+    render(<CampaignDetail id="c1" />);
+
+    const launch = screen.getByRole("button", { name: /launch/i });
+    await user.click(launch);
+    await waitFor(() =>
+      expect(crmClient.campaigns.updateStatus).toHaveBeenCalledWith("c1", "Active")
+    );
+  });
+
+  it("hides the Launch button for a non-Draft campaign", () => {
+    (useCampaign as jest.Mock).mockReturnValue({
+      data: { ...campaign, status: "Active" },
+      isLoading: false,
+      error: null,
+      refetch: jest.fn(),
+    });
+    render(<CampaignDetail id="c1" />);
+    expect(screen.queryByRole("button", { name: /launch/i })).not.toBeInTheDocument();
   });
 });

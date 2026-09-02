@@ -209,7 +209,8 @@ public sealed class CampaignServiceTests : IDisposable
     private CampaignService CreateService()
     {
         var context = CreateContext();
-        return new CampaignService(new CampaignRepository(context), context);
+        var segmentService = new SegmentService(new SegmentRepository(context), context);
+        return new CampaignService(new CampaignRepository(context), segmentService, context);
     }
 
     private AppDbContext CreateContext()

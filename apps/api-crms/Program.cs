@@ -89,6 +89,12 @@ builder.Services.AddScoped<ITemplateService, TemplateService>();
 // Campaigns
 builder.Services.AddScoped<ICampaignRepository, CampaignRepository>();
 builder.Services.AddScoped<ICampaignService, CampaignService>();
+builder.Services.AddSingleton(new CampaignLifecycleOptions
+{
+    SweepInterval = TimeSpan.FromMinutes(
+        builder.Configuration.GetValue<double?>("Campaigns:SweepIntervalMinutes") ?? 15),
+});
+builder.Services.AddHostedService<CampaignLifecycleSweepService>();
 
 builder.Services.AddControllers();
 builder.Services.AddOpenApi(options =>

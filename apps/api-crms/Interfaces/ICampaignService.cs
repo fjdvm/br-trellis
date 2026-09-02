@@ -15,4 +15,15 @@ public interface ICampaignService
     Task<CampaignDetailDto?> UpdateCampaignAsync(Guid id, UpdateCampaignDto input, CancellationToken cancellationToken);
 
     Task<bool> DeleteCampaignAsync(Guid id, CancellationToken cancellationToken);
+
+    // Launches a Draft campaign (Draft -> Active): snapshots the Email audience
+    // into ResolvedRecipients and enforces single-active-per-channel for
+    // Banner/Popup. Returns null if not found; throws InvalidOperationException
+    // on an illegal transition or a single-active-per-channel conflict.
+    Task<CampaignDetailDto?> LaunchCampaignAsync(Guid id, CancellationToken cancellationToken);
+
+    // Internal lifecycle sweep (no external calls): flips Banner/Popup channels
+    // terminal once their EndDate passes and moves a Campaign to Ended once every
+    // targeted channel is terminal. Returns the ids of campaigns moved to Ended.
+    Task<IReadOnlyList<Guid>> SweepCampaignLifecycleAsync(CancellationToken cancellationToken);
 }

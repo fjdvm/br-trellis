@@ -74,6 +74,31 @@ public sealed class CampaignController(ICampaignService campaignService) : Contr
         return deleted ? NoContent() : NotFound();
     }
 
+    // Launch / lifecycle transition. Currently only Draft -> Active (launch) is
+    // supported; other target statuses are rejected. Mirrors the crm-client's
+    // PUT /campaigns/{id}/status?status=Active.
+    [HttpPut("{id:guid}/status")]
+    public async Task<ActionResult<CampaignDetailDto>> UpdateStatus(
+        Guid id,
+        [FromQuery] string status,
+        CancellationToken cancellationToken)
+    {
+        if (!string.Equals(status, "Active", StringComparison.OrdinalIgnoreCase))
+        {
+            return BadRequest(new { error = "Only launching (status=Active) is supported." });
+        }
+
+        try
+        {
+            var campaign = await campaignService.LaunchCampaignAsync(id, cancellationToken);
+            return campaign is null ? NotFound() : Ok(campaign);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Conflict(new { error = ex.Message });
+        }
+    }
+
     private string? CurrentUserId() =>
         User?.FindFirst(ClaimTypes.NameIdentifier)?.Value
         ?? User?.FindFirst("sub")?.Value;

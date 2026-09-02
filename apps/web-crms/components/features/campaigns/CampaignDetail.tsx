@@ -1,20 +1,24 @@
 "use client";
 
+import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Pencil } from "lucide-react";
+import { ArrowLeft, Pencil, Rocket } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CampaignChannelBadge } from "@/components/features/campaigns/CampaignChannelBadge";
 import { CampaignStatusBadge } from "@/components/features/campaigns/CampaignStatusBadge";
+import { crmClient } from "@/lib/api/crm-client";
 import { useCampaign } from "@/hooks/useCampaign";
 import { useSegments } from "@/hooks/useSegments";
 import type { CampaignChannelContent } from "@/types/campaign";
 
 export function CampaignDetail({ id }: { id: string }) {
   const router = useRouter();
-  const { data: campaign, isLoading } = useCampaign(id);
+  const { data: campaign, isLoading, refetch } = useCampaign(id);
   const { data: segments } = useSegments();
+  const [launching, setLaunching] = useState(false);
+  const [launchError, setLaunchError] = useState<string | null>(null);
 
   if (isLoading) {
     return (
@@ -34,6 +38,19 @@ export function CampaignDetail({ id }: { id: string }) {
     : null;
   const isDraft = campaign.status === "Draft";
 
+  async function launch() {
+    setLaunching(true);
+    setLaunchError(null);
+    try {
+      await crmClient.campaigns.updateStatus(campaign!.id, "Active");
+      await refetch();
+    } catch (err) {
+      setLaunchError(err instanceof Error ? err.message : "Failed to launch campaign.");
+    } finally {
+      setLaunching(false);
+    }
+  }
+
   return (
     <div className="w-full min-h-full py-xl px-lg md:px-xl space-y-lg max-w-4xl mx-auto">
       <div className="flex items-center justify-between">
@@ -42,12 +59,20 @@ export function CampaignDetail({ id }: { id: string }) {
           Back
         </Button>
         {isDraft && (
-          <Button variant="outline" size="sm" onClick={() => router.push(`/campaigns/${campaign.id}/edit`)}>
-            <Pencil className="w-4 h-4 mr-1" />
-            Edit
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" onClick={() => router.push(`/campaigns/${campaign.id}/edit`)}>
+              <Pencil className="w-4 h-4 mr-1" />
+              Edit
+            </Button>
+            <Button size="sm" onClick={launch} disabled={launching}>
+              <Rocket className="w-4 h-4 mr-1" />
+              {launching ? "Launching…" : "Launch"}
+            </Button>
+          </div>
         )}
       </div>
+
+      {launchError && <div className="p-md text-destructive text-base">{launchError}</div>}
 
       <div className="space-y-sm">
         <div className="flex items-center gap-3 flex-wrap">
