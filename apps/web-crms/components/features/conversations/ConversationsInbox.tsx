@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { Inbox as InboxIcon, MessagesSquare } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -58,6 +58,17 @@ interface ConversationsInboxProps {
   selectedTicketId?: string;
 }
 
+/**
+ * Parse the open conversation's ticket id out of the inbox pathname. The inbox
+ * lives at `/conversations/inbox` (no selection) and `/conversations/inbox/[id]`
+ * (a conversation open). Returns `undefined` when no conversation is selected.
+ */
+function selectedIdFromPathname(pathname: string | null): string | undefined {
+  if (!pathname) return undefined;
+  const match = pathname.match(/\/conversations\/inbox\/([^/?#]+)/);
+  return match?.[1];
+}
+
 /** The thread-list label for a conversation: contact name → email → em dash. */
 function conversationLabel(ticket: TicketListItem): string {
   return (
@@ -100,8 +111,20 @@ function conversationInitials(ticket: TicketListItem): string {
  * `MessageThread`. Selecting a conversation pushes `/conversations/inbox/[id]`
  * so a refresh or direct link lands on the right open thread.
  */
-export function ConversationsInbox({ selectedTicketId }: ConversationsInboxProps) {
+export function ConversationsInbox({
+  selectedTicketId: selectedTicketIdProp,
+}: ConversationsInboxProps) {
   const router = useRouter();
+  const pathname = usePathname();
+  // The open conversation id. Prefer an explicit prop (used in tests and any
+  // server-passed value); otherwise derive it from the URL so selecting a
+  // conversation — which only pushes `/conversations/inbox/[id]` — updates the
+  // open pane WITHOUT remounting this component. Because a shared inbox layout
+  // keeps `ConversationsInbox` mounted across those navigations, the left list
+  // and the thread header/composer stay still; only the message pane re-reads
+  // the new id and swaps its content.
+  const selectedTicketId =
+    selectedTicketIdProp ?? selectedIdFromPathname(pathname);
   const currentAgentId = useCurrentAgentId();
   const [tickets, setTickets] = useState<TicketListItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);

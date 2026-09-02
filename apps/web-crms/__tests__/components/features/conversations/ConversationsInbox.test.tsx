@@ -23,9 +23,11 @@ beforeAll(() => {
 });
 
 const mockPush = jest.fn();
+let mockPathname = "/conversations/inbox";
 
 jest.mock("next/navigation", () => ({
   useRouter: () => ({ push: mockPush }),
+  usePathname: () => mockPathname,
 }));
 
 // A mutable session identity so tests can exercise the id vs. username fallback
@@ -666,5 +668,53 @@ describe("ConversationsInbox — live ticket-list events", () => {
     await waitFor(() =>
       expect(screen.queryByText("Mine for now")).not.toBeInTheDocument()
     );
+  });
+});
+
+
+describe("ConversationsInbox — URL-derived selection (no remount on navigate)", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockPathname = "/conversations/inbox";
+  });
+
+  afterEach(() => {
+    // Restore the default no-selection path so other suites are unaffected.
+    mockPathname = "/conversations/inbox";
+  });
+
+  it("opens the conversation named in the URL when no selectedTicketId prop is given", async () => {
+    // The inbox UI is now mounted by the shared layout with NO prop; the open
+    // conversation is derived from the pathname instead. This proves selecting a
+    // conversation (which only changes the URL) drives the open pane.
+    mockPathname = "/conversations/inbox/t-1";
+    mocked.list.mockResolvedValue([
+      makeTicket({ id: "t-1", subject: "Cannot log in" }),
+    ]);
+    mocked.listMessages.mockResolvedValue([]);
+
+    render(<ConversationsInbox />);
+
+    // The right pane opens the URL's conversation (its message thread renders),
+    // not the "No Conversation Selected" empty state.
+    await waitFor(() =>
+      expect(
+        screen.queryByText(/No Conversation Selected/i)
+      ).not.toBeInTheDocument()
+    );
+    expect(
+      await screen.findByRole("log", { name: /message thread/i })
+    ).toBeInTheDocument();
+  });
+
+  it("shows the empty state when the URL carries no conversation id", async () => {
+    mockPathname = "/conversations/inbox";
+    mocked.list.mockResolvedValue([]);
+
+    render(<ConversationsInbox />);
+
+    expect(
+      await screen.findByText(/No Conversation Selected/i)
+    ).toBeInTheDocument();
   });
 });
