@@ -209,6 +209,52 @@ public sealed class MessageEndpointsIntegrationTests
         }
     }
 
+    [Fact]
+    public async Task Staff_reply_is_readable_via_the_conversation_key_endpoint_under_the_ticket_id()
+    {
+        // #150 / ADR 0006: a shop-chat ticket is keyed on its own id (ExternalThreadId
+        // == Id). A staff reply posted through the agent endpoint (keyed by ticket id)
+        // must be readable through the customer's poll endpoint (keyed by the
+        // conversation id) — and for shop chat those keys are the SAME ticket id. This
+        // is the exact "customer sees the staff reply" path, proven in-process.
+        var ticketId = SeedShopChatTicket();
+
+        var post = await _client.PostAsJsonAsync(
+            $"/api/v1/tickets/{ticketId}/messages",
+            new { senderType = "Staff", senderStaffId = "auth|amelia", senderStaffName = "Amelia", content = "On it!" });
+        Assert.Equal(HttpStatusCode.Created, post.StatusCode);
+
+        // The customer's poll uses the conversation-key endpoint with the ticket id.
+        var read = await _client.GetAsync($"/api/v1/conversations/{ticketId}/messages");
+        Assert.Equal(HttpStatusCode.OK, read.StatusCode);
+
+        var items = await read.Content.ReadFromJsonAsync<JsonElement>();
+        Assert.Equal(1, items.GetArrayLength());
+        Assert.Equal("Staff", items[0].GetProperty("senderType").GetString());
+        Assert.Equal("On it!", items[0].GetProperty("content").GetString());
+    }
+
+    private Guid SeedShopChatTicket()
+    {
+        using var scope = _factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var id = Guid.NewGuid();
+        db.Tickets.Add(new Ticket
+        {
+            Id = id,
+            ContactId = null,
+            Subject = "Shop chat",
+            ExternalThreadId = id.ToString(), // shop-chat invariant: thread id == ticket id
+            Status = TicketStatus.Unclaimed,
+            WaitingOn = WaitingOn.Agent,
+            Source = TicketSource.Ecommerce,
+            CreatedAt = DateTimeOffset.UtcNow,
+            UpdatedAt = DateTimeOffset.UtcNow,
+        });
+        db.SaveChanges();
+        return id;
+    }
+
     private Guid SeedContact()
     {
         using var scope = _factory.Services.CreateScope();

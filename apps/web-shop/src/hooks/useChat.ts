@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import { apiClient } from "@/lib/api/api-client";
 import { supportApi } from "@/lib/api/support-api";
+import { chatTicketStorageKey, isUsableTicketId } from "@/lib/support/chat-ticket-key";
 import { useChatSignalR } from "./useChatSignalR";
 import type { ChatMessage, SupportTicketResponse, BotReplyResponse } from "@/types/chat";
 
@@ -98,11 +99,16 @@ export function useChat(initialTicketId?: string, options?: UseChatOptions) {
     if (!userId || !token) return null;
     if (ticketId) return ticketId;
 
-    const storageKey = `br_chat_ticket_${userId}`;
+    const storageKey = chatTicketStorageKey(userId);
     const existingTicket = localStorage.getItem(storageKey);
-    if (existingTicket) {
+    // Only reuse a well-formed Ticket id (ADR 0006). A stale/legacy non-Guid key would
+    // resolve to nothing server-side, so discard it and start a fresh conversation.
+    if (isUsableTicketId(existingTicket)) {
       setTicketId(existingTicket);
       return existingTicket;
+    }
+    if (existingTicket) {
+      localStorage.removeItem(storageKey);
     }
 
     try {
