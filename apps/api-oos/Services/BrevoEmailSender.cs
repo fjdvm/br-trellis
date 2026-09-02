@@ -81,6 +81,7 @@ public class BrevoEmailSender : IEmailSender
         IReadOnlyList<string> recipients,
         string subject,
         string htmlBody,
+        string? unsubscribeBaseUrl = null,
         CancellationToken cancellationToken = default)
     {
         var sent = 0;
@@ -92,7 +93,8 @@ public class BrevoEmailSender : IEmailSender
             cancellationToken.ThrowIfCancellationRequested();
             try
             {
-                await SendSingleAsync(recipient, subject, htmlBody, cancellationToken);
+                var body = AppendUnsubscribeFooter(htmlBody, recipient, unsubscribeBaseUrl);
+                await SendSingleAsync(recipient, subject, body, cancellationToken);
                 sent++;
             }
             catch (Exception ex)
@@ -104,6 +106,21 @@ public class BrevoEmailSender : IEmailSender
         }
 
         return new BulkEmailResult(sent, failed, errors);
+    }
+
+    // Appends a per-recipient unsubscribe link so the opt-out endpoint can
+    // identify who is unsubscribing. Returns the body unchanged when no base URL
+    // is configured.
+    private static string AppendUnsubscribeFooter(string htmlBody, string recipient, string? unsubscribeBaseUrl)
+    {
+        if (string.IsNullOrWhiteSpace(unsubscribeBaseUrl))
+        {
+            return htmlBody;
+        }
+        var url = $"{unsubscribeBaseUrl.TrimEnd('/')}?email={Uri.EscapeDataString(recipient)}";
+        return htmlBody +
+            $"<p style=\"font-size:12px;color:#888;margin-top:24px;\">" +
+            $"Don't want these emails? <a href=\"{url}\">Unsubscribe</a>.</p>";
     }
 
     /// <summary>

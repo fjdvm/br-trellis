@@ -36,9 +36,8 @@ public sealed class CampaignDispatchService(
                 continue;
             }
 
-            var body = AppendUnsubscribeFooter(campaign.Body);
             var result = await emailSender.SendBulkAsync(
-                campaign.Recipients, campaign.Subject, body, cancellationToken);
+                campaign.Recipients, campaign.Subject, campaign.Body, UnsubscribeBaseUrl(), cancellationToken);
 
             await dispatchClient.ReportDispatchResultAsync(
                 campaign.Id,
@@ -55,17 +54,14 @@ public sealed class CampaignDispatchService(
         return dispatched;
     }
 
-    private string AppendUnsubscribeFooter(string body)
+    private string UnsubscribeBaseUrl()
     {
         // The unsubscribe link hits api-oos's own unauthenticated endpoint, which
-        // relays the opt-out to api-crms. web-shop base URL is used so the link
-        // resolves to a browser-facing page/handler.
+        // relays the opt-out to api-crms. The bulk sender appends the per-recipient
+        // ?email= so the opt-out can identify who is unsubscribing.
         var baseUrl = configuration["ApiOos:PublicBaseUrl"]
             ?? configuration["WebShop:BaseUrl"]
             ?? "https://localhost:3004";
-        var unsubscribeUrl = $"{baseUrl.TrimEnd('/')}/api/marketing/unsubscribe";
-        return body +
-            $"<p style=\"font-size:12px;color:#888;margin-top:24px;\">" +
-            $"Don't want these emails? <a href=\"{unsubscribeUrl}\">Unsubscribe</a>.</p>";
+        return $"{baseUrl.TrimEnd('/')}/api/marketing/unsubscribe";
     }
 }

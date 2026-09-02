@@ -36,6 +36,7 @@ public class LoggingEmailSender : IEmailSender
         IReadOnlyList<string> recipients,
         string subject,
         string htmlBody,
+        string? unsubscribeBaseUrl = null,
         CancellationToken cancellationToken = default)
     {
         foreach (var recipient in recipients)

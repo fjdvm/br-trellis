@@ -96,6 +96,10 @@ describe("CampaignWizard (Email only, #159)", () => {
     await user.type(screen.getByLabelText("Body"), "Come shop");
     await user.click(screen.getByRole("button", { name: /next/i }));
 
+    // Schedule step -> Next
+    await waitFor(() => expect(screen.getByTestId("wizard-step-title")).toHaveTextContent("Schedule"));
+    await user.click(screen.getByRole("button", { name: /next/i }));
+
     // Review step -> Save Draft
     await waitFor(() => expect(screen.getByRole("button", { name: /save draft/i })).toBeInTheDocument());
     await user.click(screen.getByRole("button", { name: /save draft/i }));

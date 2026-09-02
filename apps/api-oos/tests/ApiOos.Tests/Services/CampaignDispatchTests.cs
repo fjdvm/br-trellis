@@ -20,6 +20,7 @@ public sealed class CampaignDispatchTests
     {
         private readonly HashSet<string> _failFor;
         public List<string> Sent { get; } = new();
+        public List<(string To, string Body)> Bodies { get; } = new();
 
         public TestBrevoSender(HashSet<string> failFor)
             : base(new ConfigurationBuilder().Build(), NullLogger<BrevoEmailSender>.Instance)
@@ -35,8 +36,25 @@ public sealed class CampaignDispatchTests
                 throw new InvalidOperationException("smtp rejected");
             }
             Sent.Add(toEmail);
+            Bodies.Add((toEmail, htmlBody));
             return Task.CompletedTask;
         }
+    }
+
+    [Fact]
+    public async Task SendBulkAsync_appends_a_per_recipient_unsubscribe_link_when_base_url_is_set()
+    {
+        var sender = new TestBrevoSender(failFor: new HashSet<string>());
+
+        await sender.SendBulkAsync(
+            new[] { "a@x.io", "b@x.io" }, "Subject", "<p>Body</p>",
+            unsubscribeBaseUrl: "https://shop/api/marketing/unsubscribe");
+
+        var a = sender.Bodies.Single(x => x.To == "a@x.io").Body;
+        var b = sender.Bodies.Single(x => x.To == "b@x.io").Body;
+        a.Should().Contain("email=a%40x.io");
+        b.Should().Contain("email=b%40x.io");
+        a.Should().Contain("Unsubscribe");
     }
 
     [Fact]
@@ -86,14 +104,14 @@ public sealed class CampaignDispatchTests
 
     private sealed class RecordingSender : IEmailSender
     {
-        public List<(IReadOnlyList<string> Recipients, string Subject, string Body)> Calls { get; } = new();
+        public List<(IReadOnlyList<string> Recipients, string Subject, string Body, string? UnsubscribeBaseUrl)> Calls { get; } = new();
 
         public Task SendEmailConfirmationAsync(string toEmail, string fullName, string confirmationUrl, CancellationToken ct = default)
             => Task.CompletedTask;
 
-        public Task<BulkEmailResult> SendBulkAsync(IReadOnlyList<string> recipients, string subject, string htmlBody, CancellationToken ct = default)
+        public Task<BulkEmailResult> SendBulkAsync(IReadOnlyList<string> recipients, string subject, string htmlBody, string? unsubscribeBaseUrl = null, CancellationToken ct = default)
         {
-            Calls.Add((recipients, subject, htmlBody));
+            Calls.Add((recipients, subject, htmlBody, unsubscribeBaseUrl));
             return Task.FromResult(new BulkEmailResult(recipients.Count, 0, System.Array.Empty<string>()));
         }
     }
@@ -124,8 +142,8 @@ public sealed class CampaignDispatchTests
         sender.Calls.Should().ContainSingle();
         sender.Calls[0].Recipients.Should().BeEquivalentTo(new[] { "a@x.io", "b@x.io" });
         sender.Calls[0].Subject.Should().Be("Hello");
-        // Body carries a working unsubscribe link.
-        sender.Calls[0].Body.Should().Contain("unsubscribe");
+        // A per-recipient unsubscribe link is enabled via the base URL.
+        sender.Calls[0].UnsubscribeBaseUrl.Should().Contain("unsubscribe");
         // Outcome reported back to api-crms.
         client.Reports.Should().ContainSingle();
         client.Reports[0].Id.Should().Be(campaignId);

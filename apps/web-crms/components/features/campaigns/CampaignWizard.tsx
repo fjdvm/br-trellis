@@ -21,6 +21,11 @@ import {
   ChannelContentForm,
   type ChannelContentState,
 } from "@/components/features/campaigns/ChannelContentForm";
+import {
+  ScheduleStep,
+  toLocalInput,
+  type ScheduleState,
+} from "@/components/features/campaigns/ScheduleStep";
 import type {
   Campaign,
   CampaignChannel,
@@ -31,7 +36,7 @@ import type {
 
 const NO_SEGMENT = "__none__";
 
-type Step = "Platform" | "Audience" | "Content" | "Review";
+type Step = "Platform" | "Audience" | "Content" | "Schedule" | "Review";
 
 /** The Channels selectable in the wizard. */
 const ALL_CHANNELS: CampaignChannel[] = ["Email", "Banner", "Popup"];
@@ -64,14 +69,20 @@ export function CampaignWizard({ existing }: { existing?: Campaign }) {
   });
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [schedule, setSchedule] = useState<ScheduleState>({
+    scheduleType: existing?.schedule?.scheduleType ?? "SendNow",
+    startDate: toLocalInput(existing?.schedule?.startDate),
+    endDate: toLocalInput(existing?.schedule?.endDate),
+  });
 
   const emailSelected = channels.includes("Email");
+  const hasStorefrontChannel = channels.includes("Banner") || channels.includes("Popup");
 
   // The ordered set of steps; Audience is skipped when Email isn't selected.
   const steps = useMemo<Step[]>(() => {
     return emailSelected
-      ? ["Platform", "Audience", "Content", "Review"]
-      : ["Platform", "Content", "Review"];
+      ? ["Platform", "Audience", "Content", "Schedule", "Review"]
+      : ["Platform", "Content", "Schedule", "Review"];
   }, [emailSelected]);
 
   function toggleChannel(channel: CampaignChannel) {
@@ -126,7 +137,9 @@ export function CampaignWizard({ existing }: { existing?: Campaign }) {
         channels,
         targetAudience: audience,
         targetEmails: targetEmails.length > 0 ? targetEmails : undefined,
-        scheduleType: "SendNow",
+        scheduleType: schedule.scheduleType,
+        startDate: schedule.startDate ? new Date(schedule.startDate).toISOString() : undefined,
+        endDate: schedule.endDate ? new Date(schedule.endDate).toISOString() : undefined,
         channelContents: buildChannelContents(),
       };
 
@@ -235,6 +248,15 @@ export function CampaignWizard({ existing }: { existing?: Campaign }) {
                 />
               ))}
             </div>
+          )}
+
+          {step === "Schedule" && (
+            <ScheduleStep
+              emailSelected={emailSelected}
+              hasStorefrontChannel={hasStorefrontChannel}
+              value={schedule}
+              onChange={(patch) => setSchedule((prev) => ({ ...prev, ...patch }))}
+            />
           )}
 
           {step === "Review" && (

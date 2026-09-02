@@ -156,7 +156,7 @@ public sealed class AuthServiceEmailVerificationTests : IDisposable
         }
 
         public Task<ApiOos.Interfaces.Services.BulkEmailResult> SendBulkAsync(
-            IReadOnlyList<string> recipients, string subject, string htmlBody, CancellationToken cancellationToken = default)
+            IReadOnlyList<string> recipients, string subject, string htmlBody, string? unsubscribeBaseUrl = null, CancellationToken cancellationToken = default)
             => Task.FromResult(new ApiOos.Interfaces.Services.BulkEmailResult(recipients.Count, 0, System.Array.Empty<string>()));
     }
 }

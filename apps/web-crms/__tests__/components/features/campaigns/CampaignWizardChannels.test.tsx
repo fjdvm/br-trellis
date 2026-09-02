@@ -72,6 +72,8 @@ describe("CampaignWizard — Banner & Popup channels (#160)", () => {
     await user.type(screen.getByLabelText("Heading"), "Welcome!");
 
     await user.click(screen.getByRole("button", { name: /next/i }));
+    await waitFor(() => expect(screen.getByTestId("wizard-step-title")).toHaveTextContent("Schedule"));
+    await user.click(screen.getByRole("button", { name: /next/i }));
     await waitFor(() => expect(screen.getByRole("button", { name: /save draft/i })).toBeInTheDocument());
     await user.click(screen.getByRole("button", { name: /save draft/i }));
 
