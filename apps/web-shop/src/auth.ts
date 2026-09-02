@@ -122,7 +122,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       const authGuestOnlyPaths = ["/signin", "/signup", "/forgot-password", "/reset-password"];
       const isAuthGuestOnlyPath = authGuestOnlyPaths.some((p) => pathname === p || pathname.startsWith(`${p}/`));
 
-      const publicPaths = ["/", "/products", "/catalog", "/about", "/contact", "/terms", "/privacy", "/returns", "/faq", "/careers", "/support", "/verify-email"];
+      // /support is intentionally NOT public: the whole subtree (list + a specific
+      // ticket) requires an authenticated session, enforced here at the middleware
+      // rather than by a client-side redirect (#144, ADR 0005).
+      const publicPaths = ["/", "/products", "/catalog", "/about", "/contact", "/terms", "/privacy", "/returns", "/faq", "/careers", "/verify-email"];
       const isPublicPath = publicPaths.some((p) => pathname === p || (p !== "/" && pathname.startsWith(`${p}/`)));
 
       if (auth?.user && isAuthGuestOnlyPath) {

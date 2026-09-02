@@ -49,6 +49,9 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ApiOos.Interfaces.Services.ISupportTicketService, ApiOos.Services.SupportTicketService>();
         // Reads the shopper's tickets back from api-crms for the profile/support table.
         services.AddScoped<ApiOos.Interfaces.Services.ISupportTicketReader, ApiOos.Services.CrmTicketReader>();
+        // Resolves a single ticket-by-id + verifies ownership before web-shop renders a
+        // Conversation (#144, ADR 0005) — the single server-side security decision.
+        services.AddScoped<ApiOos.Interfaces.Services.ICustomerTicketDetailReader, ApiOos.Services.CustomerTicketDetailReader>();
 
         // Chat hub relay + outbound Tickets webhook → api-crms (#124)
         services.AddScoped<ApiOos.Interfaces.Services.ITicketWebhookClient, ApiOos.Services.TicketWebhookClient>();

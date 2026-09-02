@@ -466,6 +466,106 @@ public static class SeedData
         dbContext.Tickets.AddRange(
             ongoing, claimed, unclaimedWaitingAgent, unlinked, completed, canceled);
 
+        // --- web-shop customer-facing Conversations (#144/#145) ---
+        // Two Conversations owned by the seeded web-shop demo shopper
+        // (demo@brenraphael.com — see api-oos SeedData), so the customer-facing
+        // ownership gate and staff-reply gate are verifiable end-to-end without
+        // hand-built fixtures. api-oos matches ownership by Contact email, so this
+        // Contact's email must equal the demo account's.
+        //
+        // The NotOwner->404 path (#144: "a second Contact's session cannot open
+        // another Contact's Conversation") is already covered: every ticket above
+        // (Maya, Liam, Sofia, ...) belongs to a NON-demo Contact, so the demo shopper
+        // opening any of their ticket ids gets the same 404 as a non-existent id.
+        var demoShopper = new Contact
+        {
+            Id = Guid.NewGuid(),
+            Name = "Demo Customer",
+            Email = "demo@brenraphael.com",
+            CreatedAt = now.AddDays(-4),
+        };
+        dbContext.Contacts.Add(demoShopper);
+
+        // (#144) A Conversation with pre-existing history INCLUDING a staff reply —
+        // opens straight to the full thread, exercising history hydration and (#145)
+        // the "Open" (staff-has-replied) outcome.
+        var demoWithHistory = new Ticket
+        {
+            Id = Guid.NewGuid(),
+            ContactId = demoShopper.Id,
+            Subject = "[Inquiry] Where is my Ube Cream order?",
+            Status = TicketStatus.Ongoing,
+            WaitingOn = WaitingOn.Customer,
+            Source = TicketSource.Ecommerce,
+            AssignedToId = "auth|agent-amelia",
+            AssignedToName = "Amelia Ward",
+            AssignedToEmail = "amelia.ward@trellis.io",
+            CreatedAt = now.AddDays(-2),
+            UpdatedAt = now.AddHours(-3),
+        };
+
+        // (#145) A Conversation with ZERO staff messages — only the customer's opener.
+        // Resolves to "AwaitingStaffReply": the shopper sees the waiting state, and it
+        // must auto-unlock the moment a staff member replies. Deliberately left
+        // Unclaimed to prove the gate is independent of Status.
+        var demoAwaitingReply = new Ticket
+        {
+            Id = Guid.NewGuid(),
+            ContactId = demoShopper.Id,
+            Subject = "[Complain] Jam jar arrived cracked",
+            Status = TicketStatus.Unclaimed,
+            WaitingOn = WaitingOn.Agent,
+            Source = TicketSource.Ecommerce,
+            CreatedAt = now.AddHours(-2),
+            UpdatedAt = now.AddHours(-2),
+        };
+
+        dbContext.Tickets.AddRange(demoWithHistory, demoAwaitingReply);
+
+        // Full thread for the history ticket: customer opener + a staff reply + a
+        // customer follow-up (chronological).
+        dbContext.Messages.AddRange(
+            new Message
+            {
+                Id = Guid.NewGuid(),
+                TicketId = demoWithHistory.Id,
+                SenderType = MessageSenderType.Contact,
+                SenderContactId = demoShopper.Id,
+                Content = "Hi, my Ube Cream order still hasn't arrived — can you check?",
+                SentAt = now.AddDays(-2),
+            },
+            new Message
+            {
+                Id = Guid.NewGuid(),
+                TicketId = demoWithHistory.Id,
+                SenderType = MessageSenderType.Staff,
+                SenderStaffId = "auth|agent-amelia",
+                SenderStaffName = "Amelia Ward",
+                Content = "Hi! Sorry about that — I can see it shipped yesterday and is out for delivery today.",
+                SentAt = now.AddDays(-2).AddHours(1),
+            },
+            new Message
+            {
+                Id = Guid.NewGuid(),
+                TicketId = demoWithHistory.Id,
+                SenderType = MessageSenderType.Contact,
+                SenderContactId = demoShopper.Id,
+                Content = "Great, thank you!",
+                SentAt = now.AddHours(-3),
+            });
+
+        // The awaiting-reply ticket has ONLY the customer's opening message — no staff
+        // content, so the staff-reply gate keeps it closed until an agent replies.
+        dbContext.Messages.Add(new Message
+        {
+            Id = Guid.NewGuid(),
+            TicketId = demoAwaitingReply.Id,
+            SenderType = MessageSenderType.Contact,
+            SenderContactId = demoShopper.Id,
+            Content = "One of my jam jars arrived with a crack in the lid. Can I get a replacement?",
+            SentAt = now.AddHours(-2),
+        });
+
         // A short chronological message thread on the ongoing ticket.
         dbContext.Messages.AddRange(
             new Message

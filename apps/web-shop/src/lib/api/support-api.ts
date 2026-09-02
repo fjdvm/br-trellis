@@ -1,5 +1,6 @@
-import { apiClient } from "@/lib/api/api-client";
+import { apiClient, ApiError } from "@/lib/api/api-client";
 import type { BotReplyResponse, TicketSummary } from "@/types/chat";
+import type { ConversationDetail, ConversationFetchResult } from "@/lib/support/conversation-access";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5004/api";
 
@@ -31,13 +32,21 @@ export const supportApi = {
     }
   },
 
-  async getTicketDetails(ticketId: string): Promise<TicketSummary | null> {
+  async getTicketDetails(ticketId: string, token?: string): Promise<ConversationFetchResult> {
+    // Ownership-verified read (#144): api-oos's GET /support/tickets/{id} returns the
+    // Conversation only to its owning Contact; a ticket that doesn't exist and one that
+    // isn't the caller's both come back as an identical 404 (ADR 0005), which we map to
+    // a single `not-found` outcome. A missing token can't identify a caller → not-found.
+    if (!token) return { status: "not-found" };
     try {
-      const res = await fetch(`${API_BASE_URL}/tickets/${ticketId}`);
-      if (!res.ok) return null;
-      return await res.json();
-    } catch {
-      return null;
+      const dto = await apiClient.get<ConversationDetail>(`/support/tickets/${ticketId}`, { token });
+      return { status: "ok", conversation: dto };
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 404) {
+        return { status: "not-found" };
+      }
+      // Any other failure (network, 5xx) fails closed to not-found rather than leaking.
+      return { status: "not-found" };
     }
   },
 

@@ -92,11 +92,11 @@ export function useChatSignalR({
       onTicketStatusChangedRef.current?.(payload);
     });
 
-    connection
+    const startPromise = connection
       .start()
       .then(() => {
         setIsConnected(true);
-        connection.invoke("JoinConversation", ticketId).catch(console.error);
+        return connection.invoke("JoinConversation", ticketId).catch(console.error);
       })
       .catch((err) => {
         console.error("SignalR connection error:", err);
@@ -107,7 +107,12 @@ export function useChatSignalR({
       connectionRef.current = null;
       setIsConnected(false);
 
+      // Defer teardown until the start (and JoinConversation) promise settles, so
+      // stop() never races an in-flight negotiate — calling stop() mid-negotiation
+      // throws "The connection was stopped during negotiation" (hit reliably under
+      // React StrictMode's mount/cleanup/mount double-invoke in dev).
       const cleanup = async () => {
+        await startPromise.catch(() => undefined);
         try {
           if (conn.state === signalR.HubConnectionState.Connected) {
             await conn.invoke("LeaveConversation", ticketId);

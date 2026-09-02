@@ -11,17 +11,20 @@ import { CancelTicketModal } from "./CancelTicketModal";
 import { ConversationDetailsPanel } from "./ConversationDetailsPanel";
 import { ConversationLayout } from "./ConversationLayout";
 import { supportApi } from "@/lib/api/support-api";
-import type { TicketSummary } from "@/types/chat";
+import type { TicketSummary, ChatMessage } from "@/types/chat";
 
 interface ConversationPageProps {
   ticketId: string;
+  /** Server-verified ticket summary (#144). Rendered directly — no client-side fetch. */
+  ticket: TicketSummary;
+  /** Server-hydrated, chronological message history for the owner-verified Conversation. */
+  initialMessages: ChatMessage[];
 }
 
-export function ConversationPage({ ticketId }: ConversationPageProps) {
+export function ConversationPage({ ticketId, ticket: initialTicket, initialMessages }: ConversationPageProps) {
   const router = useRouter();
   const { data: session } = useSession();
-  const [ticket, setTicket] = useState<TicketSummary | null>(null);
-  const [isLoadingTicket, setIsLoadingTicket] = useState(true);
+  const [ticket, setTicket] = useState<TicketSummary | null>(initialTicket);
   const [isCancelling, setIsCancelling] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
@@ -48,17 +51,7 @@ export function ConversationPage({ ticketId }: ConversationPageProps) {
     isConnected,
     error: chatError,
     sendMessage,
-  } = useChat(ticketId, { onTicketStatusChanged: handleTicketStatusChanged });
-
-  useEffect(() => {
-    async function loadTicket() {
-      setIsLoadingTicket(true);
-      const data = await supportApi.getTicketDetails(ticketId);
-      setTicket(data);
-      setIsLoadingTicket(false);
-    }
-    loadTicket();
-  }, [ticketId]);
+  } = useChat(ticketId, { onTicketStatusChanged: handleTicketStatusChanged, initialMessages });
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -93,17 +86,6 @@ export function ConversationPage({ ticketId }: ConversationPageProps) {
   };
 
   const isClosed = ticket?.status === "Completed" || ticket?.status === "Canceled";
-
-  if (isLoadingTicket) {
-    return (
-      <ConversationLayout activeTicketId={ticketId}>
-        <div className="flex flex-col items-center justify-center h-full">
-          <Loader2 className="w-8 h-8 animate-spin text-[#451077] mb-3" />
-          <p className="text-sm text-slate-500 font-medium">Loading conversation...</p>
-        </div>
-      </ConversationLayout>
-    );
-  }
 
   return (
     <ConversationLayout activeTicketId={ticketId}>

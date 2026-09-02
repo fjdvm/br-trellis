@@ -11,13 +11,19 @@ export type BotPhase = "BOT_GREETING" | "BOT_THINKING" | "BOT_RESPONDED" | "ESCA
 
 interface UseChatOptions {
   onTicketStatusChanged?: (payload: { ticketId: string; status: string; assignedToId?: string | null }) => void;
+  /**
+   * Server-hydrated message history for an owner-verified Conversation (#144). When
+   * provided, the thread starts from this history instead of an empty/bot-greeting
+   * state; live SignalR messages still append (and dedupe) on top.
+   */
+  initialMessages?: ChatMessage[];
 }
 
 export function useChat(initialTicketId?: string, options?: UseChatOptions) {
   const { data: session, status } = useSession();
   const [isOpen, setIsOpen] = useState(false);
   const [ticketId, setTicketId] = useState<string | null>(initialTicketId || null);
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [messages, setMessages] = useState<ChatMessage[]>(options?.initialMessages ?? []);
   const [unreadCount, setUnreadCount] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [isBotReplying, setIsBotReplying] = useState(false);

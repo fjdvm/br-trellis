@@ -22,15 +22,18 @@ public class SupportController : ControllerBase
     private readonly ISupportTicketService _supportTicketService;
     private readonly ISupportTicketReader _supportTicketReader;
     private readonly ApiOos.Interfaces.Repositories.IUserRepository _userRepository;
+    private readonly ICustomerTicketDetailReader _customerTicketDetailReader;
 
     public SupportController(
         ISupportTicketService supportTicketService,
         ISupportTicketReader supportTicketReader,
-        ApiOos.Interfaces.Repositories.IUserRepository userRepository)
+        ApiOos.Interfaces.Repositories.IUserRepository userRepository,
+        ICustomerTicketDetailReader customerTicketDetailReader)
     {
         _supportTicketService = supportTicketService;
         _supportTicketReader = supportTicketReader;
         _userRepository = userRepository;
+        _customerTicketDetailReader = customerTicketDetailReader;
     }
 
     [HttpPost("tickets")]
@@ -74,6 +77,68 @@ public class SupportController : ControllerBase
         }).ToList();
 
         return Ok(dtos);
+    }
+
+    /// <summary>
+    /// Returns a single Conversation to its owning Contact, verifying ownership
+    /// server-side before any Conversation data is handed back (ADR 0005). A Ticket
+    /// that doesn't exist and a Ticket that exists but isn't the caller's both return
+    /// an identical 404 — so ids can't be enumerated by probing. The owner receives the
+    /// ticket subject/status plus the full, chronological message history.
+    /// </summary>
+    [HttpGet("tickets/{id}")]
+    public async Task<ActionResult<ConversationDetailDto>> GetConversation(
+        string id,
+        CancellationToken cancellationToken)
+    {
+        var userId = GetCurrentUserId();
+        var user = await _userRepository.GetByIdAsync(userId);
+        if (user is null || string.IsNullOrWhiteSpace(user.Email))
+        {
+            // No resolvable email → fail closed as an indistinguishable 404.
+            return NotFound();
+        }
+
+        var detail = await _customerTicketDetailReader.GetTicketDetailForCustomerAsync(
+            id, user.Email, cancellationToken);
+
+        switch (detail.Access)
+        {
+            case CustomerTicketAccess.Open:
+                return Ok(new ConversationDetailDto
+                {
+                    Id = detail.TicketId ?? id,
+                    Subject = detail.Subject ?? string.Empty,
+                    Status = detail.Status ?? string.Empty,
+                    State = "open",
+                    Messages = detail.Messages.Select(m => new ConversationMessageDto
+                    {
+                        Id = m.Id,
+                        SenderType = m.SenderType,
+                        SenderStaffName = m.SenderStaffName,
+                        Content = m.Content,
+                        SentAt = m.SentAt.ToString("O"),
+                    }).ToList(),
+                });
+
+            case CustomerTicketAccess.AwaitingStaffReply:
+                // Owner, but Staff hasn't replied yet: return subject/status only, with
+                // NO message data — the waiting state must not leak the thread (#145).
+                return Ok(new ConversationDetailDto
+                {
+                    Id = detail.TicketId ?? id,
+                    Subject = detail.Subject ?? string.Empty,
+                    Status = detail.Status ?? string.Empty,
+                    State = "awaiting-staff-reply",
+                    Messages = [],
+                });
+
+            // NotFound and NotOwner deliberately collapse to the identical response.
+            case CustomerTicketAccess.NotFound:
+            case CustomerTicketAccess.NotOwner:
+            default:
+                return NotFound();
+        }
     }
 
     private Guid GetCurrentUserId()

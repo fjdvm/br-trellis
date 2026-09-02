@@ -182,6 +182,18 @@ Dropping out of an Inbox (unclaiming, completing, canceling) never
 deletes history — it belongs to the Ticket, not to any agent's session,
 and reappears in full for whoever claims the ticket next.
 
+On the Contact-facing side, access is a strict ownership boundary
+rather than a workflow-visibility rule like the Inbox one above: a
+Conversation is only ever reachable by the one Contact it belongs to,
+identified by matching email — never by any other Contact, and never
+anonymously. Within that boundary sits a second, independent gate: a
+Conversation stays closed to its own Contact — unopenable, not merely
+read-only — until at least one Staff message exists on it. A Contact's
+own initial message (the one that created the Conversation) does not
+satisfy this; only Staff-authored content does, and it satisfies the
+gate regardless of Status (see above) — a Staff reply unlocks the
+Conversation even if Status hasn't moved off `Unclaimed`.
+
 ## Canned Reply
 
 A pre-written, reusable reply body agents can insert into a Conversation's
