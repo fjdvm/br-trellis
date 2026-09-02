@@ -113,22 +113,46 @@ export function ProfileTicketsTab({ userId, onOpenLiveChat }: ProfileTicketsTabP
         </div>
       </div>
 
-      {/* Status Filters (Pill style) */}
-      <div className="flex flex-wrap gap-2 bg-surface-container-low p-1.5 border border-outline-variant/30 w-fit">
-        {["All", "Unclaimed", "Ongoing", "Completed", "Canceled"].map((status) => (
-          <button
-            key={status}
-            type="button"
-            onClick={() => setStatusFilter(status)}
-            className={`px-4 py-2 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
-              statusFilter === status
-                ? "bg-primary text-white shadow-xs"
-                : "text-on-surface-variant hover:bg-surface-container"
-            }`}
+      {/* Status Filters — a dropdown on mobile, pill row on larger screens. */}
+      <div>
+        {/* Mobile: native select (space-efficient on narrow screens). */}
+        <div className="sm:hidden">
+          <label htmlFor="ticket-status-filter" className="sr-only">
+            Filter tickets by status
+          </label>
+          <select
+            id="ticket-status-filter"
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="w-full px-4 py-2.5 text-xs font-semibold rounded-lg bg-surface-container-low border border-outline-variant/30 text-on-surface focus:outline-none focus:border-primary cursor-pointer"
           >
-            {status} <span className="opacity-70 ml-1 text-[10px]">({getCount(status)})</span>
-          </button>
-        ))}
+            {["All", "Unclaimed", "Ongoing", "Completed", "Canceled"].map(
+              (status) => (
+                <option key={status} value={status}>
+                  {status} ({getCount(status)})
+                </option>
+              )
+            )}
+          </select>
+        </div>
+
+        {/* Desktop: pill-style toggle row. */}
+        <div className="hidden sm:flex flex-wrap gap-2 bg-surface-container-low p-1.5 border border-outline-variant/30 w-fit">
+          {["All", "Unclaimed", "Ongoing", "Completed", "Canceled"].map((status) => (
+            <button
+              key={status}
+              type="button"
+              onClick={() => setStatusFilter(status)}
+              className={`px-4 py-2 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
+                statusFilter === status
+                  ? "bg-primary text-white shadow-xs"
+                  : "text-on-surface-variant hover:bg-surface-container"
+              }`}
+            >
+              {status} <span className="opacity-70 ml-1 text-[10px]">({getCount(status)})</span>
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Tickets List */}
