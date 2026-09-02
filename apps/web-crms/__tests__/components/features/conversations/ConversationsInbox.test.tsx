@@ -467,6 +467,121 @@ describe("ConversationsInbox — pane + navigation", () => {
 });
 
 
+describe("ConversationsInbox — mark read on view", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockUser = {
+      id: "auth|amelia",
+      username: "amelia",
+      name: "amelia ward",
+      email: "amelia.ward@trellis.io",
+    };
+    mocked.listMessages.mockResolvedValue([]);
+  });
+
+  /** A full TicketDetail-shaped setWaitingOn response for the given fields. */
+  function waitingOnResponse(
+    id: string,
+    waitingOn: "Agent" | "Customer" | "None",
+    status: TicketListItem["status"] = "Ongoing"
+  ) {
+    return {
+      id,
+      subject: "Cannot log in",
+      status,
+      waitingOn,
+      source: "Email" as const,
+      assignedToId: "auth|amelia",
+      assignedToName: "amelia ward",
+      assignedToEmail: "amelia.ward@trellis.io",
+      contactId: "c1",
+      contact: { id: "c1", name: "jane doe", email: "jane@x.com" },
+      createdAt: "2025-01-15T00:00:00Z",
+      updatedAt: "2025-01-16T00:00:00Z",
+    };
+  }
+
+  it("marks an unread conversation read (WaitingOn None) when it is opened", async () => {
+    mocked.list.mockResolvedValue([
+      makeTicket({ id: "t-1", status: "Ongoing", waitingOn: "Agent", contact: { id: "c1", name: "jane doe", email: "jane@x.com" } }),
+    ]);
+    mocked.setWaitingOn.mockResolvedValue(waitingOnResponse("t-1", "None"));
+
+    render(<ConversationsInbox selectedTicketId="t-1" />);
+
+    await waitFor(() =>
+      expect(mocked.setWaitingOn).toHaveBeenCalledWith("t-1", {
+        waitingOn: "None",
+      })
+    );
+  });
+
+  it("clears the 'Waiting on you' badge for the opened conversation after marking read", async () => {
+    mocked.list.mockResolvedValue([
+      makeTicket({ id: "t-1", status: "Ongoing", waitingOn: "Agent", contact: { id: "c1", name: "jane doe", email: "jane@x.com" } }),
+    ]);
+    mocked.setWaitingOn.mockResolvedValue(waitingOnResponse("t-1", "None"));
+
+    render(<ConversationsInbox selectedTicketId="t-1" />);
+
+    // The badge is present initially, then clears once the row is merged read.
+    await waitFor(() =>
+      expect(mocked.setWaitingOn).toHaveBeenCalledWith("t-1", {
+        waitingOn: "None",
+      })
+    );
+    await waitFor(() =>
+      expect(screen.queryByText("Waiting on you")).not.toBeInTheDocument()
+    );
+  });
+
+  it("does not mark read a conversation already waiting on the customer", async () => {
+    mocked.list.mockResolvedValue([
+      makeTicket({ id: "t-1", status: "Ongoing", waitingOn: "Customer", contact: { id: "c1", name: "jane doe", email: "jane@x.com" } }),
+    ]);
+
+    render(<ConversationsInbox selectedTicketId="t-1" />);
+
+    // The row renders (list + pane header both show the contact).
+    await screen.findAllByText("Jane Doe");
+    // Give any effect a chance to run, then assert no mark-read fired.
+    await waitFor(() => expect(mocked.list).toHaveBeenCalled());
+    expect(mocked.setWaitingOn).not.toHaveBeenCalled();
+  });
+
+  it("does not mark read a terminal conversation", async () => {
+    // Terminal rows aren't in the worklist list; deep-linked via getById.
+    mocked.list.mockResolvedValue([]);
+    mocked.getById.mockResolvedValue(
+      waitingOnResponse("done-1", "Agent", "Completed")
+    );
+
+    render(<ConversationsInbox selectedTicketId="done-1" />);
+
+    await waitFor(() => expect(mocked.getById).toHaveBeenCalledWith("done-1"));
+    expect(mocked.setWaitingOn).not.toHaveBeenCalled();
+  });
+
+  it("marks read only once even as the row re-renders", async () => {
+    mocked.list.mockResolvedValue([
+      makeTicket({ id: "t-1", status: "Ongoing", waitingOn: "Agent", contact: { id: "c1", name: "jane doe", email: "jane@x.com" } }),
+    ]);
+    mocked.setWaitingOn.mockResolvedValue(waitingOnResponse("t-1", "None"));
+
+    render(<ConversationsInbox selectedTicketId="t-1" />);
+
+    await waitFor(() =>
+      expect(mocked.setWaitingOn).toHaveBeenCalledTimes(1)
+    );
+    // Even after the merged (read) row re-renders, no second call fires.
+    await waitFor(() =>
+      expect(screen.queryByText("Waiting on you")).not.toBeInTheDocument()
+    );
+    expect(mocked.setWaitingOn).toHaveBeenCalledTimes(1);
+  });
+});
+
+
 describe("ConversationsInbox — live ticket-list events", () => {
   beforeEach(() => {
     jest.clearAllMocks();

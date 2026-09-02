@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Inbox as InboxIcon, MessagesSquare } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -223,6 +223,54 @@ export function ConversationsInbox({ selectedTicketId }: ConversationsInboxProps
   const selectedFromList = selectedTicketId
     ? tickets.find((t) => t.id === selectedTicketId) ?? null
     : null;
+
+  /**
+   * Mark a conversation read as soon as it's viewed. "Unread" in this inbox
+   * means the conversation is awaiting the agent (`waitingOn === "Agent"` — the
+   * "Waiting on you" signal), so opening it flips WaitingOn to `None`: the agent
+   * has now seen it but hasn't replied yet (replying is what flips it to
+   * `Customer`). Guarded to fire once per ticket and only for a non-terminal
+   * row that is actually unread, so it never clobbers a `Customer`/`None` turn
+   * and never fires for a terminal (Completed/Canceled) conversation. The
+   * returned row is merged locally so the "Waiting on you" badge clears and the
+   * Unread filter drops it immediately, without waiting for the hub echo.
+   */
+  const markedReadRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (!selectedTicketId) return;
+    const row = selectedFromList;
+    if (!row) return;
+    if (markedReadRef.current === selectedTicketId) return;
+    if (isTerminalStatus(row.status)) return;
+    if (row.waitingOn !== "Agent") return;
+
+    markedReadRef.current = selectedTicketId;
+    void (async () => {
+      try {
+        const updated = await crmClient.conversationTickets.setWaitingOn(
+          selectedTicketId,
+          { waitingOn: "None" }
+        );
+        mergeTicket({
+          id: updated.id,
+          subject: updated.subject,
+          status: updated.status,
+          waitingOn: updated.waitingOn,
+          source: updated.source,
+          assignedToId: updated.assignedToId,
+          assignedToName: updated.assignedToName,
+          assignedToEmail: updated.assignedToEmail,
+          contactId: updated.contactId,
+          contact: updated.contact,
+          createdAt: updated.createdAt,
+          updatedAt: updated.updatedAt,
+        });
+      } catch {
+        // Best-effort: if the mark-read call fails, allow a later view to retry.
+        markedReadRef.current = null;
+      }
+    })();
+  }, [selectedTicketId, selectedFromList, mergeTicket]);
 
   return (
     // Full-height split workspace: fills the viewport below the app header so
