@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useSession } from "next-auth/react";
-import { MessageSquare, Loader2 } from "lucide-react";
+import { MessageSquare } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useConversationMessages } from "@/hooks/useConversationMessages";
 import { useCurrentAgentId } from "@/hooks/useCurrentAgentId";
@@ -217,13 +217,7 @@ export function MessageThread({
         aria-label="Message thread"
       >
         {isLoading && messages.length === 0 ? (
-          <div
-            className="flex flex-1 flex-col items-center justify-center text-center"
-            data-testid="thread-loading"
-          >
-            <Loader2 className="w-6 h-6 text-muted-foreground mb-sm animate-spin" />
-            <p className="text-sm text-muted-foreground">Loading messages…</p>
-          </div>
+          <p className="text-base text-muted-foreground">Loading messages…</p>
         ) : messages.length === 0 ? (
           <div className="flex flex-1 flex-col items-center justify-center text-center">
             <MessageSquare className="w-10 h-10 text-muted-foreground mb-md" />
