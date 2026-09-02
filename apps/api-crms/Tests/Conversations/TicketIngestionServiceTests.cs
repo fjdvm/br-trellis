@@ -44,6 +44,63 @@ public sealed class TicketIngestionServiceTests : IDisposable
         Assert.Equal(WaitingOn.Agent, ticket.WaitingOn);
     }
 
+    // --- Caller-supplied ticket id (#148 amendment, ADR 0006 Option 1) ---
+    // api-oos mints the shop-chat conversation key as a Guid and sends it as the
+    // ConversationId; ingestion adopts a well-formed, non-colliding Guid as the new
+    // Ticket's own id, and falls back to generating one otherwise. Either way the
+    // ExternalThreadId == Ticket.Id invariant holds.
+
+    [Fact]
+    public async Task Caller_supplied_guid_conversation_id_becomes_the_ticket_id()
+    {
+        await using var context = CreateContext();
+        var service = CreateService(context);
+        var suppliedId = Guid.NewGuid();
+
+        await service.ProcessEventAsync("evt-1", "ticket.message.received",
+            MessagePayload("evt-1", suppliedId.ToString(), "shopper@example.com", "Hi"));
+
+        var ticket = await context.Tickets.SingleAsync();
+        Assert.Equal(suppliedId, ticket.Id);
+        Assert.Equal(suppliedId.ToString(), ticket.ExternalThreadId);
+    }
+
+    [Fact]
+    public async Task Non_guid_conversation_id_falls_back_to_a_generated_ticket_id()
+    {
+        await using var context = CreateContext();
+        var service = CreateService(context);
+
+        await service.ProcessEventAsync("evt-1", "ticket.message.received",
+            MessagePayload("evt-1", "not-a-guid", "shopper@example.com", "Hi"));
+
+        var ticket = await context.Tickets.SingleAsync();
+        // A generated Guid — not the malformed supplied value — and still self-keyed.
+        Assert.NotEqual(Guid.Empty, ticket.Id);
+        Assert.Equal(ticket.Id.ToString(), ticket.ExternalThreadId);
+    }
+
+    [Fact]
+    public async Task Supplied_id_that_already_resolves_appends_rather_than_overwriting()
+    {
+        await using var context = CreateContext();
+        var service = CreateService(context);
+
+        // api-oos mints one Guid for a conversation and reuses it as the key across the
+        // session. The first message creates the ticket keyed on it; a later message on
+        // the same id must append to that same ticket — never re-create or overwrite it.
+        var conversationId = Guid.NewGuid();
+        await service.ProcessEventAsync("evt-1", "ticket.message.received",
+            MessagePayload("evt-1", conversationId.ToString(), "shopper@example.com", "First"));
+        await service.ProcessEventAsync("evt-2", "ticket.message.received",
+            MessagePayload("evt-2", conversationId.ToString(), "shopper@example.com", "Second"));
+
+        var ticket = await context.Tickets.SingleAsync();
+        Assert.Equal(conversationId, ticket.Id);
+        var messages = (await context.Messages.ToListAsync()).OrderBy(m => m.SentAt).ToList();
+        Assert.Equal(new[] { "First", "Second" }, messages.Select(m => m.Content).ToArray());
+    }
+
     [Fact]
     public async Task New_conversation_resolves_contact_from_email()
     {

@@ -79,19 +79,46 @@ Source.
   is a risky, hard-to-reverse data operation deserving its own design pass,
   not a side effect of this fix. We fix forward.
 
+## How api-oos learns the id: it mints it (Option 1)
+
+Because the conversation key *is* the Ticket id, api-oos — which owns the
+shop-chat conversation — mints the `Guid` itself, sends it as the
+`ConversationId` on the opening message, and api-crms ingestion adopts that
+value as **both** the new Ticket's `Id` and its `ExternalThreadId`. api-oos
+therefore knows the canonical id up front, with no reply from api-crms.
+
+The rejected alternative was to have api-crms **return** the created Ticket id
+in the webhook response. That was rejected because it breaks ADR 0002: a
+webhook response the caller depends on is no longer truly fire-and-forget, and
+reintroduces exactly the receiver-coupling ADR 0002 exists to prevent (it would
+also complicate at-least-once dedup — a redelivery would have to still return
+the existing id). Letting the caller that owns the conversation mint the id
+keeps the relay one-way.
+
+Ingestion therefore **accepts a caller-supplied ticket id** for shop-chat
+tickets, and validates it. On the opening message of a conversation, the
+supplied `ConversationId` is used as the new Ticket's `Id` only when it is a
+well-formed `Guid`; a non-Guid key (e.g. a legacy opening key) falls back to a
+generated `Guid`. Non-collision is guaranteed by the existing find-or-create
+step, not a separate check: a supplied id that already resolves to a Ticket is
+*found and appended to* (the normal same-conversation case), never re-created or
+overwritten. Since api-oos mints a fresh `Guid` per conversation, a create with
+a supplied id is effectively always a brand-new id. Either way the invariant
+holds: a new shop-chat Ticket's `ExternalThreadId` equals its own `Id`.
+
 ## Consequences
 
-- api-oos stops minting a standalone shop-chat conversationId. The endpoint
-  that currently returns a throwaway GUID must instead surface the canonical
-  `Ticket.Id` (exact contract shape of `SupportWebhookController` /
-  `SupportTicketService` to be settled during implementation — flagged if it
-  proves larger than a response-field change).
+- api-oos stops minting a *standalone* shop-chat conversationId that is unrelated
+  to any Ticket. It still generates a `Guid`, but that `Guid` becomes the
+  Ticket id (see above) — one key, known to api-oos from the first message,
+  with no response-contract change and no api-crms → api-oos call.
 - The staff-reply poll (`/conversations/{id}/messages`) and the agent reads
   (`/tickets/{id}`) resolve the same Ticket for a shop-chat key. api-crms may
   resolve a shop-chat conversation key by `Ticket.Id` (equivalently, by an
   `ExternalThreadId` that equals it).
 - Email ingestion is untouched: it keeps its own upstream thread id, and this
-  ADR must not be read as pushing email toward `Ticket.Id`.
+  ADR must not be read as pushing email toward `Ticket.Id`. Email never supplies
+  a ticket id — the caller-supplied-id path is shop-chat-only.
 - Stale `localStorage` conversation ids in already-open browsers point at the
   old key; they resolve to the fix-forward artifact, not the repaired path,
   until cleared. New conversations are correct from creation.

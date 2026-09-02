@@ -94,14 +94,19 @@ public sealed class TicketIngestionService(
         var existing = await ticketRepository.GetTicketByThreadIdAsync(conversationId, cancellationToken);
         if (existing is null)
         {
-            var ticketId = Guid.NewGuid();
+            // #148 amendment / ADR 0006 (Option 1): adopt a well-formed caller-supplied
+            // Guid as the Ticket's own id (api-oos mints the conversation key as the
+            // ticket id). A non-Guid opening key falls back to a generated id. Either
+            // way ExternalThreadId == Ticket.Id. Non-collision is guaranteed by the
+            // find-or-create above — a supplied id that already exists is appended to,
+            // not re-created — so this branch only runs for a genuinely new id.
+            var ticketId = Guid.TryParse(conversationId, out var suppliedId)
+                ? suppliedId
+                : Guid.NewGuid();
             var ticket = new Ticket
             {
                 Id = ticketId,
                 ContactId = contactId,
-                // #148 / ADR 0006: a shop-chat conversation is keyed on the Ticket's own
-                // id — the single conversation key end to end. (Email keeps its upstream
-                // thread id; only shop chat adopts Ticket.Id.)
                 ExternalThreadId = ticketId.ToString(),
                 Subject = (data.Subject ?? string.Empty).Trim(),
                 Status = TicketStatus.Unclaimed,
