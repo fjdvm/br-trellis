@@ -142,8 +142,25 @@ public class SupportController : ControllerBase
         }
     }
 
-    private Guid GetCurrentUserId()
+    /// <summary>
+    /// Cancels the signed-in customer's own support ticket. Ownership is verified
+    /// server-side before anything is relayed (ADR 0005): a ticket the caller doesn't
+    /// own and one that doesn't exist both return an identical 404, so ids can't be
+    /// enumerated by probing. On success the cancellation is relayed to api-crms via the
+    /// Tickets webhook, which flips the ticket to Canceled and pushes the status change
+    /// to web-crms in real time. api-oos stores no ticket state of its own.
+    /// </summary>
+    [HttpDelete("tickets/{id}")]
+    public async Task<IActionResult> CancelTicket(
+        string id,
+        CancellationToken cancellationToken)
     {
+        var userId = GetCurrentUserId();
+        var canceled = await _supportTicketService.CancelAsync(userId, id, cancellationToken);
+        return canceled ? NoContent() : NotFound();
+    }
+
+    private Guid GetCurrentUserId()    {
         var subClaim = User.FindFirst(ClaimTypes.NameIdentifier) ?? User.FindFirst("sub");
         if (subClaim == null || !Guid.TryParse(subClaim.Value, out var userId))
         {

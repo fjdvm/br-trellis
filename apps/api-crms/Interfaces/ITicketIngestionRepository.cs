@@ -21,4 +21,11 @@ public interface ITicketIngestionRepository
     Task AddTicketAsync(Ticket ticket, CancellationToken cancellationToken);
 
     Task AddMessageAsync(Message message, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Persists pending changes to already-tracked entities (e.g. a status flip on a
+    /// ticket resolved via <see cref="GetTicketByThreadIdAsync"/>). The Add* methods
+    /// save their own inserts; this is for in-place mutations that have no insert.
+    /// </summary>
+    Task SaveChangesAsync(CancellationToken cancellationToken);
 }

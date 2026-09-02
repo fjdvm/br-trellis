@@ -11,15 +11,18 @@ public sealed record TicketWebhookPayload(
     TicketEventData Data);
 
 /// <summary>
-/// A single shop-chat message. <see cref="ConversationId"/> groups messages of one
+/// A single shop-chat event. <see cref="ConversationId"/> groups messages of one
 /// chat session into a single Ticket (analogous to an email ThreadId).
 /// <see cref="CustomerEmail"/> feeds Identity Resolution — the Contact is resolved
-/// (or created) from it, never supplied pre-resolved.
+/// (or created) from it, never supplied pre-resolved. <see cref="CustomerEmail"/> and
+/// <see cref="MessageBody"/> are optional at the envelope level because non-message
+/// events (e.g. <c>ticket.canceled</c>) carry only the conversation key; the message
+/// ingestion path validates their presence at runtime.
 /// </summary>
 public sealed record TicketEventData(
     string ConversationId,
-    string CustomerEmail,
+    string? CustomerEmail,
     string? CustomerName,
-    string MessageBody,
+    string? MessageBody,
     string? Subject,
     string? OccurredAt);

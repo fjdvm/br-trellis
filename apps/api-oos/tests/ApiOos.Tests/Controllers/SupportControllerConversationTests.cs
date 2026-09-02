@@ -102,6 +102,53 @@ public sealed class SupportControllerConversationTests
         dto.Messages.Should().BeEmpty();
     }
 
+    // --- Cancel action mapping ---
+    // DELETE /api/support/tickets/{id} → 204 when the service relays the cancel, 404
+    // when it doesn't (non-owner / not found). The controller never distinguishes the
+    // two negative cases, mirroring GetConversation's non-enumeration rule.
+
+    [Fact]
+    public async Task CancelTicket_when_service_cancels_returns_204()
+    {
+        var controller = BuildCancelController(cancelResult: true);
+
+        var result = await controller.CancelTicket(TicketId, CancellationToken.None);
+
+        result.Should().BeOfType<NoContentResult>();
+    }
+
+    [Fact]
+    public async Task CancelTicket_when_service_declines_returns_404()
+    {
+        var controller = BuildCancelController(cancelResult: false);
+
+        var result = await controller.CancelTicket(TicketId, CancellationToken.None);
+
+        result.Should().BeOfType<NotFoundResult>();
+    }
+
+    private static SupportController BuildCancelController(bool cancelResult)
+    {
+        var userRepo = new FakeUserRepository(UserEmail);
+        var controller = new SupportController(
+            new StubCancelSupportTicketService(cancelResult),
+            new UnusedSupportTicketReader(),
+            userRepo,
+            new FakeCustomerTicketDetailReader(CustomerTicketDetail.NotFound));
+
+        var userId = Guid.NewGuid();
+        controller.ControllerContext = new ControllerContext
+        {
+            HttpContext = new DefaultHttpContext
+            {
+                User = new ClaimsPrincipal(new ClaimsIdentity(
+                    new[] { new Claim(ClaimTypes.NameIdentifier, userId.ToString()) }, "test")),
+            },
+        };
+        userRepo.UserId = userId;
+        return controller;
+    }
+
     private static SupportController BuildController(CustomerTicketDetail detail)
     {
         var reader = new FakeCustomerTicketDetailReader(detail);
@@ -172,5 +219,20 @@ public sealed class SupportControllerConversationTests
         public Task<SupportTicketResponseDto> CreateAsync(
             Guid userId, CreateSupportTicketRequest request, CancellationToken cancellationToken = default) =>
             throw new NotImplementedException();
+
+        public Task<bool> CancelAsync(
+            Guid userId, string ticketId, CancellationToken cancellationToken = default) =>
+            throw new NotImplementedException();
+    }
+
+    private sealed class StubCancelSupportTicketService(bool cancelResult) : ISupportTicketService
+    {
+        public Task<SupportTicketResponseDto> CreateAsync(
+            Guid userId, CreateSupportTicketRequest request, CancellationToken cancellationToken = default) =>
+            throw new NotImplementedException();
+
+        public Task<bool> CancelAsync(
+            Guid userId, string ticketId, CancellationToken cancellationToken = default) =>
+            Task.FromResult(cancelResult);
     }
 }

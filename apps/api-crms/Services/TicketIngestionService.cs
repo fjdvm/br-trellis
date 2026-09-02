@@ -22,6 +22,7 @@ public sealed class TicketIngestionService(
 {
     private const string EcommerceSourceSystem = "ecommerce";
     private const string MessageReceivedEventType = "ticket.message.received";
+    private const string CanceledEventType = "ticket.canceled";
 
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
@@ -44,20 +45,80 @@ public sealed class TicketIngestionService(
         var webhookPayload = JsonSerializer.Deserialize<TicketWebhookPayload>(payload, JsonOptions)
             ?? throw new InvalidOperationException("Invalid webhook payload.");
 
-        if (eventType != MessageReceivedEventType)
+        switch (eventType)
         {
-            throw new InvalidOperationException($"Unknown event type: {eventType}");
+            case MessageReceivedEventType:
+            {
+                var outcome = await ProcessMessageAsync(webhookPayload.Data, cancellationToken);
+
+                await ticketRepository.MarkEventProcessedAsync(eventId, eventType, cancellationToken);
+                await transaction.CommitAsync(cancellationToken);
+
+                // Broadcast only after the commit succeeds — a rolled-back ingestion
+                // never reaches here, so a failed write never pushes.
+                await BroadcastAsync(outcome, cancellationToken);
+                return true;
+            }
+
+            case CanceledEventType:
+            {
+                var canceled = await ProcessCancellationAsync(webhookPayload.Data, cancellationToken);
+
+                // Record the event id regardless of outcome so at-least-once redelivery
+                // is a dedup no-op — an unknown conversation or an already-terminal
+                // ticket is acknowledged, not retried forever.
+                await ticketRepository.MarkEventProcessedAsync(eventId, eventType, cancellationToken);
+                await transaction.CommitAsync(cancellationToken);
+
+                // A status change fires only when the cancel actually flipped a ticket.
+                if (canceled is not null)
+                {
+                    await broadcaster.BroadcastTicketStatusChangedAsync(
+                        TicketMapper.ToSummary(canceled), cancellationToken);
+                }
+                return true;
+            }
+
+            default:
+                throw new InvalidOperationException($"Unknown event type: {eventType}");
+        }
+    }
+
+    /// <summary>
+    /// Flips an existing (non-terminal) ticket to <see cref="TicketStatus.Canceled"/>
+    /// in response to a customer-originated <c>ticket.canceled</c> event, resolving it
+    /// by its conversation key. Returns the mutated ticket when a change was made, or
+    /// <c>null</c> when there was nothing to cancel (unknown conversation, or the ticket
+    /// is already terminal) — the caller acknowledges the event either way so redelivery
+    /// can't wedge.
+    /// </summary>
+    private async Task<Ticket?> ProcessCancellationAsync(
+        TicketEventData data, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(data.ConversationId))
+        {
+            throw new InvalidOperationException("ConversationId is required.");
         }
 
-        var outcome = await ProcessMessageAsync(webhookPayload.Data, cancellationToken);
+        var ticket = await ticketRepository.GetTicketByThreadIdAsync(
+            data.ConversationId.Trim(), cancellationToken);
 
-        await ticketRepository.MarkEventProcessedAsync(eventId, eventType, cancellationToken);
-        await transaction.CommitAsync(cancellationToken);
+        // Unknown conversation → safe no-op (acknowledged, not an error).
+        if (ticket is null)
+        {
+            return null;
+        }
 
-        // Broadcast only after the commit succeeds — a rolled-back ingestion
-        // never reaches here, so a failed write never pushes.
-        await BroadcastAsync(outcome, cancellationToken);
-        return true;
+        // Completed and Canceled are terminal — never reopen or overwrite them.
+        if (ticket.Status is TicketStatus.Completed or TicketStatus.Canceled)
+        {
+            return null;
+        }
+
+        ticket.Status = TicketStatus.Canceled;
+        ticket.UpdatedAt = ParseTimestamp(data.OccurredAt);
+        await ticketRepository.SaveChangesAsync(cancellationToken);
+        return ticket;
     }
 
     /// <summary>
@@ -157,7 +218,9 @@ public sealed class TicketIngestionService(
     private async Task<Guid> ResolveContactIdAsync(
         TicketEventData data, CancellationToken cancellationToken)
     {
-        var email = data.CustomerEmail.Trim();
+        // CustomerEmail is validated non-empty by ProcessMessageAsync before this runs;
+        // the cancel path never resolves a contact.
+        var email = data.CustomerEmail!.Trim();
         var result = await contactIdentityService.ResolveOrCreateContactAsync(
             new ResolveOrCreateContactCommand(
                 SourceSystem: EcommerceSourceSystem,

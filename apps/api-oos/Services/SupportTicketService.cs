@@ -17,7 +17,8 @@ using ApiOos.Interfaces.Services;
 /// </summary>
 public sealed class SupportTicketService(
     IUserRepository userRepository,
-    ITicketWebhookClient ticketWebhookClient) : ISupportTicketService
+    ITicketWebhookClient ticketWebhookClient,
+    ICustomerTicketDetailReader customerTicketDetailReader) : ISupportTicketService
 {
     public async Task<SupportTicketResponseDto> CreateAsync(
         Guid userId,
@@ -56,6 +57,55 @@ public sealed class SupportTicketService(
         }, cancellationToken);
 
         return new SupportTicketResponseDto { TicketId = conversationId };
+    }
+
+    public async Task<bool> CancelAsync(
+        Guid userId,
+        string ticketId,
+        CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(ticketId))
+        {
+            return false;
+        }
+
+        var user = await userRepository.GetByIdAsync(userId)
+            ?? throw new NotFoundException("User not found.");
+        if (string.IsNullOrWhiteSpace(user.Email))
+        {
+            // No resolvable email → can't be the owner of anything. Fail closed.
+            return false;
+        }
+
+        // Ownership is verified server-side (ADR 0005) before any cancel is relayed —
+        // only the owning Contact may cancel. A ticket that doesn't exist and one the
+        // caller doesn't own both resolve to a non-owner outcome and are not relayed.
+        var detail = await customerTicketDetailReader.GetTicketDetailForCustomerAsync(
+            ticketId, user.Email, cancellationToken);
+
+        var isOwner = detail.Access is CustomerTicketAccess.Open
+            or CustomerTicketAccess.AwaitingStaffReply;
+        if (!isOwner)
+        {
+            return false;
+        }
+
+        await ticketWebhookClient.SendAsync(new TicketWebhookEvent
+        {
+            EventId = Guid.NewGuid().ToString(),
+            EventType = "ticket.canceled",
+            Data = new TicketWebhookData
+            {
+                ConversationId = ticketId.Trim(),
+                CustomerEmail = user.Email,
+                CustomerName = user.FullName,
+                MessageBody = string.Empty,
+                Subject = null,
+                OccurredAt = DateTimeOffset.UtcNow.ToString("O"),
+            },
+        }, cancellationToken);
+
+        return true;
     }
 
     private static string Require(string? value, string name)

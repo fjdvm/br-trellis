@@ -14,4 +14,16 @@ public interface ISupportTicketService
         Guid userId,
         CreateSupportTicketRequest request,
         CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Cancels a customer's own support ticket by relaying a <c>ticket.canceled</c>
+    /// event to api-crms's Tickets webhook. Ownership is verified server-side first
+    /// (only the owning Contact may cancel); a ticket the caller doesn't own or that
+    /// doesn't exist is not relayed. Returns <c>true</c> when the cancellation was
+    /// relayed, <c>false</c> when the caller may not cancel this ticket.
+    /// </summary>
+    Task<bool> CancelAsync(
+        Guid userId,
+        string ticketId,
+        CancellationToken cancellationToken = default);
 }

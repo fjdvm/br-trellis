@@ -2,8 +2,6 @@ import { apiClient, ApiError } from "@/lib/api/api-client";
 import type { BotReplyResponse, TicketSummary } from "@/types/chat";
 import type { ConversationDetail, ConversationFetchResult } from "@/lib/support/conversation-access";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5004/api";
-
 export const supportApi = {
   async getBotReply(userMessage: string, ticketId?: string, token?: string): Promise<BotReplyResponse> {
     return await apiClient.post<BotReplyResponse>(
@@ -50,12 +48,15 @@ export const supportApi = {
     }
   },
 
-  async cancelTicket(ticketId: string): Promise<boolean> {
+  async cancelTicket(ticketId: string, token?: string): Promise<boolean> {
+    // Cancellation is ownership-gated in api-oos, which relays a ticket.canceled event
+    // to api-crms (the system of record) — web-shop never mutates ticket state directly
+    // and never talks to api-crms (ADR 0002/0005). A token is required to identify the
+    // owning customer; without it there's no one to authorize the cancel.
+    if (!token) return false;
     try {
-      const res = await fetch(`${API_BASE_URL}/tickets/${ticketId}`, {
-        method: "DELETE",
-      });
-      return res.ok;
+      await apiClient.delete(`/support/tickets/${ticketId}`, { token });
+      return true;
     } catch {
       return false;
     }

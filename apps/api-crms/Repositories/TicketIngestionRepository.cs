@@ -50,4 +50,9 @@ public sealed class TicketIngestionRepository(AppDbContext dbContext) : ITicketI
         dbContext.Messages.Add(message);
         await dbContext.SaveChangesAsync(cancellationToken);
     }
+
+    public async Task SaveChangesAsync(CancellationToken cancellationToken)
+    {
+        await dbContext.SaveChangesAsync(cancellationToken);
+    }
 }

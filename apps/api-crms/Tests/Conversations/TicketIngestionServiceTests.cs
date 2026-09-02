@@ -258,6 +258,106 @@ public sealed class TicketIngestionServiceTests : IDisposable
         Assert.Equal("Second", messages[1].Content);
     }
 
+    // --- Cancellation (ticket.canceled) ---
+    // A shop customer canceling their ticket in web-shop is relayed by api-oos as a
+    // `ticket.canceled` event on the same HMAC Tickets webhook. Ingestion resolves the
+    // ticket by its conversation key and flips Status → Canceled, then broadcasts the
+    // status change so web-crms updates live. Terminal tickets are left untouched, and
+    // an unknown conversation is a safe no-op (not an error) so redelivery can't wedge.
+
+    [Fact]
+    public async Task Cancel_event_sets_ticket_status_to_canceled()
+    {
+        await using var context = CreateContext();
+        var service = CreateService(context);
+
+        await service.ProcessEventAsync("evt-1", "ticket.message.received",
+            MessagePayload("evt-1", "conv-1", "shopper@example.com", "Please cancel this"));
+        var ticketId = (await context.Tickets.SingleAsync()).Id.ToString();
+
+        var processed = await service.ProcessEventAsync(
+            "evt-cancel", "ticket.canceled", CancelPayload("evt-cancel", ticketId, "shopper@example.com"));
+
+        Assert.True(processed);
+        var ticket = await context.Tickets.SingleAsync();
+        Assert.Equal(TicketStatus.Canceled, ticket.Status);
+    }
+
+    [Fact]
+    public async Task Cancel_event_broadcasts_a_status_change()
+    {
+        await using var context = CreateContext();
+        var service = CreateService(context);
+
+        await service.ProcessEventAsync("evt-1", "ticket.message.received",
+            MessagePayload("evt-1", "conv-1", "shopper@example.com", "First"));
+        var ticketId = (await context.Tickets.SingleAsync()).Id.ToString();
+        _broadcaster.StatusChanges.Clear();
+
+        await service.ProcessEventAsync(
+            "evt-cancel", "ticket.canceled", CancelPayload("evt-cancel", ticketId, "shopper@example.com"));
+
+        var change = Assert.Single(_broadcaster.StatusChanges);
+        Assert.Equal(Guid.Parse(ticketId), change.Id);
+        Assert.Equal("Canceled", change.Status);
+    }
+
+    [Fact]
+    public async Task Cancel_event_is_idempotent_on_redelivery()
+    {
+        await using var context = CreateContext();
+        var service = CreateService(context);
+
+        await service.ProcessEventAsync("evt-1", "ticket.message.received",
+            MessagePayload("evt-1", "conv-1", "shopper@example.com", "Hi"));
+        var ticketId = (await context.Tickets.SingleAsync()).Id.ToString();
+
+        var first = await service.ProcessEventAsync(
+            "evt-cancel", "ticket.canceled", CancelPayload("evt-cancel", ticketId, "shopper@example.com"));
+        var second = await service.ProcessEventAsync(
+            "evt-cancel", "ticket.canceled", CancelPayload("evt-cancel", ticketId, "shopper@example.com"));
+
+        Assert.True(first);
+        Assert.False(second); // deduped by event id
+        Assert.Equal(TicketStatus.Canceled, (await context.Tickets.SingleAsync()).Status);
+    }
+
+    [Fact]
+    public async Task Cancel_event_leaves_a_terminal_ticket_untouched()
+    {
+        await using var context = CreateContext();
+        var service = CreateService(context);
+
+        await service.ProcessEventAsync("evt-1", "ticket.message.received",
+            MessagePayload("evt-1", "conv-1", "shopper@example.com", "Hi"));
+        var ticket = await context.Tickets.SingleAsync();
+        ticket.Status = TicketStatus.Completed; // already terminal
+        await context.SaveChangesAsync();
+        _broadcaster.StatusChanges.Clear();
+
+        var processed = await service.ProcessEventAsync(
+            "evt-cancel", "ticket.canceled", CancelPayload("evt-cancel", ticket.Id.ToString(), "shopper@example.com"));
+
+        Assert.True(processed); // acknowledged (event recorded), but status is unchanged
+        Assert.Equal(TicketStatus.Completed, (await context.Tickets.SingleAsync()).Status);
+        Assert.Empty(_broadcaster.StatusChanges);
+    }
+
+    [Fact]
+    public async Task Cancel_event_for_unknown_conversation_is_a_safe_no_op()
+    {
+        await using var context = CreateContext();
+        var service = CreateService(context);
+
+        var processed = await service.ProcessEventAsync(
+            "evt-cancel", "ticket.canceled",
+            CancelPayload("evt-cancel", Guid.NewGuid().ToString(), "nobody@example.com"));
+
+        Assert.True(processed); // acknowledged so at-least-once redelivery can't wedge
+        Assert.Equal(0, await context.Tickets.CountAsync());
+        Assert.Empty(_broadcaster.StatusChanges);
+    }
+
     [Fact]
     public async Task Duplicate_event_id_is_a_no_op()
     {
@@ -380,6 +480,25 @@ public sealed class TicketIngestionServiceTests : IDisposable
                 CustomerName = "A Shopper",
                 MessageBody = body,
                 Subject = "Shop chat",
+                OccurredAt = DateTimeOffset.UtcNow.ToString("O"),
+            },
+        });
+    }
+
+    private static string CancelPayload(
+        string eventId, string conversationId, string email)
+    {
+        return JsonSerializer.Serialize(new
+        {
+            EventId = eventId,
+            EventType = "ticket.canceled",
+            Data = new
+            {
+                ConversationId = conversationId,
+                CustomerEmail = email,
+                CustomerName = (string?)null,
+                MessageBody = (string?)null,
+                Subject = (string?)null,
                 OccurredAt = DateTimeOffset.UtcNow.ToString("O"),
             },
         });

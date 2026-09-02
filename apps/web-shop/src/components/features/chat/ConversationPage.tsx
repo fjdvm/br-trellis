@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef, useCallback, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { Send, Loader2, ShieldCheck, Ban } from "lucide-react";
 import { useChat } from "@/hooks/useChat";
 import { ChatMessageBubble } from "./ChatMessageBubble";
@@ -20,6 +21,8 @@ interface ConversationPageProps {
 
 export function ConversationPage({ ticketId, ticket: initialTicket, initialMessages }: ConversationPageProps) {
   const router = useRouter();
+  const { data: session } = useSession();
+  const token = (session as { accessToken?: string })?.accessToken;
   const [ticket, setTicket] = useState<TicketSummary | null>(initialTicket);
   const [isCancelling, setIsCancelling] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
@@ -67,7 +70,7 @@ export function ConversationPage({ ticketId, ticket: initialTicket, initialMessa
   const handleCancelTicket = async () => {
     setIsCancelling(true);
     try {
-      const success = await supportApi.cancelTicket(ticketId);
+      const success = await supportApi.cancelTicket(ticketId, token);
       if (success) {
         setTicket((prev) => (prev ? { ...prev, status: "Canceled" } : null));
         setShowCancelModal(false);

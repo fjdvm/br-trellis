@@ -20,6 +20,7 @@ public sealed class SupportTicketServiceTests : IDisposable
 {
     private readonly AppDbContext _context;
     private readonly FakeTicketWebhookClient _webhook = new();
+    private readonly FakeCustomerTicketDetailReader _reader = new();
     private readonly SupportTicketService _service;
 
     public SupportTicketServiceTests()
@@ -31,7 +32,7 @@ public sealed class SupportTicketServiceTests : IDisposable
         _context.Database.OpenConnection();
         _context.Database.EnsureCreated();
 
-        _service = new SupportTicketService(new UserRepository(_context), _webhook);
+        _service = new SupportTicketService(new UserRepository(_context), _webhook, _reader);
     }
 
     public void Dispose()
@@ -90,6 +91,71 @@ public sealed class SupportTicketServiceTests : IDisposable
         _webhook.Sent.Should().BeEmpty();
     }
 
+    // --- Cancellation relay ---
+    // A customer canceling their ticket in web-shop must be ownership-gated (only the
+    // owning Contact may cancel) and, when allowed, relayed to api-crms as a
+    // `ticket.canceled` event on the same Tickets webhook. api-oos owns no ticket state,
+    // so the cancel is a relay, not a local mutation.
+
+    [Fact]
+    public async Task Cancel_relays_a_ticket_canceled_event_when_the_caller_owns_the_ticket()
+    {
+        var user = await SeedUserAsync();
+        var ticketId = Guid.NewGuid().ToString();
+        _reader.Result = CustomerTicketDetail.Open(ticketId, "Subj", "Unclaimed", []);
+
+        var ok = await _service.CancelAsync(user.Id, ticketId);
+
+        ok.Should().BeTrue();
+        _reader.LastTicketId.Should().Be(ticketId);
+        _reader.LastEmail.Should().Be("shopper@example.com");
+        _webhook.Sent.Should().ContainSingle();
+        var evt = _webhook.Sent.Single();
+        evt.EventType.Should().Be("ticket.canceled");
+        evt.Data.ConversationId.Should().Be(ticketId);
+        evt.Data.CustomerEmail.Should().Be("shopper@example.com");
+    }
+
+    [Fact]
+    public async Task Cancel_relays_even_while_awaiting_staff_reply()
+    {
+        var user = await SeedUserAsync();
+        var ticketId = Guid.NewGuid().ToString();
+        _reader.Result = CustomerTicketDetail.AwaitingStaffReply(ticketId, "Subj", "Unclaimed");
+
+        var ok = await _service.CancelAsync(user.Id, ticketId);
+
+        ok.Should().BeTrue();
+        _webhook.Sent.Should().ContainSingle();
+        _webhook.Sent.Single().EventType.Should().Be("ticket.canceled");
+    }
+
+    [Fact]
+    public async Task Cancel_does_not_relay_when_the_caller_is_not_the_owner()
+    {
+        var user = await SeedUserAsync();
+        var ticketId = Guid.NewGuid().ToString();
+        _reader.Result = CustomerTicketDetail.NotOwner;
+
+        var ok = await _service.CancelAsync(user.Id, ticketId);
+
+        ok.Should().BeFalse();
+        _webhook.Sent.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task Cancel_does_not_relay_when_the_ticket_is_not_found()
+    {
+        var user = await SeedUserAsync();
+        var ticketId = Guid.NewGuid().ToString();
+        _reader.Result = CustomerTicketDetail.NotFound;
+
+        var ok = await _service.CancelAsync(user.Id, ticketId);
+
+        ok.Should().BeFalse();
+        _webhook.Sent.Should().BeEmpty();
+    }
+
     private sealed class FakeTicketWebhookClient : ITicketWebhookClient
     {
         public List<TicketWebhookEvent> Sent { get; } = [];
@@ -98,6 +164,21 @@ public sealed class SupportTicketServiceTests : IDisposable
         {
             Sent.Add(webhookEvent);
             return Task.CompletedTask;
+        }
+    }
+
+    private sealed class FakeCustomerTicketDetailReader : ICustomerTicketDetailReader
+    {
+        public CustomerTicketDetail Result { get; set; } = CustomerTicketDetail.NotFound;
+        public string? LastTicketId { get; private set; }
+        public string? LastEmail { get; private set; }
+
+        public Task<CustomerTicketDetail> GetTicketDetailForCustomerAsync(
+            string ticketId, string requestingEmail, CancellationToken cancellationToken = default)
+        {
+            LastTicketId = ticketId;
+            LastEmail = requestingEmail;
+            return Task.FromResult(Result);
         }
     }
 }
