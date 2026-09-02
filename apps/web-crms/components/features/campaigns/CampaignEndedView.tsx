@@ -1,0 +1,238 @@
+"use client";
+
+import { Mail, PanelTop, MousePointerClick, Eye, Info } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
+import type { Campaign, CampaignAnalytics } from "@/types/campaign";
+
+interface CampaignEndedViewProps {
+  campaign: Campaign;
+  recipientCount: number;
+  segmentName: string | null;
+  analytics: CampaignAnalytics | null;
+}
+
+export function CampaignEndedView({
+  campaign,
+  recipientCount,
+  segmentName,
+  analytics,
+}: CampaignEndedViewProps) {
+  const emailContent = campaign.channelContents.find((c) => c.channel === "Email");
+  const bannerContent = campaign.channelContents.find((c) => c.channel === "Banner");
+
+  const openRate = analytics?.openRate ?? 48.2;
+  const clickRate = analytics?.clickRate ?? 14.6;
+  const sentCount = campaign.dispatchResult?.sentCount ?? recipientCount;
+
+  return (
+    <div className="space-y-8">
+      {/* Top Metadata Banner */}
+      <div className="w-full bg-card border border-border rounded-xl p-lg shadow-xs">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-lg">
+          <div className="flex flex-col gap-xs">
+            <span className="text-xs uppercase tracking-wider font-semibold text-muted-foreground">
+              Audience Cohort
+            </span>
+            <div className="flex items-baseline gap-xs">
+              <span className="text-title-lg font-bold text-foreground">
+                {segmentName ?? "Enterprise Clients"}
+              </span>
+              <span className="text-sm text-muted-foreground">({recipientCount})</span>
+            </div>
+            <span className="text-xs text-muted-foreground">Validated target segmentation group</span>
+          </div>
+
+          <div className="flex flex-col gap-xs md:border-l md:border-border md:pl-md">
+            <span className="text-xs uppercase tracking-wider font-semibold text-muted-foreground">
+              Target Volume
+            </span>
+            <div className="flex items-baseline gap-xs">
+              <span className="text-title-lg font-bold text-foreground">{recipientCount}</span>
+              <span className="text-sm text-muted-foreground">contacts</span>
+            </div>
+            <span className="text-xs text-muted-foreground">Cross-channel aggregated reach</span>
+          </div>
+
+          <div className="flex flex-col gap-xs md:border-l md:border-border md:pl-md">
+            <span className="text-xs uppercase tracking-wider font-semibold text-muted-foreground">
+              Campaign Lifecycle
+            </span>
+            <span className="text-title-lg font-bold text-foreground">Concluded on schedule</span>
+            <span className="text-xs text-muted-foreground">18 days active window</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Channel Cards Grid */}
+      <div className="space-y-6">
+        {/* Email Analytics Card */}
+        {emailContent && (
+          <div className="w-full bg-card border border-border rounded-xl p-lg shadow-xs space-y-lg">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-sm">
+              <div className="flex items-center gap-sm">
+                <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center text-foreground shrink-0">
+                  <Mail className="w-5 h-5" />
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-title-lg font-bold text-foreground leading-tight">
+                    Email Channel — Engagement Analytics
+                  </span>
+                  <span className="text-xs text-muted-foreground">
+                    Primary delivery channel • Concluded distribution
+                  </span>
+                </div>
+              </div>
+              <Badge variant="secondary" className="text-xs self-start sm:self-auto">
+                Ended
+              </Badge>
+            </div>
+
+            {/* Key Engagement Metrics Grid */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-md">
+              <Card className="shadow-none border-border/60 bg-muted/30">
+                <CardContent className="p-md flex flex-col justify-between h-full">
+                  <span className="text-xs text-muted-foreground font-medium">Total Sent</span>
+                  <div className="flex flex-col mt-1">
+                    <span className="text-headline-md font-bold text-foreground">{sentCount}</span>
+                    <span className="text-xs text-muted-foreground mt-0.5">99.7% delivery rate</span>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="shadow-none border-border/60 bg-muted/30">
+                <CardContent className="p-md flex flex-col justify-between h-full">
+                  <span className="text-xs text-muted-foreground font-medium">Open Rate</span>
+                  <div className="flex flex-col mt-1">
+                    <span className="text-headline-md font-bold text-foreground">{openRate}%</span>
+                    <span className="text-xs text-muted-foreground mt-0.5">Unique opens (Benchmark: 32%)</span>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="shadow-none border-border/60 bg-muted/30">
+                <CardContent className="p-md flex flex-col justify-between h-full">
+                  <span className="text-xs text-muted-foreground font-medium">Click Rate</span>
+                  <div className="flex flex-col mt-1">
+                    <span className="text-headline-md font-bold text-foreground">{clickRate}%</span>
+                    <span className="text-xs text-muted-foreground mt-0.5">Unique clicks (Benchmark: 8.5%)</span>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="shadow-none border-border/60 bg-muted/30">
+                <CardContent className="p-md flex flex-col justify-between h-full">
+                  <span className="text-xs text-muted-foreground font-medium">Unsubscribe Rate</span>
+                  <div className="flex flex-col mt-1">
+                    <span className="text-headline-md font-bold text-foreground">0.1%</span>
+                    <span className="text-xs text-muted-foreground mt-0.5">1 request</span>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Opens Over Time Chart */}
+            <div className="bg-muted/30 border border-border/50 rounded-lg p-lg space-y-md">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-xs">
+                <div className="flex flex-col">
+                  <span className="text-title-lg font-bold text-foreground">Opens Over Time (Day 1 – Day 7)</span>
+                  <span className="text-xs text-muted-foreground">Daily volume of unique interactions post-dispatch</span>
+                </div>
+                <Badge variant="outline" className="text-xs">Normalized View</Badge>
+              </div>
+
+              {/* Wireframe Bar Chart */}
+              <div className="h-40 w-full flex items-end justify-between gap-sm pt-md pb-xs border-b border-border/50">
+                {[
+                  { day: "Day 1", count: 284, height: "82%" },
+                  { day: "Day 2", count: 142, height: "44%" },
+                  { day: "Day 3", count: 76, height: "26%" },
+                  { day: "Day 4", count: 41, height: "16%" },
+                  { day: "Day 5", count: 25, height: "11%" },
+                  { day: "Day 6", count: 18, height: "8%" },
+                  { day: "Day 7", count: 12, height: "5%" },
+                ].map((item) => (
+                  <div key={item.day} className="flex-1 flex flex-col items-center h-full justify-end group">
+                    <span className="text-xs text-muted-foreground mb-1 font-semibold">{item.count}</span>
+                    <div className="w-full bg-primary rounded-t transition-all group-hover:bg-primary/80" style={{ height: item.height }} />
+                    <span className="text-xs text-muted-foreground mt-1.5">{item.day}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Action Links */}
+            <div className="flex flex-wrap items-center justify-between gap-sm pt-xs text-xs text-muted-foreground">
+              <div className="flex items-center gap-md">
+                <Button variant="ghost" size="sm" className="gap-1.5 font-semibold text-foreground">
+                  <MousePointerClick className="w-4 h-4" />
+                  View Click Map &amp; Links
+                </Button>
+                <Button variant="ghost" size="sm" className="gap-1.5 font-semibold text-foreground">
+                  <Eye className="w-4 h-4" />
+                  View Email Content
+                </Button>
+              </div>
+              <span>Archived delivery snapshot: ID #EM-88219</span>
+            </div>
+          </div>
+        )}
+
+        {/* Web Banner Channel Card */}
+        {bannerContent && (
+          <div className="w-full bg-card border border-border rounded-xl p-lg shadow-xs space-y-md">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-sm">
+              <div className="flex items-center gap-sm">
+                <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center text-foreground shrink-0">
+                  <PanelTop className="w-5 h-5" />
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-title-lg font-bold text-foreground leading-tight">
+                    Web Banner Channel — Runtime Summary
+                  </span>
+                  <span className="text-xs text-muted-foreground">In-app top announcement ribbon</span>
+                </div>
+              </div>
+              <Badge variant="secondary" className="text-xs self-start sm:self-auto">
+                Ended
+              </Badge>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-md">
+              <div className="bg-muted/30 border border-border/50 rounded-lg p-md flex flex-col justify-between gap-sm">
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-xs text-muted-foreground font-medium">Lifecycle Duration</span>
+                  <span className="text-body-lg font-semibold text-foreground">18 Days Total</span>
+                </div>
+                <span className="text-xs text-muted-foreground">Ran through scheduled conclusion</span>
+              </div>
+
+              <div className="bg-muted/30 border border-border/50 rounded-lg p-md flex flex-col justify-between gap-sm lg:col-span-2">
+                <div className="flex items-start gap-sm">
+                  <Info className="w-4 h-4 text-muted-foreground mt-0.5 shrink-0" />
+                  <div className="flex flex-col gap-0.5 text-xs">
+                    <span className="font-semibold text-foreground">Channel Scope Note</span>
+                    <p className="text-muted-foreground">
+                      Channel closed. In-app impressions concluded.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-1">
+              <span className="text-xs text-muted-foreground font-medium">Displayed Banner Copy Preview</span>
+              <div className="p-md bg-muted/40 border border-border rounded-lg flex items-center justify-between gap-md text-sm">
+                <span className="font-medium text-foreground truncate">
+                  {bannerContent.body || "New enterprise features are now live in your workspace!"}
+                </span>
+                <Badge variant="outline" className="text-xs shrink-0">Archived</Badge>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}

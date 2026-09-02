@@ -1,3 +1,5 @@
+"use client";
+
 import { Mail, PanelTop, AppWindow } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -11,42 +13,42 @@ export interface ChannelMeta {
   description: string;
   icon: React.ComponentType<{ className?: string }>;
   supports: string[];
+  metaInfo: { label: string; value: string };
 }
 
-/** The Channels selectable in the wizard, with their rich descriptions. */
 export const CHANNEL_META: ChannelMeta[] = [
   {
     channel: "Email",
     title: "Email Campaign",
     tag: "Primary Reach",
     description:
-      "Send direct HTML newsletters or notification emails to customer inboxes with trackable engagement metrics.",
+      "Send direct HTML newsletter or notification emails to customer inboxes with trackable engagement metrics.",
     icon: Mail,
-    supports: ["Subject line", "Rich body text", "Hero banner"],
+    supports: ["Subject line", "Rich body text", "Responsive templates", "Hero banners"],
+    metaInfo: { label: "Estimated Delivery", value: "< 3 mins" },
   },
   {
     channel: "Banner",
     title: "Web Banner",
     tag: "In-App Surface",
     description:
-      "Display a persistent notification banner across the top of the storefront for all visitors.",
+      "Display a persistent notification banner across the top header of the authenticated user portal.",
     icon: PanelTop,
-    supports: ["Announcement text", "Primary link URL", "Dismissible"],
+    supports: ["Short announcement text", "Primary link URL", "Tone & style preset"],
+    metaInfo: { label: "Portal Position", value: "Header Global" },
   },
   {
     channel: "Popup",
     title: "Modal Popup",
     tag: "High Interrupt",
     description:
-      "Trigger an overlay dialog for launches, promotions, and urgent announcements.",
+      "Trigger an overlay dialog for critical system announcements, regulatory disclosures, and urgent launches.",
     icon: AppWindow,
-    supports: ["Heading", "Body copy", "CTA button & URL"],
+    supports: ["Modal heading", "Body copy", "CTA button & URL", "Dismiss rules"],
+    metaInfo: { label: "User Action", value: "Explicit Modal Dismiss" },
   },
 ];
 
-// Rich channel selection card (checkbox + icon + title + description +
-// supported-content chips). Keeps a real <Checkbox aria-label={channel}> so the
-// wizard tests can target `getByRole("checkbox", { name: channel })`.
 export function ChannelSelectCard({
   meta,
   checked,
@@ -60,38 +62,64 @@ export function ChannelSelectCard({
   return (
     <label
       className={cn(
-        "flex items-start gap-4 rounded-lg border p-4 cursor-pointer transition-colors",
-        checked ? "border-primary bg-muted/50" : "border-border hover:bg-muted/30"
+        "group relative rounded-lg p-5 cursor-pointer transition-all duration-150 border flex items-start gap-4",
+        checked
+          ? "bg-card border-primary text-foreground shadow-xs"
+          : "bg-muted/30 border-border text-muted-foreground hover:bg-muted/50"
       )}
     >
-      <Checkbox
-        aria-label={meta.channel}
-        checked={checked}
-        onCheckedChange={onToggle}
-        className="mt-1"
-      />
-      <div className="w-10 h-10 rounded bg-muted flex items-center justify-center shrink-0">
-        <Icon className="w-5 h-5 text-foreground" />
+      <div className="pt-1 flex-shrink-0">
+        <Checkbox
+          aria-label={meta.channel}
+          checked={checked}
+          onCheckedChange={onToggle}
+          className="w-5 h-5 border-muted-foreground/60 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground"
+        />
       </div>
-      <div className="flex-1 min-w-0 space-y-1">
+
+      {/* Icon Frame */}
+      <div
+        className={cn(
+          "w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0 shadow-xs group-hover:scale-105 transition-transform border",
+          checked
+            ? "bg-background text-foreground border-border"
+            : "bg-background/80 text-muted-foreground border-border/40"
+        )}
+      >
+        <Icon className="w-6 h-6" />
+      </div>
+
+      {/* Content Area */}
+      <div className="flex-1 min-w-0">
         <div className="flex items-center justify-between gap-2">
           <h3 className="text-title-lg font-semibold text-foreground">{meta.title}</h3>
-          <Badge variant="secondary" className="uppercase tracking-wider text-[10px]">
+          <Badge
+            variant={checked ? "default" : "secondary"}
+            className="uppercase tracking-wider text-[10px] font-semibold"
+          >
             {meta.tag}
           </Badge>
         </div>
-        <p className="text-sm text-muted-foreground">{meta.description}</p>
-        <div className="flex flex-wrap items-center gap-1.5 pt-1">
-          <span className="text-sm text-muted-foreground">Supports:</span>
+        <p className="text-body-md text-muted-foreground mt-1">{meta.description}</p>
+
+        {/* Supported Content Chips */}
+        <div className="mt-3 flex flex-wrap items-center gap-2 pt-2 border-t border-border/40">
+          <span className="text-xs font-medium text-muted-foreground">Supported Content:</span>
           {meta.supports.map((s) => (
             <span
               key={s}
-              className="text-sm rounded border border-border bg-card px-2 py-0.5 text-foreground"
+              className="text-xs bg-background border border-border text-foreground px-2.5 py-0.5 rounded shadow-xs"
             >
               {s}
             </span>
           ))}
         </div>
+      </div>
+
+      {/* Quick Metric / Capability Metadata (Desktop) */}
+      <div className="hidden lg:flex flex-col items-end justify-center pl-4 text-right flex-shrink-0">
+        <span className="text-xs text-muted-foreground">{meta.metaInfo.label}</span>
+        <span className="text-sm font-bold text-foreground">{meta.metaInfo.value}</span>
       </div>
     </label>
   );

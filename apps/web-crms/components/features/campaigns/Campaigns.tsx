@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, Search } from "lucide-react";
+import { Plus, Search, RefreshCw, Download, SlidersHorizontal } from "lucide-react";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -23,6 +23,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { CampaignTable } from "@/components/features/campaigns/CampaignTable";
+import { CampaignQuickStats } from "@/components/features/campaigns/CampaignQuickStats";
 import { useCampaigns } from "@/hooks/useCampaigns";
 import type { CampaignChannel, CampaignStatus } from "@/types/campaign";
 
@@ -38,17 +39,12 @@ const TABS: { value: TabValue; label: string }[] = [
 
 const CHANNEL_FILTERS: ChannelFilter[] = ["Any", "Email", "Banner", "Popup"];
 
-/**
- * Campaigns list (#159). Multichannel campaign directory: a quick-stats bar,
- * a status/channel/search filter deck, and the campaigns table. The status
- * tabs are the primary lifecycle filter (All / Draft / Active / Ended).
- */
 export function Campaigns({ initialStatus = "All" }: { initialStatus?: TabValue }) {
   const router = useRouter();
   const [tab, setTab] = useState<TabValue>(initialStatus);
   const [search, setSearch] = useState("");
   const [channel, setChannel] = useState<ChannelFilter>("Any");
-  const { data: campaigns, isLoading, error } = useCampaigns();
+  const { data: campaigns, isLoading, error, refetch } = useCampaigns();
 
   const stats = useMemo(() => {
     const active = campaigns.filter((c) => c.status === "Active").length;
@@ -70,55 +66,69 @@ export function Campaigns({ initialStatus = "All" }: { initialStatus?: TabValue 
     });
   }, [campaigns, tab, channel, search]);
 
+  const handleExport = () => {
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(campaigns, null, 2));
+    const downloadAnchor = document.createElement("a");
+    downloadAnchor.setAttribute("href", dataStr);
+    downloadAnchor.setAttribute("download", `campaigns-report-${new Date().toISOString().slice(0, 10)}.json`);
+    document.body.appendChild(downloadAnchor);
+    downloadAnchor.click();
+    downloadAnchor.remove();
+  };
+
   return (
-    <div className="w-full min-h-full py-xl px-lg md:px-xl space-y-lg max-w-7xl mx-auto">
-      {/* Breadcrumb + header */}
+    <div className="w-full min-h-full py-xl px-lg md:px-xl space-y-lg max-w-container-max mx-auto">
+      {/* Header Block */}
       <div className="space-y-sm">
         <Breadcrumb>
           <BreadcrumbList>
-            <BreadcrumbItem>Marketing &amp; Campaigns</BreadcrumbItem>
+            <BreadcrumbItem className="text-xs uppercase tracking-wider text-muted-foreground font-medium">
+              Marketing &amp; Campaigns
+            </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
-              <BreadcrumbPage>Directory</BreadcrumbPage>
+              <BreadcrumbPage className="text-xs font-semibold text-foreground">Directory</BreadcrumbPage>
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>
-        <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-md">
-          <div className="space-y-sm">
-            <h1 className="text-headline-md font-bold tracking-tight text-foreground">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-md">
+          <div className="space-y-xs max-w-2xl">
+            <h1 className="text-display-lg font-bold tracking-tight text-foreground">
               Campaigns
             </h1>
-            <p className="text-body-md text-muted-foreground max-w-2xl">
-              Manage multichannel outreach across email, banner, and popup channels.
+            <p className="text-body-md text-muted-foreground">
+              Manage multichannel outreach, lifecycle messages, and promotional broadcasts across all connected endpoints.
             </p>
           </div>
-          <Button onClick={() => router.push("/campaigns/new")}>
-            <Plus className="w-4 h-4 mr-1" />
-            Create Campaign
-          </Button>
+          <div className="flex items-center gap-sm">
+            <Button variant="outline" size="sm" className="hidden sm:inline-flex gap-1.5">
+              <SlidersHorizontal className="w-4 h-4" />
+              View Settings
+            </Button>
+            <Button onClick={() => router.push("/campaigns/new")} className="gap-1.5 shadow-sm">
+              <Plus className="w-4 h-4" />
+              Create Campaign
+            </Button>
+          </div>
         </div>
       </div>
 
-      {/* Quick-stats bar */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-md">
-        <StatCard label="Active Campaigns" value={stats.active} hint="Currently broadcasting" />
-        <StatCard
-          label="Total Recipients"
-          value={stats.recipients.toLocaleString()}
-          hint="Direct email targets"
-        />
-        <StatCard label="Draft Campaigns" value={stats.draft} hint="Pending launch" />
-        <StatCard label="Total Campaigns" value={stats.total} hint="All lifecycle states" />
-      </div>
+      {/* Quick Stats Bar (Wireframe Bento Metric Cards) */}
+      <CampaignQuickStats
+        activeCount={stats.active}
+        recipientsCount={stats.recipients}
+        draftCount={stats.draft}
+        totalCount={stats.total}
+      />
 
       {error && <div className="p-md text-destructive text-base">{error.message}</div>}
 
+      {/* Filter Deck & Data Table Card */}
       <Card className="shadow-none border-border">
         <CardContent className="p-lg space-y-lg">
           <Tabs value={tab} onValueChange={(v) => setTab(v as TabValue)}>
-            {/* Filter deck: status tabs + channel filter + search */}
-            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-md">
-              <TabsList>
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-md">
+              <TabsList className="w-full lg:w-auto overflow-x-auto justify-start">
                 {TABS.map((t) => (
                   <TabsTrigger key={t.value} value={t.value}>
                     {t.label}
@@ -127,26 +137,46 @@ export function Campaigns({ initialStatus = "All" }: { initialStatus?: TabValue 
               </TabsList>
               <div className="flex flex-wrap items-center gap-sm">
                 <Select value={channel} onValueChange={(v) => setChannel(v as ChannelFilter)}>
-                  <SelectTrigger aria-label="Channel filter" className="w-[150px]">
+                  <SelectTrigger aria-label="Channel filter" className="w-[160px]">
                     <SelectValue placeholder="Channel" />
                   </SelectTrigger>
                   <SelectContent>
                     {CHANNEL_FILTERS.map((c) => (
                       <SelectItem key={c} value={c}>
-                        {c === "Any" ? "Any channel" : c}
+                        {c === "Any" ? "Channel: Any" : `Channel: ${c}`}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
-                <div className="relative">
-                  <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <div className="relative flex-1 min-w-[200px] sm:w-[240px]">
+                  <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
                   <Input
                     aria-label="Search campaigns"
                     placeholder="Search campaigns..."
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
-                    className="pl-8 w-[220px]"
+                    className="pl-9"
                   />
+                </div>
+                <div className="flex items-center gap-1">
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => refetch()}
+                    title="Refresh Table"
+                    className="h-10 w-10"
+                  >
+                    <RefreshCw className="w-4 h-4" />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={handleExport}
+                    title="Download Report"
+                    className="h-10 w-10"
+                  >
+                    <Download className="w-4 h-4" />
+                  </Button>
                 </div>
               </div>
             </div>
@@ -154,7 +184,7 @@ export function Campaigns({ initialStatus = "All" }: { initialStatus?: TabValue 
             {TABS.map((t) => (
               <TabsContent key={t.value} value={t.value} className="mt-lg">
                 {isLoading ? (
-                  <TableSkeleton columns={5} />
+                  <TableSkeleton columns={6} />
                 ) : (
                   <CampaignTable campaigns={filtered} />
                 )}
@@ -164,27 +194,5 @@ export function Campaigns({ initialStatus = "All" }: { initialStatus?: TabValue 
         </CardContent>
       </Card>
     </div>
-  );
-}
-
-function StatCard({
-  label,
-  value,
-  hint,
-}: {
-  label: string;
-  value: string | number;
-  hint: string;
-}) {
-  return (
-    <Card className="shadow-none border-border">
-      <CardContent className="p-md flex flex-col gap-sm">
-        <span className="text-sm text-muted-foreground">{label}</span>
-        <div className="flex items-baseline justify-between gap-sm">
-          <span className="text-headline-md font-bold text-foreground">{value}</span>
-          <span className="text-sm text-muted-foreground">{hint}</span>
-        </div>
-      </CardContent>
-    </Card>
   );
 }
