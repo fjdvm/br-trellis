@@ -89,7 +89,7 @@ export function ConversationPage({ ticketId, ticket: initialTicket, initialMessa
         !isClosed ? (
           <button
             onClick={() => setShowCancelModal(true)}
-            className="inline-flex items-center gap-1 text-red-600 hover:text-red-700 transition-colors cursor-pointer text-xs font-medium"
+            className="inline-flex items-center gap-1 rounded-lg border border-red-200 px-2.5 py-1 text-red-600 hover:text-red-700 hover:border-red-300 hover:bg-red-50 transition-colors cursor-pointer text-xs font-medium"
             aria-label="Cancel ticket"
             title="Cancel ticket"
           >
