@@ -17,6 +17,7 @@ import { useCurrentAgentId } from "@/hooks/useCurrentAgentId";
 import { useRefetchOnFocus } from "@/hooks/useRefetchOnFocus";
 import { useSignalR } from "@/hooks/useSignalR";
 import { MessageThread } from "@/components/features/conversations/MessageThread";
+import type { ConversationAction } from "@/components/features/conversations/ConversationActionsMenu";
 import { STATUS_BADGE_VARIANT, isActiveStatus, isTerminalStatus } from "@/lib/tickets";
 import { formatConversationTime } from "@/lib/format-conversation-time";
 import { formatName, formatEmail } from "@/lib/format-display";
@@ -441,6 +442,10 @@ interface ConversationPaneProps {
  */
 function ConversationPane({ ticketId, ticket, listLoaded }: ConversationPaneProps) {
   const [resolved, setResolved] = useState<TicketListItem | null>(ticket);
+  // True while a lifecycle mutation (status change / unclaim) is in flight, so
+  // the header's 3-dot menu disables itself until the call settles.
+  const [actionBusy, setActionBusy] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
 
   useEffect(() => {
     if (ticket) {
@@ -489,14 +494,77 @@ function ConversationPane({ ticketId, ticket, listLoaded }: ConversationPaneProp
     });
   }
 
+  /**
+   * Run a lifecycle mutation from the header's 3-dot menu. Each action maps to
+   * the same conversationTickets endpoints the ticket detail page uses:
+   * `ongoing`/`complete`/`cancel` change Status; `unclaim` releases ownership.
+   * The returned `TicketDetail` is projected back into the pane's `resolved`
+   * row so the header, composer lockout, and status all update in place — no
+   * refetch needed. The Conversations Inbox list re-syncs via its SignalR
+   * `onTicketStatusChanged` / focus refetch, so a now-terminal or unclaimed
+   * conversation drops out of the worklist on its own.
+   */
+  function handleAction(action: ConversationAction) {
+    setActionBusy(true);
+    setActionError(null);
+    void (async () => {
+      try {
+        const updated =
+          action === "unclaim"
+            ? await crmClient.conversationTickets.unclaim(ticketId)
+            : await crmClient.conversationTickets.changeStatus(ticketId, {
+                status:
+                  action === "ongoing"
+                    ? "Ongoing"
+                    : action === "complete"
+                    ? "Completed"
+                    : "Canceled",
+              });
+        setResolved({
+          id: updated.id,
+          subject: updated.subject,
+          status: updated.status,
+          waitingOn: updated.waitingOn,
+          source: updated.source,
+          assignedToId: updated.assignedToId,
+          assignedToName: updated.assignedToName,
+          assignedToEmail: updated.assignedToEmail,
+          contactId: updated.contactId,
+          contact: updated.contact,
+          createdAt: updated.createdAt,
+          updatedAt: updated.updatedAt,
+        });
+      } catch (err) {
+        setActionError(
+          err instanceof Error ? err.message : "Action failed. Please try again."
+        );
+      } finally {
+        setActionBusy(false);
+      }
+    })();
+  }
+
   return (
-    <MessageThread
-      ticketId={ticketId}
-      contactName={resolved?.contact?.name ?? null}
-      contactEmail={resolved?.contact?.email ?? null}
-      ticketSubject={resolved?.subject ?? null}
-      isTerminal={isTerminal}
-      onMessageSent={handleMessageSent}
-    />
+    <div className="flex h-full min-h-0 flex-col">
+      {actionError && (
+        <p
+          className="px-md pt-md text-base text-destructive shrink-0"
+          role="alert"
+        >
+          {actionError}
+        </p>
+      )}
+      <MessageThread
+        ticketId={ticketId}
+        contactName={resolved?.contact?.name ?? null}
+        contactEmail={resolved?.contact?.email ?? null}
+        ticketSubject={resolved?.subject ?? null}
+        isTerminal={isTerminal}
+        onMessageSent={handleMessageSent}
+        status={resolved?.status}
+        onAction={resolved ? handleAction : undefined}
+        actionBusy={actionBusy}
+      />
+    </div>
   );
 }

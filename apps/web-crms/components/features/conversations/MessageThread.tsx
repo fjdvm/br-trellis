@@ -14,7 +14,12 @@ import {
   groupMessages,
 } from "@/components/features/conversations/MessageThreadParts";
 import { CannedReplyPicker } from "@/components/features/conversations/CannedReplyPicker";
+import {
+  ConversationActionsMenu,
+  type ConversationAction,
+} from "@/components/features/conversations/ConversationActionsMenu";
 import { substituteCannedReplyVariables } from "@/lib/canned-reply-substitution";
+import type { TicketStatus } from "@/types/ticket-detail";
 
 interface MessageThreadProps {
   ticketId: string;
@@ -31,6 +36,16 @@ interface MessageThreadProps {
   isTerminal: boolean;
   /** Called after a reply is successfully sent (parent flips WaitingOn). */
   onMessageSent: () => void;
+  /**
+   * The ticket's current Status. When provided together with `onAction`, the
+   * header shows a 3-dot lifecycle menu (Mark Ongoing / Complete / Cancel /
+   * Unclaim). Omit both to render a plain header with no actions.
+   */
+  status?: TicketStatus;
+  /** Invoked with the chosen lifecycle action after the user confirms it. */
+  onAction?: (action: ConversationAction) => void;
+  /** True while a lifecycle mutation is running; disables the actions menu. */
+  actionBusy?: boolean;
 }
 
 /**
@@ -69,6 +84,9 @@ export function MessageThread({
   ticketSubject = null,
   isTerminal,
   onMessageSent,
+  status,
+  onAction,
+  actionBusy = false,
 }: MessageThreadProps) {
   const { data: session } = useSession();
   const currentAgentId = useCurrentAgentId();
@@ -162,14 +180,15 @@ export function MessageThread({
     // Fills the conversation pane; header pinned top, thread scrolls, composer
     // pinned bottom — the messenger layout from conversation_detail_wireframe.
     <div className="flex h-full min-h-0 flex-col">
-      {/* Conversation header: avatar + contact name + ticket subtitle. */}
+      {/* Conversation header: avatar + contact name + ticket subtitle, with a
+          3-dot lifecycle actions menu pinned to the right when enabled. */}
       <div className="flex items-center gap-sm border-b border-border p-md shrink-0 bg-background">
         <Avatar className="h-10 w-10">
           <AvatarFallback className="text-sm font-semibold">
             {threadInitials(title)}
           </AvatarFallback>
         </Avatar>
-        <div className="min-w-0">
+        <div className="min-w-0 flex-1">
           <h2 className="text-title-lg font-bold text-foreground truncate">
             {title}
           </h2>
@@ -177,6 +196,13 @@ export function MessageThread({
             {ticketSubject ? `Conversation \u00b7 ${ticketSubject}` : "Conversation"}
           </p>
         </div>
+        {status && onAction && (
+          <ConversationActionsMenu
+            status={status}
+            busy={actionBusy}
+            onAction={onAction}
+          />
+        )}
       </div>
 
       {error && (
