@@ -2,6 +2,10 @@ import { renderHook, waitFor } from "@testing-library/react";
 import { useCampaigns } from "@/hooks/useCampaigns";
 import { crmClient } from "@/lib/api/crm-client";
 
+jest.mock("next-auth/react", () => ({
+  useSession: jest.fn(() => ({ data: null, status: "unauthenticated" })),
+}));
+
 jest.mock("@/lib/api/crm-client", () => ({
   crmClient: {
     campaigns: {
