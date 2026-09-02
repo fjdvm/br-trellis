@@ -8,7 +8,11 @@ no implementation details, no specs.
 The unified, canonical record for a person tracked by the system, synced
 from ecommerce customer data and other sources. A Contact may or may not
 have ever purchased anything — "Customer" is not a separate entity, it is a
-lifecycle stage or Segment a Contact can belong to.
+lifecycle stage or Segment a Contact can belong to. A Contact carries a
+marketing email opt-out flag, set via the unsubscribe link on a Campaign
+email and honored whenever a Campaign's Audience is resolved (see Audience)
+— distinct from any Conversation/support-email concern, which this flag
+never affects.
 
 ## Company
 
@@ -235,6 +239,57 @@ to an existing Contact, or creating a new one, based on email/phone/name
 confidence matching. Produces a Source Reference (link from an external
 system's record to a Contact) and, when confidence is ambiguous, a
 Pending Review state requiring a human decision between match candidates.
+
+## Campaign
+
+A single record spanning one or more Channels (Email, Banner, Popup) that a
+business owner defines to broadcast marketing content — the sole entity for
+this concern; there is no separate "Post" entity. A Campaign carries
+per-Channel content, a Schedule (`SendNow` or `Scheduled`), and an Audience
+(see Audience, below). Status is `Draft → Active → Ended`: a Campaign only
+becomes `Active` via a deliberate Launch action, separate from creation, and
+only becomes `Ended` once every Channel it targets has individually reached a
+terminal state — an Email leg that has already sent does not end a Campaign
+whose Banner is still within its active window. In the UI, "Active Campaigns"
+and "Published Posts" are both views over this same Campaign list, filtered by
+status (`Active` and `Ended` respectively) — not distinct entities.
+
+## Channel (Campaign)
+
+One of `Email`, `Banner`, or `Popup` — the medium a Campaign's content is
+delivered through. Banner (a persistent strip on the storefront homepage) and
+Popup (a dismissible modal overlay) are modeled as two fully distinct
+Channels, not sub-types of one "In-App" channel: they render differently and
+carry different content fields. A Campaign can target more than one Channel
+at once, each with independently authored content. At most one Banner
+Campaign and one Popup Campaign may be `Active` at a time (one homepage slot
+each) — a new one that would overlap an already-`Active` one of the same
+Channel is blocked at creation, not silently superseded.
+
+## Template
+
+A pre-defined, reusable content skin for a Campaign Channel, curated by the
+business/dev team — not user-authorable in the current model (no
+drag-and-drop builder yet). A Template's content is tagged with a `format`
+(`Html` today; `Blocks` reserved for a future block-based builder), keeping
+the shape open to a structured, block-based representation later without a
+rename or migration of existing Templates.
+
+## Audience
+
+Who an Email Campaign sends to: a Segment (see Segment) plus an optional list
+of explicit email addresses for recipients outside the CRM entirely. The two
+lists are deduplicated by normalized email address before sending, and any
+Contact with a marketing opt-out on file is excluded regardless of Segment
+membership. Audience only applies to the Email Channel — Banner and Popup
+have no targeting concept; they broadcast to every storefront visitor for the
+duration of their active window, since there is no reliable way to match an
+anonymous visitor to a Segment at render time. A Campaign's Audience is
+resolved once, at Launch (`Draft → Active`), not re-resolved at send time —
+later Segment-membership changes don't affect an already-launched Campaign.
+_Avoid_: treating Audience as its own persisted entity distinct from Segment
+— it's a Segment reference (plus escape-hatch emails) captured on the
+Campaign, not a new concept.
 
 ## Identity Handshake
 
