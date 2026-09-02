@@ -12,6 +12,14 @@ public sealed class ShopperTicket
     public string? Description { get; init; }
     public required string Status { get; init; }
     public string? AssignedToName { get; init; }
+
+    /// <summary>
+    /// True once at least one Staff-authored Message exists on the ticket. Drives the
+    /// customer-facing "Message Staff" affordance, which stays hidden until Staff has
+    /// replied — independent of Status (#145, CONTEXT.md Conversation).
+    /// </summary>
+    public bool HasStaffReplied { get; init; }
+
     public required DateTimeOffset CreatedAt { get; init; }
     public required DateTimeOffset UpdatedAt { get; init; }
 }

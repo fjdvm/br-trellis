@@ -27,6 +27,8 @@ export interface TicketSummary {
   status: string; // Unclaimed, Claimed, Ongoing, Completed, Canceled
   customerId: string;
   assignedToName?: string;
+  /** True once Staff has replied at least once. Gates the "Message Staff" link (#145). */
+  hasStaffReplied?: boolean;
   createdAt: string;
   updatedAt: string;
 }

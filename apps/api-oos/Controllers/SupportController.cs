@@ -72,6 +72,7 @@ public class SupportController : ControllerBase
             Status = t.Status,
             CustomerId = userId.ToString(),
             AssignedToName = t.AssignedToName,
+            HasStaffReplied = t.HasStaffReplied,
             CreatedAt = t.CreatedAt.ToString("O"),
             UpdatedAt = t.UpdatedAt.ToString("O"),
         }).ToList();

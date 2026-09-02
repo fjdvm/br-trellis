@@ -12,6 +12,13 @@ public sealed class ShopperTicketDto
     public string Status { get; set; } = string.Empty;
     public string CustomerId { get; set; } = string.Empty;
     public string? AssignedToName { get; set; }
+
+    /// <summary>
+    /// True once Staff has authored at least one Message on the ticket. web-shop hides
+    /// the "Message Staff" link until this is true (#145).
+    /// </summary>
+    public bool HasStaffReplied { get; set; }
+
     public string CreatedAt { get; set; } = string.Empty;
     public string UpdatedAt { get; set; } = string.Empty;
 }

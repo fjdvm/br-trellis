@@ -12,6 +12,7 @@ using Microsoft.Extensions.Logging;
 /// </summary>
 public sealed class CrmTicketReader(
     IHttpClientFactory httpClientFactory,
+    ICrmMessageReader messageReader,
     ILogger<CrmTicketReader> logger) : ISupportTicketReader
 {
     private static readonly JsonSerializerOptions JsonOptions = new()
@@ -45,16 +46,26 @@ public sealed class CrmTicketReader(
 
             var email = customerEmail.Trim();
 
-            return tickets
+            var mine = tickets
                 .Where(t => string.Equals(t.Contact?.Email, email, StringComparison.OrdinalIgnoreCase))
                 .OrderByDescending(t => t.CreatedAt)
-                .Select(t => new ShopperTicket
+                .ToList();
+
+            // Determine "has Staff replied" per ticket. This is bounded to the signed-in
+            // shopper's own tickets (a handful), not the whole CRM inbox, so the extra
+            // per-ticket message reads are cheap. Run them concurrently.
+            var staffReplyChecks = await Task.WhenAll(
+                mine.Select(t => HasStaffRepliedAsync(t.Id.ToString(), cancellationToken)));
+
+            return mine
+                .Select((t, i) => new ShopperTicket
                 {
                     Id = t.Id.ToString(),
                     Title = StripTypePrefix(t.Subject),
                     Description = null,
                     Status = t.Status ?? "Unclaimed",
                     AssignedToName = t.AssignedToName,
+                    HasStaffReplied = staffReplyChecks[i],
                     CreatedAt = t.CreatedAt,
                     UpdatedAt = t.UpdatedAt,
                 })
@@ -65,6 +76,19 @@ public sealed class CrmTicketReader(
             logger.LogWarning(exception, "Failed to list tickets from api-crms for {Email}", customerEmail);
             return [];
         }
+    }
+
+    /// <summary>
+    /// True once at least one Staff-authored Message exists on the ticket. Reuses the
+    /// same server-to-server messages read the staff-reply relay uses; a read failure
+    /// resolves to false (fail closed → the "Message Staff" link stays hidden rather
+    /// than appearing prematurely).
+    /// </summary>
+    private async Task<bool> HasStaffRepliedAsync(string ticketId, CancellationToken cancellationToken)
+    {
+        var messages = await messageReader.GetMessagesSinceAsync(ticketId, null, cancellationToken);
+        return messages.Any(m =>
+            string.Equals(m.SenderType, "Staff", StringComparison.OrdinalIgnoreCase));
     }
 
     /// <summary>

@@ -71,17 +71,65 @@ public sealed class CrmTicketReaderTests
         (await reader.GetTicketsByEmailAsync("")).Should().BeEmpty();
     }
 
-    private static ISupportTicketReader BuildReader(HttpStatusCode status, string body)
+    [Fact]
+    public async Task GetTicketsByEmail_sets_HasStaffReplied_from_the_tickets_messages()
+    {
+        // The caller's ticket (11111...) has a Staff message; another ticket has none.
+        var messages = new Dictionary<string, IReadOnlyList<CrmMessage>>
+        {
+            ["11111111-1111-1111-1111-111111111111"] = new[]
+            {
+                new CrmMessage { Id = "m1", SenderType = "Contact", Content = "hi", SentAt = DateTimeOffset.UtcNow },
+                new CrmMessage { Id = "m2", SenderType = "Staff", Content = "reply", SentAt = DateTimeOffset.UtcNow },
+            },
+        };
+        var reader = BuildReader(HttpStatusCode.OK, CrmJson, new StubMessageReader(messages));
+
+        var ticket = (await reader.GetTicketsByEmailAsync("me@example.com")).Single();
+
+        ticket.HasStaffReplied.Should().BeTrue("the ticket has a Staff-authored message");
+    }
+
+    [Fact]
+    public async Task GetTicketsByEmail_HasStaffReplied_is_false_when_only_contact_messages()
+    {
+        var messages = new Dictionary<string, IReadOnlyList<CrmMessage>>
+        {
+            ["11111111-1111-1111-1111-111111111111"] = new[]
+            {
+                new CrmMessage { Id = "m1", SenderType = "Contact", Content = "hi", SentAt = DateTimeOffset.UtcNow },
+            },
+        };
+        var reader = BuildReader(HttpStatusCode.OK, CrmJson, new StubMessageReader(messages));
+
+        var ticket = (await reader.GetTicketsByEmailAsync("me@example.com")).Single();
+
+        ticket.HasStaffReplied.Should().BeFalse("only the customer has messaged");
+    }
+
+    private static ISupportTicketReader BuildReader(
+        HttpStatusCode status, string body, ICrmMessageReader? messageReader = null)
     {
         var handler = new StubHandler(status, body);
         var client = new HttpClient(handler) { BaseAddress = new Uri("http://localhost:5035/") };
         var factory = new StubHttpClientFactory(client);
-        return new CrmTicketReader(factory, NullLogger<CrmTicketReader>.Instance);
+        return new CrmTicketReader(
+            factory,
+            messageReader ?? new StubMessageReader(new Dictionary<string, IReadOnlyList<CrmMessage>>()),
+            NullLogger<CrmTicketReader>.Instance);
     }
 
     private sealed class StubHttpClientFactory(HttpClient client) : IHttpClientFactory
     {
         public HttpClient CreateClient(string name) => client;
+    }
+
+    private sealed class StubMessageReader(Dictionary<string, IReadOnlyList<CrmMessage>> byTicket)
+        : ICrmMessageReader
+    {
+        public Task<IReadOnlyList<CrmMessage>> GetMessagesSinceAsync(
+            string conversationId, DateTimeOffset? since, CancellationToken cancellationToken = default) =>
+            Task.FromResult(byTicket.TryGetValue(conversationId, out var m) ? m : []);
     }
 
     private sealed class StubHandler(HttpStatusCode status, string body) : HttpMessageHandler

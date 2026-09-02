@@ -199,7 +199,7 @@ export function ProfileTicketsTab({ userId, onOpenLiveChat }: ProfileTicketsTabP
                   {new Date(ticket.createdAt).toLocaleDateString(undefined, { month: "short", day: "numeric" })}
                 </span>
 
-                {ticket.status === "Claimed" && (
+                {ticket.hasStaffReplied && (
                   <Link
                     href={`/support/${ticket.id}`}
                     className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:underline"
