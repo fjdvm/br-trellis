@@ -75,48 +75,47 @@ export function Step3Content({
 
   return (
     <div className="space-y-6">
-      {/* Info Hover Tooltip for Draft-First Policy */}
-      <div className="flex items-center justify-end pb-2">
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <button
-                type="button"
-                aria-label="Draft-First Policy Info"
-                className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-muted/60 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors cursor-pointer border border-border/60"
-              >
-                <Info className="w-3.5 h-3.5" />
-              </button>
-            </TooltipTrigger>
-            <TooltipContent side="left" className="p-3 bg-popover border border-border text-popover-foreground shadow-md space-y-1">
-              <p className="font-semibold text-xs text-foreground">Draft-First Policy</p>
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                All campaigns are initially saved as a Draft. Review, stage testing, and explicit launch occur directly from the Campaign Detail view.
-              </p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-      </div>
       {/* Render Channel Content Forms using Tabs when 2+ channels selected */}
       {channels.length > 1 ? (
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full space-y-6">
-          <TabsList className="w-full justify-start border-b border-border rounded-none bg-transparent p-0 h-auto gap-4">
-            {channels.map((ch) => (
-              <TabsTrigger
-                key={ch}
-                value={ch}
-                onClick={(e) => {
-                  if (ch !== activeTab) {
-                    e.preventDefault();
-                    handleTabClick(ch);
-                  }
-                }}
-                className="data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none rounded-none text-base font-semibold px-4 py-2 cursor-pointer"
-              >
-                {ch} Content
-              </TabsTrigger>
-            ))}
-          </TabsList>
+          <div className="flex items-center justify-between border-b border-border pb-2">
+            <TabsList className="w-auto justify-start border-none rounded-none bg-transparent p-0 h-auto gap-4">
+              {channels.map((ch) => (
+                <TabsTrigger
+                  key={ch}
+                  value={ch}
+                  onClick={(e) => {
+                    if (ch !== activeTab) {
+                      e.preventDefault();
+                      handleTabClick(ch);
+                    }
+                  }}
+                  className="data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none rounded-none text-base font-semibold px-4 py-2 cursor-pointer"
+                >
+                  {ch}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    type="button"
+                    aria-label="Draft-First Policy Info"
+                    className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-muted/60 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors cursor-pointer border border-border/60"
+                  >
+                    <Info className="w-4 h-4" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="left" className="p-3 bg-popover border border-border text-popover-foreground shadow-md space-y-1 max-w-xs">
+                  <p className="font-semibold text-xs text-foreground">Draft-First Policy</p>
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    All campaigns are initially saved as a Draft. Review, stage testing, and explicit launch occur directly from the Campaign Detail view.
+                  </p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
           {channels.map((ch) => (
             <TabsContent key={ch} value={ch} className="mt-4 focus-visible:outline-none">
               <ChannelContentForm
@@ -128,7 +127,29 @@ export function Step3Content({
           ))}
         </Tabs>
       ) : (
-        <div className="space-y-8">
+        <div className="space-y-6">
+          <div className="flex items-center justify-between border-b border-border pb-2">
+            <span className="text-base font-semibold text-foreground">{channels[0]} Content</span>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    type="button"
+                    aria-label="Draft-First Policy Info"
+                    className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-muted/60 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors cursor-pointer border border-border/60"
+                  >
+                    <Info className="w-4 h-4" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="left" className="p-3 bg-popover border border-border text-popover-foreground shadow-md space-y-1 max-w-xs">
+                  <p className="font-semibold text-xs text-foreground">Draft-First Policy</p>
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    All campaigns are initially saved as a Draft. Review, stage testing, and explicit launch occur directly from the Campaign Detail view.
+                  </p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
           <ChannelContentForm
             channel={channels[0]}
             value={contents[channels[0]] ?? {}}
