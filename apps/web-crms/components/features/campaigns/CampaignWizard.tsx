@@ -25,7 +25,7 @@ import {
 } from "@/components/features/campaigns/ScheduleStep";
 import { CampaignStepper } from "@/components/features/campaigns/CampaignStepper";
 import { Step1Channels } from "@/components/features/campaigns/Step1Channels";
-import { Step2Audience } from "@/components/features/campaigns/Step2Audience";
+import { Step2Audience, SYSTEM_PRESET_SEGMENTS } from "@/components/features/campaigns/Step2Audience";
 import { Step3Content } from "@/components/features/campaigns/Step3Content";
 import type {
   Campaign,
@@ -322,7 +322,7 @@ export function CampaignWizard({ existing }: { existing?: Campaign }) {
                     <span className="text-muted-foreground block font-medium">Target Audience</span>
                     <span className="font-semibold text-foreground">
                       {segmentId !== NO_SEGMENT
-                        ? segments.find((s) => s.id === segmentId)?.name ?? segmentId
+                        ? [...SYSTEM_PRESET_SEGMENTS, ...segments].find((s) => s.id === segmentId)?.name ?? segmentId
                         : "Custom email addresses"}
                     </span>
                   </div>

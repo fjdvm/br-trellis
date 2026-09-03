@@ -26,6 +26,45 @@ import type { SegmentListItem } from "@/types/segment";
 
 const NO_SEGMENT = "__none__";
 
+export const SYSTEM_PRESET_SEGMENTS: SegmentListItem[] = [
+  {
+    id: "all",
+    name: "All",
+    memberCount: 1250,
+    description: "All Contacts, Companies, and Ecommerce Customers",
+    rule: "All CRM Records",
+    createdAt: "",
+    updatedAt: "",
+  },
+  {
+    id: "ecommerce",
+    name: "Ecommerce",
+    memberCount: 540,
+    description: "Active Ecommerce Customers & Store Buyers",
+    rule: "Source == Ecommerce",
+    createdAt: "",
+    updatedAt: "",
+  },
+  {
+    id: "companies",
+    name: "Companies",
+    memberCount: 320,
+    description: "Registered B2B Companies",
+    rule: "Type == Company",
+    createdAt: "",
+    updatedAt: "",
+  },
+  {
+    id: "contacts",
+    name: "Contacts",
+    memberCount: 890,
+    description: "Individual CRM Contacts",
+    rule: "Type == Contact",
+    createdAt: "",
+    updatedAt: "",
+  },
+];
+
 interface Step2AudienceProps {
   segments: SegmentListItem[];
   segmentId: string;
@@ -42,12 +81,18 @@ export function Step2Audience({
   onEmailsChange,
 }: Step2AudienceProps) {
   const [manualExpanded, setManualExpanded] = useState(true);
-
   const [inputValue, setInputValue] = useState("");
 
+  const combinedSegments = useMemo(() => {
+    const customFiltered = segments.filter(
+      (s) => !SYSTEM_PRESET_SEGMENTS.some((p) => p.id === s.id)
+    );
+    return [...SYSTEM_PRESET_SEGMENTS, ...customFiltered];
+  }, [segments]);
+
   const selectedSegment = useMemo(
-    () => segments.find((s) => s.id === segmentId),
-    [segments, segmentId]
+    () => combinedSegments.find((s) => s.id === segmentId),
+    [combinedSegments, segmentId]
   );
 
   const parsedEmails = useMemo(() => {
@@ -116,7 +161,7 @@ export function Step2Audience({
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value={NO_SEGMENT}>No segment (Manual emails only)</SelectItem>
-                {segments.map((s) => (
+                {combinedSegments.map((s) => (
                   <SelectItem key={s.id} value={s.id}>
                     {s.name} ({s.memberCount} members)
                   </SelectItem>
