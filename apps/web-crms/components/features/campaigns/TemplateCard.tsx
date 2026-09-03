@@ -49,34 +49,56 @@ export function TemplateCard({ template, onPreview, onUse }: TemplateCardProps) 
         </div>
 
         {/* Live Channel Presentation Mockup */}
-        <div className="flex-1 bg-background p-2 relative flex flex-col justify-center overflow-hidden">
-          {template.channel === "Email" && (
-            <div className="bg-card text-foreground rounded p-2 text-left space-y-1 shadow-sm border border-border w-full">
-              <span className="text-[9px] font-bold text-muted-foreground block border-b border-border/50 pb-0.5">
-                Inbox Email Preview
-              </span>
-              <div className="text-[11px] font-bold text-primary truncate">Email Subject</div>
-              <div className="text-[10px] text-muted-foreground line-clamp-2 leading-tight">
-                {renderFormattedContent(template.content)}
+        <div className="flex-1 bg-slate-50 dark:bg-slate-950 p-2 relative flex flex-col justify-between overflow-hidden">
+          {/* Mini Storefront Header */}
+          <div className="w-full bg-background border border-border rounded px-1.5 py-0.5 flex items-center justify-between mb-1 shadow-2xs">
+            <div className="flex items-center gap-1">
+              <div className="w-3.5 h-3.5 rounded bg-primary/20 flex items-center justify-center font-bold text-[8px] text-primary">
+                S
               </div>
+              <span className="text-[9px] font-bold text-foreground">Aura Store</span>
+            </div>
+            <span className="text-[8px] text-muted-foreground">Shop · Deals</span>
+          </div>
+
+          {template.channel === "Banner" && (
+            <div className="w-full bg-primary text-primary-foreground p-1.5 px-2 rounded text-[9.5px] font-medium shadow-xs flex items-center justify-between gap-1 mb-1">
+              <span className="truncate">{renderFormattedContent(template.content)}</span>
+              <span className="text-[8.5px] font-bold underline shrink-0">Learn More</span>
             </div>
           )}
 
-          {template.channel === "Banner" && (
-            <div className="w-full bg-primary text-primary-foreground p-2 rounded text-center text-[10px] font-semibold shadow-sm flex items-center justify-between gap-1">
-              <span className="truncate">{renderFormattedContent(template.content)}</span>
-              <span className="text-[9px] underline shrink-0">Learn More</span>
+          {/* Simulated Skeleton Product Cards */}
+          <div className="flex-1 space-y-1 opacity-50 pointer-events-none">
+            <div className="w-full h-8 bg-muted/60 rounded p-1">
+              <div className="w-1/2 h-1.5 bg-muted-foreground/30 rounded mb-1" />
+              <div className="w-3/4 h-1 bg-muted-foreground/20 rounded" />
+            </div>
+          </div>
+
+          {template.channel === "Email" && (
+            <div className="absolute inset-1.5 z-10 bg-background border border-border rounded shadow-md p-2 text-left space-y-1 overflow-hidden">
+              <div className="border-b border-border/50 pb-0.5 flex justify-between items-center text-[8px] text-muted-foreground">
+                <span className="font-semibold text-foreground truncate">To: customer@example.com</span>
+                <span>Inbox</span>
+              </div>
+              <div className="text-[10px] font-bold text-foreground truncate">Email Subject</div>
+              <div className="text-[9px] text-muted-foreground line-clamp-2 leading-tight">
+                {renderFormattedContent(template.content)}
+              </div>
             </div>
           )}
 
           {template.channel === "Popup" && (
-            <div className="bg-card text-card-foreground border border-border p-2.5 rounded-lg text-center space-y-1 shadow-md w-full mx-auto">
-              <div className="text-[11px] font-bold text-foreground">Special Announcement</div>
-              <div className="text-[9.5px] text-muted-foreground line-clamp-2 leading-tight">
-                {renderFormattedContent(template.content)}
-              </div>
-              <div className="bg-primary text-primary-foreground text-[9px] font-semibold py-0.5 px-2 rounded">
-                Claim Offer
+            <div className="absolute inset-0 z-20 bg-black/30 backdrop-blur-xs flex items-center justify-center p-2">
+              <div className="bg-card text-card-foreground border border-border p-2 rounded-lg text-center space-y-1 shadow-lg w-full max-w-[180px]">
+                <div className="text-[10px] font-bold text-foreground truncate">Special Announcement</div>
+                <div className="text-[8.5px] text-muted-foreground line-clamp-2 leading-tight">
+                  {renderFormattedContent(template.content)}
+                </div>
+                <div className="bg-primary text-primary-foreground text-[8px] font-semibold py-0.5 px-2 rounded mt-0.5">
+                  Claim Offer
+                </div>
               </div>
             </div>
           )}

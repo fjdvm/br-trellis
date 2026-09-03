@@ -43,6 +43,8 @@ export function Step2Audience({
 }: Step2AudienceProps) {
   const [manualExpanded, setManualExpanded] = useState(true);
 
+  const [inputValue, setInputValue] = useState("");
+
   const selectedSegment = useMemo(
     () => segments.find((s) => s.id === segmentId),
     [segments, segmentId]
@@ -57,6 +59,31 @@ export function Step2Audience({
 
   const segmentMemberCount = selectedSegment?.memberCount ?? 0;
   const totalRecipients = segmentMemberCount + parsedEmails.length;
+
+  const addEmail = (rawText: string) => {
+    const trimmed = rawText.trim().replace(/^,+|,+$/g, "");
+    if (!trimmed) return;
+    if (!parsedEmails.includes(trimmed)) {
+      const newEmails = [...parsedEmails, trimmed].join("\n");
+      onEmailsChange(newEmails);
+    }
+    setInputValue("");
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === " " || e.key === "Enter" || e.key === ",") {
+      e.preventDefault();
+      addEmail(inputValue);
+    } else if (e.key === "Backspace" && !inputValue && parsedEmails.length > 0) {
+      removeEmail(parsedEmails[parsedEmails.length - 1]);
+    }
+  };
+
+  const handleBlur = () => {
+    if (inputValue.trim()) {
+      addEmail(inputValue);
+    }
+  };
 
   const removeEmail = (emailToRemove: string) => {
     const updated = parsedEmails.filter((e) => e !== emailToRemove).join("\n");
@@ -165,25 +192,44 @@ export function Step2Audience({
 
           {manualExpanded && (
             <div className="space-y-xs">
-              <div className="relative">
-                <Textarea
+              <div className="min-h-[100px] p-md border border-input rounded-md bg-background focus-within:ring-1 focus-within:ring-ring flex flex-wrap items-center gap-2 relative">
+                {parsedEmails.map((email) => (
+                  <Badge
+                    key={email}
+                    variant="secondary"
+                    className="flex items-center gap-1.5 px-3 py-1 text-sm rounded-full bg-muted/80 text-foreground border border-border"
+                  >
+                    <Mail className="w-3.5 h-3.5 text-muted-foreground" />
+                    <span>{email}</span>
+                    <button
+                      type="button"
+                      onClick={() => removeEmail(email)}
+                      className="ml-0.5 rounded-full hover:bg-muted p-0.5 text-muted-foreground hover:text-foreground focus:outline-none"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </Badge>
+                ))}
+                <input
                   id="additional-emails"
                   aria-label="Additional emails"
-                  value={emails}
-                  onChange={(e) => onEmailsChange(e.target.value)}
-                  placeholder="executive-lead@partnercorp.com&#10;procurement-dept@innovate.org"
-                  rows={4}
-                  className="p-md text-base leading-relaxed"
+                  type="text"
+                  value={inputValue || emails}
+                  onChange={(e) => setInputValue(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  onBlur={handleBlur}
+                  placeholder={parsedEmails.length === 0 ? "Type email and press space or enter..." : "Add email..."}
+                  className="flex-1 min-w-[200px] bg-transparent text-base outline-none placeholder:text-muted-foreground"
                 />
                 <div className="absolute right-3 top-3">
                   <Badge variant="outline" className="text-xs font-mono">
-                    {parsedEmails.length} parsed
+                    {parsedEmails.length} added
                   </Badge>
                 </div>
               </div>
 
               <div className="flex items-center justify-between text-xs text-muted-foreground">
-                <span>Enter one email per line or separate by commas.</span>
+                <span>Press space, comma, or enter to add email badge.</span>
                 {parsedEmails.length > 0 && (
                   <button
                     type="button"
@@ -194,27 +240,6 @@ export function Step2Audience({
                   </button>
                 )}
               </div>
-
-              {parsedEmails.length > 0 && (
-                <div className="flex flex-wrap gap-1.5 pt-2">
-                  {parsedEmails.map((email) => (
-                    <span
-                      key={email}
-                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-muted text-xs text-foreground font-medium"
-                    >
-                      <Mail className="w-3 h-3 text-muted-foreground" />
-                      {email}
-                      <button
-                        type="button"
-                        onClick={() => removeEmail(email)}
-                        className="text-muted-foreground hover:text-foreground"
-                      >
-                        <X className="w-3 h-3 ml-0.5" />
-                      </button>
-                    </span>
-                  ))}
-                </div>
-              )}
             </div>
           )}
         </div>
@@ -275,17 +300,6 @@ export function Step2Audience({
             <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden">
               <div className="h-full bg-primary" style={{ width: `${Math.min(100, (totalRecipients / 25000) * 100)}%` }} />
             </div>
-            <span className="text-muted-foreground">Deliverability capacity index: 99.8% optimal</span>
-          </div>
-        </div>
-
-        <div className="bg-muted/40 border border-border p-md rounded-xl flex items-start gap-3">
-          <ShieldCheck className="w-5 h-5 text-primary shrink-0 mt-0.5" />
-          <div className="flex flex-col gap-0.5 text-xs">
-            <span className="font-semibold text-foreground">Consent &amp; Privacy Rule</span>
-            <p className="text-muted-foreground leading-normal">
-              Manual addresses must adhere to enterprise double opt-in guidelines. All recipients will include unsubscribe headers.
-            </p>
           </div>
         </div>
       </div>
