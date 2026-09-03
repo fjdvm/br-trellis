@@ -269,11 +269,31 @@ Channel is blocked at creation, not silently superseded.
 ## Template
 
 A pre-defined, reusable content skin for a Campaign Channel, curated by the
-business/dev team — not user-authorable in the current model (no
-drag-and-drop builder yet). A Template's content is tagged with a `format`
-(`Html` today; `Blocks` reserved for a future block-based builder), keeping
-the shape open to a structured, block-based representation later without a
-rename or migration of existing Templates.
+business/dev team — not user-authorable. A Template's content is a flat
+string tagged with a `format` (`Html` today; `Blocks` reserved but unused).
+_Avoid_: treating Template as the same concept as BlockTemplate (see
+BlockTemplate) — they are two deliberately separate paths (quick pre-defined
+vs. custom-built), not variants of one entity or a migration from one to the
+other.
+
+## BlockTemplate
+
+A user-authored, structure-only reusable layout for a Campaign Channel,
+assembled via drag-and-drop in the Template Builder. A BlockTemplate defines
+an ordered set of Template Blocks (see Template Block) for one Channel and
+holds no filled-in content itself — content is supplied per-block when a
+Campaign is composed against it (see Campaign). Distinct from Template (see
+Template): quick pre-defined vs. custom-built are two separate paths by
+deliberate choice, not two states of one concept.
+
+## Template Block
+
+One structural component within a BlockTemplate's ordered layout: a type
+(Heading, Text, Image, Link, Button, or Carousel), a stable identity, and an
+author-supplied Label (e.g. "Main headline") distinguishing it from other
+blocks of the same type within the same BlockTemplate. A Template Block
+carries no content of its own — a Campaign composed against the BlockTemplate
+supplies exactly one value per Template Block (see Campaign).
 
 ## Audience
 
