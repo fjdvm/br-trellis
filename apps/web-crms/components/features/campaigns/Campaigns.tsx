@@ -80,17 +80,6 @@ export function Campaigns({ initialStatus = "All" }: { initialStatus?: TabValue 
     <div className="w-full min-h-full py-xl px-lg md:px-xl space-y-lg max-w-container-max mx-auto">
       {/* Header Block */}
       <div className="space-y-sm">
-        <Breadcrumb>
-          <BreadcrumbList>
-            <BreadcrumbItem className="text-xs uppercase tracking-wider text-muted-foreground font-medium">
-              Marketing &amp; Campaigns
-            </BreadcrumbItem>
-            <BreadcrumbSeparator />
-            <BreadcrumbItem>
-              <BreadcrumbPage className="text-xs font-semibold text-foreground">Directory</BreadcrumbPage>
-            </BreadcrumbItem>
-          </BreadcrumbList>
-        </Breadcrumb>
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-md">
           <div className="space-y-xs max-w-2xl">
             <h1 className="text-display-lg font-bold tracking-tight text-foreground">
