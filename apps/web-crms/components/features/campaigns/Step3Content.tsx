@@ -129,7 +129,7 @@ export function Step3Content({
       ) : (
         <div className="space-y-6">
           <div className="flex items-center justify-between border-b border-border pb-2">
-            <span className="text-base font-semibold text-foreground">{channels[0]} Content</span>
+            <span className="text-base font-semibold text-foreground">{channels[0]} Configuration</span>
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
