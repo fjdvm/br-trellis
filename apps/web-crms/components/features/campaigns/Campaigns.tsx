@@ -151,7 +151,7 @@ export function Campaigns({ initialStatus = "All" }: { initialStatus?: TabValue 
                 {isLoading ? (
                   <TableSkeleton columns={6} />
                 ) : (
-                  <CampaignTable campaigns={filtered} />
+                  <CampaignTable campaigns={filtered} onRefetch={refetch} />
                 )}
               </TabsContent>
             ))}

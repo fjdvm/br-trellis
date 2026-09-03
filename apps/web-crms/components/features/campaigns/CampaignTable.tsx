@@ -50,7 +50,13 @@ function audienceLabel(campaign: CampaignListItem): string {
   return "—";
 }
 
-export function CampaignTable({ campaigns }: { campaigns: CampaignListItem[] }) {
+export function CampaignTable({
+  campaigns,
+  onRefetch,
+}: {
+  campaigns: CampaignListItem[];
+  onRefetch?: () => void;
+}) {
   const router = useRouter();
   const [metrics, setMetrics] = useState<Record<string, CampaignEngagementMetrics>>({});
 
@@ -164,11 +170,41 @@ export function CampaignTable({ campaigns }: { campaigns: CampaignListItem[] }) 
                         View Campaign
                       </DropdownMenuItem>
                       {campaign.status === "Draft" && (
+                        <>
+                          <DropdownMenuItem
+                            className="text-base font-medium py-2.5 px-3 cursor-pointer"
+                            onClick={async () => {
+                              try {
+                                await crmClient.campaigns.updateStatus(campaign.id, "Active");
+                                onRefetch?.();
+                              } catch (err) {
+                                console.error(err);
+                              }
+                            }}
+                          >
+                            Launch Campaign
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            className="text-base font-medium py-2.5 px-3 cursor-pointer"
+                            onClick={() => router.push(`/campaigns/${campaign.id}/edit`)}
+                          >
+                            Edit Campaign
+                          </DropdownMenuItem>
+                        </>
+                      )}
+                      {campaign.status === "Active" && (
                         <DropdownMenuItem
-                          className="text-base font-medium py-2.5 px-3 cursor-pointer"
-                          onClick={() => router.push(`/campaigns/${campaign.id}/edit`)}
+                          className="text-base font-medium py-2.5 px-3 cursor-pointer text-destructive focus:text-destructive"
+                          onClick={async () => {
+                            try {
+                              await crmClient.campaigns.updateStatus(campaign.id, "Ended");
+                              onRefetch?.();
+                            } catch (err) {
+                              console.error(err);
+                            }
+                          }}
                         >
-                          Edit Campaign
+                          End Campaign
                         </DropdownMenuItem>
                       )}
                     </DropdownMenuContent>
