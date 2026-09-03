@@ -26,9 +26,12 @@ namespace api_crms.Controllers;
 [Route("api/marketing")]
 [AllowAnonymous]
 [EnableRateLimiting(UnsubscribeRateLimitPolicy)]
-public sealed class MarketingController(IContactService contactService) : ControllerBase
+public sealed class MarketingController(
+    IContactService contactService,
+    ICampaignService campaignService) : ControllerBase
 {
     public const string UnsubscribeRateLimitPolicy = "PublicUnsubscribe";
+    public const string BrevoWebhookRateLimitPolicy = "PublicBrevoWebhook";
 
     private const string ConfirmationHtml =
         "<!DOCTYPE html><html><head><meta charset=\"utf-8\" />" +
@@ -59,6 +62,82 @@ public sealed class MarketingController(IContactService contactService) : Contro
         return NoContent();
     }
 
+    /// <summary>
+    /// Direct Brevo open/click webhook endpoint (#174 / ADR 0009).
+    /// Resolves the campaign ID from X-Mailin-Tag header or tags array, or explicit campaignId field.
+    /// Hardened with rate-limiting and silent outcome for invalid/unmatched events.
+    /// </summary>
+    [HttpPost("webhook/brevo")]
+    [EnableRateLimiting(BrevoWebhookRateLimitPolicy)]
+    public async Task<IActionResult> BrevoWebhook(
+        [FromBody] BrevoWebhookPayload? payload,
+        CancellationToken cancellationToken)
+    {
+        if (payload is null || string.IsNullOrWhiteSpace(payload.Email) || string.IsNullOrWhiteSpace(payload.Event))
+        {
+            return NoContent();
+        }
+
+        var campaignId = ResolveCampaignId(payload);
+        if (!campaignId.HasValue)
+        {
+            return NoContent();
+        }
+
+        var eventType = payload.Event.Trim().ToLowerInvariant();
+        if (eventType != "opened" && eventType != "clicked" && eventType != "open" && eventType != "click")
+        {
+            return NoContent();
+        }
+
+        var normalizedType = (eventType == "opened" || eventType == "open") ? "opened" : "clicked";
+
+        var occurredAt = payload.Date.HasValue
+            ? DateTimeOffset.FromUnixTimeSeconds(payload.Date.Value)
+            : DateTimeOffset.UtcNow;
+
+        var dto = new DTOs.CampaignEventDto(
+            normalizedType,
+            payload.Email,
+            payload.Url,
+            occurredAt);
+
+        await campaignService.RecordEventAsync(campaignId.Value, dto, cancellationToken);
+        return NoContent();
+    }
+
+    private static Guid? ResolveCampaignId(BrevoWebhookPayload payload)
+    {
+        if (payload.CampaignId.HasValue && payload.CampaignId.Value != Guid.Empty)
+        {
+            return payload.CampaignId.Value;
+        }
+
+        // Brevo sends tags via 'tags' array or 'tag' string. The dispatch ticket sets X-Mailin-Tag to campaignId.
+        if (payload.Tags is not null)
+        {
+            foreach (var t in payload.Tags)
+            {
+                if (Guid.TryParse(t?.Trim(), out var parsed))
+                {
+                    return parsed;
+                }
+            }
+        }
+
+        if (!string.IsNullOrWhiteSpace(payload.Tag) && Guid.TryParse(payload.Tag.Trim(), out var singleTag))
+        {
+            return singleTag;
+        }
+
+        if (!string.IsNullOrWhiteSpace(payload.XMailinTag) && Guid.TryParse(payload.XMailinTag.Trim(), out var mailinTag))
+        {
+            return mailinTag;
+        }
+
+        return null;
+    }
+
     // Validates the email shape and applies the opt-out. A malformed/missing address
     // is silently ignored — the caller can't tell the difference, and we never throw
     // a validation error that would leak whether input was "accepted".
@@ -81,4 +160,14 @@ public sealed class MarketingController(IContactService contactService) : Contro
     }
 
     public sealed record UnsubscribeRequest(string? Email);
+
+    public sealed record BrevoWebhookPayload(
+        string? Event,
+        string? Email,
+        long? Date,
+        string? Url,
+        Guid? CampaignId,
+        string? Tag,
+        string[]? Tags,
+        [property: System.Text.Json.Serialization.JsonPropertyName("X-Mailin-Tag")] string? XMailinTag);
 }
