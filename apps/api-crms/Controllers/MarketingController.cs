@@ -90,7 +90,7 @@ public sealed class MarketingController(
             return NoContent();
         }
 
-        var normalizedType = (eventType == "opened" || eventType == "open") ? "opened" : "clicked";
+        var normalizedType = (eventType == "opened" || eventType == "open") ? "Open" : "Click";
 
         var occurredAt = payload.Date.HasValue
             ? DateTimeOffset.FromUnixTimeSeconds(payload.Date.Value)
