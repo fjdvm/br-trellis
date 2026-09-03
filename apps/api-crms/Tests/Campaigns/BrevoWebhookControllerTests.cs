@@ -3,6 +3,7 @@ using System.Net.Http.Json;
 using api_crms.Controllers;
 using api_crms.Data;
 using api_crms.DTOs;
+using api_crms.Interfaces;
 using api_crms.Models;
 using api_crms.Repositories;
 using api_crms.Services;
@@ -11,6 +12,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Xunit;
 
 namespace api_crms.Tests.Campaigns;
 
