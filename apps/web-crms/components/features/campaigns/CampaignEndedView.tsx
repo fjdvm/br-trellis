@@ -27,9 +27,9 @@ export function CampaignEndedView({
   const bannerContent = campaign.channelContents.find((c) => c.channel === "Banner");
   const popupContent = campaign.channelContents.find((c) => c.channel === "Popup");
 
-  const openRate = analytics?.openRate ?? 48.2;
-  const clickRate = analytics?.clickRate ?? 14.6;
-  const sentCount = campaign.dispatchResult?.sentCount ?? recipientCount;
+  const openRate = analytics ? analytics.openRate : 0;
+  const clickRate = analytics ? analytics.clickRate : 0;
+  const sentCount = campaign.dispatchResult?.sentCount ?? analytics?.sentCount ?? recipientCount;
 
   return (
     <div className="space-y-8">
