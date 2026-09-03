@@ -73,6 +73,12 @@ interface Step2AudienceProps {
   onEmailsChange: (emails: string) => void;
 }
 
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+function isValidEmail(email: string): boolean {
+  return EMAIL_REGEX.test(email.trim().toLowerCase());
+}
+
 export function Step2Audience({
   segments,
   segmentId,
@@ -82,6 +88,7 @@ export function Step2Audience({
 }: Step2AudienceProps) {
   const [manualExpanded, setManualExpanded] = useState(true);
   const [inputValue, setInputValue] = useState("");
+  const [emailError, setEmailError] = useState<string | null>(null);
 
   const combinedSegments = useMemo(() => {
     const customFiltered = segments.filter(
@@ -98,8 +105,8 @@ export function Step2Audience({
   const parsedEmails = useMemo(() => {
     return emails
       .split(/[,\n]/)
-      .map((e) => e.trim())
-      .filter((e) => e.length > 0);
+      .map((e) => e.trim().toLowerCase())
+      .filter((e) => e.length > 0 && isValidEmail(e));
   }, [emails]);
 
   const segmentMemberCount = selectedSegment?.memberCount ?? 0;
@@ -108,8 +115,15 @@ export function Step2Audience({
   const addEmail = (rawText: string) => {
     const trimmed = rawText.trim().replace(/^,+|,+$/g, "");
     if (!trimmed) return;
-    if (!parsedEmails.includes(trimmed)) {
-      const newEmails = [...parsedEmails, trimmed].join("\n");
+
+    if (!isValidEmail(trimmed)) {
+      setEmailError(`"${trimmed}" is not a valid email address (e.g. user@example.com)`);
+      return;
+    }
+
+    setEmailError(null);
+    if (!parsedEmails.includes(trimmed.toLowerCase())) {
+      const newEmails = [...parsedEmails, trimmed.toLowerCase()].join("\n");
       onEmailsChange(newEmails);
     }
     setInputValue("");
@@ -131,6 +145,7 @@ export function Step2Audience({
   };
 
   const removeEmail = (emailToRemove: string) => {
+    setEmailError(null);
     const updated = parsedEmails.filter((e) => e !== emailToRemove).join("\n");
     onEmailsChange(updated);
   };
@@ -258,12 +273,15 @@ export function Step2Audience({
                 <input
                   id="additional-emails"
                   aria-label="Additional emails"
-                  type="text"
-                  value={inputValue || emails}
-                  onChange={(e) => setInputValue(e.target.value)}
+                  type="email"
+                  value={inputValue}
+                  onChange={(e) => {
+                    setInputValue(e.target.value);
+                    if (emailError) setEmailError(null);
+                  }}
                   onKeyDown={handleKeyDown}
                   onBlur={handleBlur}
-                  placeholder={parsedEmails.length === 0 ? "Type email and press space or enter..." : "Add email..."}
+                  placeholder={parsedEmails.length === 0 ? "Type valid email (e.g. user@domain.com) and press enter..." : "Add email..."}
                   className="flex-1 min-w-[200px] bg-transparent text-base outline-none placeholder:text-muted-foreground"
                 />
                 <div className="absolute right-3 top-3">
@@ -272,6 +290,12 @@ export function Step2Audience({
                   </Badge>
                 </div>
               </div>
+
+              {emailError && (
+                <p className="text-xs text-destructive font-medium mt-1">
+                  {emailError}
+                </p>
+              )}
 
               <div className="flex items-center justify-between text-xs text-muted-foreground">
                 <span>Press space, comma, or enter to add email badge.</span>
