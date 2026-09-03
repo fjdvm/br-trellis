@@ -110,7 +110,7 @@ export function Campaigns({ initialStatus = "All" }: { initialStatus?: TabValue 
 
       {/* Filter Deck & Data Table Card */}
       <Card className="shadow-none border-border">
-        <CardContent className="p-lg space-y-lg">
+        <CardContent className="p-6 space-y-lg">
           <Tabs value={tab} onValueChange={(v) => setTab(v as TabValue)}>
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-md">
               <TabsList className="w-full lg:w-auto overflow-x-auto justify-start">
