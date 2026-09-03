@@ -1,6 +1,12 @@
 # Campaign dispatch and Banner/Popup delivery are api-oos-initiated, not api-crms-initiated
 
-Status: accepted
+Status: superseded by [ADR 0009](./0009-crms-sends-marketing-email-directly-via-brevo.md)
+
+> **Update**: ADR 0009 overrides the Email-dispatch half of this decision — api-crms now sends
+> Email Campaigns directly via Brevo, as a deliberate, scoped exception to ADR 0002/0007, because
+> email-sending must have zero dependency on api-oos's uptime. The Banner/Popup delivery half of
+> this ADR (api-oos still serves `GET /api/banner/active` / `GET /api/popup/active` to web-shop)
+> is unaffected and remains in force.
 
 ## Context
 
