@@ -593,97 +593,47 @@ export function TemplatesGallery() {
                           )}
 
                           {block.type === "heading" && (
-                            <Input
-                              value={block.content}
-                              onChange={(e) => updateBlock(block.id, { content: e.target.value })}
-                              style={{
-                                textAlign: block.textAlign || "left",
-                                fontWeight: block.isBold ? "bold" : "normal",
-                                fontStyle: block.isItalic ? "italic" : "normal",
-                              }}
-                              className="font-bold text-lg"
-                              placeholder="Enter heading..."
-                            />
+                            <div className="p-3 bg-muted/40 border border-dashed border-border rounded-md text-xs text-muted-foreground font-semibold flex items-center justify-between">
+                              <Type className="w-4 h-4 text-primary" />
+                              <span>Heading Title Structural Block (Dynamic input during campaign creation)</span>
+                            </div>
                           )}
 
                           {block.type === "text" && (
-                            <Textarea
-                              value={block.content}
-                              onChange={(e) => updateBlock(block.id, { content: e.target.value })}
-                              style={{
-                                textAlign: block.textAlign || "left",
-                                fontWeight: block.isBold ? "bold" : "normal",
-                                fontStyle: block.isItalic ? "italic" : "normal",
-                              }}
-                              placeholder="Enter body paragraph text..."
-                              className="text-base min-h-[80px]"
-                            />
+                            <div className="p-3 bg-muted/40 border border-dashed border-border rounded-md text-xs text-muted-foreground font-semibold flex items-center justify-between">
+                              <AlignLeft className="w-4 h-4 text-primary" />
+                              <span>Paragraph Text Structural Block (Dynamic input during campaign creation)</span>
+                            </div>
                           )}
 
                           {block.type === "carousel" && (
-                            <div className="space-y-2">
-                              <Input
-                                value={block.content}
-                                onChange={(e) => updateBlock(block.id, { content: e.target.value })}
-                                placeholder="Carousel slides comma separated..."
-                              />
-                              <div className="p-3 bg-muted/40 border border-border rounded-md text-xs text-muted-foreground flex items-center justify-between">
-                                <SlidersHorizontal className="w-4 h-4 text-primary" />
-                                <span>Interactive Banner Carousel (1 max for Email)</span>
-                              </div>
+                            <div className="p-3 bg-muted/40 border border-dashed border-border rounded-md text-xs text-muted-foreground font-semibold flex items-center justify-between">
+                              <SlidersHorizontal className="w-4 h-4 text-primary" />
+                              <span>Carousel Component Structural Block (Dynamic slides input during campaign creation)</span>
                             </div>
                           )}
 
                           {block.type === "image" && (
-                            <div className="space-y-2">
-                              <Input
-                                value={block.content}
-                                onChange={(e) => updateBlock(block.id, { content: e.target.value })}
-                                placeholder="Image URL..."
-                              />
-                              {block.content && (
-                                <img
-                                  src={block.content}
-                                  alt="Template Graphic"
-                                  className="w-full h-28 object-cover rounded-md bg-muted"
-                                />
-                              )}
+                            <div className="p-3 bg-muted/40 border border-dashed border-border rounded-md text-xs text-muted-foreground font-semibold flex items-center justify-between">
+                              <Image className="w-4 h-4 text-primary" />
+                              <span>Image Component Structural Block (Dynamic image URL input during campaign creation)</span>
                             </div>
                           )}
 
                           {block.type === "link" && (
-                            <div className="space-y-2">
-                              <Input
-                                value={block.content}
-                                onChange={(e) => updateBlock(block.id, { content: e.target.value })}
-                                placeholder="Link Label text..."
-                              />
-                              <Input
-                                value={block.url || ""}
-                                onChange={(e) => updateBlock(block.id, { url: e.target.value })}
-                                placeholder="Target URL (e.g. https://...)"
-                              />
+                            <div className="p-3 bg-muted/40 border border-dashed border-border rounded-md text-xs text-muted-foreground font-semibold flex items-center justify-between">
+                              <LinkIcon className="w-4 h-4 text-primary" />
+                              <span>Text Link Structural Block (Dynamic label & URL input during campaign creation)</span>
                             </div>
                           )}
 
                           {block.type === "button" && (
-                            <div className="space-y-2">
-                              <Input
-                                value={block.content}
-                                onChange={(e) => updateBlock(block.id, { content: e.target.value })}
-                                placeholder="Button Label..."
-                                className="font-semibold"
-                              />
-                              <Input
-                                value={block.url || ""}
-                                onChange={(e) => updateBlock(block.id, { url: e.target.value })}
-                                placeholder="Button Link URL..."
-                              />
-                              <Button className="w-full" type="button">
-                                {block.content || "Click Me"}
-                              </Button>
+                            <div className="p-3 bg-muted/40 border border-dashed border-border rounded-md text-xs text-muted-foreground font-semibold flex items-center justify-between">
+                              <MousePointerClick className="w-4 h-4 text-primary" />
+                              <span>CTA Button Structural Block (Dynamic label & URL input during campaign creation)</span>
                             </div>
                           )}
+
                         </div>
                       ))}
                     </div>
