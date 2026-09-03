@@ -16,6 +16,12 @@ import {
   ChannelContentForm,
   type ChannelContentState,
 } from "@/components/features/campaigns/ChannelContentForm";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import type { CampaignChannel } from "@/types/campaign";
 
 interface Step3ContentProps {
@@ -69,6 +75,31 @@ export function Step3Content({
 
   return (
     <div className="space-y-6">
+      {/* Header Bar with Info Hover Tooltip for Draft-First Policy */}
+      <div className="flex items-center justify-between pb-2 border-b border-border/40">
+        <span className="text-sm font-semibold text-foreground">
+          Step 3: Content Creation &amp; Creative Variants
+        </span>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                type="button"
+                aria-label="Draft-First Policy Info"
+                className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-muted/60 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors cursor-pointer border border-border/60"
+              >
+                <Info className="w-3.5 h-3.5" />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side="left" className="max-w-xs p-3 bg-popover border border-border text-popover-foreground shadow-md space-y-1">
+              <p className="font-semibold text-xs text-foreground">Draft-First Policy</p>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                All campaigns are initially saved as a Draft. Review, stage testing, and explicit launch occur directly from the Campaign Detail view.
+              </p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      </div>
       {/* Render Channel Content Forms using Tabs when 2+ channels selected */}
       {channels.length > 1 ? (
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full space-y-6">
