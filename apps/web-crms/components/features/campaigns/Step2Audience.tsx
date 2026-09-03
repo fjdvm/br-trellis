@@ -276,8 +276,11 @@ export function Step2Audience({
                   type="email"
                   value={inputValue}
                   onChange={(e) => {
-                    setInputValue(e.target.value);
+                    const val = e.target.value;
+                    setInputValue(val);
                     if (emailError) setEmailError(null);
+                    const combined = [...parsedEmails, val].filter(Boolean).join("\n");
+                    onEmailsChange(combined);
                   }}
                   onKeyDown={handleKeyDown}
                   onBlur={handleBlur}
