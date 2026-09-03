@@ -13,12 +13,6 @@ import {
   Image,
   MousePointerClick,
   Trash2,
-  SlidersHorizontal,
-  Link as LinkIcon,
-  Bold,
-  Italic,
-  AlignCenter,
-  AlignRight,
 } from "lucide-react";
 import {
   Breadcrumb,
@@ -52,23 +46,14 @@ import {
 import { TemplateCard } from "@/components/features/campaigns/TemplateCard";
 import { TemplatePreviewModal } from "@/components/features/campaigns/TemplatePreviewModal";
 import { useTemplates } from "@/hooks/useTemplates";
-import {
-  getChannelConstraints,
-  validateBlockCount,
-  type BlockType,
-} from "@/lib/template-constraints";
 import type { CampaignChannel, Template } from "@/types/campaign";
 
 const CHANNELS: CampaignChannel[] = ["Email", "Banner", "Popup"];
 
-export interface TemplateBlock {
+interface TemplateBlock {
   id: string;
-  type: BlockType;
+  type: "heading" | "text" | "image" | "button";
   content: string;
-  url?: string;
-  textAlign?: "left" | "center" | "right";
-  isBold?: boolean;
-  isItalic?: boolean;
 }
 
 function useSafeRouter() {
@@ -91,87 +76,13 @@ export function TemplatesGallery() {
   const [showBuilderModal, setShowBuilderModal] = useState(false);
   const [builderName, setBuilderName] = useState("");
   const [builderChannel, setBuilderChannel] = useState<CampaignChannel>("Email");
-  const [builderError, setBuilderError] = useState<string | null>(null);
   const [blocks, setBlocks] = useState<TemplateBlock[]>([
-    { id: "1", type: "heading", content: "Welcome to Our Special Event", textAlign: "left" },
-    { id: "2", type: "text", content: "Enjoy exclusive rewards and discover new arrivals this season.", textAlign: "left" },
-    { id: "3", type: "button", content: "Explore Now", url: "#" },
+    { id: "1", type: "heading", content: "Welcome to Our Special Event" },
+    { id: "2", type: "text", content: "Enjoy exclusive rewards and discover new arrivals this season." },
+    { id: "3", type: "button", content: "Explore Now" },
   ]);
 
-  const constraints = useMemo(() => getChannelConstraints(builderChannel), [builderChannel]);
-
-  function handleChannelChange(newChannel: CampaignChannel) {
-    setBuilderChannel(newChannel);
-    setBuilderError(null);
-
-    // Auto-prune/enforce blocks according to new channel limits
-    const newConstraints = getChannelConstraints(newChannel);
-    let carouselCount = 0;
-    let imageCount = 0;
-    let linkCount = 0;
-    let headingCount = 0;
-    let textCount = 0;
-    let buttonCount = 0;
-
-    const pruned = blocks.filter((b) => {
-      if (b.type === "carousel") {
-        if (carouselCount < newConstraints.maxCarousel) {
-          carouselCount++;
-          return true;
-        }
-        return false;
-      }
-      if (b.type === "image") {
-        if (imageCount < newConstraints.maxImages) {
-          imageCount++;
-          return true;
-        }
-        return false;
-      }
-      if (b.type === "link") {
-        if (linkCount < newConstraints.maxLinks) {
-          linkCount++;
-          return true;
-        }
-        return false;
-      }
-      if (b.type === "heading") {
-        if (headingCount < newConstraints.maxHeadings) {
-          headingCount++;
-          return true;
-        }
-        return false;
-      }
-      if (b.type === "text") {
-        if (textCount < newConstraints.maxTexts) {
-          textCount++;
-          return true;
-        }
-        return false;
-      }
-      if (b.type === "button") {
-        if (buttonCount < newConstraints.maxButtons) {
-          buttonCount++;
-          return true;
-        }
-        return false;
-      }
-      return true;
-    });
-
-    setBlocks(pruned);
-  }
-
-  function addBlock(type: BlockType) {
-    const currentCount = blocks.filter((b) => b.type === type).length;
-    const check = validateBlockCount(builderChannel, type, currentCount);
-
-    if (!check.allowed) {
-      setBuilderError(check.reason ?? "Component limit exceeded for channel.");
-      return;
-    }
-
-    setBuilderError(null);
+  function addBlock(type: TemplateBlock["type"]) {
     const newBlock: TemplateBlock = {
       id: String(Date.now()),
       type,
@@ -182,24 +93,17 @@ export function TemplatesGallery() {
           ? "New paragraph text goes here."
           : type === "image"
           ? ""
-          : type === "carousel"
-          ? "Featured Banner 1, Featured Banner 2"
-          : type === "link"
-          ? "Click here to view details"
           : "Click Here",
-      url: type === "link" || type === "button" ? "#" : undefined,
-      textAlign: "left",
     };
     setBlocks((prev) => [...prev, newBlock]);
   }
 
-  function updateBlock(id: string, patch: Partial<TemplateBlock>) {
-    setBlocks((prev) => prev.map((b) => (b.id === id ? { ...b, ...patch } : b)));
+  function updateBlockContent(id: string, content: string) {
+    setBlocks((prev) => prev.map((b) => (b.id === id ? { ...b, content } : b)));
   }
 
   function removeBlock(id: string) {
     setBlocks((prev) => prev.filter((b) => b.id !== id));
-    setBuilderError(null);
   }
 
   const filteredTemplates = useMemo(() => {
@@ -349,7 +253,7 @@ export function TemplatesGallery() {
                   />
                   <Select
                     value={builderChannel}
-                    onValueChange={(v) => handleChannelChange(v as CampaignChannel)}
+                    onValueChange={(v) => setBuilderChannel(v as CampaignChannel)}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Channel" />
@@ -362,72 +266,28 @@ export function TemplatesGallery() {
                   </Select>
                 </div>
 
-                {/* Channel Constraints & Rules Section */}
-                <div className="bg-muted/70 border border-border/80 rounded-md p-3 space-y-2 text-xs">
-                  <div className="font-bold text-foreground flex items-center justify-between">
-                    <span>{builderChannel} Constraints & Rules</span>
-                    <Badge variant="outline" className="text-[10px]">
-                      Max Limits
-                    </Badge>
-                  </div>
-                  <div className="grid grid-cols-2 gap-x-2 gap-y-1 text-muted-foreground">
-                    <div>Carousel: <span className="font-semibold text-foreground">{constraints.maxCarousel} max</span></div>
-                    <div>Images: <span className="font-semibold text-foreground">{constraints.maxImages} max</span></div>
-                    <div>Links: <span className="font-semibold text-foreground">{constraints.maxLinks} max</span></div>
-                    <div>Headings: <span className="font-semibold text-foreground">{constraints.maxHeadings} max</span></div>
-                    <div>Paragraphs: <span className="font-semibold text-foreground">{constraints.maxTexts} max</span></div>
-                    <div>Buttons: <span className="font-semibold text-foreground">{constraints.maxButtons} max</span></div>
-                  </div>
-                </div>
-
-                <div className="space-y-2 flex-1 overflow-y-auto">
+                <div className="space-y-2 flex-1">
                   <Label className="text-xs uppercase font-bold text-muted-foreground">Draggable Blocks</Label>
                   <div className="space-y-2">
                     {[
-                      { type: "carousel" as const, label: "Carousel", icon: SlidersHorizontal, max: constraints.maxCarousel },
-                      { type: "image" as const, label: "Image Placeholder", icon: Image, max: constraints.maxImages },
-                      { type: "link" as const, label: "Text Link", icon: LinkIcon, max: constraints.maxLinks },
-                      { type: "heading" as const, label: "Heading Title", icon: Type, max: constraints.maxHeadings },
-                      { type: "text" as const, label: "Text Paragraph", icon: AlignLeft, max: constraints.maxTexts },
-                      { type: "button" as const, label: "CTA Button", icon: MousePointerClick, max: constraints.maxButtons },
-                    ].map((item) => {
-                      const count = blocks.filter((b) => b.type === item.type).length;
-                      const disabled = count >= item.max;
-                      return (
-                        <div
-                          key={item.type}
-                          draggable={!disabled}
-                          onDragStart={(e) => {
-                            if (!disabled) {
-                              e.dataTransfer.setData("text/plain", item.type);
-                            }
-                          }}
-                          onClick={() => {
-                            if (!disabled) {
-                              addBlock(item.type);
-                            } else {
-                              setBuilderError(`${builderChannel} allows max ${item.max} ${item.label}(s).`);
-                            }
-                          }}
-                          className={`p-2.5 border rounded-md shadow-xs flex items-center justify-between transition-colors text-xs font-semibold ${
-                            disabled
-                              ? "bg-muted/40 text-muted-foreground border-border/50 cursor-not-allowed opacity-60"
-                              : "bg-background border-border cursor-grab hover:border-primary"
-                          }`}
-                        >
-                          <div className="flex items-center gap-2">
-                            <item.icon className="w-4 h-4 text-primary shrink-0" />
-                            <span>{item.label}</span>
-                          </div>
-                          <div className="flex items-center gap-1.5">
-                            <Badge variant={count >= item.max ? "destructive" : "secondary"} className="text-[9px] px-1.5 py-0">
-                              {count}/{item.max}
-                            </Badge>
-                            <GripVertical className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
-                          </div>
+                      { type: "heading", label: "Heading Block", icon: Type },
+                      { type: "text", label: "Text Paragraph", icon: AlignLeft },
+                      { type: "image", label: "Image Placeholder", icon: Image },
+                      { type: "button", label: "CTA Button", icon: MousePointerClick },
+                    ].map((item) => (
+                      <div
+                        key={item.type}
+                        draggable
+                        onDragStart={(e) => e.dataTransfer.setData("text/plain", item.type)}
+                        className="p-3 bg-background border border-border rounded-md shadow-xs flex items-center justify-between cursor-grab hover:border-primary transition-colors text-sm font-semibold"
+                      >
+                        <div className="flex items-center gap-2">
+                          <item.icon className="w-4 h-4 text-primary" />
+                          <span>{item.label}</span>
                         </div>
-                      );
-                    })}
+                        <GripVertical className="w-4 h-4 text-muted-foreground" />
+                      </div>
+                    ))}
                   </div>
                 </div>
               </div>
@@ -438,74 +298,15 @@ export function TemplatesGallery() {
                 onDrop={(e) => {
                   e.preventDefault();
                   const type = e.dataTransfer.getData("text/plain");
-                  if (type) addBlock(type as BlockType);
+                  if (type) addBlock(type as TemplateBlock["type"]);
                 }}
-                className="md:col-span-8 bg-slate-100 dark:bg-slate-950 border-2 border-dashed border-border rounded-xl p-5 flex flex-col justify-between overflow-y-auto min-h-[380px]"
+                className="md:col-span-8 bg-slate-50 dark:bg-slate-950 border-2 border-dashed border-border rounded-lg p-6 flex flex-col justify-between overflow-y-auto min-h-[360px]"
               >
                 <div className="space-y-4">
-                  {/* Channel Native Canvas Frame Header */}
-                  <div className="bg-slate-900 text-slate-200 p-2.5 px-3 rounded-lg border border-slate-800 flex items-center justify-between shadow-xs">
-                    <div className="flex items-center gap-2">
-                      <div className="flex items-center gap-1.5">
-                        <span className="w-2.5 h-2.5 rounded-full bg-red-500" />
-                        <span className="w-2.5 h-2.5 rounded-full bg-amber-500" />
-                        <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
-                      </div>
-                      <span className="font-mono text-xs text-slate-300 ml-1">
-                        {builderChannel === "Email"
-                          ? "mail.store-app.com/builder/inbox"
-                          : builderChannel === "Banner"
-                          ? "https://store.example.com (Top Banner Strip)"
-                          : "https://store.example.com (Modal Popup Overlay)"}
-                      </span>
-                    </div>
-                    <span className="text-[10px] uppercase font-mono text-slate-400">
-                      {builderChannel} Canvas
-                    </span>
+                  <div className="flex items-center justify-between text-xs text-muted-foreground border-b border-border pb-2">
+                    <span className="font-mono">https://store.example.com</span>
+                    <span>Drop blocks below</span>
                   </div>
-
-                  {builderChannel === "Email" && (
-                    <div className="bg-background border border-border rounded-lg p-3 space-y-1.5 text-left shadow-xs">
-                      <div className="flex items-center justify-between border-b border-border/60 pb-1.5 text-xs text-muted-foreground">
-                        <span className="font-bold text-foreground">From: Aura Store Marketing &lt;noreply@aurastore.com&gt;</span>
-                        <span className="font-mono">Email Layout</span>
-                      </div>
-                      <div className="text-xs text-muted-foreground font-semibold">
-                        Recipient: customer@example.com
-                      </div>
-                    </div>
-                  )}
-
-                  {builderChannel === "Banner" && (
-                    <div className="bg-gradient-to-r from-primary to-primary/90 text-primary-foreground p-3 px-4 rounded-lg flex items-center justify-between shadow-sm">
-                      <span className="text-xs font-semibold">Storefront Top Promotional Strip Layout</span>
-                      <Badge variant="outline" className="text-[10px] text-primary-foreground border-primary-foreground/30">
-                        Banner Preview
-                      </Badge>
-                    </div>
-                  )}
-
-                  {builderChannel === "Popup" && (
-                    <div className="bg-card border border-border p-3 rounded-lg flex items-center justify-between text-xs text-muted-foreground shadow-xs">
-                      <span className="font-semibold text-foreground">Centered Modal Popup Window Layout</span>
-                      <Badge variant="secondary" className="text-[10px]">
-                        Popup Overlay
-                      </Badge>
-                    </div>
-                  )}
-
-                  {builderError && (
-                    <div className="p-3 bg-destructive/10 border border-destructive/40 text-destructive text-xs font-medium rounded-md flex items-center justify-between">
-                      <span>{builderError}</span>
-                      <button
-                        type="button"
-                        onClick={() => setBuilderError(null)}
-                        className="text-xs hover:underline ml-2"
-                      >
-                        Dismiss
-                      </button>
-                    </div>
-                  )}
 
                   {blocks.length === 0 ? (
                     <div className="h-48 flex flex-col items-center justify-center text-muted-foreground text-sm gap-2">
@@ -517,123 +318,64 @@ export function TemplatesGallery() {
                       {blocks.map((block) => (
                         <div
                           key={block.id}
-                          className="relative group bg-card border border-border p-4 rounded-lg shadow-sm space-y-3 text-left"
+                          className="relative group bg-card border border-border p-4 rounded-lg shadow-sm space-y-2 text-left"
                         >
-                          <div className="flex items-center justify-between border-b border-border/50 pb-2">
-                            <Badge variant="outline" className="uppercase text-[10px] font-semibold tracking-wider">
-                              {block.type}
-                            </Badge>
-                            <button
-                              type="button"
-                              onClick={() => removeBlock(block.id)}
-                              className="text-muted-foreground hover:text-destructive p-1 rounded transition-colors"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
-                          </div>
-
-                          {/* Block Rich Formatting Controls for Text/Heading */}
-                          {(block.type === "heading" || block.type === "text") && (
-                            <div className="flex items-center justify-between bg-muted/50 border border-border p-1 rounded-md mb-2">
-                              <div className="flex items-center gap-1">
-                                <button
-                                  type="button"
-                                  title="Bold"
-                                  onClick={() => updateBlock(block.id, { isBold: !block.isBold })}
-                                  className={`p-1 rounded text-xs transition-colors ${
-                                    block.isBold ? "bg-background text-primary shadow-xs font-bold" : "hover:bg-background text-foreground"
-                                  }`}
-                                >
-                                  <Bold className="w-3.5 h-3.5" />
-                                </button>
-                                <button
-                                  type="button"
-                                  title="Italic"
-                                  onClick={() => updateBlock(block.id, { isItalic: !block.isItalic })}
-                                  className={`p-1 rounded text-xs transition-colors ${
-                                    block.isItalic ? "bg-background text-primary shadow-xs italic" : "hover:bg-background text-foreground"
-                                  }`}
-                                >
-                                  <Italic className="w-3.5 h-3.5" />
-                                </button>
-                              </div>
-                              <div className="flex items-center gap-1">
-                                <button
-                                  type="button"
-                                  title="Align Left"
-                                  onClick={() => updateBlock(block.id, { textAlign: "left" })}
-                                  className={`p-1 rounded text-xs transition-colors ${
-                                    block.textAlign === "left" ? "bg-background text-primary shadow-xs" : "text-muted-foreground hover:bg-background"
-                                  }`}
-                                >
-                                  <AlignLeft className="w-3.5 h-3.5" />
-                                </button>
-                                <button
-                                  type="button"
-                                  title="Align Center"
-                                  onClick={() => updateBlock(block.id, { textAlign: "center" })}
-                                  className={`p-1 rounded text-xs transition-colors ${
-                                    block.textAlign === "center" ? "bg-background text-primary shadow-xs" : "text-muted-foreground hover:bg-background"
-                                  }`}
-                                >
-                                  <AlignCenter className="w-3.5 h-3.5" />
-                                </button>
-                                <button
-                                  type="button"
-                                  title="Align Right"
-                                  onClick={() => updateBlock(block.id, { textAlign: "right" })}
-                                  className={`p-1 rounded text-xs transition-colors ${
-                                    block.textAlign === "right" ? "bg-background text-primary shadow-xs" : "text-muted-foreground hover:bg-background"
-                                  }`}
-                                >
-                                  <AlignRight className="w-3.5 h-3.5" />
-                                </button>
-                              </div>
-                            </div>
-                          )}
+                          <button
+                            type="button"
+                            onClick={() => removeBlock(block.id)}
+                            className="absolute right-2 top-2 text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity p-1"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
 
                           {block.type === "heading" && (
-                            <div className="p-3 bg-muted/40 border border-dashed border-border rounded-md text-xs text-muted-foreground font-semibold flex items-center justify-between">
-                              <Type className="w-4 h-4 text-primary" />
-                              <span>Heading Title Structural Block (Dynamic input during campaign creation)</span>
-                            </div>
+                            <Input
+                              value={block.content}
+                              onChange={(e) => updateBlockContent(block.id, e.target.value)}
+                              className="font-bold text-lg"
+                              placeholder="Enter heading..."
+                            />
                           )}
 
                           {block.type === "text" && (
-                            <div className="p-3 bg-muted/40 border border-dashed border-border rounded-md text-xs text-muted-foreground font-semibold flex items-center justify-between">
-                              <AlignLeft className="w-4 h-4 text-primary" />
-                              <span>Paragraph Text Structural Block (Dynamic input during campaign creation)</span>
-                            </div>
-                          )}
-
-                          {block.type === "carousel" && (
-                            <div className="p-3 bg-muted/40 border border-dashed border-border rounded-md text-xs text-muted-foreground font-semibold flex items-center justify-between">
-                              <SlidersHorizontal className="w-4 h-4 text-primary" />
-                              <span>Carousel Component Structural Block (Dynamic slides input during campaign creation)</span>
-                            </div>
+                            <Textarea
+                              value={block.content}
+                              onChange={(e) => updateBlockContent(block.id, e.target.value)}
+                              placeholder="Enter body paragraph text..."
+                              className="text-sm"
+                            />
                           )}
 
                           {block.type === "image" && (
-                            <div className="p-3 bg-muted/40 border border-dashed border-border rounded-md text-xs text-muted-foreground font-semibold flex items-center justify-between">
-                              <Image className="w-4 h-4 text-primary" />
-                              <span>Image Component Structural Block (Dynamic image URL input during campaign creation)</span>
-                            </div>
-                          )}
-
-                          {block.type === "link" && (
-                            <div className="p-3 bg-muted/40 border border-dashed border-border rounded-md text-xs text-muted-foreground font-semibold flex items-center justify-between">
-                              <LinkIcon className="w-4 h-4 text-primary" />
-                              <span>Text Link Structural Block (Dynamic label & URL input during campaign creation)</span>
+                            <div className="space-y-2">
+                              <Input
+                                value={block.content}
+                                onChange={(e) => updateBlockContent(block.id, e.target.value)}
+                                placeholder="Image URL..."
+                              />
+                              {block.content && (
+                                <img
+                                  src={block.content}
+                                  alt="Template Graphic"
+                                  className="w-full h-28 object-cover rounded-md bg-muted"
+                                />
+                              )}
                             </div>
                           )}
 
                           {block.type === "button" && (
-                            <div className="p-3 bg-muted/40 border border-dashed border-border rounded-md text-xs text-muted-foreground font-semibold flex items-center justify-between">
-                              <MousePointerClick className="w-4 h-4 text-primary" />
-                              <span>CTA Button Structural Block (Dynamic label & URL input during campaign creation)</span>
+                            <div className="space-y-2">
+                              <Input
+                                value={block.content}
+                                onChange={(e) => updateBlockContent(block.id, e.target.value)}
+                                placeholder="Button Label..."
+                                className="font-semibold"
+                              />
+                              <Button className="w-full" type="button">
+                                {block.content || "Click Me"}
+                              </Button>
                             </div>
                           )}
-
                         </div>
                       ))}
                     </div>
