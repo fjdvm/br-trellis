@@ -97,7 +97,7 @@ export function CampaignEndedView({
             {/* Key Engagement Metrics Grid */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-md">
               <Card className="shadow-none border-border/60 bg-muted/30">
-                <CardContent className="p-md flex flex-col justify-between h-full">
+                <CardContent className="p-5 pt-5 flex flex-col justify-between h-full">
                   <span className="text-xs text-muted-foreground font-medium">Total Sent</span>
                   <div className="flex flex-col mt-1">
                     <span className="text-headline-md font-bold text-foreground">{sentCount}</span>
@@ -107,7 +107,7 @@ export function CampaignEndedView({
               </Card>
 
               <Card className="shadow-none border-border/60 bg-muted/30">
-                <CardContent className="p-md flex flex-col justify-between h-full">
+                <CardContent className="p-5 pt-5 flex flex-col justify-between h-full">
                   <span className="text-xs text-muted-foreground font-medium">Open Rate</span>
                   <div className="flex flex-col mt-1">
                     <span className="text-headline-md font-bold text-foreground">{openRate}%</span>
@@ -117,7 +117,7 @@ export function CampaignEndedView({
               </Card>
 
               <Card className="shadow-none border-border/60 bg-muted/30">
-                <CardContent className="p-md flex flex-col justify-between h-full">
+                <CardContent className="p-5 pt-5 flex flex-col justify-between h-full">
                   <span className="text-xs text-muted-foreground font-medium">Click Rate</span>
                   <div className="flex flex-col mt-1">
                     <span className="text-headline-md font-bold text-foreground">{clickRate}%</span>
@@ -127,7 +127,7 @@ export function CampaignEndedView({
               </Card>
 
               <Card className="shadow-none border-border/60 bg-muted/30">
-                <CardContent className="p-md flex flex-col justify-between h-full">
+                <CardContent className="p-5 pt-5 flex flex-col justify-between h-full">
                   <span className="text-xs text-muted-foreground font-medium">Unsubscribe Rate</span>
                   <div className="flex flex-col mt-1">
                     <span className="text-headline-md font-bold text-foreground">0.1%</span>
