@@ -137,18 +137,18 @@ export function TemplatePreviewModal({
               {/* Bar Chart Wireframe */}
               <div className="h-32 w-full flex items-end justify-between gap-sm pt-md pb-xs border-b border-border/50">
                 {[
-                  { day: "Hour 1", count: 1, height: "100%" },
-                  { day: "Hour 2", count: 0, height: "4px" },
-                  { day: "Hour 3", count: 0, height: "4px" },
-                  { day: "Hour 4", count: 0, height: "4px" },
-                  { day: "Hour 5", count: 0, height: "4px" },
-                  { day: "Hour 6", count: 0, height: "4px" },
-                  { day: "Hour 7", count: 0, height: "4px" },
+                  { day: "Hour 1", count: 1, height: "100%", bg: "bg-gradient-to-t from-violet-600 to-violet-400 group-hover:from-violet-500 group-hover:to-violet-300" },
+                  { day: "Hour 2", count: 0, height: "6px", bg: "bg-gradient-to-t from-purple-500/50 to-purple-400/30" },
+                  { day: "Hour 3", count: 0, height: "6px", bg: "bg-gradient-to-t from-indigo-500/50 to-indigo-400/30" },
+                  { day: "Hour 4", count: 0, height: "6px", bg: "bg-gradient-to-t from-pink-500/50 to-pink-400/30" },
+                  { day: "Hour 5", count: 0, height: "6px", bg: "bg-gradient-to-t from-fuchsia-500/50 to-fuchsia-400/30" },
+                  { day: "Hour 6", count: 0, height: "6px", bg: "bg-gradient-to-t from-sky-500/50 to-sky-400/30" },
+                  { day: "Hour 7", count: 0, height: "6px", bg: "bg-gradient-to-t from-emerald-500/50 to-emerald-400/30" },
                 ].map((item) => (
                   <div key={item.day} className="flex-1 flex flex-col items-center h-full justify-end group">
                     <span className="text-xs text-muted-foreground mb-1 font-semibold">{item.count}</span>
                     <div
-                      className="w-full bg-primary rounded-t transition-all group-hover:bg-primary/80"
+                      className={`w-full ${item.bg} rounded-t transition-all shadow-xs`}
                       style={{ height: item.height }}
                     />
                     <span className="text-xs text-muted-foreground mt-1.5">{item.day}</span>

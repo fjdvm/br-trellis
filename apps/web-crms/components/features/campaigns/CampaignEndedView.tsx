@@ -150,17 +150,20 @@ export function CampaignEndedView({
               {/* Wireframe Bar Chart */}
               <div className="h-40 w-full flex items-end justify-between gap-sm pt-md pb-xs border-b border-border/50">
                 {[
-                  { day: "Day 1", count: 284, height: "82%" },
-                  { day: "Day 2", count: 142, height: "44%" },
-                  { day: "Day 3", count: 76, height: "26%" },
-                  { day: "Day 4", count: 41, height: "16%" },
-                  { day: "Day 5", count: 25, height: "11%" },
-                  { day: "Day 6", count: 18, height: "8%" },
-                  { day: "Day 7", count: 12, height: "5%" },
+                  { day: "Day 1", count: 284, height: "82%", bg: "bg-gradient-to-t from-violet-600 to-violet-400 group-hover:from-violet-500 group-hover:to-violet-300" },
+                  { day: "Day 2", count: 142, height: "44%", bg: "bg-gradient-to-t from-purple-600 to-purple-400 group-hover:from-purple-500 group-hover:to-purple-300" },
+                  { day: "Day 3", count: 76, height: "26%", bg: "bg-gradient-to-t from-indigo-600 to-indigo-400 group-hover:from-indigo-500 group-hover:to-indigo-300" },
+                  { day: "Day 4", count: 41, height: "16%", bg: "bg-gradient-to-t from-pink-500 to-rose-400 group-hover:from-pink-400 group-hover:to-rose-300" },
+                  { day: "Day 5", count: 25, height: "11%", bg: "bg-gradient-to-t from-fuchsia-500 to-purple-400 group-hover:from-fuchsia-400 group-hover:to-purple-300" },
+                  { day: "Day 6", count: 18, height: "8%", bg: "bg-gradient-to-t from-sky-500 to-indigo-400 group-hover:from-sky-400 group-hover:to-indigo-300" },
+                  { day: "Day 7", count: 12, height: "5%", bg: "bg-gradient-to-t from-emerald-500 to-teal-400 group-hover:from-emerald-400 group-hover:to-teal-300" },
                 ].map((item) => (
                   <div key={item.day} className="flex-1 flex flex-col items-center h-full justify-end group">
                     <span className="text-xs text-muted-foreground mb-1 font-semibold">{item.count}</span>
-                    <div className="w-full bg-primary rounded-t transition-all group-hover:bg-primary/80" style={{ height: item.height }} />
+                    <div
+                      className={`w-full ${item.bg} rounded-t transition-all shadow-xs`}
+                      style={{ height: item.height }}
+                    />
                     <span className="text-xs text-muted-foreground mt-1.5">{item.day}</span>
                   </div>
                 ))}
