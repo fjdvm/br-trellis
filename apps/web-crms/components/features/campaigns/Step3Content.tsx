@@ -78,7 +78,7 @@ export function Step3Content({
       {/* Header Bar with Info Hover Tooltip for Draft-First Policy */}
       <div className="flex items-center justify-between pb-2 border-b border-border/40">
         <span className="text-sm font-semibold text-foreground">
-          Step 3: Content Creation &amp; Creative Variants
+          Content Creation &amp; Creative Variants
         </span>
         <TooltipProvider>
           <Tooltip>

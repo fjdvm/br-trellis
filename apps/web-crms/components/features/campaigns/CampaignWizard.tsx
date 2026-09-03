@@ -223,6 +223,7 @@ export function CampaignWizard({ existing }: { existing?: Campaign }) {
       <div className="flex items-center justify-between">
         <button
           type="button"
+          aria-label="Return to campaigns list"
           onClick={() => setShowCancelModal(true)}
           className="inline-flex items-center gap-1.5 text-sm font-semibold text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
         >
@@ -251,12 +252,9 @@ export function CampaignWizard({ existing }: { existing?: Campaign }) {
         {/* Section Header Inside Card */}
         <div className="p-6 bg-muted/40 border-b border-border flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div>
-            <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              Step {stepNumber} of {steps.length}
-            </span>
             <h2
               data-testid="wizard-step-title"
-              className="text-headline-md font-bold text-foreground mt-0.5"
+              className="text-headline-md font-bold text-foreground"
             >
               {step === "Platform" ? "Select Campaign Channels" : step}
             </h2>
