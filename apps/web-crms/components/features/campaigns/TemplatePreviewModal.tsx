@@ -122,26 +122,28 @@ export function TemplatePreviewModal({
               </div>
             </div>
 
-            {/* Graph Chart Below Stat Cards */}
+            {/* Hourly Engagement Rate Graph Chart Below Stat Cards */}
             <div className="bg-card border border-border rounded-xl p-md space-y-sm shadow-xs">
               <div className="flex items-center justify-between">
                 <div>
-                  <h4 className="text-sm font-bold text-foreground">Performance Over Time</h4>
-                  <p className="text-xs text-muted-foreground">Daily volume of unique interactions post-dispatch</p>
+                  <h4 className="text-sm font-bold text-foreground">Hourly Engagement Rate</h4>
+                  <p className="text-xs text-muted-foreground">Aggregate clicks &amp; conversions during launch window</p>
                 </div>
-                <Badge variant="outline" className="text-xs">7-Day View</Badge>
+                <Badge variant="secondary" className="text-xs font-semibold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800">
+                  +18.4% vs benchmark
+                </Badge>
               </div>
 
               {/* Bar Chart Wireframe */}
               <div className="h-32 w-full flex items-end justify-between gap-sm pt-md pb-xs border-b border-border/50">
                 {[
-                  { day: "Day 1", count: 1, height: "100%" },
-                  { day: "Day 2", count: 0, height: "4px" },
-                  { day: "Day 3", count: 0, height: "4px" },
-                  { day: "Day 4", count: 0, height: "4px" },
-                  { day: "Day 5", count: 0, height: "4px" },
-                  { day: "Day 6", count: 0, height: "4px" },
-                  { day: "Day 7", count: 0, height: "4px" },
+                  { day: "Hour 1", count: 1, height: "100%" },
+                  { day: "Hour 2", count: 0, height: "4px" },
+                  { day: "Hour 3", count: 0, height: "4px" },
+                  { day: "Hour 4", count: 0, height: "4px" },
+                  { day: "Hour 5", count: 0, height: "4px" },
+                  { day: "Hour 6", count: 0, height: "4px" },
+                  { day: "Hour 7", count: 0, height: "4px" },
                 ].map((item) => (
                   <div key={item.day} className="flex-1 flex flex-col items-center h-full justify-end group">
                     <span className="text-xs text-muted-foreground mb-1 font-semibold">{item.count}</span>
