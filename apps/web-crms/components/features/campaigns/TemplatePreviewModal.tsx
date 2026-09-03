@@ -235,12 +235,9 @@ export function TemplatePreviewModal({
         </Tabs>
 
         {/* Modal Footer */}
-        <div className="flex items-center justify-between pt-3 border-t border-border mt-2">
+        <div className="flex items-center justify-end pt-3 border-t border-border mt-2">
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Close
-          </Button>
-          <Button onClick={() => onUseTemplate(template)} className="shadow-sm">
-            Use This Template
           </Button>
         </div>
       </DialogContent>
