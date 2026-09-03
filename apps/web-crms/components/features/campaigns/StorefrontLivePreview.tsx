@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Mail, PanelTop, AppWindow } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import type { CampaignChannel } from "@/types/campaign";
 
 export type ChannelPreviewContent = {
