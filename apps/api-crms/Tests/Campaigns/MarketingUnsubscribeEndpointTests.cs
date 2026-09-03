@@ -106,7 +106,7 @@ public sealed class MarketingUnsubscribeEndpointTests
     public async Task Unsubscribe_ignores_absurdly_long_input()
     {
         var contacts = new FakeContactService();
-        var controller = new MarketingController(contacts);
+        var controller = new MarketingController(contacts, new DummyCampaignService());
         var huge = new string('a', 300) + "@example.com";
 
         await controller.Unsubscribe(huge, CancellationToken.None);
@@ -118,7 +118,7 @@ public sealed class MarketingUnsubscribeEndpointTests
     public async Task UnsubscribePost_returns_no_content_and_opts_out()
     {
         var contacts = new FakeContactService();
-        var controller = new MarketingController(contacts);
+        var controller = new MarketingController(contacts, new DummyCampaignService());
 
         var result = await controller.UnsubscribePost(
             new MarketingController.UnsubscribeRequest("shopper@example.com"), CancellationToken.None);

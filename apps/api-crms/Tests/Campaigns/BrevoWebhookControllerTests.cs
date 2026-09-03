@@ -35,6 +35,7 @@ public sealed class BrevoWebhookControllerTests : IDisposable
                 services.AddScoped<IContactService, ContactService>();
                 services.AddScoped<ISegmentRepository, SegmentRepository>();
                 services.AddScoped<ISegmentService, SegmentService>();
+                services.AddScoped<ICampaignRepository, CampaignRepository>();
                 services.AddScoped<ICampaignService, CampaignService>();
                 services.AddSingleton(new CampaignDispatchOptions());
                 services.AddSingleton<IMarketingEmailSender, DummySender>();
