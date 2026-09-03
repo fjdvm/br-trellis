@@ -69,19 +69,6 @@ export function Step3Content({
 
   return (
     <div className="space-y-6">
-      {/* Draft-First Policy Notification Banner */}
-      <div className="bg-muted/40 border border-border text-foreground p-md rounded-xl shadow-xs flex items-start gap-md">
-        <div className="w-8 h-8 rounded-lg bg-background flex items-center justify-center shrink-0 border border-border text-primary">
-          <Info className="w-5 h-5" />
-        </div>
-        <div className="flex flex-col">
-          <span className="text-base font-semibold text-foreground">Draft-First Policy</span>
-          <p className="text-sm text-muted-foreground mt-0.5">
-            All campaigns are initially saved as a Draft. Review, stage testing, and explicit launch occur directly from the Campaign Detail view.
-          </p>
-        </div>
-      </div>
-
       {/* Render Channel Content Forms using Tabs when 2+ channels selected */}
       {channels.length > 1 ? (
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full space-y-6">
