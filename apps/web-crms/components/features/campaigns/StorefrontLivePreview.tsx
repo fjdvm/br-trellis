@@ -85,39 +85,62 @@ export function StorefrontLivePreview({
         </div>
       </div>
 
-      {/* E-Commerce Mock Window Container */}
+      {/* E-Commerce / Email Mock Window Container */}
       <div className="bg-background border border-border rounded-xl shadow-md overflow-hidden min-h-[380px] relative flex flex-col">
-        {/* Simulated Browser Bar */}
-        <div className="bg-muted px-3 py-2 border-b border-border flex items-center justify-between shrink-0">
+        {/* Channel Native Header Bar */}
+        <div className="bg-slate-900 text-slate-200 px-3 py-2 border-b border-border flex items-center justify-between shrink-0">
           <div className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-full bg-red-400/80" />
-            <span className="w-2.5 h-2.5 rounded-full bg-amber-400/80" />
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-400/80" />
+            <span className="w-2.5 h-2.5 rounded-full bg-red-500" />
+            <span className="w-2.5 h-2.5 rounded-full bg-amber-500" />
+            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
           </div>
-          <div className="bg-background/80 border border-border px-3 py-0.5 rounded text-[11px] font-mono text-muted-foreground max-w-[200px] truncate">
-            https://store.example.com
+          <div className="bg-slate-800 border border-slate-700 px-3 py-0.5 rounded text-[11px] font-mono text-slate-300 max-w-[240px] truncate">
+            {channel === "Email" ? "mail.store-app.com/inbox" : "https://store.example.com"}
           </div>
-          <div className="w-10" />
+          <Badge variant="outline" className="text-[10px] text-slate-300 border-slate-700 uppercase font-mono">
+            {channel}
+          </Badge>
         </div>
 
-        {/* E-Commerce Storefront Canvas */}
-        <div className="relative flex-1 bg-slate-50 dark:bg-slate-950 p-3 overflow-hidden flex flex-col justify-between">
-          {/* Simulated E-commerce Header */}
-          <div className="w-full bg-background border border-border rounded-md p-2 flex items-center justify-between mb-2 shadow-xs">
-            <div className="flex items-center gap-2">
-              <div className="w-5 h-5 rounded bg-primary/20 flex items-center justify-center font-bold text-[10px] text-primary">
-                S
+        {/* Canvas presentation per channel */}
+        <div className="relative flex-1 bg-slate-100 dark:bg-slate-950 p-3 overflow-hidden flex flex-col justify-between">
+          {/* Email View Header */}
+          {channel === "Email" ? (
+            <div className="w-full bg-background border border-border rounded-lg shadow-xs p-3 space-y-2 mb-2 text-left">
+              <div className="flex items-center justify-between border-b border-border/60 pb-2">
+                <div className="flex items-center gap-2">
+                  <div className="w-7 h-7 rounded-full bg-primary/20 text-primary flex items-center justify-center font-bold text-xs">
+                    M
+                  </div>
+                  <div>
+                    <span className="text-xs font-bold text-foreground block">Aura Store Marketing</span>
+                    <span className="text-[10px] text-muted-foreground">noreply@aurastore.com</span>
+                  </div>
+                </div>
+                <span className="text-[10px] text-muted-foreground font-mono">Today, 10:42 AM</span>
               </div>
-              <span className="text-xs font-bold text-foreground">Aura Store</span>
+              <div className="text-sm font-bold text-foreground">
+                {renderFormattedText(content.subject || "Subject: Exclusive Seasonal Update")}
+              </div>
             </div>
-            <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
-              <span>Shop</span>
-              <span>Deals</span>
-              <span className="bg-muted px-1.5 py-0.5 rounded text-foreground font-semibold">
-                Cart (2)
-              </span>
+          ) : (
+            /* E-commerce Storefront Banner / Header for Banner and Popup */
+            <div className="w-full bg-background border border-border rounded-md p-2 flex items-center justify-between mb-2 shadow-xs">
+              <div className="flex items-center gap-2">
+                <div className="w-5 h-5 rounded bg-primary/20 flex items-center justify-center font-bold text-[10px] text-primary">
+                  S
+                </div>
+                <span className="text-xs font-bold text-foreground">Aura Storefront</span>
+              </div>
+              <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
+                <span>Shop</span>
+                <span>Deals</span>
+                <span className="bg-muted px-1.5 py-0.5 rounded text-foreground font-semibold">
+                  Cart (2)
+                </span>
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Banner Channel Preview inside Storefront Top */}
           {channel === "Banner" && (
@@ -126,14 +149,14 @@ export function StorefrontLivePreview({
               style={{
                 animation: "slideDown 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards",
               }}
-              className="w-full bg-primary text-primary-foreground p-3 px-4 rounded-lg flex items-center justify-between gap-3 shadow-md mb-2"
+              className="w-full bg-gradient-to-r from-primary to-primary/90 text-primary-foreground p-3 px-4 rounded-lg flex items-center justify-between gap-3 shadow-md mb-2"
             >
-              <div className="flex items-center gap-2 overflow-hidden">
+              <div className="flex items-center gap-2.5 overflow-hidden">
                 {content.imageUrl ? (
                   <img
                     src={content.imageUrl}
                     alt="Banner Thumbnail"
-                    className="w-6 h-6 object-cover rounded shrink-0"
+                    className="w-8 h-8 object-cover rounded shrink-0 border border-primary-foreground/20"
                   />
                 ) : (
                   <PanelTop className="w-4 h-4 shrink-0" />
@@ -147,12 +170,14 @@ export function StorefrontLivePreview({
               </div>
               <div className="flex items-center gap-2 shrink-0">
                 {content.linkUrl && (
-                  <span className="text-[11px] font-bold underline cursor-pointer">Learn More</span>
+                  <span className="text-[11px] font-bold underline bg-primary-foreground/10 px-2 py-1 rounded cursor-pointer hover:bg-primary-foreground/20">
+                    Learn More
+                  </span>
                 )}
                 {content.dismissible && (
                   <button
                     type="button"
-                    className="text-primary-foreground/80 hover:text-primary-foreground text-xs"
+                    className="text-primary-foreground/80 hover:text-primary-foreground text-xs p-1"
                   >
                     ✕
                   </button>
@@ -161,83 +186,79 @@ export function StorefrontLivePreview({
             </div>
           )}
 
-          {/* Simulated Hero Section & Product Grid */}
-          <div className="flex-1 space-y-2 opacity-65 pointer-events-none">
-            <div className="w-full h-20 bg-muted/60 rounded-md p-3 flex flex-col justify-center">
-              <div className="w-1/2 h-3 bg-muted-foreground/30 rounded mb-1.5" />
-              <div className="w-3/4 h-2.5 bg-muted-foreground/20 rounded" />
+          {/* Simulated Product Wireframe Cards for Background Context */}
+          <div className="flex-1 space-y-2 opacity-60 pointer-events-none">
+            <div className="w-full h-16 bg-muted/60 rounded-md p-3 flex flex-col justify-center">
+              <div className="w-1/2 h-2.5 bg-muted-foreground/30 rounded mb-1.5" />
+              <div className="w-3/4 h-2 bg-muted-foreground/20 rounded" />
             </div>
 
             <div className="grid grid-cols-2 gap-2">
-              <div className="h-24 bg-card border border-border rounded-md p-2 space-y-1.5">
-                <div className="w-full h-12 bg-muted/80 rounded" />
+              <div className="h-20 bg-card border border-border rounded-md p-2 space-y-1.5">
+                <div className="w-full h-10 bg-muted/80 rounded" />
                 <div className="w-2/3 h-2 bg-muted-foreground/30 rounded" />
-                <div className="w-1/3 h-2 bg-primary/40 rounded" />
               </div>
-              <div className="h-24 bg-card border border-border rounded-md p-2 space-y-1.5">
-                <div className="w-full h-12 bg-muted/80 rounded" />
+              <div className="h-20 bg-card border border-border rounded-md p-2 space-y-1.5">
+                <div className="w-full h-10 bg-muted/80 rounded" />
                 <div className="w-2/3 h-2 bg-muted-foreground/30 rounded" />
-                <div className="w-1/3 h-2 bg-primary/40 rounded" />
               </div>
             </div>
           </div>
 
-          {/* Email Channel Preview inside E-commerce Mail window */}
+          {/* Email Channel Body Presentation */}
           {channel === "Email" && (
-            <div className="absolute inset-2 z-20 bg-background border border-border rounded-lg shadow-xl overflow-hidden text-left flex flex-col">
-              <div className="bg-muted px-4 py-2 border-b border-border text-xs text-muted-foreground flex items-center justify-between">
-                <span className="font-semibold text-foreground truncate">
-                  To: customer@example.com
-                </span>
-                <span>Inbox Email</span>
-              </div>
+            <div className="absolute inset-x-3 bottom-3 top-20 z-20 bg-background border border-border rounded-lg shadow-xl overflow-hidden text-left flex flex-col">
               <div className="p-4 space-y-3 flex-1 overflow-y-auto">
-                <div className="border-b border-border/60 pb-2">
-                  <span className="text-xs text-muted-foreground block">Subject</span>
-                  <h4 className="text-base font-bold text-foreground truncate">
-                    {renderFormattedText(content.subject || "Your Subject Line Here...")}
-                  </h4>
-                </div>
                 {content.imageUrl && (
-                  <div className="w-full h-28 bg-muted rounded overflow-hidden relative">
+                  <div className="w-full h-32 bg-muted rounded-lg overflow-hidden relative border border-border">
                     <img
                       src={content.imageUrl}
-                      alt="Banner Preview"
+                      alt="Email Graphic Header"
                       className="w-full h-full object-cover"
                     />
                   </div>
                 )}
-                <div className="text-sm text-foreground leading-relaxed whitespace-pre-wrap">
+                <div className="text-sm text-foreground leading-relaxed whitespace-pre-wrap font-sans">
                   {renderFormattedText(
                     content.body ||
-                      "Compose your email message body to see the live rendering here..."
+                      "Compose your email message body to see the live HTML template rendering here..."
                   )}
                 </div>
+                {(content.ctaText || content.ctaUrl) && (
+                  <div className="pt-2">
+                    <button
+                      type="button"
+                      className="py-2 px-4 bg-primary text-primary-foreground text-xs font-semibold rounded-md shadow hover:opacity-90 transition-opacity"
+                    >
+                      {content.ctaText || "Click Here"}
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           )}
 
-          {/* Popup Channel Preview Modal Dialog */}
+          {/* Popup Channel Modal Presentation */}
           {channel === "Popup" && (
             <div
               key={`popup-${animKey}`}
               className="absolute inset-0 z-30 flex items-center justify-center p-3"
             >
-              {/* Backdrop Blur Overlay */}
+              {/* Dimmed Backdrop */}
               <div
                 style={{ animation: "fadeInBackdrop 0.4s ease-out forwards" }}
-                className="absolute inset-0 bg-black/40 backdrop-blur-xs"
+                className="absolute inset-0 bg-slate-950/60 backdrop-blur-xs"
               />
 
-              {/* Animated Pop Dialog Box */}
+              {/* Centered Modal Popup Box */}
               <div
                 style={{
                   animation: "popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards",
                 }}
-                className="relative z-10 w-full bg-card border border-border shadow-2xl rounded-xl p-5 text-center space-y-3"
+                className="relative z-10 w-full max-w-xs bg-card border border-border shadow-2xl rounded-xl p-4 text-center space-y-3"
               >
                 {content.imageUrl && (
-                  <div className="w-full h-28 bg-muted rounded-lg overflow-hidden relative">
+                  <div className="w-full h-24 bg-muted rounded-lg overflow-hidden relative">
                     <img
                       src={content.imageUrl}
                       alt="Popup Graphic"
@@ -245,20 +266,20 @@ export function StorefrontLivePreview({
                     />
                   </div>
                 )}
-                <h4 className="text-headline-sm font-bold text-foreground tracking-tight">
+                <h4 className="text-base font-bold text-foreground tracking-tight">
                   {renderFormattedText(content.heading || "Special Announcement")}
                 </h4>
-                <div className="text-sm text-muted-foreground leading-relaxed">
+                <div className="text-xs text-muted-foreground leading-relaxed">
                   {renderFormattedText(
                     content.body ||
                       "Your engaging modal popup body text will pop up live inside this storefront window!"
                   )}
                 </div>
                 {(content.ctaText || content.ctaUrl) && (
-                  <div className="pt-2">
+                  <div className="pt-1">
                     <button
                       type="button"
-                      className="w-full py-2 px-4 bg-primary text-primary-foreground text-sm font-semibold rounded-lg shadow-md hover:opacity-90 transition-opacity cursor-pointer"
+                      className="w-full py-2 px-3 bg-primary text-primary-foreground text-xs font-semibold rounded-lg shadow hover:opacity-90 transition-opacity cursor-pointer"
                     >
                       {content.ctaText || "Learn More"}
                     </button>
