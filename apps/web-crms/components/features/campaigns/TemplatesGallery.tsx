@@ -2,7 +2,18 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Info, Lock, Search } from "lucide-react";
+import {
+  Info,
+  Lock,
+  Search,
+  PlusCircle,
+  GripVertical,
+  Type,
+  AlignLeft,
+  Image,
+  MousePointerClick,
+  Trash2,
+} from "lucide-react";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -11,9 +22,20 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import {
   Select,
   SelectContent,
@@ -28,6 +50,12 @@ import type { CampaignChannel, Template } from "@/types/campaign";
 
 const CHANNELS: CampaignChannel[] = ["Email", "Banner", "Popup"];
 
+interface TemplateBlock {
+  id: string;
+  type: "heading" | "text" | "image" | "button";
+  content: string;
+}
+
 function useSafeRouter() {
   try {
     return useRouter();
@@ -38,11 +66,45 @@ function useSafeRouter() {
 
 export function TemplatesGallery() {
   const router = useSafeRouter();
-  const { data: templates, isLoading, error } = useTemplates();
+  const { data: templates, isLoading, error, refetch } = useTemplates();
   const [channel, setChannel] = useState<CampaignChannel>("Email");
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState<"name" | "updated">("name");
   const [previewTemplate, setPreviewTemplate] = useState<Template | null>(null);
+
+  // Drag and Drop Builder State
+  const [showBuilderModal, setShowBuilderModal] = useState(false);
+  const [builderName, setBuilderName] = useState("");
+  const [builderChannel, setBuilderChannel] = useState<CampaignChannel>("Email");
+  const [blocks, setBlocks] = useState<TemplateBlock[]>([
+    { id: "1", type: "heading", content: "Welcome to Our Special Event" },
+    { id: "2", type: "text", content: "Enjoy exclusive rewards and discover new arrivals this season." },
+    { id: "3", type: "button", content: "Explore Now" },
+  ]);
+
+  function addBlock(type: TemplateBlock["type"]) {
+    const newBlock: TemplateBlock = {
+      id: String(Date.now()),
+      type,
+      content:
+        type === "heading"
+          ? "New Headline"
+          : type === "text"
+          ? "New paragraph text goes here."
+          : type === "image"
+          ? ""
+          : "Click Here",
+    };
+    setBlocks((prev) => [...prev, newBlock]);
+  }
+
+  function updateBlockContent(id: string, content: string) {
+    setBlocks((prev) => prev.map((b) => (b.id === id ? { ...b, content } : b)));
+  }
+
+  function removeBlock(id: string) {
+    setBlocks((prev) => prev.filter((b) => b.id !== id));
+  }
 
   const filteredTemplates = useMemo(() => {
     let list = templates.filter((t) => {
@@ -67,40 +129,12 @@ export function TemplatesGallery() {
   };
 
   return (
-    <div className="w-full min-h-full py-xl px-lg md:px-xl space-y-lg max-w-container-max mx-auto">
-      {/* Read-Only Library Banner */}
-      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-md p-md bg-muted/50 border border-border rounded-lg shadow-xs">
-        <div className="flex items-center gap-sm">
-          <div className="w-8 h-8 rounded-lg bg-background flex items-center justify-center text-foreground border border-border shrink-0">
-            <Info className="w-4 h-4" />
-          </div>
-          <div className="flex flex-col">
-            <span className="text-sm font-semibold text-foreground">Read-Only Library</span>
-            <span className="text-xs text-muted-foreground">
-              More templates coming soon · Drag-and-drop template builder in development
-            </span>
-          </div>
-        </div>
-        <Badge variant="outline" className="gap-1 font-medium text-xs py-1">
-          <Lock className="w-3 h-3" />
-          System Presets
-        </Badge>
-      </div>
+    <div className="w-full min-h-full py-xl px-lg md:px-xl space-y-lg mx-auto">
+
 
       {/* Header Section */}
-      <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-md pb-lg border-b border-border/60">
-        <div className="space-y-xs max-w-2xl">
-          <Breadcrumb>
-            <BreadcrumbList>
-              <BreadcrumbItem className="text-xs uppercase tracking-wider text-muted-foreground font-medium">
-                Marketing &amp; Campaigns
-              </BreadcrumbItem>
-              <BreadcrumbSeparator />
-              <BreadcrumbItem>
-                <BreadcrumbPage className="text-xs font-semibold text-foreground">Templates</BreadcrumbPage>
-              </BreadcrumbItem>
-            </BreadcrumbList>
-          </Breadcrumb>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-md pb-lg border-b border-border/60">
+        <div className="space-y-xs">
           <h1 className="text-headline-md font-bold tracking-tight text-foreground">
             Campaign Templates
           </h1>
@@ -108,20 +142,10 @@ export function TemplatesGallery() {
             Pre-designed layouts and modular frameworks for multichannel broadcasts. Duplicate or preview canonical communication patterns.
           </p>
         </div>
-
-        {/* Quick Stats Metric Pills */}
-        <div className="flex items-center gap-sm self-start lg:self-auto">
-          <div className="px-md py-sm rounded-lg bg-card border border-border flex flex-col">
-            <span className="text-xs text-muted-foreground">Total Frameworks</span>
-            <span className="text-title-lg font-bold text-foreground leading-tight">
-              {templates.length}
-            </span>
-          </div>
-          <div className="px-md py-sm rounded-lg bg-card border border-border flex flex-col">
-            <span className="text-xs text-muted-foreground">Global Uses</span>
-            <span className="text-title-lg font-bold text-foreground leading-tight">284</span>
-          </div>
-        </div>
+        <Button onClick={() => setShowBuilderModal(true)} className="gap-2 shrink-0">
+          <PlusCircle className="w-4 h-4" />
+          Template Builder
+        </Button>
       </div>
 
       {error && <div className="p-md text-destructive text-base">{error.message}</div>}
@@ -202,6 +226,193 @@ export function TemplatesGallery() {
         onOpenChange={(open) => !open && setPreviewTemplate(null)}
         onUseTemplate={handleUseTemplate}
       />
+
+      {/* Drag and Drop Template Builder Modal */}
+      {showBuilderModal && (
+        <Dialog open={showBuilderModal} onOpenChange={setShowBuilderModal}>
+          <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col">
+            <DialogHeader className="flex flex-row items-center justify-between border-b border-border pb-4">
+              <div>
+                <DialogTitle className="text-xl font-bold">Drag & Drop Template Builder</DialogTitle>
+                <DialogDescription className="mt-1">
+                  Drag blocks from the palette on the left and drop them into the canvas to build your custom template.
+                </DialogDescription>
+              </div>
+              <Badge variant="secondary">{builderChannel}</Badge>
+            </DialogHeader>
+
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-4 flex-1 overflow-hidden my-4">
+              {/* Palette (Left Column) */}
+              <div className="md:col-span-4 bg-muted/40 border border-border rounded-lg p-4 space-y-4 flex flex-col">
+                <div className="space-y-2">
+                  <Label className="text-xs uppercase font-bold text-muted-foreground">Template Settings</Label>
+                  <Input
+                    placeholder="Template Name..."
+                    value={builderName}
+                    onChange={(e) => setBuilderName(e.target.value)}
+                  />
+                  <Select
+                    value={builderChannel}
+                    onValueChange={(v) => setBuilderChannel(v as CampaignChannel)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Channel" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Email">Email</SelectItem>
+                      <SelectItem value="Banner">Banner</SelectItem>
+                      <SelectItem value="Popup">Popup</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2 flex-1">
+                  <Label className="text-xs uppercase font-bold text-muted-foreground">Draggable Blocks</Label>
+                  <div className="space-y-2">
+                    {[
+                      { type: "heading", label: "Heading Block", icon: Type },
+                      { type: "text", label: "Text Paragraph", icon: AlignLeft },
+                      { type: "image", label: "Image Placeholder", icon: Image },
+                      { type: "button", label: "CTA Button", icon: MousePointerClick },
+                    ].map((item) => (
+                      <div
+                        key={item.type}
+                        draggable
+                        onDragStart={(e) => e.dataTransfer.setData("text/plain", item.type)}
+                        className="p-3 bg-background border border-border rounded-md shadow-xs flex items-center justify-between cursor-grab hover:border-primary transition-colors text-sm font-semibold"
+                      >
+                        <div className="flex items-center gap-2">
+                          <item.icon className="w-4 h-4 text-primary" />
+                          <span>{item.label}</span>
+                        </div>
+                        <GripVertical className="w-4 h-4 text-muted-foreground" />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Canvas (Right Column) */}
+              <div
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  const type = e.dataTransfer.getData("text/plain");
+                  if (type) addBlock(type as TemplateBlock["type"]);
+                }}
+                className="md:col-span-8 bg-slate-50 dark:bg-slate-950 border-2 border-dashed border-border rounded-lg p-6 flex flex-col justify-between overflow-y-auto min-h-[360px]"
+              >
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between text-xs text-muted-foreground border-b border-border pb-2">
+                    <span className="font-mono">https://store.example.com</span>
+                    <span>Drop blocks below</span>
+                  </div>
+
+                  {blocks.length === 0 ? (
+                    <div className="h-48 flex flex-col items-center justify-center text-muted-foreground text-sm gap-2">
+                      <GripVertical className="w-8 h-8 opacity-40 animate-bounce" />
+                      <p>Drag and drop elements here to compose your template content</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {blocks.map((block) => (
+                        <div
+                          key={block.id}
+                          className="relative group bg-card border border-border p-4 rounded-lg shadow-sm space-y-2 text-left"
+                        >
+                          <button
+                            type="button"
+                            onClick={() => removeBlock(block.id)}
+                            className="absolute right-2 top-2 text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity p-1"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+
+                          {block.type === "heading" && (
+                            <Input
+                              value={block.content}
+                              onChange={(e) => updateBlockContent(block.id, e.target.value)}
+                              className="font-bold text-lg"
+                              placeholder="Enter heading..."
+                            />
+                          )}
+
+                          {block.type === "text" && (
+                            <Textarea
+                              value={block.content}
+                              onChange={(e) => updateBlockContent(block.id, e.target.value)}
+                              placeholder="Enter body paragraph text..."
+                              className="text-sm"
+                            />
+                          )}
+
+                          {block.type === "image" && (
+                            <div className="space-y-2">
+                              <Input
+                                value={block.content}
+                                onChange={(e) => updateBlockContent(block.id, e.target.value)}
+                                placeholder="Image URL..."
+                              />
+                              {block.content && (
+                                <img
+                                  src={block.content}
+                                  alt="Template Graphic"
+                                  className="w-full h-28 object-cover rounded-md bg-muted"
+                                />
+                              )}
+                            </div>
+                          )}
+
+                          {block.type === "button" && (
+                            <div className="space-y-2">
+                              <Input
+                                value={block.content}
+                                onChange={(e) => updateBlockContent(block.id, e.target.value)}
+                                placeholder="Button Label..."
+                                className="font-semibold"
+                              />
+                              <Button className="w-full" type="button">
+                                {block.content || "Click Me"}
+                              </Button>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                <div className="pt-4 border-t border-border flex justify-end gap-2">
+                  <Button
+                    variant="outline"
+                    type="button"
+                    onClick={() => {
+                      addBlock("text");
+                    }}
+                  >
+                    + Add Block
+                  </Button>
+                </div>
+              </div>
+            </div>
+
+            <DialogFooter className="border-t border-border pt-3">
+              <Button variant="outline" onClick={() => setShowBuilderModal(false)}>
+                Cancel
+              </Button>
+              <Button
+                onClick={() => {
+                  setShowBuilderModal(false);
+                  refetch();
+                }}
+                disabled={!builderName.trim() || blocks.length === 0}
+              >
+                Save Template
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 }

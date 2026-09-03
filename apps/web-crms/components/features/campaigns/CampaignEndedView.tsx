@@ -1,9 +1,11 @@
 "use client";
 
-import { Mail, PanelTop, MousePointerClick, Eye, Info } from "lucide-react";
+import { useState } from "react";
+import { Mail, PanelTop, AppWindow, MousePointerClick, Eye, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import { StorefrontLivePreview } from "@/components/features/campaigns/StorefrontLivePreview";
 import type { Campaign, CampaignAnalytics } from "@/types/campaign";
 
 interface CampaignEndedViewProps {
@@ -19,8 +21,11 @@ export function CampaignEndedView({
   segmentName,
   analytics,
 }: CampaignEndedViewProps) {
+  const [showEmailPreview, setShowEmailPreview] = useState(false);
+
   const emailContent = campaign.channelContents.find((c) => c.channel === "Email");
   const bannerContent = campaign.channelContents.find((c) => c.channel === "Banner");
+  const popupContent = campaign.channelContents.find((c) => c.channel === "Popup");
 
   const openRate = analytics?.openRate ?? 48.2;
   const clickRate = analytics?.clickRate ?? 14.6;
@@ -162,20 +167,34 @@ export function CampaignEndedView({
               </div>
             </div>
 
-            {/* Action Links */}
+            {/* Action Links & Preview Toggle */}
             <div className="flex flex-wrap items-center justify-between gap-sm pt-xs text-xs text-muted-foreground">
               <div className="flex items-center gap-md">
                 <Button variant="ghost" size="sm" className="gap-1.5 font-semibold text-foreground">
                   <MousePointerClick className="w-4 h-4" />
                   View Click Map &amp; Links
                 </Button>
-                <Button variant="ghost" size="sm" className="gap-1.5 font-semibold text-foreground">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowEmailPreview(!showEmailPreview)}
+                  className="gap-1.5 font-semibold text-foreground"
+                >
                   <Eye className="w-4 h-4" />
-                  View Email Content
+                  {showEmailPreview ? "Hide Email Content" : "View Email Content"}
                 </Button>
               </div>
               <span>Archived delivery snapshot: ID #EM-88219</span>
             </div>
+
+            {showEmailPreview && (
+              <StorefrontLivePreview
+                channel="Email"
+                content={emailContent}
+                liveBadgeText="ARCHIVED SNAPSHOT"
+                recipientEmail={campaign.targetEmails?.[0] || "customer@example.com"}
+              />
+            )}
           </div>
         )}
 
@@ -221,15 +240,39 @@ export function CampaignEndedView({
               </div>
             </div>
 
-            <div className="space-y-1">
-              <span className="text-xs text-muted-foreground font-medium">Displayed Banner Copy Preview</span>
-              <div className="p-md bg-muted/40 border border-border rounded-lg flex items-center justify-between gap-md text-sm">
-                <span className="font-medium text-foreground truncate">
-                  {bannerContent.body || "New enterprise features are now live in your workspace!"}
-                </span>
-                <Badge variant="outline" className="text-xs shrink-0">Archived</Badge>
+            <StorefrontLivePreview
+              channel="Banner"
+              content={bannerContent}
+              liveBadgeText="ARCHIVED SNAPSHOT"
+            />
+          </div>
+        )}
+
+        {/* Modal Popup Channel Card */}
+        {popupContent && (
+          <div className="w-full bg-card border border-border rounded-xl p-lg shadow-xs space-y-md">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-sm">
+              <div className="flex items-center gap-sm">
+                <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center text-foreground shrink-0">
+                  <AppWindow className="w-5 h-5" />
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-title-lg font-bold text-foreground leading-tight">
+                    Popup Channel — Runtime Summary
+                  </span>
+                  <span className="text-xs text-muted-foreground">Storefront overlay dialog</span>
+                </div>
               </div>
+              <Badge variant="secondary" className="text-xs self-start sm:self-auto">
+                Ended
+              </Badge>
             </div>
+
+            <StorefrontLivePreview
+              channel="Popup"
+              content={popupContent}
+              liveBadgeText="ARCHIVED SNAPSHOT"
+            />
           </div>
         )}
       </div>

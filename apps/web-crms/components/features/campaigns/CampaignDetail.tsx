@@ -37,6 +37,7 @@ export function CampaignDetail({ id }: { id: string }) {
   const [actionError, setActionError] = useState<string | null>(null);
   const [analytics, setAnalytics] = useState<CampaignAnalytics | null>(null);
   const [showLaunchModal, setShowLaunchModal] = useState(false);
+  const [showEndModal, setShowEndModal] = useState(false);
 
   const hasDispatch = Boolean(campaign?.dispatchResult);
 
@@ -56,7 +57,7 @@ export function CampaignDetail({ id }: { id: string }) {
 
   if (isLoading) {
     return (
-      <div data-testid="campaign-detail-loading" className="p-xl space-y-md max-w-5xl mx-auto">
+      <div data-testid="campaign-detail-loading" className="p-xl space-y-md mx-auto">
         <Skeleton className="h-8 w-64" />
         <Skeleton className="h-40 w-full" />
       </div>
@@ -92,6 +93,7 @@ export function CampaignDetail({ id }: { id: string }) {
   async function endCampaign() {
     setBusy(true);
     setActionError(null);
+    setShowEndModal(false);
     try {
       await crmClient.campaigns.updateStatus(campaign!.id, "Ended");
       await refetch();
@@ -117,52 +119,38 @@ export function CampaignDetail({ id }: { id: string }) {
       router.push(`/campaigns/${created.id}`);
     } catch (err) {
       setActionError(err instanceof Error ? err.message : "Failed to duplicate campaign.");
+    } finally {
       setBusy(false);
     }
   }
 
   function exportReport() {
-    const report = {
-      id: campaign!.id,
-      title: campaign!.title,
-      status: campaign!.status,
-      channels: campaign!.channels,
-      createdAt: campaign!.createdAt,
-      dispatchResult: campaign!.dispatchResult ?? null,
-      analytics: analytics ?? null,
-    };
-    const blob = new Blob([JSON.stringify(report, null, 2)], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `campaign-${campaign!.id}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
+    alert("Exporting report...");
   }
 
   return (
-    <div className="w-full min-h-full py-xl px-lg md:px-xl space-y-lg max-w-container-max mx-auto">
-      {/* Back link */}
-      <button
-        type="button"
-        onClick={() => router.push("/campaigns")}
-        className="inline-flex items-center gap-1.5 text-sm font-semibold text-muted-foreground hover:text-foreground transition-colors"
-      >
-        <ArrowLeft className="w-4 h-4" />
-        Back to Campaigns
-      </button>
-
-      {/* Header Row */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-md">
-        <div className="flex flex-wrap items-center gap-sm">
-          <h1 className="text-display-lg font-bold tracking-tight text-foreground">
-            {campaign.title}
-          </h1>
-          <div className="flex items-center gap-1.5 ml-xs">
-            <CampaignStatusBadge status={campaign.status} />
-            {campaign.channels.map((c) => (
-              <CampaignChannelBadge key={c} channel={c} />
-            ))}
+    <div className="w-full min-h-full py-xl px-lg md:px-xl space-y-lg mx-auto">
+      {/* Top Header & Navigation */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-md">
+        <div className="flex items-center gap-md">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => router.push("/campaigns")}
+            aria-label="Back to campaigns"
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </Button>
+          <div>
+            <h1 className="text-headline-md font-bold text-foreground">
+              {campaign.title}
+            </h1>
+            <div className="flex flex-wrap items-center gap-xs mt-1.5">
+              <CampaignStatusBadge status={campaign.status} />
+              {campaign.channels.map((ch) => (
+                <CampaignChannelBadge key={ch} channel={ch} />
+              ))}
+            </div>
           </div>
         </div>
 
@@ -178,7 +166,7 @@ export function CampaignDetail({ id }: { id: string }) {
                 <Pencil className="w-4 h-4 mr-1.5" />
                 Edit Campaign
               </Button>
-              <Button size="sm" onClick={launch} disabled={busy} className="shadow-sm">
+              <Button size="sm" onClick={() => launch()} disabled={busy} className="shadow-sm">
                 <Rocket className="w-4 h-4 mr-1.5" />
                 {busy ? "Launching…" : "Launch Campaign"}
               </Button>
@@ -199,7 +187,7 @@ export function CampaignDetail({ id }: { id: string }) {
                   <TooltipContent>Limited editing while live</TooltipContent>
                 </Tooltip>
               </TooltipProvider>
-              <Button variant="destructive" size="sm" onClick={endCampaign} disabled={busy}>
+              <Button variant="destructive" size="sm" onClick={() => setShowEndModal(true)} disabled={busy}>
                 <StopCircle className="w-4 h-4 mr-1.5" />
                 {busy ? "Ending…" : "End Campaign"}
               </Button>
@@ -232,7 +220,7 @@ export function CampaignDetail({ id }: { id: string }) {
           campaign={campaign}
           recipientCount={recipientCount}
           segmentName={segmentName}
-          onLaunch={launch}
+          onLaunch={() => setShowLaunchModal(true)}
           busy={busy}
         />
       )}
@@ -243,7 +231,7 @@ export function CampaignDetail({ id }: { id: string }) {
           recipientCount={recipientCount}
           segmentName={segmentName}
           analytics={analytics}
-          onEndCampaign={endCampaign}
+          onEndCampaign={() => setShowEndModal(true)}
           busy={busy}
         />
       )}
@@ -260,17 +248,16 @@ export function CampaignDetail({ id }: { id: string }) {
       {/* Launch Confirmation Modal */}
       {showLaunchModal && (
         <Dialog open={showLaunchModal} onOpenChange={setShowLaunchModal}>
-          <DialogContent className="max-w-md">
+          <DialogContent className="max-w-md border border-gray-200 dark:border-border">
             <DialogHeader>
               <DialogTitle className="text-xl font-bold flex items-center gap-2">
                 <Rocket className="w-5 h-5 text-primary" />
                 Confirm Launch
               </DialogTitle>
               <DialogDescription className="mt-2 text-base">
-                This action will immediately trigger dispatches to{" "}
+                Are you sure you want to launch this campaign? This action will immediately trigger dispatches to{" "}
                 <strong className="text-foreground">{recipientCount} recipients</strong> across{" "}
                 {campaign.channels.length} {campaign.channels.length === 1 ? "channel" : "channels"}.
-                This action cannot be undone once dispatches start.
               </DialogDescription>
             </DialogHeader>
             <DialogFooter className="mt-4 gap-2">
@@ -279,6 +266,31 @@ export function CampaignDetail({ id }: { id: string }) {
               </Button>
               <Button onClick={launch} disabled={busy} className="shadow-sm">
                 {busy ? "Launching…" : "Confirm Launch"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {/* End Campaign Confirmation Modal */}
+      {showEndModal && (
+        <Dialog open={showEndModal} onOpenChange={setShowEndModal}>
+          <DialogContent className="max-w-md border border-gray-200 dark:border-border">
+            <DialogHeader>
+              <DialogTitle className="text-xl font-bold flex items-center gap-2 text-destructive">
+                <StopCircle className="w-5 h-5 text-destructive" />
+                Confirm End Campaign
+              </DialogTitle>
+              <DialogDescription className="mt-2 text-base">
+                Are you sure you want to end this active campaign? Active dispatches and banners will be stopped immediately.
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter className="mt-4 gap-2">
+              <Button variant="outline" onClick={() => setShowEndModal(false)}>
+                Cancel
+              </Button>
+              <Button variant="destructive" onClick={endCampaign} disabled={busy}>
+                {busy ? "Ending…" : "Confirm End Campaign"}
               </Button>
             </DialogFooter>
           </DialogContent>

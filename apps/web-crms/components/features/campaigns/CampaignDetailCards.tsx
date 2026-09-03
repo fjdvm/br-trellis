@@ -1,5 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CampaignChannelBadge } from "@/components/features/campaigns/CampaignChannelBadge";
+import { StorefrontLivePreview } from "@/components/features/campaigns/StorefrontLivePreview";
 import type {
   CampaignAnalytics,
   CampaignChannelContent,
@@ -61,34 +62,11 @@ export function ChannelContentCard({ content }: { content: CampaignChannelConten
   return (
     <Card className="shadow-none border-border">
       <CardHeader className="p-lg pb-md flex flex-row items-center gap-2">
-        <CardTitle className="text-title-lg font-bold">Content</CardTitle>
+        <CardTitle className="text-title-lg font-bold">Content Preview</CardTitle>
         <CampaignChannelBadge channel={content.channel} />
       </CardHeader>
-      <CardContent className="p-lg pt-0 space-y-sm text-base">
-        {content.subject && (
-          <div>
-            <span className="text-muted-foreground">Subject: </span>
-            {content.subject}
-          </div>
-        )}
-        {content.heading && (
-          <div>
-            <span className="text-muted-foreground">Heading: </span>
-            {content.heading}
-          </div>
-        )}
-        {content.body && <p className="whitespace-pre-wrap">{content.body}</p>}
-        {content.imageUrl && (
-          <div className="text-sm text-muted-foreground">Image: {content.imageUrl}</div>
-        )}
-        {content.linkUrl && (
-          <div className="text-sm text-muted-foreground">Link: {content.linkUrl}</div>
-        )}
-        {content.ctaText && (
-          <div className="text-sm text-muted-foreground">
-            CTA: {content.ctaText} → {content.ctaUrl ?? "—"}
-          </div>
-        )}
+      <CardContent className="p-lg pt-0 space-y-sm">
+        <StorefrontLivePreview channel={content.channel} content={content} liveBadgeText="LIVE SNAPSHOT" />
       </CardContent>
     </Card>
   );

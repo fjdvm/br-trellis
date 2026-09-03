@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { StorefrontLivePreview } from "@/components/features/campaigns/StorefrontLivePreview";
 import type { Template } from "@/types/campaign";
 
 interface TemplatePreviewModalProps {
@@ -41,24 +42,24 @@ export function TemplatePreviewModal({
           </div>
         </DialogHeader>
 
-        <div className="flex-1 overflow-y-auto my-4 border border-border rounded-lg p-md bg-muted/20">
-          <div
-            className="prose dark:prose-invert max-w-none text-base"
-            dangerouslySetInnerHTML={{ __html: template.content }}
+        {/* Live Storefront Presentation Frame */}
+        <div className="flex-1 overflow-y-auto my-4">
+          <StorefrontLivePreview
+            channel={template.channel}
+            content={{
+              subject: template.channel === "Email" ? template.name : undefined,
+              heading: template.channel === "Popup" ? template.name : undefined,
+              body: template.content,
+              linkUrl: template.channel === "Banner" ? "#" : undefined,
+              ctaText: template.channel === "Popup" ? "Claim Special Offer" : undefined,
+            }}
+            liveBadgeText="TEMPLATE PREVIEW"
           />
         </div>
 
         <div className="flex items-center justify-end gap-3 pt-2">
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Close
-          </Button>
-          <Button
-            onClick={() => {
-              onOpenChange(false);
-              onUseTemplate(template);
-            }}
-          >
-            Use Template
           </Button>
         </div>
       </DialogContent>

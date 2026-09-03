@@ -11,20 +11,75 @@ interface TemplateCardProps {
   onUse: (template: Template) => void;
 }
 
+/** Helper to render HTML or formatted template strings */
+function renderFormattedContent(htmlOrText: string): React.ReactNode {
+  if (!htmlOrText) return null;
+  if (/<[a-z][\s\S]*>/i.test(htmlOrText)) {
+    return <span dangerouslySetInnerHTML={{ __html: htmlOrText }} />;
+  }
+  const parts = htmlOrText.split(/(\*\*.*?\*\*|\*.*?\*)/g);
+  return parts.map((part, index) => {
+    if (part.startsWith("**") && part.endsWith("**") && part.length >= 4) {
+      return <strong key={index} className="font-bold">{part.slice(2, -2)}</strong>;
+    }
+    if (part.startsWith("*") && part.endsWith("*") && part.length >= 2) {
+      return <em key={index} className="italic">{part.slice(1, -1)}</em>;
+    }
+    return part;
+  });
+}
+
 export function TemplateCard({ template, onPreview, onUse }: TemplateCardProps) {
   return (
     <div className="flex flex-col bg-card border border-border rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all duration-200">
-      {/* Wireframe Skeleton Preview */}
+      {/* Live Storefront Preview Frame */}
       <div
         data-testid={`template-preview-${template.id}`}
-        className="h-44 bg-muted/40 p-md flex flex-col justify-between relative overflow-hidden border-b border-border/50 select-none cursor-pointer"
+        className="h-44 bg-muted/30 p-2 flex flex-col justify-between relative overflow-hidden border-b border-border select-none cursor-pointer"
         onClick={() => onPreview(template)}
       >
-        <div className="w-full h-full overflow-hidden text-xs text-muted-foreground opacity-75 pointer-events-none">
-          <div
-            className="transform scale-90 origin-top-left"
-            dangerouslySetInnerHTML={{ __html: template.content }}
-          />
+        {/* Browser Header Bar */}
+        <div className="bg-muted px-2 py-1 rounded-t flex items-center justify-between text-[10px] text-muted-foreground border-b border-border">
+          <div className="flex items-center gap-1">
+            <span className="w-1.5 h-1.5 rounded-full bg-red-400" />
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+          </div>
+          <span className="font-mono truncate">store.example.com</span>
+        </div>
+
+        {/* Live Channel Presentation Mockup */}
+        <div className="flex-1 bg-background p-2 relative flex flex-col justify-center overflow-hidden">
+          {template.channel === "Email" && (
+            <div className="bg-card text-foreground rounded p-2 text-left space-y-1 shadow-sm border border-border w-full">
+              <span className="text-[9px] font-bold text-muted-foreground block border-b border-border/50 pb-0.5">
+                Inbox Email Preview
+              </span>
+              <div className="text-[11px] font-bold text-primary truncate">Email Subject</div>
+              <div className="text-[10px] text-muted-foreground line-clamp-2 leading-tight">
+                {renderFormattedContent(template.content)}
+              </div>
+            </div>
+          )}
+
+          {template.channel === "Banner" && (
+            <div className="w-full bg-primary text-primary-foreground p-2 rounded text-center text-[10px] font-semibold shadow-sm flex items-center justify-between gap-1">
+              <span className="truncate">{renderFormattedContent(template.content)}</span>
+              <span className="text-[9px] underline shrink-0">Learn More</span>
+            </div>
+          )}
+
+          {template.channel === "Popup" && (
+            <div className="bg-card text-card-foreground border border-border p-2.5 rounded-lg text-center space-y-1 shadow-md w-full mx-auto">
+              <div className="text-[11px] font-bold text-foreground">Special Announcement</div>
+              <div className="text-[9.5px] text-muted-foreground line-clamp-2 leading-tight">
+                {renderFormattedContent(template.content)}
+              </div>
+              <div className="bg-primary text-primary-foreground text-[9px] font-semibold py-0.5 px-2 rounded">
+                Claim Offer
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -46,7 +101,7 @@ export function TemplateCard({ template, onPreview, onUse }: TemplateCardProps) 
         </div>
 
         {/* Footer Actions */}
-        <div className="grid grid-cols-2 gap-xs pt-sm border-t border-border/40">
+        <div className="pt-sm border-t border-border/40">
           <Button
             type="button"
             variant="outline"
@@ -56,15 +111,6 @@ export function TemplateCard({ template, onPreview, onUse }: TemplateCardProps) 
           >
             <Eye className="w-3.5 h-3.5" />
             Preview
-          </Button>
-          <Button
-            type="button"
-            size="sm"
-            onClick={() => onUse(template)}
-            className="w-full gap-1 text-xs"
-          >
-            <PlusCircle className="w-3.5 h-3.5" />
-            Use
           </Button>
         </div>
       </div>

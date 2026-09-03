@@ -1,10 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { Mail, PanelTop, StopCircle, Eye, Activity, Send, Users, Clock } from "lucide-react";
+import { Mail, PanelTop, AppWindow, StopCircle, Eye, Activity, Send, Users, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { AnalyticsCard, DispatchResultCard } from "@/components/features/campaigns/CampaignDetailCards";
+import { StorefrontLivePreview } from "@/components/features/campaigns/StorefrontLivePreview";
 import type { Campaign, CampaignAnalytics } from "@/types/campaign";
 
 interface CampaignActiveViewProps {
@@ -28,6 +29,7 @@ export function CampaignActiveView({
 
   const emailContent = campaign.channelContents.find((c) => c.channel === "Email");
   const bannerContent = campaign.channelContents.find((c) => c.channel === "Banner");
+  const popupContent = campaign.channelContents.find((c) => c.channel === "Popup");
 
   const dispatchedCount = campaign.dispatchResult?.sentCount ?? Math.max(0, recipientCount - 4);
   const deliveryRate = recipientCount > 0 ? ((dispatchedCount / recipientCount) * 100).toFixed(1) : "99.7";
@@ -155,19 +157,14 @@ export function CampaignActiveView({
               </div>
             </div>
 
-            {/* Collapsible Email Preview */}
+            {/* Collapsible Email Live Storefront Preview */}
             {showEmailPreview && (
-              <div className="p-md bg-muted/20 border border-border rounded-lg space-y-sm text-base">
-                <div className="flex justify-between text-xs text-muted-foreground">
-                  <span>Subject: <strong className="text-foreground">{emailContent.subject}</strong></span>
-                  <span>Read-only Snapshot</span>
-                </div>
-                {emailContent.body && (
-                  <p className="p-md bg-card border border-border rounded text-foreground whitespace-pre-wrap">
-                    {emailContent.body}
-                  </p>
-                )}
-              </div>
+              <StorefrontLivePreview
+                channel="Email"
+                content={emailContent}
+                liveBadgeText="LIVE DISPATCH"
+                recipientEmail={campaign.targetEmails?.[0] || "customer@example.com"}
+              />
             )}
           </div>
         )}
@@ -205,17 +202,42 @@ export function CampaignActiveView({
               </Button>
             </div>
 
-            <div className="p-md bg-muted/40 border border-border rounded-lg space-y-xs">
-              <span className="text-xs text-muted-foreground font-medium">In-App Banner Visual Preview</span>
-              <div className="p-md bg-primary text-primary-foreground rounded-lg flex items-center justify-between gap-md">
-                <p className="text-sm font-medium truncate">
-                  {bannerContent.body || "New enterprise features are now live in your workspace!"}
-                </p>
-                {bannerContent.linkUrl && (
-                  <span className="text-xs underline font-bold shrink-0">Learn More</span>
-                )}
+            <StorefrontLivePreview
+              channel="Banner"
+              content={bannerContent}
+              liveBadgeText="LIVE IN-STORE"
+            />
+          </div>
+        )}
+
+        {/* Modal Popup Channel Card */}
+        {popupContent && (
+          <div className="bg-card border border-border rounded-xl p-lg shadow-xs space-y-md">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-sm">
+              <div className="flex items-center gap-md">
+                <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center text-foreground shrink-0">
+                  <AppWindow className="w-5 h-5" />
+                </div>
+                <div className="flex flex-col">
+                  <div className="flex items-center gap-2">
+                    <span className="text-title-lg font-bold text-foreground">Popup Channel</span>
+                    <Badge variant="default" className="gap-1 text-xs">
+                      <span className="w-1.5 h-1.5 rounded-full bg-primary-foreground animate-ping" />
+                      Live In-App
+                    </Badge>
+                  </div>
+                  <span className="text-xs text-muted-foreground mt-0.5">
+                    Targeted overlay dialog on storefront entry
+                  </span>
+                </div>
               </div>
             </div>
+
+            <StorefrontLivePreview
+              channel="Popup"
+              content={popupContent}
+              liveBadgeText="LIVE IN-STORE"
+            />
           </div>
         )}
       </div>

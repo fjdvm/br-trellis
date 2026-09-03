@@ -1,8 +1,9 @@
 "use client";
 
-import { CheckCircle2, Mail, PanelTop } from "lucide-react";
+import { CheckCircle2, Mail, PanelTop, AppWindow } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { StorefrontLivePreview } from "@/components/features/campaigns/StorefrontLivePreview";
 import type { Campaign } from "@/types/campaign";
 
 interface CampaignDraftViewProps {
@@ -20,8 +21,11 @@ export function CampaignDraftView({
   onLaunch,
   busy,
 }: CampaignDraftViewProps) {
-  const emailContent = campaign.channelContents.find((c) => c.channel === "Email");
-  const bannerContent = campaign.channelContents.find((c) => c.channel === "Banner");
+  const iconMap = {
+    Email: Mail,
+    Banner: PanelTop,
+    Popup: AppWindow,
+  };
 
   return (
     <div className="space-y-8">
@@ -34,14 +38,16 @@ export function CampaignDraftView({
           <p className="text-title-lg font-bold text-foreground truncate">
             {segmentName ?? "No segment"}
           </p>
-          <span className="text-xs text-muted-foreground">
-            {recipientCount} contacts targeted
-          </span>
-          {campaign.targetEmails && campaign.targetEmails.length > 0 && (
-            <span className="text-xs text-muted-foreground truncate">
-              {campaign.targetEmails.join(", ")}
+          <div className="flex flex-col gap-0.5 mt-0.5">
+            <span className="text-xs text-muted-foreground">
+              {recipientCount} contacts targeted
             </span>
-          )}
+            {campaign.targetEmails && campaign.targetEmails.length > 0 && (
+              <span className="text-xs text-muted-foreground truncate font-mono">
+                {campaign.targetEmails.join(", ")}
+              </span>
+            )}
+          </div>
         </div>
 
         <div className="flex flex-col gap-xs md:border-l md:border-border md:pl-md">
@@ -49,7 +55,7 @@ export function CampaignDraftView({
             Total Recipients
           </span>
           <div className="flex items-baseline gap-xs">
-            <p className="text-display-lg font-bold text-foreground">{recipientCount}</p>
+            <p className="text-headline-md font-bold text-foreground">{recipientCount}</p>
             <span className="text-xs text-muted-foreground">verified contacts</span>
           </div>
           <div className="w-full bg-muted h-1.5 rounded-full overflow-hidden mt-xs">
@@ -93,77 +99,34 @@ export function CampaignDraftView({
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-lg items-start">
-          {/* Email Channel Card */}
-          {emailContent && (
-            <div className="bg-card border border-border rounded-xl p-lg shadow-xs flex flex-col gap-md">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-sm">
-                  <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center text-foreground">
-                    <Mail className="w-4 h-4" />
+          {campaign.channelContents.map((cc) => {
+            const Icon = iconMap[cc.channel] || Mail;
+            return (
+              <div key={cc.channel} className="bg-card border border-border rounded-xl p-lg shadow-xs flex flex-col gap-md">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-sm">
+                    <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center text-foreground">
+                      <Icon className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <h3 className="text-title-lg font-bold text-foreground">{cc.channel} Channel</h3>
+                      <p className="text-xs text-muted-foreground">Storefront Live Visual Snapshot</p>
+                    </div>
                   </div>
-                  <div>
-                    <h3 className="text-title-lg font-bold text-foreground">Email Channel</h3>
-                    <p className="text-xs text-muted-foreground">Template: Product Announcement v2</p>
-                  </div>
+                  <Badge variant="outline" className="uppercase text-[10px]">
+                    Pending Launch
+                  </Badge>
                 </div>
-                <Badge variant="outline" className="uppercase text-[10px]">
-                  Pending Launch
-                </Badge>
-              </div>
 
-              <div className="flex flex-col gap-sm bg-muted/30 p-md rounded-lg text-base">
-                <div>
-                  <span className="text-xs text-muted-foreground block">Subject Line</span>
-                  <p className="font-semibold text-foreground">
-                    {emailContent.subject || "No subject set"}
-                  </p>
-                </div>
-                {emailContent.body && (
-                  <div>
-                    <span className="text-xs text-muted-foreground block">Body Copy</span>
-                    <p className="text-muted-foreground line-clamp-2">{emailContent.body}</p>
-                  </div>
-                )}
+                <StorefrontLivePreview
+                  channel={cc.channel}
+                  content={cc}
+                  liveBadgeText="DRAFT PREVIEW"
+                  recipientEmail={campaign.targetEmails?.[0] || "customer@example.com"}
+                />
               </div>
-            </div>
-          )}
-
-          {/* Web Banner Channel Card */}
-          {bannerContent && (
-            <div className="bg-card border border-border rounded-xl p-lg shadow-xs flex flex-col gap-md">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-sm">
-                  <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center text-foreground">
-                    <PanelTop className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <h3 className="text-title-lg font-bold text-foreground">Web Banner Channel</h3>
-                    <p className="text-xs text-muted-foreground">Header notification across portal</p>
-                  </div>
-                </div>
-                <Badge variant="outline" className="uppercase text-[10px]">
-                  Pending Launch
-                </Badge>
-              </div>
-
-              <div className="flex flex-col gap-sm bg-muted/30 p-md rounded-lg text-base">
-                <div>
-                  <span className="text-xs text-muted-foreground block">Message Copy</span>
-                  <p className="font-semibold text-foreground">
-                    {bannerContent.body || "No message copy set"}
-                  </p>
-                </div>
-                {bannerContent.linkUrl && (
-                  <div>
-                    <span className="text-xs text-muted-foreground block">Target Link</span>
-                    <p className="font-mono text-xs text-foreground bg-muted px-2 py-1 rounded inline-block">
-                      {bannerContent.linkUrl}
-                    </p>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
+            );
+          })}
         </div>
       </div>
 
