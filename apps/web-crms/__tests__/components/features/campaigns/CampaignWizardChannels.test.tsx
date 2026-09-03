@@ -52,7 +52,7 @@ describe("CampaignWizard — Banner & Popup channels (#160)", () => {
     expect(screen.getAllByText("Popup Content").length).toBeGreaterThan(0);
     // Banner-specific and Popup-specific fields are present and distinct.
     expect(screen.getByLabelText("Link URL")).toBeInTheDocument(); // Banner
-    expect(screen.getByLabelText("Heading")).toBeInTheDocument(); // Popup
+    expect(screen.getByLabelText(/heading/i)).toBeInTheDocument(); // Popup
     expect(screen.getByLabelText("CTA Text")).toBeInTheDocument(); // Popup
   });
 
