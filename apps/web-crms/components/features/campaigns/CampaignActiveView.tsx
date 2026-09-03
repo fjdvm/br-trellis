@@ -216,11 +216,11 @@ export function CampaignActiveView({
                     <span>{deliveryRate}% Delivered</span>
                   </div>
                   <div className="w-full h-2.5 bg-muted rounded-full overflow-hidden flex">
-                    <div className="h-full bg-primary transition-all duration-700" style={{ width: `${deliveryRate}%` }} />
+                    <div className="h-full bg-gradient-to-r from-slate-950 via-purple-900 to-violet-600 transition-all duration-700" style={{ width: `${deliveryRate}%` }} />
                   </div>
                   <div className="flex flex-wrap items-center gap-md text-xs text-muted-foreground pt-1">
                     <span className="flex items-center gap-1 font-medium text-foreground">
-                      <span className="w-2 h-2 rounded-full bg-primary" /> {dispatchedCount} Delivered ({deliveryRate}%)
+                      <span className="w-2 h-2 rounded-full bg-gradient-to-r from-slate-950 to-violet-600" /> {dispatchedCount} Delivered ({deliveryRate}%)
                     </span>
                     <span>·</span>
                     <span className="flex items-center gap-1">
