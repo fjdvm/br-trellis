@@ -112,8 +112,6 @@ export const navGroups: NavGroup[] = [
     children: [
       { name: "All Campaigns", href: "/campaigns", icon: Megaphone },
       { name: "Create Campaign", href: "/campaigns/new", icon: Send },
-      { name: "Active Campaigns", href: "/campaigns?status=Active", icon: Calendar },
-      { name: "Published Posts", href: "/campaigns?status=Ended", icon: MessageCircle },
       { name: "Templates", href: "/campaigns/templates", icon: FileText },
     ],
   },

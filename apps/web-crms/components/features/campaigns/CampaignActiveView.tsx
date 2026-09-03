@@ -48,7 +48,7 @@ export function CampaignActiveView({
     <div className="space-y-8">
       {/* Top Metadata / Audience Summary Row */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-md">
-        <div className="bg-card border border-border rounded-xl p-md shadow-xs space-y-xs">
+        <div className="bg-card border border-border rounded-xl p-lg shadow-xs space-y-xs">
           <span className="text-xs uppercase tracking-wider font-semibold text-muted-foreground">
             Target Audience Segment
           </span>
@@ -64,7 +64,7 @@ export function CampaignActiveView({
           <p className="text-xs text-muted-foreground">Validated live recipient distribution pool</p>
         </div>
 
-        <div className="bg-card border border-border rounded-xl p-md shadow-xs space-y-xs">
+        <div className="bg-card border border-border rounded-xl p-lg shadow-xs space-y-xs">
           <span className="text-xs uppercase tracking-wider font-semibold text-muted-foreground">
             Dispatched Reach
           </span>
@@ -80,7 +80,7 @@ export function CampaignActiveView({
           <p className="text-xs text-muted-foreground">Successful pipeline delivery confirmation</p>
         </div>
 
-        <div className="bg-card border border-border rounded-xl p-md shadow-xs space-y-xs">
+        <div className="bg-card border border-border rounded-xl p-lg shadow-xs space-y-xs">
           <span className="text-xs uppercase tracking-wider font-semibold text-muted-foreground">
             Live Delivery Engine
           </span>

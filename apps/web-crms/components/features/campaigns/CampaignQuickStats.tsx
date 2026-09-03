@@ -19,7 +19,7 @@ export function CampaignQuickStats({
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-md">
       <Card className="shadow-none border-border">
-        <CardContent className="p-md flex flex-col justify-between h-full">
+        <CardContent className="p-lg flex flex-col justify-between h-full">
           <div className="flex items-center justify-between text-muted-foreground mb-xs">
             <span className="text-sm font-medium">Active Broadcasts</span>
             <Activity className="w-4 h-4 text-emerald-500" />
@@ -32,7 +32,7 @@ export function CampaignQuickStats({
       </Card>
 
       <Card className="shadow-none border-border">
-        <CardContent className="p-md flex flex-col justify-between h-full">
+        <CardContent className="p-lg flex flex-col justify-between h-full">
           <div className="flex items-center justify-between text-muted-foreground mb-xs">
             <span className="text-sm font-medium">Total Recipients</span>
             <Users className="w-4 h-4 text-blue-500" />
@@ -47,7 +47,7 @@ export function CampaignQuickStats({
       </Card>
 
       <Card className="shadow-none border-border">
-        <CardContent className="p-md flex flex-col justify-between h-full">
+        <CardContent className="p-lg flex flex-col justify-between h-full">
           <div className="flex items-center justify-between text-muted-foreground mb-xs">
             <span className="text-sm font-medium">Draft Reviews</span>
             <FileText className="w-4 h-4 text-amber-500" />
@@ -60,7 +60,7 @@ export function CampaignQuickStats({
       </Card>
 
       <Card className="shadow-none border-border">
-        <CardContent className="p-md flex flex-col justify-between h-full">
+        <CardContent className="p-lg flex flex-col justify-between h-full">
           <div className="flex items-center justify-between text-muted-foreground mb-xs">
             <span className="text-sm font-medium">Total Campaigns</span>
             <CheckCircle2 className="w-4 h-4 text-primary" />

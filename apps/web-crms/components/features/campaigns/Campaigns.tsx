@@ -158,26 +158,6 @@ export function Campaigns({ initialStatus = "All" }: { initialStatus?: TabValue 
                     className="pl-9"
                   />
                 </div>
-                <div className="flex items-center gap-1">
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() => refetch()}
-                    title="Refresh Table"
-                    className="h-10 w-10"
-                  >
-                    <RefreshCw className="w-4 h-4" />
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={handleExport}
-                    title="Download Report"
-                    className="h-10 w-10"
-                  >
-                    <Download className="w-4 h-4" />
-                  </Button>
-                </div>
               </div>
             </div>
 
