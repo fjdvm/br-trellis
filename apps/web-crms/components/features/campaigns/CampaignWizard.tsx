@@ -412,7 +412,7 @@ export function CampaignWizard({ existing }: { existing?: Campaign }) {
             </DialogHeader>
             <DialogFooter className="mt-4 gap-2 sm:gap-0 sm:justify-between flex-col-reverse sm:flex-row">
               <Button
-                variant="ghost"
+                variant="destructive"
                 onClick={() => {
                   setShowCancelModal(false);
                   router.push("/campaigns");
