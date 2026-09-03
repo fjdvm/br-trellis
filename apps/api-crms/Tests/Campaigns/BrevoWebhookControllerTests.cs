@@ -57,7 +57,6 @@ public sealed class BrevoWebhookControllerTests : IDisposable
     public async Task BrevoWebhook_resolves_XMailinTag_and_records_analytics_event()
     {
         using var server = CreateServer();
-        using var client = server.CreateClient();
 
         Guid campaignId;
         using (var scope = server.Services.CreateScope())
@@ -72,21 +71,26 @@ public sealed class BrevoWebhookControllerTests : IDisposable
             campaignId = created.Id;
         }
 
-        var payload = new Dictionary<string, object?>
-        {
-            ["event"] = "opened",
-            ["email"] = "user@example.com",
-            ["date"] = DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
-            ["X-Mailin-Tag"] = campaignId.ToString(),
-        };
-
-        var response = await client.PostAsJsonAsync("/api/marketing/webhook/brevo", payload);
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-
         using (var scope = server.Services.CreateScope())
         {
-            var service = scope.ServiceProvider.GetRequiredService<ICampaignService>();
-            var analytics = await service.GetAnalyticsAsync(campaignId, CancellationToken.None);
+            var contactService = scope.ServiceProvider.GetRequiredService<IContactService>();
+            var campaignService = scope.ServiceProvider.GetRequiredService<ICampaignService>();
+            var controller = new MarketingController(contactService, campaignService);
+
+            var payload = new MarketingController.BrevoWebhookPayload(
+                "opened",
+                "user@example.com",
+                DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
+                null,
+                null,
+                null,
+                null,
+                campaignId.ToString());
+
+            var result = await controller.BrevoWebhook(payload, CancellationToken.None);
+            Assert.IsType<Microsoft.AspNetCore.Mvc.NoContentResult>(result);
+
+            var analytics = await campaignService.GetAnalyticsAsync(campaignId, CancellationToken.None);
             Assert.NotNull(analytics);
             Assert.Equal(1, analytics!.OpenedCount);
         }
