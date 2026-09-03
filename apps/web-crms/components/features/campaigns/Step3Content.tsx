@@ -92,7 +92,7 @@ export function Step3Content({
                   }}
                   className="data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none rounded-none text-base font-semibold px-4 py-2 cursor-pointer"
                 >
-                  {ch}
+                  {ch} Content
                 </TabsTrigger>
               ))}
             </TabsList>
