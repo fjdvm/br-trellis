@@ -256,7 +256,7 @@ export function StorefrontLivePreview({
                 style={{
                   animation: "popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards",
                 }}
-                className="relative z-10 w-full max-w-xs bg-card border border-border shadow-2xl rounded-xl p-4 text-center space-y-3"
+                className="relative z-10 w-full bg-card border border-border shadow-2xl rounded-xl p-4 text-center space-y-3"
               >
                 {content.imageUrl && (
                   <div className="w-full h-24 bg-muted rounded-lg overflow-hidden relative">
