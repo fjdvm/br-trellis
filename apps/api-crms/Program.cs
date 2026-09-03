@@ -1,6 +1,7 @@
 using api_crms.Authorization;
 using api_crms.Controllers;
 using api_crms.Data;
+using api_crms.Helpers;
 using api_crms.Hubs;
 using api_crms.Interfaces;
 using api_crms.Repositories;
@@ -11,7 +12,10 @@ using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
 using System.Threading.RateLimiting;
 
+EnvLoader.Load();
+
 var builder = WebApplication.CreateBuilder(args);
+builder.Configuration.AddEnvironmentVariables();
 
 var connectionString = builder.Configuration.GetConnectionString("CrmsDatabase")
     ?? throw new InvalidOperationException("Connection string 'CrmsDatabase' is required.");
