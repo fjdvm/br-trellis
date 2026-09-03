@@ -75,9 +75,17 @@ describe("TemplatesGallery", () => {
     expect(screen.queryByText("Simple Announcement")).not.toBeInTheDocument();
   });
 
-  it("does not render any create/edit/delete controls (read-only gallery)", () => {
+  it("opens the template builder and enforces channel specific constraints", async () => {
+    const user = userEvent.setup();
     render(<TemplatesGallery />);
-    expect(screen.queryByRole("button", { name: /new template|create|edit|delete/i })).not.toBeInTheDocument();
+
+    const builderBtn = screen.getByRole("button", { name: /template builder/i });
+    await user.click(builderBtn);
+
+    expect(screen.getByText(/email constraints & rules/i)).toBeInTheDocument();
+    expect(screen.getByText(/1 max/i)).toBeInTheDocument(); // Carousel
+    expect(screen.getAllByText(/3 max/i).length).toBeGreaterThan(0); // Images/Links/Headings/Texts
+    expect(screen.getByText(/5 max/i)).toBeInTheDocument(); // Buttons
   });
 
   it("shows a loading skeleton while templates load", () => {
