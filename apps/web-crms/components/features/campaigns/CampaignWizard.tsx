@@ -1,12 +1,20 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, ArrowRight, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { useSegments } from "@/hooks/useSegments";
 import { crmClient } from "@/lib/api/crm-client";
 import { type ChannelContentState } from "@/components/features/campaigns/ChannelContentForm";
@@ -44,6 +52,7 @@ export function CampaignWizard({ existing }: { existing?: Campaign }) {
   const { data: segments } = useSegments();
 
   const [step, setStep] = useState<Step>("Platform");
+  const [showCancelModal, setShowCancelModal] = useState(false);
   const [title, setTitle] = useState(existing?.title ?? "");
   const [channels, setChannels] = useState<CampaignChannel[]>(existing?.channels ?? []);
   const [segmentId, setSegmentId] = useState<string>(existing?.targetAudience ?? NO_SEGMENT);
@@ -154,30 +163,78 @@ export function CampaignWizard({ existing }: { existing?: Campaign }) {
     }
   }
 
+  async function saveAndLaunch() {
+    setSubmitting(true);
+    setError(null);
+    try {
+      const audience = segmentId !== NO_SEGMENT ? segmentId : undefined;
+      const targetEmails = emails
+        .split(/[,\n]/)
+        .map((e) => e.trim())
+        .filter((e) => e.length > 0);
+
+      const payload: CreateCampaignInput = {
+        title: title.trim(),
+        channels,
+        targetAudience: audience,
+        targetEmails: targetEmails.length > 0 ? targetEmails : undefined,
+        scheduleType: schedule.scheduleType,
+        startDate: schedule.startDate ? new Date(schedule.startDate).toISOString() : undefined,
+        endDate: schedule.endDate ? new Date(schedule.endDate).toISOString() : undefined,
+        channelContents: buildChannelContents(),
+      };
+
+      let campaignId = existing?.id;
+      if (existing) {
+        const update: UpdateCampaignInput = { ...payload };
+        await crmClient.campaigns.update(existing.id, update);
+      } else {
+        const created = await crmClient.campaigns.create(payload);
+        campaignId = created.id;
+      }
+      if (campaignId) {
+        await crmClient.campaigns.updateStatus(campaignId, "Active");
+        router.push(`/campaigns/${campaignId}`);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to launch campaign.");
+      setSubmitting(false);
+    }
+  }
+
+  useEffect(() => {
+    function handleBeforeUnload(e: BeforeUnloadEvent) {
+      if (title.trim() || channels.length > 0) {
+        e.preventDefault();
+        e.returnValue = "";
+      }
+    }
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [title, channels]);
+
   const canProceedPlatform = title.trim().length > 0 && channels.length > 0;
   const stepNumber = steps.indexOf(step) + 1;
   const currentPhase = STEP_PHASE[step];
 
   return (
-    <div className="w-full min-h-full py-xl px-lg md:px-xl space-y-lg max-w-5xl mx-auto">
+    <div className="w-full min-h-full py-xl px-lg md:px-xl space-y-lg mx-auto">
       {/* Top Header & Breadcrumb */}
       <div className="flex items-center justify-between">
-        <Link
-          href="/campaigns"
-          className="inline-flex items-center gap-1.5 text-sm font-semibold text-muted-foreground hover:text-foreground transition-colors"
+        <button
+          type="button"
+          onClick={() => setShowCancelModal(true)}
+          className="inline-flex items-center gap-1.5 text-sm font-semibold text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
         >
           <ArrowLeft className="w-4 h-4" />
           Back to Campaigns
-        </Link>
-        <Badge variant="secondary" className="uppercase tracking-wider text-xs px-3 py-1 font-semibold">
-          {existing ? "Editing Draft" : "Campaign Draft #CMP-9042"}
-        </Badge>
+        </button>
       </div>
 
       {/* Stepper Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-md">
         <div className="space-y-xs">
-          <h1 className="text-display-lg font-bold tracking-tight text-foreground">
+          <h1 className="text-headline-md font-bold tracking-tight text-foreground">
             {existing ? "Edit Campaign" : "Create Campaign"}
           </h1>
           <p className="text-body-md text-muted-foreground">
@@ -192,7 +249,7 @@ export function CampaignWizard({ existing }: { existing?: Campaign }) {
       {/* Main Wizard Card */}
       <Card className="shadow-none border-border overflow-hidden">
         {/* Section Header Inside Card */}
-        <div className="px-lg py-md bg-muted/40 border-b border-border flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+        <div className="p-6 bg-muted/40 border-b border-border flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div>
             <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               Step {stepNumber} of {steps.length}
@@ -206,17 +263,18 @@ export function CampaignWizard({ existing }: { existing?: Campaign }) {
           </div>
         </div>
 
-        <CardContent className="p-lg space-y-lg">
+        {/* Wizard Step Content */}
+        <CardContent className="p-6">
           {step === "Platform" && (
             <Step1Channels
               title={title}
-              onTitleChange={setTitle}
               channels={channels}
+              onTitleChange={setTitle}
               onToggleChannel={toggleChannel}
             />
           )}
 
-          {step === "Audience" && emailSelected && (
+          {step === "Audience" && (
             <Step2Audience
               segments={segments}
               segmentId={segmentId}
@@ -231,6 +289,7 @@ export function CampaignWizard({ existing }: { existing?: Campaign }) {
               channels={channels}
               contents={contents}
               onUpdateContent={updateContent}
+              onSaveDraft={saveDraft}
             />
           )}
 
@@ -244,72 +303,91 @@ export function CampaignWizard({ existing }: { existing?: Campaign }) {
           )}
 
           {step === "Review" && (
-            <div className="space-y-lg text-base">
-              <div className="p-md bg-muted/30 rounded-lg border border-border space-y-sm">
-                <div className="flex items-center gap-2 text-foreground font-semibold text-title-lg">
-                  <CheckCircle2 className="w-5 h-5 text-primary" />
-                  Review Campaign Configuration
+            <div className="space-y-md">
+              <h3 className="text-headline-md font-bold text-foreground">
+                Review Campaign Configuration
+              </h3>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-md bg-muted/30 p-md rounded-lg text-base">
+                <div>
+                  <span className="text-muted-foreground block font-medium">Campaign Title</span>
+                  <span className="font-semibold text-foreground">{title || "—"}</span>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-md pt-xs text-sm">
+                <div>
+                  <span className="text-muted-foreground block font-medium">Selected Channels</span>
+                  <span className="font-semibold text-foreground">
+                    {channels.join(", ") || "None"}
+                  </span>
+                </div>
+                {emailSelected && (
                   <div>
-                    <span className="text-muted-foreground">Title: </span>
-                    <strong className="text-foreground">{title || "—"}</strong>
+                    <span className="text-muted-foreground block font-medium">Target Audience</span>
+                    <span className="font-semibold text-foreground">
+                      {segmentId !== NO_SEGMENT
+                        ? segments.find((s) => s.id === segmentId)?.name ?? segmentId
+                        : "Custom email addresses"}
+                    </span>
                   </div>
-                  <div>
-                    <span className="text-muted-foreground">Channels: </span>
-                    <strong className="text-foreground">{channels.join(", ") || "—"}</strong>
-                  </div>
-                  {emailSelected && (
-                    <div>
-                      <span className="text-muted-foreground">Audience: </span>
-                      <strong className="text-foreground">
-                        {segmentId !== NO_SEGMENT
-                          ? segments.find((s) => s.id === segmentId)?.name ?? segmentId
-                          : "No segment"}
-                        {emails.trim() ? ` (+${emails.split(/[,\n]/).filter(Boolean).length} emails)` : ""}
-                      </strong>
-                    </div>
-                  )}
-                  <div>
-                    <span className="text-muted-foreground">Schedule: </span>
-                    <strong className="text-foreground">{schedule.scheduleType}</strong>
-                  </div>
+                )}
+                <div>
+                  <span className="text-muted-foreground block font-medium">Schedule</span>
+                  <span className="font-semibold text-foreground">
+                    {schedule.scheduleType === "SendNow"
+                      ? "Send Immediately"
+                      : `Scheduled (${schedule.startDate || "TBD"} – ${
+                          schedule.endDate || "No end date"
+                        })`}
+                  </span>
                 </div>
               </div>
-              <p className="text-sm text-muted-foreground">
-                Saving creates or updates the campaign as a Draft. You can launch it when ready from the detail view.
+
+              <p className="text-base text-muted-foreground">
+                Clicking <strong>Save Draft</strong> creates a pending draft campaign. You can preview,
+                test, and launch it whenever you are ready.
               </p>
             </div>
           )}
         </CardContent>
 
-        {/* Footer Action Bar */}
-        <div className="px-lg py-md bg-muted/40 border-t border-border flex items-center justify-between">
+        {/* Footer Actions inside Card */}
+        <div className="p-6 bg-muted/40 border-t border-border flex items-center justify-between">
           <div>
-            <Button
-              variant="ghost"
-              onClick={() => router.push("/campaigns")}
-              className="text-muted-foreground font-semibold"
-            >
-              Cancel
-            </Button>
-          </div>
-          <div className="flex items-center gap-3">
-            {step !== "Platform" && (
+            {step === "Platform" ? (
+              <Button variant="ghost" onClick={() => setShowCancelModal(true)}>
+                Cancel
+              </Button>
+            ) : (
               <Button variant="outline" onClick={goBack}>
-                <ArrowLeft className="w-4 h-4 mr-1.5" />
                 Back
               </Button>
             )}
-            {step === "Platform" && channels.length === 0 && (
+          </div>
+
+          <div className="flex items-center gap-2">
+            {step === "Platform" && !canProceedPlatform && (
               <span className="hidden sm:inline text-xs text-muted-foreground">
                 At least one channel required
               </span>
             )}
-            {step === "Review" ? (
-              <Button onClick={saveDraft} disabled={submitting} className="shadow-sm">
-                {submitting ? "Saving…" : "Save Draft"}
-              </Button>
+            {step === "Content" ? (
+              <>
+                <Button variant="outline" onClick={saveDraft} disabled={submitting}>
+                  {submitting ? "Saving…" : "Save Draft"}
+                </Button>
+                <Button onClick={goNext} disabled={submitting} className="gap-1.5 shadow-sm">
+                  Next
+                  <ArrowRight className="w-4 h-4" />
+                </Button>
+              </>
+            ) : step === "Review" ? (
+              <>
+                <Button variant="outline" onClick={saveDraft} disabled={submitting}>
+                  {submitting ? "Saving…" : "Save Draft"}
+                </Button>
+                <Button onClick={saveAndLaunch} disabled={submitting} className="shadow-sm">
+                  {submitting ? "Launching…" : "Launch Now"}
+                </Button>
+              </>
             ) : (
               <Button
                 onClick={goNext}
@@ -323,6 +401,45 @@ export function CampaignWizard({ existing }: { existing?: Campaign }) {
           </div>
         </div>
       </Card>
+
+      {/* Save Draft / Cancel Confirmation Modal */}
+      {showCancelModal && (
+        <Dialog open={showCancelModal} onOpenChange={setShowCancelModal}>
+          <DialogContent className="max-w-md border border-gray-200 dark:border-border">
+            <DialogHeader>
+              <DialogTitle className="text-xl font-bold">Save Campaign Draft?</DialogTitle>
+              <DialogDescription className="mt-2 text-base">
+                Would you like to save your campaign as a draft before leaving?
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter className="mt-4 gap-2 sm:gap-0 sm:justify-between flex-col-reverse sm:flex-row">
+              <Button
+                variant="ghost"
+                onClick={() => {
+                  setShowCancelModal(false);
+                  router.push("/campaigns");
+                }}
+              >
+                Discard & Leave
+              </Button>
+              <div className="flex gap-2">
+                <Button variant="outline" onClick={() => setShowCancelModal(false)}>
+                  Continue Editing
+                </Button>
+                <Button
+                  onClick={async () => {
+                    setShowCancelModal(false);
+                    await saveDraft();
+                  }}
+                  disabled={submitting || (step === "Platform" && !canProceedPlatform)}
+                >
+                  Save Draft
+                </Button>
+              </div>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 }
