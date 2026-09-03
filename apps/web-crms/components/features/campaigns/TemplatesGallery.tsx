@@ -643,8 +643,6 @@ export function TemplatesGallery() {
                     </div>
                   )}
                 </div>
-              </div>
-            </div>
 
                 <div className="pt-4 border-t border-border flex justify-end gap-2">
                   <Button

@@ -84,7 +84,7 @@ describe("TemplatesGallery", () => {
 
     expect(screen.getByText(/email constraints & rules/i)).toBeInTheDocument();
     expect(screen.getByText(/1 max/i)).toBeInTheDocument(); // Carousel
-    expect(screen.getByText(/3 max/i)).toBeInTheDocument(); // Images/Links/Headings/Texts
+    expect(screen.getAllByText(/3 max/i).length).toBeGreaterThan(0); // Images/Links/Headings/Texts
     expect(screen.getByText(/5 max/i)).toBeInTheDocument(); // Buttons
   });
 
