@@ -134,36 +134,39 @@ export function ChannelContentForm({
 
         {channel === "Email" && (
           <>
-            <TextField id={`${channel}-subject`} label="Subject" value={value.subject} onChange={(v) => onChange({ subject: v })} />
-            <RichTextEditorField id={`${channel}-body`} label="Body" value={value.body} onChange={(v) => onChange({ body: v })} />
-            <TextField id={`${channel}-image`} label="Banner Image URL (optional)" value={value.imageUrl} onChange={(v) => onChange({ imageUrl: v })} />
+            <TextField id={`${channel}-subject`} label="Email Subject" value={value.subject} onChange={(v) => onChange({ subject: v })} />
+            <RichTextEditorField id={`${channel}-body`} label="Body Paragraph Text" value={value.body} onChange={(v) => onChange({ body: v })} />
+            <TextField id={`${channel}-image`} label="Header / Hero Image URL" value={value.imageUrl} onChange={(v) => onChange({ imageUrl: v })} />
+            <TextField id={`${channel}-cta-text`} label="CTA Button Text" value={value.ctaText} onChange={(v) => onChange({ ctaText: v })} />
+            <TextField id={`${channel}-cta-url`} label="CTA Button Link URL" value={value.ctaUrl} onChange={(v) => onChange({ ctaUrl: v })} />
           </>
         )}
 
         {channel === "Banner" && (
           <>
-            <RichTextEditorField id={`${channel}-body`} label="Message" value={value.body} onChange={(v) => onChange({ body: v })} />
-            <TextField id={`${channel}-image`} label="Banner Image URL (optional)" value={value.imageUrl} onChange={(v) => onChange({ imageUrl: v })} />
-            <TextField id={`${channel}-link`} label="Link URL" value={value.linkUrl} onChange={(v) => onChange({ linkUrl: v })} />
-            <label className="flex items-center gap-2 cursor-pointer">
+            <RichTextEditorField id={`${channel}-body`} label="Banner Text / Message" value={value.body} onChange={(v) => onChange({ body: v })} />
+            <TextField id={`${channel}-image`} label="Banner Image URL" value={value.imageUrl} onChange={(v) => onChange({ imageUrl: v })} />
+            <TextField id={`${channel}-link`} label="Banner Target Link URL" value={value.linkUrl} onChange={(v) => onChange({ linkUrl: v })} />
+            <TextField id={`${channel}-cta-text`} label="CTA Button / Link Label" value={value.ctaText} onChange={(v) => onChange({ ctaText: v })} />
+            <label className="flex items-center gap-2 cursor-pointer pt-1">
               <Checkbox
                 id={`${channel}-dismissible`}
                 aria-label="Dismissible"
                 checked={value.dismissible ?? false}
                 onCheckedChange={(checked) => onChange({ dismissible: checked === true })}
               />
-              <span className="text-base">Dismissible</span>
+              <span className="text-base font-medium">Dismissible Banner</span>
             </label>
           </>
         )}
 
         {channel === "Popup" && (
           <>
-            <TextField id={`${channel}-heading`} label="Heading" value={value.heading} onChange={(v) => onChange({ heading: v })} />
-            <RichTextEditorField id={`${channel}-body`} label="Message" value={value.body} onChange={(v) => onChange({ body: v })} />
-            <TextField id={`${channel}-image`} label="Image URL" value={value.imageUrl} onChange={(v) => onChange({ imageUrl: v })} />
-            <TextField id={`${channel}-cta-text`} label="CTA Text" value={value.ctaText} onChange={(v) => onChange({ ctaText: v })} />
-            <TextField id={`${channel}-cta-url`} label="CTA Link URL" value={value.ctaUrl} onChange={(v) => onChange({ ctaUrl: v })} />
+            <TextField id={`${channel}-heading`} label="Popup Heading Title" value={value.heading} onChange={(v) => onChange({ heading: v })} />
+            <RichTextEditorField id={`${channel}-body`} label="Popup Body Message" value={value.body} onChange={(v) => onChange({ body: v })} />
+            <TextField id={`${channel}-image`} label="Popup Featured Image URL" value={value.imageUrl} onChange={(v) => onChange({ imageUrl: v })} />
+            <TextField id={`${channel}-cta-text`} label="CTA Button Text" value={value.ctaText} onChange={(v) => onChange({ ctaText: v })} />
+            <TextField id={`${channel}-cta-url`} label="CTA Button Target Link URL" value={value.ctaUrl} onChange={(v) => onChange({ ctaUrl: v })} />
           </>
         )}
       </div>
