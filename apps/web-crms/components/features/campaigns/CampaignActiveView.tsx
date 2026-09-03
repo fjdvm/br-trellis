@@ -85,11 +85,11 @@ export function CampaignActiveView({
         </div>
       </div>
 
-      {/* Dispatch Result Card */}
-      {campaign.dispatchResult && <DispatchResultCard result={campaign.dispatchResult} />}
-
-      {/* Engagement Analytics Card */}
-      {analytics && <AnalyticsCard analytics={analytics} />}
+      {/* Two Column Grid for Dispatch Result & Engagement Analytics */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-md">
+        {campaign.dispatchResult && <DispatchResultCard result={campaign.dispatchResult} />}
+        {analytics && <AnalyticsCard analytics={analytics} />}
+      </div>
 
       {/* Per-Channel Live Status Cards Section */}
       <div className="space-y-md">

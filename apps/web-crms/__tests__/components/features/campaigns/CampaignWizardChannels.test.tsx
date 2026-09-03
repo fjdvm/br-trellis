@@ -65,11 +65,12 @@ describe("CampaignWizard — Banner & Popup channels (#160)", () => {
     await user.click(screen.getByRole("checkbox", { name: "Popup" }));
     await user.click(screen.getByRole("button", { name: /next/i }));
 
-    await waitFor(() => expect(screen.getByText("Banner Content")).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole("tab", { name: "Banner Content" })).toBeInTheDocument());
     // Fill Banner message + Popup heading — each must stay independent.
     const bannerMessage = screen.getAllByLabelText("Message")[0];
     await user.type(bannerMessage, "Free shipping today");
-    await user.type(screen.getByLabelText("Heading"), "Welcome!");
+    await user.click(screen.getByRole("tab", { name: "Popup Content" }));
+    await user.type(screen.getByLabelText(/heading/i), "Welcome!");
 
     await user.click(screen.getByRole("button", { name: /next/i }));
     await waitFor(() => expect(screen.getByTestId("wizard-step-title")).toHaveTextContent("Schedule"));

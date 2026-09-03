@@ -102,47 +102,102 @@ export function TemplatePreviewModal({
 
           {/* Tab 2: Template Specifications & Details */}
           <TabsContent value="details" className="flex-1 overflow-y-auto my-3 mt-4 space-y-4 focus:outline-none text-left">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-md bg-muted/30 p-md rounded-lg border border-border/50 text-base">
-              <div>
-                <span className="text-xs text-muted-foreground block font-medium uppercase tracking-wider">Channel Target</span>
-                <span className="font-semibold text-foreground">{template.channel} Broadcast</span>
+            {/* Stat Cards Row */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-md">
+              <div className="bg-muted/30 p-md rounded-lg border border-border/50 flex flex-col">
+                <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Recipients</span>
+                <span className="text-headline-sm font-bold text-foreground mt-1">1 contact</span>
               </div>
-              <div>
-                <span className="text-xs text-muted-foreground block font-medium uppercase tracking-wider">Content Format</span>
-                <span className="font-semibold text-foreground">{template.format || "Structured Markup"}</span>
+              <div className="bg-muted/30 p-md rounded-lg border border-border/50 flex flex-col">
+                <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Dispatched</span>
+                <span className="text-headline-sm font-bold text-foreground mt-1">1 sent</span>
               </div>
-              <div>
-                <span className="text-xs text-muted-foreground block font-medium uppercase tracking-wider">Created Date</span>
-                <span className="font-semibold text-foreground">
-                  {template.createdAt ? new Date(template.createdAt).toLocaleDateString() : "—"}
-                </span>
+              <div className="bg-muted/30 p-md rounded-lg border border-border/50 flex flex-col">
+                <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Open Rate</span>
+                <span className="text-headline-sm font-bold text-foreground mt-1">0%</span>
               </div>
-              <div>
-                <span className="text-xs text-muted-foreground block font-medium uppercase tracking-wider">Version</span>
-                <span className="font-semibold text-foreground">v1.0 (Production Canonical)</span>
+              <div className="bg-muted/30 p-md rounded-lg border border-border/50 flex flex-col">
+                <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Click Rate</span>
+                <span className="text-headline-sm font-bold text-foreground mt-1">0%</span>
               </div>
             </div>
 
-            <div className="space-y-2">
-              <h4 className="text-sm font-bold text-foreground flex items-center gap-1.5">
-                <Info className="w-4 h-4 text-primary" />
-                Recommended Usage Guidelines
-              </h4>
-              <p className="text-sm text-muted-foreground leading-relaxed">
-                This canonical template is designed for seamless integration with audience segments. It enforces brand guidelines, automated layout scaling, and responsive viewport accessibility across desktop and mobile devices.
-              </p>
+            {/* Graph Chart Below Stat Cards */}
+            <div className="bg-card border border-border rounded-xl p-md space-y-sm shadow-xs">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h4 className="text-sm font-bold text-foreground">Performance Over Time</h4>
+                  <p className="text-xs text-muted-foreground">Daily volume of unique interactions post-dispatch</p>
+                </div>
+                <Badge variant="outline" className="text-xs">7-Day View</Badge>
+              </div>
+
+              {/* Bar Chart Wireframe */}
+              <div className="h-32 w-full flex items-end justify-between gap-sm pt-md pb-xs border-b border-border/50">
+                {[
+                  { day: "Day 1", count: 1, height: "100%" },
+                  { day: "Day 2", count: 0, height: "4px" },
+                  { day: "Day 3", count: 0, height: "4px" },
+                  { day: "Day 4", count: 0, height: "4px" },
+                  { day: "Day 5", count: 0, height: "4px" },
+                  { day: "Day 6", count: 0, height: "4px" },
+                  { day: "Day 7", count: 0, height: "4px" },
+                ].map((item) => (
+                  <div key={item.day} className="flex-1 flex flex-col items-center h-full justify-end group">
+                    <span className="text-xs text-muted-foreground mb-1 font-semibold">{item.count}</span>
+                    <div
+                      className="w-full bg-primary rounded-t transition-all group-hover:bg-primary/80"
+                      style={{ height: item.height }}
+                    />
+                    <span className="text-xs text-muted-foreground mt-1.5">{item.day}</span>
+                  </div>
+                ))}
+              </div>
             </div>
 
-            <div className="bg-primary/5 border border-primary/20 rounded-lg p-md space-y-2">
-              <div className="flex items-center gap-2 text-primary font-semibold text-sm">
-                <Sparkles className="w-4 h-4" />
-                Optimization Tips
+            {/* Two Column Grid for Dispatch Result & Engagement Analytics */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-md">
+              {/* Dispatch Result Container */}
+              <div className="bg-card border border-border rounded-xl p-md shadow-xs space-y-sm">
+                <h4 className="text-sm font-bold text-foreground">Dispatch Result</h4>
+                <div className="flex flex-col space-y-1.5 text-base">
+                  <div>
+                    <span className="text-muted-foreground">Recipients: </span>
+                    <span className="font-semibold text-foreground">1</span>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">Sent: </span>
+                    <span className="font-semibold text-foreground">1</span>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">Failed: </span>
+                    <span className="font-semibold text-foreground">0</span>
+                  </div>
+                </div>
               </div>
-              <ul className="text-xs text-muted-foreground space-y-1 list-disc pl-4">
-                <li>Personalize header text using dynamic tags like <code className="bg-muted px-1 py-0.5 rounded font-mono">{"{{contact.first_name}}"}</code>.</li>
-                <li>Keep main CTA text under 25 characters for maximum conversion rate.</li>
-                <li>Ensure fallback default values are configured for null segment properties.</li>
-              </ul>
+
+              {/* Engagement Analytics Container */}
+              <div className="bg-card border border-border rounded-xl p-md shadow-xs space-y-sm">
+                <h4 className="text-sm font-bold text-foreground">Engagement Analytics</h4>
+                <div className="grid grid-cols-2 gap-2 text-base">
+                  <div>
+                    <span className="text-muted-foreground block text-xs">Open Rate</span>
+                    <span className="font-semibold text-foreground text-base">0%</span>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground block text-xs">Click Rate</span>
+                    <span className="font-semibold text-foreground text-base">0%</span>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground block text-xs">Opened</span>
+                    <span className="font-semibold text-foreground text-base">0</span>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground block text-xs">Clicked</span>
+                    <span className="font-semibold text-foreground text-base">0</span>
+                  </div>
+                </div>
+              </div>
             </div>
           </TabsContent>
 
