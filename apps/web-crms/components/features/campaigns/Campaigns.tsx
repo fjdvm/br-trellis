@@ -82,7 +82,7 @@ export function Campaigns({ initialStatus = "All" }: { initialStatus?: TabValue 
       <div className="space-y-sm">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-md">
           <div className="space-y-xs">
-            <h1 className="text-display-lg font-bold tracking-tight text-foreground">
+            <h1 className="text-headline-md font-bold tracking-tight text-foreground">
               Campaigns
             </h1>
             <p className="text-body-md text-muted-foreground">
