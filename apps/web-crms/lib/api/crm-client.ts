@@ -428,4 +428,29 @@ export const crmClient = {
     get: () =>
       request<EcommerceSyncStatus>(`/api/v1/ecommerce/sync-status`),
   },
+  blockTemplates: {
+    list: (channel?: string) => {
+      let url = `/api/v1/block-templates`;
+      if (channel) {
+        url += `?channel=${encodeURIComponent(channel)}`;
+      }
+      return request<import("@/types/block-template").BlockTemplate[]>(url);
+    },
+    getById: (id: string) =>
+      request<import("@/types/block-template").BlockTemplate>(`/api/v1/block-templates/${id}`),
+    create: (body: import("@/types/block-template").CreateBlockTemplateInput) =>
+      request<import("@/types/block-template").BlockTemplate>(`/api/v1/block-templates`, {
+        method: "POST",
+        body: JSON.stringify(body),
+      }),
+    update: (id: string, body: import("@/types/block-template").CreateBlockTemplateInput) =>
+      request<import("@/types/block-template").BlockTemplate>(`/api/v1/block-templates/${id}`, {
+        method: "PUT",
+        body: JSON.stringify(body),
+      }),
+    delete: (id: string) =>
+      request<void>(`/api/v1/block-templates/${id}`, {
+        method: "DELETE",
+      }),
+  },
 };

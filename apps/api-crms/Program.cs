@@ -92,6 +92,10 @@ builder.Services.AddScoped<ICannedReplyService, CannedReplyService>();
 builder.Services.AddScoped<ITemplateRepository, TemplateRepository>();
 builder.Services.AddScoped<ITemplateService, TemplateService>();
 
+// User-authored BlockTemplates (#177)
+builder.Services.AddScoped<IBlockTemplateRepository, BlockTemplateRepository>();
+builder.Services.AddScoped<IBlockTemplateService, BlockTemplateService>();
+
 // Campaigns
 builder.Services.AddScoped<ICampaignRepository, CampaignRepository>();
 builder.Services.AddScoped<ICampaignService, CampaignService>();

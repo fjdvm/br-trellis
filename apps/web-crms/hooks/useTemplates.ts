@@ -11,8 +11,22 @@ export function useTemplates(channel?: string) {
     setIsLoading(true);
     setError(null);
     try {
-      const res = await crmClient.templates.list(channel);
-      setData(res ?? []);
+      const [legacyRes, blockRes] = await Promise.all([
+        crmClient.templates.list(channel).catch(() => []),
+        crmClient.blockTemplates.list(channel).catch(() => []),
+      ]);
+
+      const blockTemplatesAsTemplates: Template[] = (blockRes ?? []).map((bt) => ({
+        id: bt.id,
+        name: bt.name,
+        description: bt.description,
+        content: JSON.stringify(bt.blocks),
+        format: "Blocks",
+        channel: bt.channel,
+        createdAt: bt.createdAt,
+      }));
+
+      setData([...(legacyRes ?? []), ...blockTemplatesAsTemplates]);
     } catch (err) {
       setError(err instanceof Error ? err : new Error("Failed to load templates"));
     } finally {

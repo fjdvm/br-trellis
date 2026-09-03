@@ -64,8 +64,7 @@ const CHANNELS: CampaignChannel[] = ["Email", "Banner", "Popup"];
 export interface TemplateBlock {
   id: string;
   type: BlockType;
-  content: string;
-  url?: string;
+  label: string;
   textAlign?: "left" | "center" | "right";
   isBold?: boolean;
   isItalic?: boolean;
@@ -90,12 +89,14 @@ export function TemplatesGallery() {
   // Drag and Drop Builder State
   const [showBuilderModal, setShowBuilderModal] = useState(false);
   const [builderName, setBuilderName] = useState("");
+  const [builderDescription, setBuilderDescription] = useState("");
   const [builderChannel, setBuilderChannel] = useState<CampaignChannel>("Email");
   const [builderError, setBuilderError] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
   const [blocks, setBlocks] = useState<TemplateBlock[]>([
-    { id: "1", type: "heading", content: "Welcome to Our Special Event", textAlign: "left" },
-    { id: "2", type: "text", content: "Enjoy exclusive rewards and discover new arrivals this season.", textAlign: "left" },
-    { id: "3", type: "button", content: "Explore Now", url: "#" },
+    { id: "1", type: "heading", label: "Hero Title", textAlign: "left" },
+    { id: "2", type: "text", label: "Main Body Text", textAlign: "left" },
+    { id: "3", type: "button", label: "Primary Action Button" },
   ]);
 
   const constraints = useMemo(() => getChannelConstraints(builderChannel), [builderChannel]);
@@ -175,19 +176,7 @@ export function TemplatesGallery() {
     const newBlock: TemplateBlock = {
       id: String(Date.now()),
       type,
-      content:
-        type === "heading"
-          ? "New Headline"
-          : type === "text"
-          ? "New paragraph text goes here."
-          : type === "image"
-          ? ""
-          : type === "carousel"
-          ? "Featured Banner 1, Featured Banner 2"
-          : type === "link"
-          ? "Click here to view details"
-          : "Click Here",
-      url: type === "link" || type === "button" ? "#" : undefined,
+      label: `${type.charAt(0).toUpperCase() + type.slice(1)} Block`,
       textAlign: "left",
     };
     setBlocks((prev) => [...prev, newBlock]);
@@ -200,6 +189,48 @@ export function TemplatesGallery() {
   function removeBlock(id: string) {
     setBlocks((prev) => prev.filter((b) => b.id !== id));
     setBuilderError(null);
+  }
+
+  async function handleSaveTemplate() {
+    if (!builderName.trim()) {
+      setBuilderError("Template name is required.");
+      return;
+    }
+    if (blocks.length === 0) {
+      setBuilderError("Template must contain at least one block.");
+      return;
+    }
+
+    setIsSaving(true);
+    setBuilderError(null);
+
+    try {
+      const payload = {
+        name: builderName.trim(),
+        description: builderDescription.trim() || undefined,
+        channel: builderChannel,
+        blocks: blocks.map((b, index) => ({
+          type: b.type,
+          label: b.label || `${b.type} block`,
+          order: index,
+          textAlign: b.textAlign || "left",
+          isBold: b.isBold ?? false,
+          isItalic: b.isItalic ?? false,
+        })),
+      };
+
+      const { crmClient } = await import("@/lib/api/crm-client");
+      await crmClient.blockTemplates.create(payload);
+
+      setShowBuilderModal(false);
+      setBuilderName("");
+      setBuilderDescription("");
+      refetch();
+    } catch (err) {
+      setBuilderError(err instanceof Error ? err.message : "Failed to save block template.");
+    } finally {
+      setIsSaving(false);
+    }
   }
 
   const filteredTemplates = useMemo(() => {
@@ -346,6 +377,11 @@ export function TemplatesGallery() {
                     placeholder="Template Name..."
                     value={builderName}
                     onChange={(e) => setBuilderName(e.target.value)}
+                  />
+                  <Input
+                    placeholder="Description (optional)..."
+                    value={builderDescription}
+                    onChange={(e) => setBuilderDescription(e.target.value)}
                   />
                   <Select
                     value={builderChannel}
@@ -532,6 +568,16 @@ export function TemplatesGallery() {
                             </button>
                           </div>
 
+                          <div className="space-y-1">
+                            <Label className="text-xs font-medium text-muted-foreground">Block Label</Label>
+                            <Input
+                              placeholder="e.g. Hero Headline, Main Body Text, Action CTA"
+                              value={block.label}
+                              onChange={(e) => updateBlock(block.id, { label: e.target.value })}
+                              className="text-sm font-medium"
+                            />
+                          </div>
+
                           {/* Block Rich Formatting Controls for Text/Heading */}
                           {(block.type === "heading" || block.type === "text") && (
                             <div className="flex items-center justify-between bg-muted/50 border border-border p-1 rounded-md mb-2">
@@ -595,42 +641,42 @@ export function TemplatesGallery() {
                           {block.type === "heading" && (
                             <div className="p-3 bg-muted/40 border border-dashed border-border rounded-md text-xs text-muted-foreground font-semibold flex items-center justify-between">
                               <Type className="w-4 h-4 text-primary" />
-                              <span>Heading Title Structural Block (Dynamic input during campaign creation)</span>
+                              <span>Heading Title Structural Block (No content entered here)</span>
                             </div>
                           )}
 
                           {block.type === "text" && (
                             <div className="p-3 bg-muted/40 border border-dashed border-border rounded-md text-xs text-muted-foreground font-semibold flex items-center justify-between">
                               <AlignLeft className="w-4 h-4 text-primary" />
-                              <span>Paragraph Text Structural Block (Dynamic input during campaign creation)</span>
+                              <span>Paragraph Text Structural Block (No content entered here)</span>
                             </div>
                           )}
 
                           {block.type === "carousel" && (
                             <div className="p-3 bg-muted/40 border border-dashed border-border rounded-md text-xs text-muted-foreground font-semibold flex items-center justify-between">
                               <SlidersHorizontal className="w-4 h-4 text-primary" />
-                              <span>Carousel Component Structural Block (Dynamic slides input during campaign creation)</span>
+                              <span>Carousel Component Structural Block (No content entered here)</span>
                             </div>
                           )}
 
                           {block.type === "image" && (
                             <div className="p-3 bg-muted/40 border border-dashed border-border rounded-md text-xs text-muted-foreground font-semibold flex items-center justify-between">
                               <Image className="w-4 h-4 text-primary" />
-                              <span>Image Component Structural Block (Dynamic image URL input during campaign creation)</span>
+                              <span>Image Component Structural Block (No content entered here)</span>
                             </div>
                           )}
 
                           {block.type === "link" && (
                             <div className="p-3 bg-muted/40 border border-dashed border-border rounded-md text-xs text-muted-foreground font-semibold flex items-center justify-between">
                               <LinkIcon className="w-4 h-4 text-primary" />
-                              <span>Text Link Structural Block (Dynamic label & URL input during campaign creation)</span>
+                              <span>Text Link Structural Block (No content entered here)</span>
                             </div>
                           )}
 
                           {block.type === "button" && (
                             <div className="p-3 bg-muted/40 border border-dashed border-border rounded-md text-xs text-muted-foreground font-semibold flex items-center justify-between">
                               <MousePointerClick className="w-4 h-4 text-primary" />
-                              <span>CTA Button Structural Block (Dynamic label & URL input during campaign creation)</span>
+                              <span>CTA Button Structural Block (No content entered here)</span>
                             </div>
                           )}
 
@@ -659,13 +705,10 @@ export function TemplatesGallery() {
                 Cancel
               </Button>
               <Button
-                onClick={() => {
-                  setShowBuilderModal(false);
-                  refetch();
-                }}
-                disabled={!builderName.trim() || blocks.length === 0}
+                onClick={handleSaveTemplate}
+                disabled={!builderName.trim() || blocks.length === 0 || isSaving}
               >
-                Save Template
+                {isSaving ? "Saving..." : "Save Template"}
               </Button>
             </DialogFooter>
           </DialogContent>
