@@ -440,13 +440,59 @@ export function TemplatesGallery() {
                   const type = e.dataTransfer.getData("text/plain");
                   if (type) addBlock(type as BlockType);
                 }}
-                className="md:col-span-8 bg-slate-50 dark:bg-slate-950 border-2 border-dashed border-border rounded-lg p-5 flex flex-col justify-between overflow-y-auto min-h-[380px]"
+                className="md:col-span-8 bg-slate-100 dark:bg-slate-950 border-2 border-dashed border-border rounded-xl p-5 flex flex-col justify-between overflow-y-auto min-h-[380px]"
               >
                 <div className="space-y-4">
-                  <div className="flex items-center justify-between text-xs text-muted-foreground border-b border-border pb-2">
-                    <span className="font-mono">https://store.example.com</span>
-                    <span>Drop elements or click palette blocks to add</span>
+                  {/* Channel Native Canvas Frame Header */}
+                  <div className="bg-slate-900 text-slate-200 p-2.5 px-3 rounded-lg border border-slate-800 flex items-center justify-between shadow-xs">
+                    <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-1.5">
+                        <span className="w-2.5 h-2.5 rounded-full bg-red-500" />
+                        <span className="w-2.5 h-2.5 rounded-full bg-amber-500" />
+                        <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
+                      </div>
+                      <span className="font-mono text-xs text-slate-300 ml-1">
+                        {builderChannel === "Email"
+                          ? "mail.store-app.com/builder/inbox"
+                          : builderChannel === "Banner"
+                          ? "https://store.example.com (Top Banner Strip)"
+                          : "https://store.example.com (Modal Popup Overlay)"}
+                      </span>
+                    </div>
+                    <span className="text-[10px] uppercase font-mono text-slate-400">
+                      {builderChannel} Canvas
+                    </span>
                   </div>
+
+                  {builderChannel === "Email" && (
+                    <div className="bg-background border border-border rounded-lg p-3 space-y-1.5 text-left shadow-xs">
+                      <div className="flex items-center justify-between border-b border-border/60 pb-1.5 text-xs text-muted-foreground">
+                        <span className="font-bold text-foreground">From: Aura Store Marketing &lt;noreply@aurastore.com&gt;</span>
+                        <span className="font-mono">Email Layout</span>
+                      </div>
+                      <div className="text-xs text-muted-foreground font-semibold">
+                        Recipient: customer@example.com
+                      </div>
+                    </div>
+                  )}
+
+                  {builderChannel === "Banner" && (
+                    <div className="bg-gradient-to-r from-primary to-primary/90 text-primary-foreground p-3 px-4 rounded-lg flex items-center justify-between shadow-sm">
+                      <span className="text-xs font-semibold">Storefront Top Promotional Strip Layout</span>
+                      <Badge variant="outline" className="text-[10px] text-primary-foreground border-primary-foreground/30">
+                        Banner Preview
+                      </Badge>
+                    </div>
+                  )}
+
+                  {builderChannel === "Popup" && (
+                    <div className="bg-card border border-border p-3 rounded-lg flex items-center justify-between text-xs text-muted-foreground shadow-xs">
+                      <span className="font-semibold text-foreground">Centered Modal Popup Window Layout</span>
+                      <Badge variant="secondary" className="text-[10px]">
+                        Popup Overlay
+                      </Badge>
+                    </div>
+                  )}
 
                   {builderError && (
                     <div className="p-3 bg-destructive/10 border border-destructive/40 text-destructive text-xs font-medium rounded-md flex items-center justify-between">
