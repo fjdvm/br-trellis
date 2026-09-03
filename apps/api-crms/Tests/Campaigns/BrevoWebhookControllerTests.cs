@@ -72,16 +72,12 @@ public sealed class BrevoWebhookControllerTests : IDisposable
             campaignId = created.Id;
         }
 
-        var payload = new
+        var payload = new Dictionary<string, object?>
         {
-            @event = "opened",
-            email = "user@example.com",
-            date = DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
-            url = (string?)null,
-            campaignId = (Guid?)null,
-            tag = (string?)null,
-            tags = (string[]?)null,
-            X_Mailin_Tag = campaignId.ToString()
+            ["event"] = "opened",
+            ["email"] = "user@example.com",
+            ["date"] = DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
+            ["X-Mailin-Tag"] = campaignId.ToString(),
         };
 
         var response = await client.PostAsJsonAsync("/api/marketing/webhook/brevo", payload);
