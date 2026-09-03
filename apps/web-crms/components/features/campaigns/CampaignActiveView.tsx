@@ -97,6 +97,27 @@ export function CampaignActiveView({
         </div>
       </div>
 
+      {/* Hourly Engagement Sparkline Strip */}
+      <div className="bg-card border border-border rounded-xl p-lg shadow-xs space-y-md">
+        <div className="flex items-center justify-between">
+          <div className="flex flex-col">
+            <span className="text-title-lg font-bold text-foreground">Hourly Engagement Rate</span>
+            <span className="text-xs text-muted-foreground">
+              Aggregate clicks &amp; conversions during launch window
+            </span>
+          </div>
+          <Badge variant="secondary" className="text-xs font-semibold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800">
+            +18.4% vs benchmark
+          </Badge>
+        </div>
+        <div className="w-full h-20 pt-2">
+          <svg className="w-full h-full text-primary" fill="none" viewBox="0 0 600 80" preserveAspectRatio="none">
+            <path d="M0,70 Q75,65 150,45 T300,30 T450,15 T600,8 L600,80 L0,80 Z" fill="currentColor" fillOpacity="0.08" />
+            <path d="M0,70 Q75,65 150,45 T300,30 T450,15 T600,8" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
+          </svg>
+        </div>
+      </div>
+
       {/* Two Column Grid for Dispatch Result & Engagement Analytics */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-md">
         {campaign.dispatchResult && <DispatchResultCard result={campaign.dispatchResult} />}
@@ -290,25 +311,6 @@ export function CampaignActiveView({
             </TabsContent>
           )}
         </Tabs>
-      </div>
-
-      {/* Hourly Engagement Sparkline Strip */}
-      <div className="bg-card border border-border rounded-xl p-lg shadow-xs space-y-md">
-        <div className="flex items-center justify-between">
-          <div className="flex flex-col">
-            <span className="text-title-lg font-bold text-foreground">Hourly Engagement Rate</span>
-            <span className="text-xs text-muted-foreground">
-              Aggregate clicks &amp; conversions during launch window
-            </span>
-          </div>
-          <Badge variant="secondary">+18.4% vs benchmark</Badge>
-        </div>
-        <div className="w-full h-20 pt-2">
-          <svg className="w-full h-full text-primary" fill="none" viewBox="0 0 600 80" preserveAspectRatio="none">
-            <path d="M0,70 Q75,65 150,45 T300,30 T450,15 T600,8 L600,80 L0,80 Z" fill="currentColor" fillOpacity="0.08" />
-            <path d="M0,70 Q75,65 150,45 T300,30 T450,15 T600,8" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
-          </svg>
-        </div>
       </div>
     </div>
   );
