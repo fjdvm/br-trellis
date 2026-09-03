@@ -91,7 +91,7 @@ export function Step3Content({
                 <Info className="w-3.5 h-3.5" />
               </button>
             </TooltipTrigger>
-            <TooltipContent side="left" className="max-w-xs p-3 bg-popover border border-border text-popover-foreground shadow-md space-y-1">
+            <TooltipContent side="left" className="p-3 bg-popover border border-border text-popover-foreground shadow-md space-y-1">
               <p className="font-semibold text-xs text-foreground">Draft-First Policy</p>
               <p className="text-xs text-muted-foreground leading-relaxed">
                 All campaigns are initially saved as a Draft. Review, stage testing, and explicit launch occur directly from the Campaign Detail view.
