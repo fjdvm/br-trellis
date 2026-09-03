@@ -87,7 +87,7 @@ export function Step2Audience({
   onEmailsChange,
 }: Step2AudienceProps) {
   const [manualExpanded, setManualExpanded] = useState(true);
-  const [inputValue, setInputValue] = useState("");
+  const [inputValue, setInputValue] = useState(() => emails ?? "");
   const [emailError, setEmailError] = useState<string | null>(null);
 
   const combinedSegments = useMemo(() => {
