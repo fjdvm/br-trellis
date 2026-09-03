@@ -42,17 +42,20 @@ export function Step1Channels({
       {/* Select Channels Header & Counter */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <Label className="text-base font-semibold">Distribution Channels</Label>
+          <Label className="text-base font-semibold">
+            Distribution Channels
+          </Label>
           <Badge variant="outline" className="gap-1 font-semibold text-xs py-1">
             <SlidersHorizontal className="w-3.5 h-3.5" />
             <span id="channel-counter">
-              {channels.length} {channels.length === 1 ? "Channel" : "Channels"} Selected
+              {channels.length} {channels.length === 1 ? "Channel" : "Channels"}{" "}
+              Selected
             </span>
           </Badge>
         </div>
 
-        {/* Channel Selection Stack */}
-        <div className="flex flex-col gap-4">
+        {/* Channel Selection Stack (Responsive Row Grid) */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {CHANNEL_META.map((meta) => (
             <ChannelSelectCard
               key={meta.channel}
