@@ -206,13 +206,38 @@ function RichTextEditorField({
   value?: string;
   onChange: (v: string) => void;
 }) {
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [textAlign, setTextAlign] = useState<"left" | "center" | "right">("left");
   const [isBold, setIsBold] = useState(false);
   const [isItalic, setIsItalic] = useState(false);
 
   function applyFormatting(wrap: "**" | "*") {
-    const cur = value ?? "";
-    onChange(cur ? `${cur} ${wrap}text${wrap}` : `${wrap}text${wrap}`);
+    const textarea = textareaRef.current;
+    if (!textarea) {
+      const cur = value ?? "";
+      onChange(cur ? `${cur} ${wrap}text${wrap}` : `${wrap}text${wrap}`);
+      return;
+    }
+
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const curText = value ?? "";
+
+    if (start !== end) {
+      // Format highlighted text selection
+      const selectedText = curText.slice(start, end);
+      const newText =
+        curText.slice(0, start) + `${wrap}${selectedText}${wrap}` + curText.slice(end);
+      onChange(newText);
+      setTimeout(() => {
+        textarea.focus();
+        textarea.setSelectionRange(start + wrap.length, end + wrap.length);
+      }, 0);
+    } else {
+      // Fallback: append formatted placeholder
+      const newText = curText ? `${curText} ${wrap}text${wrap}` : `${wrap}text${wrap}`;
+      onChange(newText);
+    }
   }
 
   return (
@@ -282,6 +307,7 @@ function RichTextEditorField({
       </div>
 
       <Textarea
+        ref={textareaRef}
         id={id}
         value={value ?? ""}
         onChange={(e) => onChange(e.target.value)}
