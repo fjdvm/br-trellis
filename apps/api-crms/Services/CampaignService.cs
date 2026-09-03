@@ -11,7 +11,9 @@ namespace api_crms.Services;
 public sealed partial class CampaignService(
     ICampaignRepository campaignRepository,
     ISegmentService segmentService,
-    AppDbContext dbContext) : ICampaignService
+    AppDbContext dbContext,
+    IMarketingEmailSender marketingEmailSender,
+    CampaignDispatchOptions dispatchOptions) : ICampaignService
 {
     public async Task<IReadOnlyList<CampaignListItemDto>> ListCampaignsAsync(
         string? status,

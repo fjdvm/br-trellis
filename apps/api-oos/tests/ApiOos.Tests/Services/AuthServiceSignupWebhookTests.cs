@@ -108,9 +108,5 @@ public sealed class AuthServiceSignupWebhookTests : IDisposable
             Sent.Add((toEmail, fullName, confirmationUrl));
             return Task.CompletedTask;
         }
-
-        public Task<ApiOos.Interfaces.Services.BulkEmailResult> SendBulkAsync(
-            IReadOnlyList<string> recipients, string subject, string htmlBody, string? unsubscribeBaseUrl = null, CancellationToken cancellationToken = default)
-            => Task.FromResult(new ApiOos.Interfaces.Services.BulkEmailResult(recipients.Count, 0, System.Array.Empty<string>()));
     }
 }

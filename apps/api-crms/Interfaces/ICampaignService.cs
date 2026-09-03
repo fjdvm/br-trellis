@@ -39,6 +39,12 @@ public interface ICampaignService
         CampaignDispatchResultDto result,
         CancellationToken cancellationToken);
 
+    // Internal dispatch pass (ADR 0009): finds every due Email Campaign, sends each
+    // directly via Brevo, and records the outcome in-process (marking the Email
+    // channel terminal). Returns the number of Campaigns dispatched. Driven by the
+    // lifecycle sweep; SendNow is simply a Campaign already due on the next tick.
+    Task<int> DispatchDueEmailCampaignsAsync(CancellationToken cancellationToken);
+
     // The currently-Active content for a storefront Channel (Banner or Popup):
     // the single Active campaign targeting that channel whose window covers now.
     // Returns null when nothing is active. Served to web-shop via api-oos (#163).

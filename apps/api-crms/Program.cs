@@ -1,4 +1,5 @@
 using api_crms.Authorization;
+using api_crms.Controllers;
 using api_crms.Data;
 using api_crms.Hubs;
 using api_crms.Interfaces;
@@ -8,6 +9,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
+using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -89,6 +91,13 @@ builder.Services.AddScoped<ITemplateService, TemplateService>();
 // Campaigns
 builder.Services.AddScoped<ICampaignRepository, CampaignRepository>();
 builder.Services.AddScoped<ICampaignService, CampaignService>();
+// Direct marketing email dispatch via Brevo (ADR 0009). api-crms owns its own
+// Brevo:* SMTP credentials, independent of api-oos's transactional account.
+builder.Services.AddScoped<IMarketingEmailSender, BrevoMarketingEmailSender>();
+builder.Services.AddSingleton(new CampaignDispatchOptions
+{
+    UnsubscribeBaseUrl = builder.Configuration["Campaigns:UnsubscribeBaseUrl"],
+});
 builder.Services.AddSingleton(new CampaignLifecycleOptions
 {
     SweepInterval = TimeSpan.FromMinutes(
@@ -97,6 +106,24 @@ builder.Services.AddSingleton(new CampaignLifecycleOptions
 builder.Services.AddHostedService<CampaignLifecycleSweepService>();
 
 builder.Services.AddControllers();
+
+// Rate limiting. api-crms's first public-facing route — the marketing unsubscribe
+// endpoint (ADR 0009) — is fronted by a fixed-window limiter to blunt enumeration
+// and abuse from the open internet. Partitioned by client IP so one abuser can't
+// exhaust the limit for everyone.
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    options.AddPolicy(MarketingController.UnsubscribeRateLimitPolicy, httpContext =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+            factory: _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 10,
+                Window = TimeSpan.FromMinutes(1),
+                QueueLimit = 0,
+            }));
+});
 builder.Services.AddOpenApi(options =>
 {
     options.AddDocumentTransformer((document, _, _) =>
@@ -192,6 +219,8 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseCors();
+
+app.UseRateLimiter();
 
 app.UseAuthentication();
 app.UseAuthorization();

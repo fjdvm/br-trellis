@@ -8,10 +8,11 @@ public sealed class CampaignLifecycleOptions
     public TimeSpan SweepInterval { get; init; } = TimeSpan.FromMinutes(15);
 }
 
-// Internal, api-crms-owned sweep (no external calls, per ADR 0008) that advances
-// Banner/Popup campaigns to Ended once their window expires and aggregates
-// cross-Channel status. Mirrors the "scheduled sweep discovers due work" pattern
-// used by Cart abandonment. Creates a scope per tick since CampaignService is scoped.
+// Internal, api-crms-owned sweep. Advances Banner/Popup campaigns to Ended once
+// their window expires, aggregates cross-Channel status, and — per ADR 0009 —
+// dispatches due Email Campaigns directly via Brevo (no cross-service hop). Mirrors
+// the "scheduled sweep discovers due work" pattern used by Cart abandonment. Creates
+// a scope per tick since CampaignService is scoped.
 public sealed class CampaignLifecycleSweepService(
     IServiceProvider services,
     CampaignLifecycleOptions options,
@@ -26,6 +27,15 @@ public sealed class CampaignLifecycleSweepService(
             {
                 using var scope = services.CreateScope();
                 var campaignService = scope.ServiceProvider.GetRequiredService<ICampaignService>();
+
+                // Dispatch first so a Campaign that becomes Email-terminal this tick
+                // is eligible to End on the same tick's lifecycle pass.
+                var dispatched = await campaignService.DispatchDueEmailCampaignsAsync(stoppingToken);
+                if (dispatched > 0)
+                {
+                    logger.LogInformation("Campaign dispatch sweep sent {Count} campaign(s).", dispatched);
+                }
+
                 var ended = await campaignService.SweepCampaignLifecycleAsync(stoppingToken);
                 if (ended.Count > 0)
                 {

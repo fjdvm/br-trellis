@@ -31,18 +31,4 @@ public class LoggingEmailSender : IEmailSender
 
         return Task.CompletedTask;
     }
-
-    public Task<BulkEmailResult> SendBulkAsync(
-        IReadOnlyList<string> recipients,
-        string subject,
-        string htmlBody,
-        string? unsubscribeBaseUrl = null,
-        CancellationToken cancellationToken = default)
-    {
-        foreach (var recipient in recipients)
-        {
-            _logger.LogInformation("Marketing email '{Subject}' to {Recipient} (dev log only).", subject, recipient);
-        }
-        return Task.FromResult(new BulkEmailResult(recipients.Count, 0, System.Array.Empty<string>()));
-    }
 }

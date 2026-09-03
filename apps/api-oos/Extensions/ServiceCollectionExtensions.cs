@@ -66,10 +66,6 @@ public static class ServiceCollectionExtensions
         // Outbound Ecommerce webhook client → api-crms (ADR 0001/0002: CRMS is a
         // passive, HMAC-signed receiver; api-oos is the caller).
         services.AddScoped<ApiOos.Interfaces.Services.IEcommerceWebhookClient, ApiOos.Services.EcommerceWebhookClient>();
-        // Campaign dispatch (ADR 0008): api-oos polls api-crms for due Email
-        // campaigns, sends via Brevo, and reports the outcome back.
-        services.AddScoped<ApiOos.Interfaces.Services.ICampaignDispatchClient, ApiOos.Services.CampaignDispatchClient>();
-        services.AddScoped<ApiOos.Services.ICampaignDispatchService, ApiOos.Services.CampaignDispatchService>();
         // Storefront Banner/Popup delivery (#163): reads Active content from api-crms.
         services.AddScoped<ApiOos.Interfaces.Services.IActiveContentReader, ApiOos.Services.ActiveContentReader>();
         services.AddHttpClient(ApiOos.Services.EcommerceWebhookClient.HttpClientName, (sp, client) =>

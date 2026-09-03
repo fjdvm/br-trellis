@@ -106,7 +106,9 @@ public sealed class CampaignAnalyticsTests : IDisposable
     {
         var context = CreateContext();
         var segmentService = new SegmentService(new SegmentRepository(context), context);
-        return new CampaignService(new CampaignRepository(context), segmentService, context);
+        return new CampaignService(
+            new CampaignRepository(context), segmentService, context,
+            new RecordingMarketingEmailSender(), new CampaignDispatchOptions());
     }
 
     private AppDbContext CreateContext()
