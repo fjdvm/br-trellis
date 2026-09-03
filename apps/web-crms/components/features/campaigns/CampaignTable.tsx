@@ -2,7 +2,14 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ChevronRight } from "lucide-react";
+import { MoreVertical } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   Table,
   TableBody,
@@ -134,11 +141,38 @@ export function CampaignTable({ campaigns }: { campaigns: CampaignListItem[] }) 
                 <TableCell className="text-sm text-muted-foreground">
                   {formatDate(campaign.createdAt)}
                 </TableCell>
-                <TableCell className="text-right">
-                  <span className="inline-flex items-center gap-1 text-sm font-semibold text-muted-foreground group-hover:text-foreground">
-                    View
-                    <ChevronRight className="w-4 h-4" />
-                  </span>
+                <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-9 w-9 p-0 hover:bg-muted text-foreground"
+                        aria-label="Campaign actions"
+                      >
+                        <MoreVertical className="w-5 h-5" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent
+                      align="end"
+                      className="w-48 border border-gray-200 dark:border-gray-700 bg-popover shadow-md p-1"
+                    >
+                      <DropdownMenuItem
+                        className="text-base font-medium py-2.5 px-3 cursor-pointer"
+                        onClick={() => router.push(`/campaigns/${campaign.id}`)}
+                      >
+                        View Campaign
+                      </DropdownMenuItem>
+                      {campaign.status === "Draft" && (
+                        <DropdownMenuItem
+                          className="text-base font-medium py-2.5 px-3 cursor-pointer"
+                          onClick={() => router.push(`/campaigns/${campaign.id}/edit`)}
+                        >
+                          Edit Campaign
+                        </DropdownMenuItem>
+                      )}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </TableCell>
               </TableRow>
             ))}
