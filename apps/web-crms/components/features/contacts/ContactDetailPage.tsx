@@ -129,7 +129,7 @@ export function ContactDetailPage({ contactId }: ContactDetailPageProps) {
   }
 
   return (
-    <div className="w-full min-h-full py-xl px-lg md:px-xl space-y-lg max-w-7xl mx-auto">
+    <div className="w-full min-h-full py-xl px-lg md:px-xl space-y-lg mx-auto">
       <BackButton fallbackHref="/contacts" />
       <div className="space-y-sm">
         <div className="flex items-center justify-between">

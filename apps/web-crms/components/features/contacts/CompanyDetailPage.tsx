@@ -118,7 +118,7 @@ export function CompanyDetailPage({ companyId }: CompanyDetailPageProps) {
 
   if (error || !company) {
     return (
-      <div className="w-full min-h-full py-xl px-lg md:px-xl max-w-7xl mx-auto">
+      <div className="w-full min-h-full py-xl px-lg md:px-xl mx-auto">
         <div className="p-xl text-destructive">
           {error ?? "Company not found."}
         </div>
@@ -129,7 +129,7 @@ export function CompanyDetailPage({ companyId }: CompanyDetailPageProps) {
   const isArchived = company.deletedAt !== null;
 
   return (
-    <div className="w-full min-h-full py-xl px-lg md:px-xl space-y-lg max-w-7xl mx-auto">
+    <div className="w-full min-h-full py-xl px-lg md:px-xl space-y-lg mx-auto">
       <div className="space-y-sm">
         <BackButton fallbackHref="/contacts/companies" />
 

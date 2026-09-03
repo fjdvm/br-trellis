@@ -180,7 +180,7 @@ export function TicketDetailPage({ ticketId }: TicketDetailPageProps) {
 
   if (loadError || !ticket) {
     return (
-      <div className="w-full min-h-full py-xl px-lg md:px-xl max-w-7xl mx-auto">
+      <div className="w-full min-h-full py-xl px-lg md:px-xl mx-auto">
         <BackButton fallbackHref="/tickets" />
         <div className="p-xl text-destructive">
           {loadError ?? "Ticket not found."}
@@ -196,7 +196,7 @@ export function TicketDetailPage({ ticketId }: TicketDetailPageProps) {
   const canAct = canActOnTicket(ticket, currentAgentId);
 
   return (
-    <div className="w-full min-h-full py-xl px-lg md:px-xl space-y-lg max-w-7xl mx-auto">
+    <div className="w-full min-h-full py-xl px-lg md:px-xl space-y-lg mx-auto">
       <BackButton fallbackHref="/tickets" />
 
       <div className="space-y-sm">

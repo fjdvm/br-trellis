@@ -92,7 +92,7 @@ export function ContactListPage({
   );
 
   return (
-    <div className="w-full min-h-full py-xl px-lg md:px-xl space-y-lg max-w-7xl mx-auto">
+    <div className="w-full min-h-full py-xl px-lg md:px-xl space-y-lg mx-auto">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-md">
         <div className="space-y-sm">
           <h1 className="text-headline-md font-bold tracking-tight text-foreground">
