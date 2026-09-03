@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, Search, RefreshCw, Download, SlidersHorizontal } from "lucide-react";
+import { Plus, Search, RefreshCw, Download } from "lucide-react";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -81,7 +81,7 @@ export function Campaigns({ initialStatus = "All" }: { initialStatus?: TabValue 
       {/* Header Block */}
       <div className="space-y-sm">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-md">
-          <div className="space-y-xs max-w-2xl">
+          <div className="space-y-xs">
             <h1 className="text-display-lg font-bold tracking-tight text-foreground">
               Campaigns
             </h1>
@@ -90,10 +90,6 @@ export function Campaigns({ initialStatus = "All" }: { initialStatus?: TabValue 
             </p>
           </div>
           <div className="flex items-center gap-sm">
-            <Button variant="outline" size="sm" className="hidden sm:inline-flex gap-1.5">
-              <SlidersHorizontal className="w-4 h-4" />
-              View Settings
-            </Button>
             <Button onClick={() => router.push("/campaigns/new")} className="gap-1.5 shadow-sm">
               <Plus className="w-4 h-4" />
               Create Campaign
