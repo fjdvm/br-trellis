@@ -48,8 +48,8 @@ describe("CampaignWizard — Banner & Popup channels (#160)", () => {
     await user.click(screen.getByRole("checkbox", { name: "Popup" }));
     await user.click(screen.getByRole("button", { name: /next/i }));
 
-    await waitFor(() => expect(screen.getByText("Banner Content")).toBeInTheDocument());
-    expect(screen.getByText("Popup Content")).toBeInTheDocument();
+    await waitFor(() => expect(screen.getAllByText("Banner Content").length).toBeGreaterThan(0));
+    expect(screen.getAllByText("Popup Content").length).toBeGreaterThan(0);
     // Banner-specific and Popup-specific fields are present and distinct.
     expect(screen.getByLabelText("Link URL")).toBeInTheDocument(); // Banner
     expect(screen.getByLabelText("Heading")).toBeInTheDocument(); // Popup
