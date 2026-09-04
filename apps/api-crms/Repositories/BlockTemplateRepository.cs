@@ -46,29 +46,40 @@ public sealed class BlockTemplateRepository(AppDbContext dbContext) : IBlockTemp
 
     public async Task<BlockTemplate> UpdateAsync(BlockTemplate template, CancellationToken ct = default)
     {
-        var dbRecord = await dbContext.BlockTemplates
+        var existing = await dbContext.BlockTemplates
             .Include(t => t.Blocks)
             .FirstOrDefaultAsync(t => t.Id == template.Id, ct);
 
-        if (dbRecord is not null)
+        if (existing is not null)
         {
-            dbRecord.Name = template.Name;
-            dbRecord.Description = template.Description;
-            dbRecord.Channel = template.Channel;
-            dbRecord.UpdatedAt = DateTimeOffset.UtcNow;
-
-            dbRecord.Blocks.Clear();
-            foreach (var block in template.Blocks)
+            dbContext.Entry(existing).State = EntityState.Detached;
+            foreach (var b in existing.Blocks)
             {
-                dbRecord.Blocks.Add(block);
+                dbContext.Entry(b).State = EntityState.Detached;
             }
-
-            await dbContext.SaveChangesAsync(ct);
-            return dbRecord;
         }
 
+        var existingBlocksInDb = await dbContext.TemplateBlocks
+            .Where(b => b.BlockTemplateId == template.Id)
+            .ToListAsync(ct);
+
+        dbContext.TemplateBlocks.RemoveRange(existingBlocksInDb);
+        await dbContext.SaveChangesAsync(ct);
+
+        foreach (var b in template.Blocks)
+        {
+            b.BlockTemplateId = template.Id;
+            if (b.Id == Guid.Empty)
+            {
+                b.Id = Guid.NewGuid();
+            }
+            dbContext.TemplateBlocks.Add(b);
+        }
+
+        template.UpdatedAt = DateTimeOffset.UtcNow;
         dbContext.BlockTemplates.Update(template);
         await dbContext.SaveChangesAsync(ct);
+
         return template;
     }
 
