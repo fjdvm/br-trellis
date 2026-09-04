@@ -513,7 +513,9 @@ export function TemplatesGallery() {
                       { type: "heading" as const, label: "Heading Title", icon: Type, max: constraints.maxHeadings },
                       { type: "text" as const, label: "Text Paragraph", icon: AlignLeft, max: constraints.maxTexts },
                       { type: "button" as const, label: "CTA Button", icon: MousePointerClick, max: constraints.maxButtons },
-                    ].map((item) => {
+                    ]
+                      .filter((item) => item.max > 0)
+                      .map((item) => {
                       const count = blocks.filter((b) => b.type === item.type).length;
                       const disabled = count >= item.max;
                       return (
