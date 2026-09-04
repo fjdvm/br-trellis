@@ -59,7 +59,7 @@ export function CampaignDraftView({
             <span className="text-xs text-muted-foreground">verified contacts</span>
           </div>
           <div className="w-full bg-muted h-1.5 rounded-full overflow-hidden mt-xs">
-            <div className="bg-primary h-full rounded-full" style={{ width: "100%" }} />
+            <div className="bg-gradient-to-r from-slate-950 via-purple-900 to-violet-600 h-full rounded-full" style={{ width: "100%" }} />
           </div>
         </div>
 

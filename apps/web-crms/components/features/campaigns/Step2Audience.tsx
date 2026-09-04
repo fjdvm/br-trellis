@@ -208,7 +208,7 @@ export function Step2Audience({
                 </span>
               </div>
               <div className="w-full h-2.5 bg-muted rounded-full overflow-hidden flex">
-                <div className="h-full bg-primary" style={{ width: "82%" }} title="Decision Makers: 82%" />
+                <div className="h-full bg-gradient-to-r from-slate-950 via-purple-900 to-violet-600" style={{ width: "82%" }} title="Decision Makers: 82%" />
                 <div className="h-full bg-secondary" style={{ width: "14%" }} title="Tech Evaluators: 14%" />
                 <div className="h-full bg-muted-foreground/40" style={{ width: "4%" }} title="Operations: 4%" />
               </div>
@@ -402,7 +402,7 @@ export function Step2Audience({
               <span className="font-semibold text-foreground">{totalRecipients} / 25,000</span>
             </div>
             <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden">
-              <div className="h-full bg-primary" style={{ width: `${Math.min(100, (totalRecipients / 25000) * 100)}%` }} />
+              <div className="h-full bg-gradient-to-r from-slate-950 via-purple-900 to-violet-600" style={{ width: `${Math.min(100, (totalRecipients / 25000) * 100)}%` }} />
             </div>
           </div>
         </div>
