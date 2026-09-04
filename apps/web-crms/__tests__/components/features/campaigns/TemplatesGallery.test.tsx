@@ -98,4 +98,46 @@ describe("TemplatesGallery", () => {
     render(<TemplatesGallery />);
     expect(screen.getByTestId("templates-gallery-loading")).toBeInTheDocument();
   });
+
+  it("saves a new template with multiple block types via the Template Builder UI", async () => {
+    const user = userEvent.setup();
+    const { crmClient } = await import("@/lib/api/crm-client");
+    const createSpy = jest.spyOn(crmClient.blockTemplates, "create").mockResolvedValue({
+      id: "new-b1",
+      name: "New Custom Template",
+      description: "Custom layout",
+      channel: "Email",
+      isArchived: false,
+      createdAt: "2026-09-04T00:00:00Z",
+      updatedAt: "2026-09-04T00:00:00Z",
+      blocks: [],
+    });
+
+    render(<TemplatesGallery />);
+
+    await user.click(screen.getByRole("button", { name: /template builder/i }));
+
+    const nameInput = screen.getByPlaceholderText("Template Name...");
+    await user.type(nameInput, "New Custom Template");
+
+    // Add heading block and button block
+    await user.click(screen.getByText("Heading Title"));
+    await user.click(screen.getByText("CTA Button"));
+
+    const saveBtn = screen.getByRole("button", { name: /save template/i });
+    await user.click(saveBtn);
+
+    await waitFor(() => {
+      expect(createSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          name: "New Custom Template",
+          channel: "Email",
+          blocks: expect.arrayContaining([
+            expect.objectContaining({ type: "heading" }),
+            expect.objectContaining({ type: "button" }),
+          ]),
+        })
+      );
+    });
+  }, 15000);
 });
