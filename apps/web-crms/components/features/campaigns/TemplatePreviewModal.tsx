@@ -65,48 +65,6 @@ export function TemplatePreviewModal({
               {template.description || "System preset communication framework."}
             </DialogDescription>
           </div>
-
-          {isBlockTemplate && (onEditTemplate || onDeleteTemplate) && (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  aria-label="Template options menu"
-                  className="w-8 h-8 p-0 rounded-full"
-                >
-                  <MoreVertical className="w-4 h-4 text-muted-foreground hover:text-foreground" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-36 z-[100000]">
-                {onEditTemplate && (
-                  <DropdownMenuItem
-                    onClick={() => {
-                      onOpenChange(false);
-                      onEditTemplate(template);
-                    }}
-                    className="gap-2 cursor-pointer text-xs"
-                  >
-                    <Edit3 className="w-3.5 h-3.5 text-muted-foreground" />
-                    Edit
-                  </DropdownMenuItem>
-                )}
-                {onDeleteTemplate && (
-                  <DropdownMenuItem
-                    onClick={() => {
-                      onOpenChange(false);
-                      onDeleteTemplate(template);
-                    }}
-                    className="gap-2 cursor-pointer text-xs text-destructive focus:text-destructive"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                    Delete
-                  </DropdownMenuItem>
-                )}
-              </DropdownMenuContent>
-            </DropdownMenu>
-          )}
         </DialogHeader>
 
         {/* Tab Navigation in Template Details */}
@@ -314,7 +272,52 @@ export function TemplatePreviewModal({
         </Tabs>
 
         {/* Modal Footer */}
-        <div className="flex items-center justify-end pt-3 border-t border-border mt-2">
+        <div className="flex items-center justify-between pt-3 border-t border-border mt-2">
+          {isBlockTemplate && (onEditTemplate || onDeleteTemplate) ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  aria-label="Template options menu"
+                  className="gap-1.5 text-xs"
+                >
+                  <MoreVertical className="w-4 h-4 text-muted-foreground" />
+                  Actions
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-36 z-[100000]">
+                {onEditTemplate && (
+                  <DropdownMenuItem
+                    onClick={() => {
+                      onOpenChange(false);
+                      onEditTemplate(template);
+                    }}
+                    className="gap-2 cursor-pointer text-xs"
+                  >
+                    <Edit3 className="w-3.5 h-3.5 text-muted-foreground" />
+                    Edit
+                  </DropdownMenuItem>
+                )}
+                {onDeleteTemplate && (
+                  <DropdownMenuItem
+                    onClick={() => {
+                      onOpenChange(false);
+                      onDeleteTemplate(template);
+                    }}
+                    className="gap-2 cursor-pointer text-xs text-destructive focus:text-destructive"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    Delete
+                  </DropdownMenuItem>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <div />
+          )}
+
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Close
           </Button>
