@@ -590,13 +590,21 @@ export function TemplatesGallery() {
                   </div>
 
                   {builderChannel === "Email" && (
-                    <div className="bg-background border border-border rounded-lg p-3 space-y-1.5 text-left shadow-xs">
-                      <div className="flex items-center justify-between border-b border-border/60 pb-1.5 text-xs text-muted-foreground">
-                        <span className="font-bold text-foreground">From: Aura Store Marketing &lt;noreply@aurastore.com&gt;</span>
-                        <span className="font-mono">Email Layout</span>
-                      </div>
-                      <div className="text-xs text-muted-foreground font-semibold">
-                        Recipient: customer@example.com
+                    <div className="bg-background border border-border/80 rounded-xl shadow-md overflow-hidden my-2 max-w-2xl mx-auto w-full text-left">
+                      {/* Email Client Header */}
+                      <div className="bg-muted/80 border-b border-border p-3.5 space-y-2">
+                        <div className="flex items-center justify-between text-xs">
+                          <span className="font-bold text-foreground">Subject: <span className="font-normal text-muted-foreground">{builderName || "Campaign Announcement"}</span></span>
+                          <Badge variant="outline" className="text-[10px] font-mono bg-background">HTML Email Body</Badge>
+                        </div>
+                        <div className="flex items-center justify-between text-xs text-muted-foreground border-t border-border/50 pt-2">
+                          <div>
+                            <span className="font-semibold text-foreground">From:</span> Aura Store &lt;newsletter@aurastore.com&gt;
+                          </div>
+                          <div>
+                            <span className="font-semibold text-foreground">To:</span> subscriber@example.com
+                          </div>
+                        </div>
                       </div>
                     </div>
                   )}
@@ -633,12 +641,17 @@ export function TemplatesGallery() {
                   )}
 
                   {blocks.length === 0 ? (
-                    <div className="h-48 flex flex-col items-center justify-center text-muted-foreground text-sm gap-2">
+                    <div className="h-48 flex flex-col items-center justify-center text-muted-foreground text-sm gap-2 bg-background border border-dashed border-border rounded-xl">
                       <GripVertical className="w-8 h-8 opacity-40 animate-bounce" />
                       <p>Drag and drop elements here to compose your template content</p>
                     </div>
-                  ) : (
-                    <div className="space-y-3">
+                  ) : builderChannel === "Email" ? (
+                    <div className="max-w-2xl mx-auto bg-background border border-border/80 rounded-xl p-5 shadow-sm space-y-3 border-t-0 -mt-2">
+                      <div className="border-b border-dashed border-border pb-3 mb-1">
+                        <p className="text-[11px] font-mono text-center text-muted-foreground uppercase tracking-wider">
+                          — Drag & drop blocks inside email message body container —
+                        </p>
+                      </div>
                       {blocks.map((block) => (
                         <div
                           key={block.id}
