@@ -681,65 +681,73 @@ export function TemplatesGallery() {
                             />
                           </div>
 
-                          {/* Block Rich Formatting Controls for Text/Heading */}
-                          {(block.type === "heading" || block.type === "text") && (
-                            <div className="flex items-center justify-between bg-muted/50 border border-border p-1 rounded-md mb-2">
-                              <div className="flex items-center gap-1">
-                                <button
-                                  type="button"
-                                  title="Bold"
-                                  onClick={() => updateBlock(block.id, { isBold: !block.isBold })}
-                                  className={`p-1 rounded text-xs transition-colors ${
-                                    block.isBold ? "bg-background text-primary shadow-xs font-bold" : "hover:bg-background text-foreground"
-                                  }`}
-                                >
-                                  <Bold className="w-3.5 h-3.5" />
-                                </button>
-                                <button
-                                  type="button"
-                                  title="Italic"
-                                  onClick={() => updateBlock(block.id, { isItalic: !block.isItalic })}
-                                  className={`p-1 rounded text-xs transition-colors ${
-                                    block.isItalic ? "bg-background text-primary shadow-xs italic" : "hover:bg-background text-foreground"
-                                  }`}
-                                >
-                                  <Italic className="w-3.5 h-3.5" />
-                                </button>
-                              </div>
-                              <div className="flex items-center gap-1">
-                                <button
-                                  type="button"
-                                  title="Align Left"
-                                  onClick={() => updateBlock(block.id, { textAlign: "left" })}
-                                  className={`p-1 rounded text-xs transition-colors ${
-                                    block.textAlign === "left" ? "bg-background text-primary shadow-xs" : "text-muted-foreground hover:bg-background"
-                                  }`}
-                                >
-                                  <AlignLeft className="w-3.5 h-3.5" />
-                                </button>
-                                <button
-                                  type="button"
-                                  title="Align Center"
-                                  onClick={() => updateBlock(block.id, { textAlign: "center" })}
-                                  className={`p-1 rounded text-xs transition-colors ${
-                                    block.textAlign === "center" ? "bg-background text-primary shadow-xs" : "text-muted-foreground hover:bg-background"
-                                  }`}
-                                >
-                                  <AlignCenter className="w-3.5 h-3.5" />
-                                </button>
-                                <button
-                                  type="button"
-                                  title="Align Right"
-                                  onClick={() => updateBlock(block.id, { textAlign: "right" })}
-                                  className={`p-1 rounded text-xs transition-colors ${
-                                    block.textAlign === "right" ? "bg-background text-primary shadow-xs" : "text-muted-foreground hover:bg-background"
-                                  }`}
-                                >
-                                  <AlignRight className="w-3.5 h-3.5" />
-                                </button>
-                              </div>
+                          {/* Block Alignment & Formatting Toolbar for ALL Blocks */}
+                          <div className="flex items-center justify-between bg-muted/50 border border-border p-1.5 rounded-md mb-2">
+                            <div className="flex items-center gap-1">
+                              {(block.type === "heading" || block.type === "text") && (
+                                <>
+                                  <button
+                                    type="button"
+                                    title="Bold"
+                                    onClick={() => updateBlock(block.id, { isBold: !block.isBold })}
+                                    className={`p-1 rounded text-xs transition-colors ${
+                                      block.isBold ? "bg-background text-primary shadow-xs font-bold" : "hover:bg-background text-foreground"
+                                    }`}
+                                  >
+                                    <Bold className="w-3.5 h-3.5" />
+                                  </button>
+                                  <button
+                                    type="button"
+                                    title="Italic"
+                                    onClick={() => updateBlock(block.id, { isItalic: !block.isItalic })}
+                                    className={`p-1 rounded text-xs transition-colors ${
+                                      block.isItalic ? "bg-background text-primary shadow-xs italic" : "hover:bg-background text-foreground"
+                                    }`}
+                                  >
+                                    <Italic className="w-3.5 h-3.5" />
+                                  </button>
+                                </>
+                              )}
+                              <span className="text-[11px] font-medium text-muted-foreground ml-1">
+                                Alignment:
+                              </span>
                             </div>
-                          )}
+                            <div className="flex items-center gap-1">
+                              <button
+                                type="button"
+                                title="Align Left"
+                                onClick={() => updateBlock(block.id, { textAlign: "left" })}
+                                className={`p-1 px-2 rounded text-xs font-medium flex items-center gap-1 transition-colors ${
+                                  (block.textAlign || "left") === "left" ? "bg-background text-primary shadow-xs" : "text-muted-foreground hover:bg-background"
+                                }`}
+                              >
+                                <AlignLeft className="w-3.5 h-3.5" />
+                                <span className="hidden sm:inline">Left</span>
+                              </button>
+                              <button
+                                type="button"
+                                title="Align Center"
+                                onClick={() => updateBlock(block.id, { textAlign: "center" })}
+                                className={`p-1 px-2 rounded text-xs font-medium flex items-center gap-1 transition-colors ${
+                                  block.textAlign === "center" ? "bg-background text-primary shadow-xs" : "text-muted-foreground hover:bg-background"
+                                }`}
+                              >
+                                <AlignCenter className="w-3.5 h-3.5" />
+                                <span className="hidden sm:inline">Center</span>
+                              </button>
+                              <button
+                                type="button"
+                                title="Align Right"
+                                onClick={() => updateBlock(block.id, { textAlign: "right" })}
+                                className={`p-1 px-2 rounded text-xs font-medium flex items-center gap-1 transition-colors ${
+                                  block.textAlign === "right" ? "bg-background text-primary shadow-xs" : "text-muted-foreground hover:bg-background"
+                                }`}
+                              >
+                                <AlignRight className="w-3.5 h-3.5" />
+                                <span className="hidden sm:inline">Right</span>
+                              </button>
+                            </div>
+                          </div>
 
                           {block.type === "heading" && (
                             <div className="p-3 bg-muted/40 border border-dashed border-border rounded-md text-xs text-muted-foreground font-semibold flex items-center justify-between">
