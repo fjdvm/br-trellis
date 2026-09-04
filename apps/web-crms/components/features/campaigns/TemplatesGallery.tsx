@@ -88,6 +88,7 @@ export function TemplatesGallery() {
 
   // Drag and Drop Builder State
   const [showBuilderModal, setShowBuilderModal] = useState(false);
+  const [editingTemplateId, setEditingTemplateId] = useState<string | null>(null);
   const [builderName, setBuilderName] = useState("");
   const [builderDescription, setBuilderDescription] = useState("");
   const [builderChannel, setBuilderChannel] = useState<CampaignChannel>("Email");
@@ -99,7 +100,75 @@ export function TemplatesGallery() {
     { id: "3", type: "button", label: "Primary Action Button" },
   ]);
 
+  // Delete State
+  const [deleteTemplateItem, setDeleteTemplateItem] = useState<Template | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
   const constraints = useMemo(() => getChannelConstraints(builderChannel), [builderChannel]);
+
+  function handleOpenCreateModal() {
+    setEditingTemplateId(null);
+    setBuilderName("");
+    setBuilderDescription("");
+    setBuilderChannel(channel);
+    setBuilderError(null);
+    setBlocks([
+      { id: "1", type: "heading", label: "Hero Title", textAlign: "left" },
+      { id: "2", type: "text", label: "Main Body Text", textAlign: "left" },
+      { id: "3", type: "button", label: "Primary Action Button" },
+    ]);
+    setShowBuilderModal(true);
+  }
+
+  function handleEditTemplate(template: Template) {
+    setEditingTemplateId(template.id);
+    setBuilderName(template.name);
+    setBuilderDescription(template.description || "");
+    setBuilderChannel(template.channel);
+    setBuilderError(null);
+
+    let parsedBlocks: TemplateBlock[] = [];
+    if (template.format === "Blocks" && template.content) {
+      try {
+        const raw = JSON.parse(template.content);
+        if (Array.isArray(raw)) {
+          parsedBlocks = raw.map((b: any, idx: number) => ({
+            id: b.id || String(idx + 1),
+            type: b.type,
+            label: b.label || b.type,
+            textAlign: b.textAlign || "left",
+            isBold: b.isBold ?? false,
+            isItalic: b.isItalic ?? false,
+          }));
+        }
+      } catch (e) {}
+    }
+
+    if (parsedBlocks.length === 0) {
+      parsedBlocks = [
+        { id: "1", type: "heading", label: "Hero Title", textAlign: "left" },
+        { id: "2", type: "text", label: "Main Body Text", textAlign: "left" },
+      ];
+    }
+
+    setBlocks(parsedBlocks);
+    setShowBuilderModal(true);
+  }
+
+  async function handleDeleteConfirm() {
+    if (!deleteTemplateItem) return;
+    setIsDeleting(true);
+    try {
+      const { crmClient } = await import("@/lib/api/crm-client");
+      await crmClient.blockTemplates.delete(deleteTemplateItem.id);
+      setDeleteTemplateItem(null);
+      refetch();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Failed to delete template");
+    } finally {
+      setIsDeleting(false);
+    }
+  }
 
   function handleChannelChange(newChannel: CampaignChannel) {
     setBuilderChannel(newChannel);
@@ -220,9 +289,14 @@ export function TemplatesGallery() {
       };
 
       const { crmClient } = await import("@/lib/api/crm-client");
-      await crmClient.blockTemplates.create(payload);
+      if (editingTemplateId) {
+        await crmClient.blockTemplates.update(editingTemplateId, payload);
+      } else {
+        await crmClient.blockTemplates.create(payload);
+      }
 
       setShowBuilderModal(false);
+      setEditingTemplateId(null);
       setBuilderName("");
       setBuilderDescription("");
       refetch();
@@ -269,7 +343,7 @@ export function TemplatesGallery() {
             Pre-designed layouts and modular frameworks for multichannel broadcasts. Duplicate or preview canonical communication patterns.
           </p>
         </div>
-        <Button onClick={() => setShowBuilderModal(true)} className="gap-2 shrink-0">
+        <Button onClick={handleOpenCreateModal} className="gap-2 shrink-0">
           <PlusCircle className="w-4 h-4" />
           Template Builder
         </Button>
@@ -337,6 +411,8 @@ export function TemplatesGallery() {
                       template={t}
                       onPreview={(tpl) => setPreviewTemplate(tpl)}
                       onUse={handleUseTemplate}
+                      onEdit={t.format === "Blocks" ? handleEditTemplate : undefined}
+                      onDelete={t.format === "Blocks" ? (tpl) => setDeleteTemplateItem(tpl) : undefined}
                     />
                   ))}
                 </div>
@@ -344,6 +420,28 @@ export function TemplatesGallery() {
             </TabsContent>
           ))}
         </Tabs>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {deleteTemplateItem && (
+        <Dialog open={Boolean(deleteTemplateItem)} onOpenChange={(open) => !open && setDeleteTemplateItem(null)}>
+          <DialogContent className="max-w-md border border-border">
+            <DialogHeader>
+              <DialogTitle className="text-xl font-bold text-destructive">Delete Template?</DialogTitle>
+              <DialogDescription className="mt-2 text-base">
+                Are you sure you want to delete <strong className="text-foreground">"{deleteTemplateItem.name}"</strong>? This action cannot be undone.
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter className="mt-4 flex gap-2 justify-end">
+              <Button variant="outline" onClick={() => setDeleteTemplateItem(null)}>
+                Cancel
+              </Button>
+              <Button variant="destructive" onClick={handleDeleteConfirm} disabled={isDeleting}>
+                {isDeleting ? "Deleting..." : "Delete Template"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       )}
 
       {/* Preview Dialog */}
@@ -360,9 +458,13 @@ export function TemplatesGallery() {
           <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col">
             <DialogHeader className="flex flex-row items-center justify-between border-b border-border pb-4">
               <div>
-                <DialogTitle className="text-xl font-bold">Drag & Drop Template Builder</DialogTitle>
+                <DialogTitle className="text-xl font-bold">
+                  {editingTemplateId ? "Edit Template" : "Drag & Drop Template Builder"}
+                </DialogTitle>
                 <DialogDescription className="mt-1">
-                  Drag blocks from the palette on the left and drop them into the canvas to build your custom template.
+                  {editingTemplateId
+                    ? "Modify block structures, labels, and channel properties for this template."
+                    : "Drag blocks from the palette on the left and drop them into the canvas to build your custom template."}
                 </DialogDescription>
               </div>
               <Badge variant="secondary">{builderChannel}</Badge>

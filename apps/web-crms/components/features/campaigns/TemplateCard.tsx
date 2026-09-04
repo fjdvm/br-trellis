@@ -1,6 +1,6 @@
 "use client";
 
-import { Eye, PlusCircle } from "lucide-react";
+import { Eye, Edit3, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import type { Template } from "@/types/campaign";
@@ -9,6 +9,8 @@ interface TemplateCardProps {
   template: Template;
   onPreview: (template: Template) => void;
   onUse: (template: Template) => void;
+  onEdit?: (template: Template) => void;
+  onDelete?: (template: Template) => void;
 }
 
 /** Helper to render HTML, block arrays, or formatted template strings */
@@ -45,7 +47,7 @@ function renderFormattedContent(htmlOrText: string, format?: string): React.Reac
   });
 }
 
-export function TemplateCard({ template, onPreview, onUse }: TemplateCardProps) {
+export function TemplateCard({ template, onPreview, onUse, onEdit, onDelete }: TemplateCardProps) {
   return (
     <div className="flex flex-col bg-card border border-border rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all duration-200">
       {/* Live Storefront Preview Frame */}
@@ -95,7 +97,7 @@ export function TemplateCard({ template, onPreview, onUse }: TemplateCardProps) 
           {template.channel === "Email" && (
             <div className="absolute inset-1.5 z-10 bg-background border border-border rounded shadow-md p-2 text-left space-y-1 overflow-hidden">
               <div className="border-b border-border/50 pb-0.5 flex justify-between items-center text-[8px] text-muted-foreground">
-                <span className="font-semibold text-foreground truncate">To: customer@example.com</span>
+                <span className="semibold text-foreground truncate">To: customer@example.com</span>
                 <span>Inbox</span>
               </div>
               <div className="text-[10px] font-bold text-foreground truncate">Email Subject</div>
@@ -139,17 +141,41 @@ export function TemplateCard({ template, onPreview, onUse }: TemplateCardProps) 
         </div>
 
         {/* Footer Actions */}
-        <div className="pt-sm border-t border-border/40">
+        <div className="pt-sm border-t border-border/40 flex items-center gap-1.5">
           <Button
             type="button"
             variant="outline"
             size="sm"
             onClick={() => onPreview(template)}
-            className="w-full gap-1 text-xs"
+            className="flex-1 gap-1 text-xs"
           >
             <Eye className="w-3.5 h-3.5" />
             Preview
           </Button>
+          {onEdit && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => onEdit(template)}
+              className="gap-1 text-xs px-2"
+              title="Edit template"
+            >
+              <Edit3 className="w-3.5 h-3.5" />
+            </Button>
+          )}
+          {onDelete && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => onDelete(template)}
+              className="gap-1 text-xs px-2 text-destructive hover:bg-destructive/10"
+              title="Delete template"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+            </Button>
+          )}
         </div>
       </div>
     </div>
