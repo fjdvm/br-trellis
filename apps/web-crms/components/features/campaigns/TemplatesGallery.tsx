@@ -607,25 +607,6 @@ export function TemplatesGallery() {
                     </span>
                   </div>
 
-                  {builderChannel === "Email" && (
-                    <div className="bg-background border border-border/80 rounded-xl shadow-md overflow-hidden my-2 w-full text-left">
-                      {/* Email Client Header */}
-                      <div className="bg-muted/80 border-b border-border p-3.5 space-y-2">
-                        <div className="flex items-center justify-between text-xs">
-                          <span className="font-bold text-foreground">Subject: <span className="font-normal text-muted-foreground">{builderName || "Campaign Announcement"}</span></span>
-                        </div>
-                        <div className="space-y-1 text-xs text-muted-foreground border-t border-border/50 pt-2">
-                          <div>
-                            <span className="font-semibold text-foreground">From:</span> Aura Store &lt;newsletter@aurastore.com&gt;
-                          </div>
-                          <div>
-                            <span className="font-semibold text-foreground">To:</span> subscriber@example.com
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
                   {builderChannel === "Banner" && (
                     <div className="bg-gradient-to-r from-primary to-primary/90 text-primary-foreground p-3 px-4 rounded-lg flex items-center justify-between shadow-sm">
                       <span className="text-xs font-semibold">Storefront Top Promotional Strip Layout</span>
@@ -644,174 +625,331 @@ export function TemplatesGallery() {
                     </div>
                   )}
 
-                  {builderError && (
-                    <div className="p-3 bg-destructive/10 border border-destructive/40 text-destructive text-xs font-medium rounded-md flex items-center justify-between">
-                      <span>{builderError}</span>
-                      <button
-                        type="button"
-                        onClick={() => setBuilderError(null)}
-                        className="text-xs hover:underline ml-2"
-                      >
-                        Dismiss
-                      </button>
+                  {builderChannel === "Email" && (
+                    <div className="bg-background border border-border/80 rounded-xl shadow-md overflow-hidden p-5 w-full text-left space-y-3">
+                      {/* Email Header Info (Inside layout, no internal border) */}
+                      <div className="space-y-1.5 text-xs">
+                        <div className="font-bold text-foreground">
+                          Subject: <span className="font-normal text-muted-foreground">{builderName || "Campaign Announcement"}</span>
+                        </div>
+                        <div className="text-muted-foreground">
+                          <span className="font-semibold text-foreground">From:</span> Aura Store &lt;newsletter@aurastore.com&gt;
+                        </div>
+                        <div className="text-muted-foreground">
+                          <span className="font-semibold text-foreground">To:</span> subscriber@example.com
+                        </div>
+                      </div>
+
+                      <div className="pt-2 border-b border-dashed border-border pb-3">
+                        <p className="text-[11px] font-mono text-center text-muted-foreground uppercase tracking-wider">
+                          — Drag & drop blocks inside email message body container —
+                        </p>
+                      </div>
+
+                      {blocks.length === 0 ? (
+                        <div className="h-40 flex flex-col items-center justify-center text-muted-foreground text-sm gap-2 border border-dashed border-border/60 rounded-lg">
+                          <GripVertical className="w-8 h-8 opacity-40 animate-bounce" />
+                          <p>Drag and drop elements here to compose your template content</p>
+                        </div>
+                      ) : (
+                        <div className="space-y-3">
+                          {blocks.map((block) => (
+                            <div
+                              key={block.id}
+                              className="relative group bg-card border border-border p-4 rounded-lg shadow-sm space-y-3 text-left"
+                            >
+                              <div className="flex items-center justify-between border-b border-border/50 pb-2">
+                                <Badge variant="outline" className="uppercase text-[10px] font-semibold tracking-wider">
+                                  {block.type}
+                                </Badge>
+                                <button
+                                  type="button"
+                                  onClick={() => removeBlock(block.id)}
+                                  className="text-muted-foreground hover:text-destructive p-1 rounded transition-colors"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                              </div>
+
+                              <div className="space-y-1">
+                                <Label className="text-xs font-medium text-muted-foreground">Block Label</Label>
+                                <Input
+                                  placeholder="e.g. Hero Headline, Main Body Text, Action CTA"
+                                  value={block.label}
+                                  onChange={(e) => updateBlock(block.id, { label: e.target.value })}
+                                  className="text-sm font-medium"
+                                />
+                              </div>
+
+                              {/* Block Alignment & Formatting Toolbar for ALL Blocks */}
+                              <div className="flex items-center justify-between bg-muted/50 border border-border p-1.5 rounded-md mb-2">
+                                <div className="flex items-center gap-1">
+                                  {(block.type === "heading" || block.type === "text") && (
+                                    <>
+                                      <button
+                                        type="button"
+                                        title="Bold"
+                                        onClick={() => updateBlock(block.id, { isBold: !block.isBold })}
+                                        className={`p-1 rounded text-xs transition-colors ${
+                                          block.isBold ? "bg-background text-primary shadow-xs font-bold" : "hover:bg-background text-foreground"
+                                        }`}
+                                      >
+                                        <Bold className="w-3.5 h-3.5" />
+                                      </button>
+                                      <button
+                                        type="button"
+                                        title="Italic"
+                                        onClick={() => updateBlock(block.id, { isItalic: !block.isItalic })}
+                                        className={`p-1 rounded text-xs transition-colors ${
+                                          block.isItalic ? "bg-background text-primary shadow-xs italic" : "hover:bg-background text-foreground"
+                                        }`}
+                                      >
+                                        <Italic className="w-3.5 h-3.5" />
+                                      </button>
+                                    </>
+                                  )}
+                                  <span className="text-[11px] font-medium text-muted-foreground ml-1">
+                                    Alignment:
+                                  </span>
+                                </div>
+                                <div className="flex items-center gap-1">
+                                  <button
+                                    type="button"
+                                    title="Align Left"
+                                    onClick={() => updateBlock(block.id, { textAlign: "left" })}
+                                    className={`p-1 px-2 rounded text-xs font-medium flex items-center gap-1 transition-colors ${
+                                      (block.textAlign || "left") === "left" ? "bg-background text-primary shadow-xs" : "text-muted-foreground hover:bg-background"
+                                    }`}
+                                  >
+                                    <AlignLeft className="w-3.5 h-3.5" />
+                                    <span className="hidden sm:inline">Left</span>
+                                  </button>
+                                  <button
+                                    type="button"
+                                    title="Align Center"
+                                    onClick={() => updateBlock(block.id, { textAlign: "center" })}
+                                    className={`p-1 px-2 rounded text-xs font-medium flex items-center gap-1 transition-colors ${
+                                      block.textAlign === "center" ? "bg-background text-primary shadow-xs" : "text-muted-foreground hover:bg-background"
+                                    }`}
+                                  >
+                                    <AlignCenter className="w-3.5 h-3.5" />
+                                    <span className="hidden sm:inline">Center</span>
+                                  </button>
+                                  <button
+                                    type="button"
+                                    title="Align Right"
+                                    onClick={() => updateBlock(block.id, { textAlign: "right" })}
+                                    className={`p-1 px-2 rounded text-xs font-medium flex items-center gap-1 transition-colors ${
+                                      block.textAlign === "right" ? "bg-background text-primary shadow-xs" : "text-muted-foreground hover:bg-background"
+                                    }`}
+                                  >
+                                    <AlignRight className="w-3.5 h-3.5" />
+                                    <span className="hidden sm:inline">Right</span>
+                                  </button>
+                                </div>
+                              </div>
+
+                              {block.type === "heading" && (
+                                <div className="p-3 bg-muted/40 border border-dashed border-border rounded-md text-xs text-muted-foreground font-semibold flex items-center justify-between">
+                                  <Type className="w-4 h-4 text-primary" />
+                                  <span>Heading Title Structural Block (No content entered here)</span>
+                                </div>
+                              )}
+
+                              {block.type === "text" && (
+                                <div className="p-3 bg-muted/40 border border-dashed border-border rounded-md text-xs text-muted-foreground font-semibold flex items-center justify-between">
+                                  <AlignLeft className="w-4 h-4 text-primary" />
+                                  <span>Paragraph Text Structural Block (No content entered here)</span>
+                                </div>
+                              )}
+
+                              {block.type === "carousel" && (
+                                <div className="p-3 bg-muted/40 border border-dashed border-border rounded-md text-xs text-muted-foreground font-semibold flex items-center justify-between">
+                                  <SlidersHorizontal className="w-4 h-4 text-primary" />
+                                  <span>Carousel Structural Block (Max 3 images)</span>
+                                </div>
+                              )}
+
+                              {block.type === "image" && (
+                                <div className="p-3 bg-muted/40 border border-dashed border-border rounded-md text-xs text-muted-foreground font-semibold flex items-center justify-between">
+                                  <Image className="w-4 h-4 text-primary" />
+                                  <span>Image Component Structural Block (No content entered here)</span>
+                                </div>
+                              )}
+
+                              {block.type === "link" && (
+                                <div className="p-3 bg-muted/40 border border-dashed border-border rounded-md text-xs text-muted-foreground font-semibold flex items-center justify-between">
+                                  <LinkIcon className="w-4 h-4 text-primary" />
+                                  <span>Text Link Structural Block (No content entered here)</span>
+                                </div>
+                              )}
+
+                              {block.type === "button" && (
+                                <div className="p-3 bg-muted/40 border border-dashed border-border rounded-md text-xs text-muted-foreground font-semibold flex items-center justify-between">
+                                  <MousePointerClick className="w-4 h-4 text-primary" />
+                                  <span>CTA Button Structural Block (No content entered here)</span>
+                                </div>
+                              )}
+
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   )}
 
-                  {blocks.length === 0 ? (
-                    <div className="h-48 flex flex-col items-center justify-center text-muted-foreground text-sm gap-2 bg-background border border-dashed border-border rounded-xl">
-                      <GripVertical className="w-8 h-8 opacity-40 animate-bounce" />
-                      <p>Drag and drop elements here to compose your template content</p>
-                    </div>
-                  ) : (
-                    <div className={builderChannel === "Email" ? "w-full bg-background border border-border/80 rounded-xl p-5 shadow-sm space-y-3 border-t-0 -mt-2" : "space-y-3"}>
-                      {builderChannel === "Email" && (
-                        <div className="border-b border-dashed border-border pb-3 mb-1">
-                          <p className="text-[11px] font-mono text-center text-muted-foreground uppercase tracking-wider">
-                            — Drag & drop blocks inside email message body container —
-                          </p>
+                  {builderChannel !== "Email" && (
+                    <>
+                      {blocks.length === 0 ? (
+                        <div className="h-48 flex flex-col items-center justify-center text-muted-foreground text-sm gap-2 bg-background border border-dashed border-border rounded-xl">
+                          <GripVertical className="w-8 h-8 opacity-40 animate-bounce" />
+                          <p>Drag and drop elements here to compose your template content</p>
+                        </div>
+                      ) : (
+                        <div className="space-y-3">
+                          {blocks.map((block) => (
+                            <div
+                              key={block.id}
+                              className="relative group bg-card border border-border p-4 rounded-lg shadow-sm space-y-3 text-left"
+                            >
+                              <div className="flex items-center justify-between border-b border-border/50 pb-2">
+                                <Badge variant="outline" className="uppercase text-[10px] font-semibold tracking-wider">
+                                  {block.type}
+                                </Badge>
+                                <button
+                                  type="button"
+                                  onClick={() => removeBlock(block.id)}
+                                  className="text-muted-foreground hover:text-destructive p-1 rounded transition-colors"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                              </div>
+
+                              <div className="space-y-1">
+                                <Label className="text-xs font-medium text-muted-foreground">Block Label</Label>
+                                <Input
+                                  placeholder="e.g. Hero Headline, Main Body Text, Action CTA"
+                                  value={block.label}
+                                  onChange={(e) => updateBlock(block.id, { label: e.target.value })}
+                                  className="text-sm font-medium"
+                                />
+                              </div>
+
+                              {/* Block Alignment & Formatting Toolbar for ALL Blocks */}
+                              <div className="flex items-center justify-between bg-muted/50 border border-border p-1.5 rounded-md mb-2">
+                                <div className="flex items-center gap-1">
+                                  {(block.type === "heading" || block.type === "text") && (
+                                    <>
+                                      <button
+                                        type="button"
+                                        title="Bold"
+                                        onClick={() => updateBlock(block.id, { isBold: !block.isBold })}
+                                        className={`p-1 rounded text-xs transition-colors ${
+                                          block.isBold ? "bg-background text-primary shadow-xs font-bold" : "hover:bg-background text-foreground"
+                                        }`}
+                                      >
+                                        <Bold className="w-3.5 h-3.5" />
+                                      </button>
+                                      <button
+                                        type="button"
+                                        title="Italic"
+                                        onClick={() => updateBlock(block.id, { isItalic: !block.isItalic })}
+                                        className={`p-1 rounded text-xs transition-colors ${
+                                          block.isItalic ? "bg-background text-primary shadow-xs italic" : "hover:bg-background text-foreground"
+                                        }`}
+                                      >
+                                        <Italic className="w-3.5 h-3.5" />
+                                      </button>
+                                    </>
+                                  )}
+                                  <span className="text-[11px] font-medium text-muted-foreground ml-1">
+                                    Alignment:
+                                  </span>
+                                </div>
+                                <div className="flex items-center gap-1">
+                                  <button
+                                    type="button"
+                                    title="Align Left"
+                                    onClick={() => updateBlock(block.id, { textAlign: "left" })}
+                                    className={`p-1 px-2 rounded text-xs font-medium flex items-center gap-1 transition-colors ${
+                                      (block.textAlign || "left") === "left" ? "bg-background text-primary shadow-xs" : "text-muted-foreground hover:bg-background"
+                                    }`}
+                                  >
+                                    <AlignLeft className="w-3.5 h-3.5" />
+                                    <span className="hidden sm:inline">Left</span>
+                                  </button>
+                                  <button
+                                    type="button"
+                                    title="Align Center"
+                                    onClick={() => updateBlock(block.id, { textAlign: "center" })}
+                                    className={`p-1 px-2 rounded text-xs font-medium flex items-center gap-1 transition-colors ${
+                                      block.textAlign === "center" ? "bg-background text-primary shadow-xs" : "text-muted-foreground hover:bg-background"
+                                    }`}
+                                  >
+                                    <AlignCenter className="w-3.5 h-3.5" />
+                                    <span className="hidden sm:inline">Center</span>
+                                  </button>
+                                  <button
+                                    type="button"
+                                    title="Align Right"
+                                    onClick={() => updateBlock(block.id, { textAlign: "right" })}
+                                    className={`p-1 px-2 rounded text-xs font-medium flex items-center gap-1 transition-colors ${
+                                      block.textAlign === "right" ? "bg-background text-primary shadow-xs" : "text-muted-foreground hover:bg-background"
+                                    }`}
+                                  >
+                                    <AlignRight className="w-3.5 h-3.5" />
+                                    <span className="hidden sm:inline">Right</span>
+                                  </button>
+                                </div>
+                              </div>
+
+                              {block.type === "heading" && (
+                                <div className="p-3 bg-muted/40 border border-dashed border-border rounded-md text-xs text-muted-foreground font-semibold flex items-center justify-between">
+                                  <Type className="w-4 h-4 text-primary" />
+                                  <span>Heading Title Structural Block (No content entered here)</span>
+                                </div>
+                              )}
+
+                              {block.type === "text" && (
+                                <div className="p-3 bg-muted/40 border border-dashed border-border rounded-md text-xs text-muted-foreground font-semibold flex items-center justify-between">
+                                  <AlignLeft className="w-4 h-4 text-primary" />
+                                  <span>Paragraph Text Structural Block (No content entered here)</span>
+                                </div>
+                              )}
+
+                              {block.type === "carousel" && (
+                                <div className="p-3 bg-muted/40 border border-dashed border-border rounded-md text-xs text-muted-foreground font-semibold flex items-center justify-between">
+                                  <SlidersHorizontal className="w-4 h-4 text-primary" />
+                                  <span>Carousel Structural Block (Max 3 images)</span>
+                                </div>
+                              )}
+
+                              {block.type === "image" && (
+                                <div className="p-3 bg-muted/40 border border-dashed border-border rounded-md text-xs text-muted-foreground font-semibold flex items-center justify-between">
+                                  <Image className="w-4 h-4 text-primary" />
+                                  <span>Image Component Structural Block (No content entered here)</span>
+                                </div>
+                              )}
+
+                              {block.type === "link" && (
+                                <div className="p-3 bg-muted/40 border border-dashed border-border rounded-md text-xs text-muted-foreground font-semibold flex items-center justify-between">
+                                  <LinkIcon className="w-4 h-4 text-primary" />
+                                  <span>Text Link Structural Block (No content entered here)</span>
+                                </div>
+                              )}
+
+                              {block.type === "button" && (
+                                <div className="p-3 bg-muted/40 border border-dashed border-border rounded-md text-xs text-muted-foreground font-semibold flex items-center justify-between">
+                                  <MousePointerClick className="w-4 h-4 text-primary" />
+                                  <span>CTA Button Structural Block (No content entered here)</span>
+                                </div>
+                              )}
+
+                            </div>
+                          ))}
                         </div>
                       )}
-                      {blocks.map((block) => (
-                        <div
-                          key={block.id}
-                          className="relative group bg-card border border-border p-4 rounded-lg shadow-sm space-y-3 text-left"
-                        >
-                          <div className="flex items-center justify-between border-b border-border/50 pb-2">
-                            <Badge variant="outline" className="uppercase text-[10px] font-semibold tracking-wider">
-                              {block.type}
-                            </Badge>
-                            <button
-                              type="button"
-                              onClick={() => removeBlock(block.id)}
-                              className="text-muted-foreground hover:text-destructive p-1 rounded transition-colors"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
-                          </div>
-
-                          <div className="space-y-1">
-                            <Label className="text-xs font-medium text-muted-foreground">Block Label</Label>
-                            <Input
-                              placeholder="e.g. Hero Headline, Main Body Text, Action CTA"
-                              value={block.label}
-                              onChange={(e) => updateBlock(block.id, { label: e.target.value })}
-                              className="text-sm font-medium"
-                            />
-                          </div>
-
-                          {/* Block Alignment & Formatting Toolbar for ALL Blocks */}
-                          <div className="flex items-center justify-between bg-muted/50 border border-border p-1.5 rounded-md mb-2">
-                            <div className="flex items-center gap-1">
-                              {(block.type === "heading" || block.type === "text") && (
-                                <>
-                                  <button
-                                    type="button"
-                                    title="Bold"
-                                    onClick={() => updateBlock(block.id, { isBold: !block.isBold })}
-                                    className={`p-1 rounded text-xs transition-colors ${
-                                      block.isBold ? "bg-background text-primary shadow-xs font-bold" : "hover:bg-background text-foreground"
-                                    }`}
-                                  >
-                                    <Bold className="w-3.5 h-3.5" />
-                                  </button>
-                                  <button
-                                    type="button"
-                                    title="Italic"
-                                    onClick={() => updateBlock(block.id, { isItalic: !block.isItalic })}
-                                    className={`p-1 rounded text-xs transition-colors ${
-                                      block.isItalic ? "bg-background text-primary shadow-xs italic" : "hover:bg-background text-foreground"
-                                    }`}
-                                  >
-                                    <Italic className="w-3.5 h-3.5" />
-                                  </button>
-                                </>
-                              )}
-                              <span className="text-[11px] font-medium text-muted-foreground ml-1">
-                                Alignment:
-                              </span>
-                            </div>
-                            <div className="flex items-center gap-1">
-                              <button
-                                type="button"
-                                title="Align Left"
-                                onClick={() => updateBlock(block.id, { textAlign: "left" })}
-                                className={`p-1 px-2 rounded text-xs font-medium flex items-center gap-1 transition-colors ${
-                                  (block.textAlign || "left") === "left" ? "bg-background text-primary shadow-xs" : "text-muted-foreground hover:bg-background"
-                                }`}
-                              >
-                                <AlignLeft className="w-3.5 h-3.5" />
-                                <span className="hidden sm:inline">Left</span>
-                              </button>
-                              <button
-                                type="button"
-                                title="Align Center"
-                                onClick={() => updateBlock(block.id, { textAlign: "center" })}
-                                className={`p-1 px-2 rounded text-xs font-medium flex items-center gap-1 transition-colors ${
-                                  block.textAlign === "center" ? "bg-background text-primary shadow-xs" : "text-muted-foreground hover:bg-background"
-                                }`}
-                              >
-                                <AlignCenter className="w-3.5 h-3.5" />
-                                <span className="hidden sm:inline">Center</span>
-                              </button>
-                              <button
-                                type="button"
-                                title="Align Right"
-                                onClick={() => updateBlock(block.id, { textAlign: "right" })}
-                                className={`p-1 px-2 rounded text-xs font-medium flex items-center gap-1 transition-colors ${
-                                  block.textAlign === "right" ? "bg-background text-primary shadow-xs" : "text-muted-foreground hover:bg-background"
-                                }`}
-                              >
-                                <AlignRight className="w-3.5 h-3.5" />
-                                <span className="hidden sm:inline">Right</span>
-                              </button>
-                            </div>
-                          </div>
-
-                          {block.type === "heading" && (
-                            <div className="p-3 bg-muted/40 border border-dashed border-border rounded-md text-xs text-muted-foreground font-semibold flex items-center justify-between">
-                              <Type className="w-4 h-4 text-primary" />
-                              <span>Heading Title Structural Block (No content entered here)</span>
-                            </div>
-                          )}
-
-                          {block.type === "text" && (
-                            <div className="p-3 bg-muted/40 border border-dashed border-border rounded-md text-xs text-muted-foreground font-semibold flex items-center justify-between">
-                              <AlignLeft className="w-4 h-4 text-primary" />
-                              <span>Paragraph Text Structural Block (No content entered here)</span>
-                            </div>
-                          )}
-
-                          {block.type === "carousel" && (
-                            <div className="p-3 bg-muted/40 border border-dashed border-border rounded-md text-xs text-muted-foreground font-semibold flex items-center justify-between">
-                              <SlidersHorizontal className="w-4 h-4 text-primary" />
-                              <span>Carousel Structural Block (Max 3 images)</span>
-                            </div>
-                          )}
-
-                          {block.type === "image" && (
-                            <div className="p-3 bg-muted/40 border border-dashed border-border rounded-md text-xs text-muted-foreground font-semibold flex items-center justify-between">
-                              <Image className="w-4 h-4 text-primary" />
-                              <span>Image Component Structural Block (No content entered here)</span>
-                            </div>
-                          )}
-
-                          {block.type === "link" && (
-                            <div className="p-3 bg-muted/40 border border-dashed border-border rounded-md text-xs text-muted-foreground font-semibold flex items-center justify-between">
-                              <LinkIcon className="w-4 h-4 text-primary" />
-                              <span>Text Link Structural Block (No content entered here)</span>
-                            </div>
-                          )}
-
-                          {block.type === "button" && (
-                            <div className="p-3 bg-muted/40 border border-dashed border-border rounded-md text-xs text-muted-foreground font-semibold flex items-center justify-between">
-                              <MousePointerClick className="w-4 h-4 text-primary" />
-                              <span>CTA Button Structural Block (No content entered here)</span>
-                            </div>
-                          )}
-
-                        </div>
-                      ))}
-                    </div>
+                    </>
                   )}
                 </div>
 
