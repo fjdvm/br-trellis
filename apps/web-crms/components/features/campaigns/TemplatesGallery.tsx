@@ -590,7 +590,7 @@ export function TemplatesGallery() {
                   </div>
 
                   {builderChannel === "Email" && (
-                    <div className="bg-background border border-border/80 rounded-xl shadow-md overflow-hidden my-2 max-w-2xl mx-auto w-full text-left">
+                    <div className="bg-background border border-border/80 rounded-xl shadow-md overflow-hidden my-2 w-full text-left">
                       {/* Email Client Header */}
                       <div className="bg-muted/80 border-b border-border p-3.5 space-y-2">
                         <div className="flex items-center justify-between text-xs">
@@ -646,7 +646,7 @@ export function TemplatesGallery() {
                       <p>Drag and drop elements here to compose your template content</p>
                     </div>
                   ) : (
-                    <div className={builderChannel === "Email" ? "max-w-2xl mx-auto bg-background border border-border/80 rounded-xl p-5 shadow-sm space-y-3 border-t-0 -mt-2" : "space-y-3"}>
+                    <div className={builderChannel === "Email" ? "w-full bg-background border border-border/80 rounded-xl p-5 shadow-sm space-y-3 border-t-0 -mt-2" : "space-y-3"}>
                       {builderChannel === "Email" && (
                         <div className="border-b border-dashed border-border pb-3 mb-1">
                           <p className="text-[11px] font-mono text-center text-muted-foreground uppercase tracking-wider">
