@@ -27,6 +27,7 @@ export type ChannelContentState = {
   ctaText?: string;
   ctaUrl?: string;
   dismissible?: boolean;
+  blockValues?: Record<string, any>;
 };
 
 const CHANNEL_ICON: Record<CampaignChannel, React.ComponentType<{ className?: string }>> = {
@@ -74,6 +75,18 @@ export function ChannelContentForm({
   const Icon = CHANNEL_ICON[channel];
   const [animKey, setAnimKey] = useState(0);
 
+  const selectedTemplate = templates.find((t) => t.id === value.templateId);
+  const isBlockTemplate = selectedTemplate?.format === "Blocks";
+
+  let parsedBlocks: any[] = [];
+  if (isBlockTemplate && selectedTemplate?.content) {
+    try {
+      parsedBlocks = JSON.parse(selectedTemplate.content);
+    } catch (e) {
+      parsedBlocks = [];
+    }
+  }
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-lg items-start">
       {/* Form Input Fields (Left Column) */}
@@ -92,7 +105,33 @@ export function ChannelContentForm({
             onValueChange={(v) => {
               const selected = templates.find((t) => t.id === v);
               if (selected) {
-                if (channel === "Email") {
+                if (selected.format === "Blocks") {
+                  let initialBlocks: any[] = [];
+                  try {
+                    initialBlocks = JSON.parse(selected.content);
+                  } catch (e) {}
+
+                  const initialBlockValues: Record<string, any> = {};
+                  initialBlocks.forEach((block: any, idx: number) => {
+                    const blockId = block.id || `block-${idx}`;
+                    if (block.type === "button") {
+                      initialBlockValues[blockId] = { text: "", url: "" };
+                    } else if (block.type === "image") {
+                      initialBlockValues[blockId] = { url: "", alt: "" };
+                    } else if (block.type === "link") {
+                      initialBlockValues[blockId] = { text: "", url: "" };
+                    } else if (block.type === "carousel") {
+                      initialBlockValues[blockId] = [{ imageUrl: "", caption: "", linkUrl: "" }];
+                    } else {
+                      initialBlockValues[blockId] = "";
+                    }
+                  });
+
+                  onChange({
+                    templateId: v,
+                    blockValues: initialBlockValues,
+                  });
+                } else if (channel === "Email") {
                   onChange({
                     templateId: v,
                     subject: value.subject || selected.name,
@@ -132,38 +171,222 @@ export function ChannelContentForm({
           </Select>
         </div>
 
-        {channel === "Email" && (
-          <>
-            <TextField id={`${channel}-subject`} label="Subject" value={value.subject} onChange={(v) => onChange({ subject: v })} />
-            <RichTextEditorField id={`${channel}-body`} label="Body" value={value.body} onChange={(v) => onChange({ body: v })} />
-            <TextField id={`${channel}-image`} label="Banner Image URL (optional)" value={value.imageUrl} onChange={(v) => onChange({ imageUrl: v })} />
-          </>
-        )}
+        {isBlockTemplate ? (
+          <div className="space-y-4 pt-2">
+            {parsedBlocks
+              .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+              .map((block, idx) => {
+                const blockId = block.id || `block-${idx}`;
+                const val = value.blockValues?.[blockId];
+                const updateBlockValue = (newVal: any) => {
+                  onChange({
+                    blockValues: {
+                      ...(value.blockValues ?? {}),
+                      [blockId]: newVal,
+                    },
+                  });
+                };
 
-        {channel === "Banner" && (
-          <>
-            <RichTextEditorField id={`${channel}-body`} label="Message" value={value.body} onChange={(v) => onChange({ body: v })} />
-            <TextField id={`${channel}-image`} label="Banner Image URL (optional)" value={value.imageUrl} onChange={(v) => onChange({ imageUrl: v })} />
-            <TextField id={`${channel}-link`} label="Link URL" value={value.linkUrl} onChange={(v) => onChange({ linkUrl: v })} />
-            <label className="flex items-center gap-2 cursor-pointer">
-              <Checkbox
-                id={`${channel}-dismissible`}
-                aria-label="Dismissible"
-                checked={value.dismissible ?? false}
-                onCheckedChange={(checked) => onChange({ dismissible: checked === true })}
-              />
-              <span className="text-base">Dismissible</span>
-            </label>
-          </>
-        )}
+                switch (block.type) {
+                  case "text":
+                    return (
+                      <RichTextEditorField
+                        key={blockId}
+                        id={`${channel}-block-${blockId}`}
+                        label={block.label || "Text Block"}
+                        value={typeof val === "string" ? val : ""}
+                        onChange={updateBlockValue}
+                      />
+                    );
+                  case "heading":
+                    return (
+                      <TextField
+                        key={blockId}
+                        id={`${channel}-block-${blockId}`}
+                        label={block.label || "Heading"}
+                        value={typeof val === "string" ? val : ""}
+                        onChange={updateBlockValue}
+                      />
+                    );
+                  case "button":
+                    return (
+                      <div key={blockId} className="space-y-sm border border-border/80 rounded-md p-3 bg-muted/20">
+                        <Label className="font-semibold text-sm">{block.label || "Button Block"}</Label>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                          <TextField
+                            id={`${channel}-block-${blockId}-text`}
+                            label="Button Text"
+                            value={val?.text ?? ""}
+                            onChange={(t) => updateBlockValue({ ...val, text: t })}
+                          />
+                          <TextField
+                            id={`${channel}-block-${blockId}-url`}
+                            label="Button Link URL"
+                            value={val?.url ?? ""}
+                            onChange={(u) => updateBlockValue({ ...val, url: u })}
+                          />
+                        </div>
+                      </div>
+                    );
+                  case "image":
+                    return (
+                      <div key={blockId} className="space-y-sm border border-border/80 rounded-md p-3 bg-muted/20">
+                        <Label className="font-semibold text-sm">{block.label || "Image Block"}</Label>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                          <TextField
+                            id={`${channel}-block-${blockId}-url`}
+                            label="Image URL"
+                            value={val?.url ?? ""}
+                            onChange={(u) => updateBlockValue({ ...val, url: u })}
+                          />
+                          <TextField
+                            id={`${channel}-block-${blockId}-alt`}
+                            label="Alt Text"
+                            value={val?.alt ?? ""}
+                            onChange={(a) => updateBlockValue({ ...val, alt: a })}
+                          />
+                        </div>
+                      </div>
+                    );
+                  case "link":
+                    return (
+                      <div key={blockId} className="space-y-sm border border-border/80 rounded-md p-3 bg-muted/20">
+                        <Label className="font-semibold text-sm">{block.label || "Link Block"}</Label>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                          <TextField
+                            id={`${channel}-block-${blockId}-text`}
+                            label="Link Text"
+                            value={val?.text ?? ""}
+                            onChange={(t) => updateBlockValue({ ...val, text: t })}
+                          />
+                          <TextField
+                            id={`${channel}-block-${blockId}-url`}
+                            label="Link URL"
+                            value={val?.url ?? ""}
+                            onChange={(u) => updateBlockValue({ ...val, url: u })}
+                          />
+                        </div>
+                      </div>
+                    );
+                  case "carousel": {
+                    const slides: Array<{ imageUrl: string; caption?: string; linkUrl?: string }> =
+                      Array.isArray(val) && val.length > 0
+                        ? val
+                        : [{ imageUrl: "", caption: "", linkUrl: "" }];
 
-        {channel === "Popup" && (
+                    const updateSlide = (slideIdx: number, field: string, slideVal: string) => {
+                      const updated = [...slides];
+                      updated[slideIdx] = { ...updated[slideIdx], [field]: slideVal };
+                      updateBlockValue(updated);
+                    };
+
+                    const addSlide = () => {
+                      updateBlockValue([...slides, { imageUrl: "", caption: "", linkUrl: "" }]);
+                    };
+
+                    const removeSlide = (slideIdx: number) => {
+                      if (slides.length <= 1) return;
+                      updateBlockValue(slides.filter((_, i) => i !== slideIdx));
+                    };
+
+                    return (
+                      <div key={blockId} className="space-y-sm border border-border/80 rounded-md p-3 bg-muted/20">
+                        <div className="flex items-center justify-between">
+                          <Label className="font-semibold text-sm">{block.label || "Carousel Component"}</Label>
+                          <Button type="button" variant="outline" size="sm" onClick={addSlide}>
+                            + Add Slide
+                          </Button>
+                        </div>
+                        <div className="space-y-3 pt-1">
+                          {slides.map((slide, slideIdx) => (
+                            <div key={slideIdx} className="p-3 border border-border rounded bg-background space-y-2">
+                              <div className="flex items-center justify-between text-xs font-semibold text-muted-foreground border-b border-border/40 pb-1">
+                                <span>Slide #{slideIdx + 1}</span>
+                                {slides.length > 1 && (
+                                  <button
+                                    type="button"
+                                    onClick={() => removeSlide(slideIdx)}
+                                    className="text-destructive hover:underline"
+                                  >
+                                    Remove
+                                  </button>
+                                )}
+                              </div>
+                              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                                <TextField
+                                  id={`${channel}-block-${blockId}-slide-${slideIdx}-image`}
+                                  label="Image URL"
+                                  value={slide.imageUrl}
+                                  onChange={(u) => updateSlide(slideIdx, "imageUrl", u)}
+                                />
+                                <TextField
+                                  id={`${channel}-block-${blockId}-slide-${slideIdx}-caption`}
+                                  label="Caption"
+                                  value={slide.caption ?? ""}
+                                  onChange={(c) => updateSlide(slideIdx, "caption", c)}
+                                />
+                                <TextField
+                                  id={`${channel}-block-${blockId}-slide-${slideIdx}-link`}
+                                  label="Link URL"
+                                  value={slide.linkUrl ?? ""}
+                                  onChange={(l) => updateSlide(slideIdx, "linkUrl", l)}
+                                />
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  }
+                  default:
+                    return (
+                      <TextField
+                        key={blockId}
+                        id={`${channel}-block-${blockId}`}
+                        label={block.label || block.type}
+                        value={typeof val === "string" ? val : ""}
+                        onChange={updateBlockValue}
+                      />
+                    );
+                }
+              })}
+          </div>
+        ) : (
           <>
-            <TextField id={`${channel}-heading`} label="Heading" value={value.heading} onChange={(v) => onChange({ heading: v })} />
-            <RichTextEditorField id={`${channel}-body`} label="Message" value={value.body} onChange={(v) => onChange({ body: v })} />
-            <TextField id={`${channel}-image`} label="Image URL" value={value.imageUrl} onChange={(v) => onChange({ imageUrl: v })} />
-            <TextField id={`${channel}-cta-text`} label="CTA Text" value={value.ctaText} onChange={(v) => onChange({ ctaText: v })} />
-            <TextField id={`${channel}-cta-url`} label="CTA Link URL" value={value.ctaUrl} onChange={(v) => onChange({ ctaUrl: v })} />
+            {channel === "Email" && (
+              <>
+                <TextField id={`${channel}-subject`} label="Subject" value={value.subject} onChange={(v) => onChange({ subject: v })} />
+                <RichTextEditorField id={`${channel}-body`} label="Body" value={value.body} onChange={(v) => onChange({ body: v })} />
+                <TextField id={`${channel}-image`} label="Banner Image URL (optional)" value={value.imageUrl} onChange={(v) => onChange({ imageUrl: v })} />
+              </>
+            )}
+
+            {channel === "Banner" && (
+              <>
+                <RichTextEditorField id={`${channel}-body`} label="Message" value={value.body} onChange={(v) => onChange({ body: v })} />
+                <TextField id={`${channel}-image`} label="Banner Image URL (optional)" value={value.imageUrl} onChange={(v) => onChange({ imageUrl: v })} />
+                <TextField id={`${channel}-link`} label="Link URL" value={value.linkUrl} onChange={(v) => onChange({ linkUrl: v })} />
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <Checkbox
+                    id={`${channel}-dismissible`}
+                    aria-label="Dismissible"
+                    checked={value.dismissible ?? false}
+                    onCheckedChange={(checked) => onChange({ dismissible: checked === true })}
+                  />
+                  <span className="text-base">Dismissible</span>
+                </label>
+              </>
+            )}
+
+            {channel === "Popup" && (
+              <>
+                <TextField id={`${channel}-heading`} label="Heading" value={value.heading} onChange={(v) => onChange({ heading: v })} />
+                <RichTextEditorField id={`${channel}-body`} label="Message" value={value.body} onChange={(v) => onChange({ body: v })} />
+                <TextField id={`${channel}-image`} label="Image URL" value={value.imageUrl} onChange={(v) => onChange({ imageUrl: v })} />
+                <TextField id={`${channel}-cta-text`} label="CTA Text" value={value.ctaText} onChange={(v) => onChange({ ctaText: v })} />
+                <TextField id={`${channel}-cta-url`} label="CTA Link URL" value={value.ctaUrl} onChange={(v) => onChange({ ctaUrl: v })} />
+              </>
+            )}
           </>
         )}
       </div>
