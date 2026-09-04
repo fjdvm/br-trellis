@@ -89,6 +89,21 @@ describe("TemplatesGallery", () => {
     expect(screen.getByText("CTA Button")).toBeInTheDocument();
   });
 
+  it("does not include Banner as a channel option in the template builder", async () => {
+    const user = userEvent.setup();
+    render(<TemplatesGallery />);
+
+    await user.click(screen.getByRole("button", { name: /template builder/i }));
+
+    // Open the channel select to inspect its options
+    const channelSelect = screen.getByRole("combobox");
+    await user.click(channelSelect);
+
+    expect(screen.queryByRole("option", { name: /^banner$/i })).not.toBeInTheDocument();
+    expect(screen.getByRole("option", { name: /^email$/i })).toBeInTheDocument();
+    expect(screen.getByRole("option", { name: /^popup$/i })).toBeInTheDocument();
+  });
+
   it("shows a loading skeleton while templates load", () => {
     (useTemplates as jest.Mock).mockReturnValue({
       data: [],

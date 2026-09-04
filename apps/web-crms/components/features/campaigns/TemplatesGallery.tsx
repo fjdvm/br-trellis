@@ -110,7 +110,7 @@ export function TemplatesGallery() {
     setEditingTemplateId(null);
     setBuilderName("");
     setBuilderDescription("");
-    setBuilderChannel(channel);
+    setBuilderChannel(channel === "Banner" ? "Email" : channel);
     setBuilderError(null);
     setBlocks([
       { id: "1", type: "heading", label: "Hero Title", textAlign: "left" },
@@ -514,7 +514,6 @@ export function TemplatesGallery() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="Email">Email</SelectItem>
-                      <SelectItem value="Banner">Banner</SelectItem>
                       <SelectItem value="Popup">Popup</SelectItem>
                     </SelectContent>
                   </Select>
@@ -607,14 +606,7 @@ export function TemplatesGallery() {
                     </span>
                   </div>
 
-                  {builderChannel === "Banner" && (
-                    <div className="bg-gradient-to-r from-primary to-primary/90 text-primary-foreground p-3 px-4 rounded-lg flex items-center justify-between shadow-sm">
-                      <span className="text-xs font-semibold">Storefront Top Promotional Strip Layout</span>
-                      <Badge variant="outline" className="text-[10px] text-primary-foreground border-primary-foreground/30">
-                        Banner Preview
-                      </Badge>
-                    </div>
-                  )}
+
 
                   {builderChannel === "Popup" && (
                     <div className="bg-card border border-border p-3 rounded-lg flex items-center justify-between text-xs text-muted-foreground shadow-xs">

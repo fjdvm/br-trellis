@@ -11,21 +11,13 @@ export interface ChannelConstraints {
   maxButtons: number;
 }
 
-export const CHANNEL_CONSTRAINTS: Record<CampaignChannel, ChannelConstraints> = {
+export const CHANNEL_CONSTRAINTS: Record<Exclude<CampaignChannel, "Banner">, ChannelConstraints> = {
   Email: {
     maxCarousel: 1,
     maxImages: 3,
     maxLinks: 3,
     maxHeadings: 3,
     maxTexts: 3,
-    maxButtons: 5,
-  },
-  Banner: {
-    maxCarousel: 0,
-    maxImages: 1,
-    maxLinks: 1,
-    maxHeadings: 0,
-    maxTexts: 1,
     maxButtons: 5,
   },
   Popup: {
@@ -39,7 +31,7 @@ export const CHANNEL_CONSTRAINTS: Record<CampaignChannel, ChannelConstraints> = 
 };
 
 export function getChannelConstraints(channel: CampaignChannel): ChannelConstraints {
-  return CHANNEL_CONSTRAINTS[channel] ?? CHANNEL_CONSTRAINTS.Email;
+  return (CHANNEL_CONSTRAINTS as Record<string, ChannelConstraints>)[channel] ?? CHANNEL_CONSTRAINTS.Email;
 }
 
 export function validateBlockCount(
