@@ -89,24 +89,22 @@ export function Step2Audience({
 
   const { data: audienceCounts } = useAudienceCounts();
 
-  // Map live API counts onto the system preset segments
-  const PRESET_COUNT_MAP: Record<string, number> = {
-    all: audienceCounts?.all ?? 0,
-    contacts: audienceCounts?.contacts ?? 0,
-    companies: audienceCounts?.companies ?? 0,
-    ecommerce: audienceCounts?.ecommerce ?? 0,
-  };
-
   const combinedSegments = useMemo(() => {
+    const presetCountMap: Record<string, number> = {
+      all: audienceCounts?.all ?? 0,
+      contacts: audienceCounts?.contacts ?? 0,
+      companies: audienceCounts?.companies ?? 0,
+      ecommerce: audienceCounts?.ecommerce ?? 0,
+    };
+
     const customFiltered = segments.filter(
       (s) => !SYSTEM_PRESET_SEGMENTS.some((p) => p.id === s.id)
     );
     const presetsWithRealCounts = SYSTEM_PRESET_SEGMENTS.map((p) => ({
       ...p,
-      memberCount: PRESET_COUNT_MAP[p.id] ?? p.memberCount,
+      memberCount: presetCountMap[p.id] ?? p.memberCount,
     }));
     return [...presetsWithRealCounts, ...customFiltered];
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [segments, audienceCounts]);
 
   const selectedSegment = useMemo(
