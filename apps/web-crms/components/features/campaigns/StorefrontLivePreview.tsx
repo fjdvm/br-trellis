@@ -18,6 +18,59 @@ export type ChannelPreviewContent = {
 
 function renderFormattedText(text: string): React.ReactNode {
   if (!text) return text;
+
+  // Check if string is a JSON array of TemplateBlocks
+  if (text.trim().startsWith("[") && text.trim().endsWith("]")) {
+    try {
+      const parsed = JSON.parse(text);
+      if (Array.isArray(parsed) && parsed.length > 0 && parsed[0].type) {
+        return (
+          <div className="space-y-1.5">
+            {parsed.map((block: any, idx: number) => {
+              if (block.type === "heading") {
+                return (
+                  <div key={idx} className="font-bold text-foreground text-sm">
+                    {block.label || "Heading"}
+                  </div>
+                );
+              }
+              if (block.type === "button") {
+                return (
+                  <div key={idx} className="pt-1">
+                    <span className="inline-block py-1 px-3 bg-primary text-primary-foreground text-xs font-semibold rounded shadow-xs">
+                      {block.label || "Button"}
+                    </span>
+                  </div>
+                );
+              }
+              if (block.type === "image") {
+                return (
+                  <div key={idx} className="w-full h-16 bg-muted/60 rounded flex items-center justify-center text-xs text-muted-foreground font-semibold border border-dashed border-border">
+                    📷 {block.label || "Image Component"}
+                  </div>
+                );
+              }
+              if (block.type === "carousel") {
+                return (
+                  <div key={idx} className="w-full h-16 bg-muted/60 rounded flex items-center justify-center text-xs text-muted-foreground font-semibold border border-dashed border-border">
+                    🎠 {block.label || "Carousel Component"}
+                  </div>
+                );
+              }
+              return (
+                <div key={idx} className="text-xs text-muted-foreground leading-relaxed">
+                  {block.label || block.type}
+                </div>
+              );
+            })}
+          </div>
+        );
+      }
+    } catch (e) {
+      // Fall through if JSON parsing fails
+    }
+  }
+
   if (/<[a-z][\s\S]*>/i.test(text)) {
     return <span dangerouslySetInnerHTML={{ __html: text }} />;
   }
