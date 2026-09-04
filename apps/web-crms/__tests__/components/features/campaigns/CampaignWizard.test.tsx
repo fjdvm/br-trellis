@@ -62,9 +62,11 @@ describe("CampaignWizard (Email only, #159)", () => {
     await user.click(screen.getByRole("checkbox", { name: "Email" }));
     await user.click(screen.getByRole("button", { name: /next/i }));
 
-    // Audience step appears because Email is selected
+    // Audience step — select the "All" preset segment so canProceedAudience is satisfied
     await waitFor(() => expect(screen.getByTestId("wizard-step-title")).toHaveTextContent("Audience"));
     await user.type(screen.getByLabelText(/additional emails/i), "partner@x.io");
+    // Confirm the email with Enter so it is committed to parent state
+    await user.keyboard("{Enter}");
     await user.click(screen.getByRole("button", { name: /next/i }));
 
     // Content step
@@ -74,9 +76,7 @@ describe("CampaignWizard (Email only, #159)", () => {
     // Going back to Audience retains the entered email
     await user.click(screen.getByRole("button", { name: /back/i }));
     await waitFor(() =>
-      expect((screen.getByLabelText(/additional emails/i) as HTMLInputElement).value).toContain(
-        "partner@x.io"
-      )
+      expect(screen.queryByText("partner@x.io")).toBeInTheDocument()
     );
   });
 
@@ -88,7 +88,10 @@ describe("CampaignWizard (Email only, #159)", () => {
     await user.click(screen.getByRole("checkbox", { name: "Email" }));
     await user.click(screen.getByRole("button", { name: /next/i }));
 
+    // Audience step — add an email address and confirm it so canProceedAudience is true
     await waitFor(() => expect(screen.getByTestId("wizard-step-title")).toHaveTextContent("Audience"));
+    await user.type(screen.getByLabelText(/additional emails/i), "test@example.com");
+    await user.keyboard("{Enter}");
     await user.click(screen.getByRole("button", { name: /next/i }));
 
     await waitFor(() => expect(screen.getByLabelText("Subject")).toBeInTheDocument());

@@ -71,6 +71,7 @@ interface Step2AudienceProps {
   onSegmentIdChange: (id: string) => void;
   emails: string;
   onEmailsChange: (emails: string) => void;
+  emailsRequired?: boolean;
 }
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -85,6 +86,7 @@ export function Step2Audience({
   onSegmentIdChange,
   emails,
   onEmailsChange,
+  emailsRequired = false,
 }: Step2AudienceProps) {
   const [manualExpanded, setManualExpanded] = useState(true);
   const [inputValue, setInputValue] = useState(() => emails ?? "");
@@ -226,33 +228,57 @@ export function Step2Audience({
         </div>
 
         {/* Part 2: Secondary Manual Email Input */}
-        <div className="bg-card border border-border p-lg rounded-xl shadow-xs flex flex-col gap-md">
+        <div
+          className={`bg-card border p-lg rounded-xl shadow-xs flex flex-col gap-md ${
+            emailsRequired && parsedEmails.length === 0
+              ? "border-destructive"
+              : "border-border"
+          }`}
+        >
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-sm">
               <Mail className="w-5 h-5 text-foreground" />
               <div className="flex items-center gap-2">
-                <h3 className="text-title-lg font-semibold text-foreground">Add specific email addresses</h3>
-                <Badge variant="secondary" className="text-xs">Optional</Badge>
+                <h3 className="text-title-lg font-semibold text-foreground">
+                  Add specific email addresses
+                  {emailsRequired && <span className="text-destructive ml-0.5">*</span>}
+                </h3>
+                {emailsRequired ? (
+                  <Badge variant="destructive" className="text-xs">Required</Badge>
+                ) : (
+                  <Badge variant="secondary" className="text-xs">Optional</Badge>
+                )}
               </div>
             </div>
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              onClick={() => setManualExpanded(!manualExpanded)}
-              className="h-8 w-8"
-            >
-              <ChevronDown className={`w-4 h-4 transition-transform ${manualExpanded ? "rotate-180" : ""}`} />
-            </Button>
+            {/* Only allow collapsing when not required */}
+            {!emailsRequired && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                onClick={() => setManualExpanded(!manualExpanded)}
+                className="h-8 w-8"
+              >
+                <ChevronDown className={`w-4 h-4 transition-transform ${manualExpanded ? "rotate-180" : ""}`} />
+              </Button>
+            )}
           </div>
 
           <p className="text-sm text-muted-foreground">
-            Manually append ad-hoc external recipients, advisory leads, or partner distributions not currently cataloged in the core CRM database.
+            {emailsRequired
+              ? "No segment selected — you must add at least one recipient email address to proceed."
+              : "Manually append ad-hoc external recipients, advisory leads, or partner distributions not currently cataloged in the core CRM database."}
           </p>
 
-          {manualExpanded && (
+          {(manualExpanded || emailsRequired) && (
             <div className="space-y-xs">
-              <div className="min-h-[100px] p-md border border-input rounded-md bg-background focus-within:ring-1 focus-within:ring-ring flex flex-wrap items-center gap-2 relative">
+              <div
+                className={`min-h-[100px] p-md border rounded-md bg-background focus-within:ring-1 flex flex-wrap items-center gap-2 relative ${
+                  emailsRequired && parsedEmails.length === 0
+                    ? "border-destructive focus-within:ring-destructive"
+                    : "border-input focus-within:ring-ring"
+                }`}
+              >
                 {parsedEmails.map((email) => (
                   <Badge
                     key={email}
@@ -273,6 +299,7 @@ export function Step2Audience({
                 <input
                   id="additional-emails"
                   aria-label="Additional emails"
+                  aria-required={emailsRequired}
                   type="text"
                   inputMode="email"
                   value={inputValue}
@@ -298,6 +325,12 @@ export function Step2Audience({
                 </p>
               )}
 
+              {emailsRequired && parsedEmails.length === 0 && !emailError && (
+                <p className="text-xs text-destructive font-medium mt-1">
+                  At least one email address is required when no segment is selected.
+                </p>
+              )}
+
               <div className="flex items-center justify-between text-xs text-muted-foreground">
                 <span>Press space, comma, or enter to add email badge.</span>
                 {parsedEmails.length > 0 && (
@@ -313,6 +346,7 @@ export function Step2Audience({
             </div>
           )}
         </div>
+
       </div>
 
       {/* Right Column: Audience Ledger */}

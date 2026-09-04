@@ -219,6 +219,14 @@ export function CampaignWizard({ existing }: { existing?: Campaign }) {
   }, [title, channels]);
 
   const canProceedPlatform = title.trim().length > 0 && channels.length > 0;
+
+  const parsedEmailCount = emails
+    .split(/[,\n]/)
+    .map((e) => e.trim().toLowerCase())
+    .filter((e) => e.length > 0 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)).length;
+  const noSegmentSelected = segmentId === NO_SEGMENT;
+  const canProceedAudience = !noSegmentSelected || parsedEmailCount > 0;
+
   const stepNumber = steps.indexOf(step) + 1;
   const currentPhase = STEP_PHASE[step];
 
@@ -284,6 +292,7 @@ export function CampaignWizard({ existing }: { existing?: Campaign }) {
               onSegmentIdChange={setSegmentId}
               emails={emails}
               onEmailsChange={setEmails}
+              emailsRequired={noSegmentSelected}
             />
           )}
 
@@ -372,6 +381,11 @@ export function CampaignWizard({ existing }: { existing?: Campaign }) {
                 At least one channel required
               </span>
             )}
+            {step === "Audience" && !canProceedAudience && (
+              <span className="hidden sm:inline text-xs text-destructive">
+                At least one email address required
+              </span>
+            )}
             {step === "Content" ? (
               <>
                 <Button variant="outline" onClick={saveDraft} disabled={submitting}>
@@ -394,7 +408,10 @@ export function CampaignWizard({ existing }: { existing?: Campaign }) {
             ) : (
               <Button
                 onClick={goNext}
-                disabled={step === "Platform" && !canProceedPlatform}
+                disabled={
+                  (step === "Platform" && !canProceedPlatform) ||
+                  (step === "Audience" && !canProceedAudience)
+                }
                 className="gap-1.5 shadow-sm"
               >
                 Next
