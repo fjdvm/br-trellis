@@ -20,6 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import type { SegmentListItem } from "@/types/segment";
 import { useAudienceCounts } from "@/hooks/useAudienceCounts";
 
@@ -87,7 +88,7 @@ export function Step2Audience({
   const [inputValue, setInputValue] = useState(() => emails ?? "");
   const [emailError, setEmailError] = useState<string | null>(null);
 
-  const { data: audienceCounts } = useAudienceCounts();
+  const { data: audienceCounts, isError: isAudienceCountsError } = useAudienceCounts();
 
   const combinedSegments = useMemo(() => {
     const presetCountMap: Record<string, number> = {
@@ -171,10 +172,16 @@ export function Step2Audience({
               <Users className="w-5 h-5 text-foreground" />
               <h3 className="text-title-lg font-semibold text-foreground">Primary CRM Segment</h3>
             </div>
-            <Badge variant="secondary" className="text-xs">
-              Auto-Sync Enabled
-            </Badge>
           </div>
+
+          {isAudienceCountsError && (
+            <Alert variant="destructive">
+              <AlertTitle>Couldn't load audience counts</AlertTitle>
+              <AlertDescription>
+                Unable to retrieve member counts for preset customer segments. Please check your network connection or try again later.
+              </AlertDescription>
+            </Alert>
+          )}
 
           <div className="flex flex-col gap-xs">
             <Label htmlFor="segment-select" className="text-sm font-medium">
@@ -188,7 +195,7 @@ export function Step2Audience({
                 <SelectItem value={NO_SEGMENT}>No segment (Manual emails only)</SelectItem>
                 {combinedSegments.map((s) => (
                   <SelectItem key={s.id} value={s.id}>
-                    {s.name} ({s.memberCount} members)
+                    {s.name} ({isAudienceCountsError && SYSTEM_PRESET_SEGMENTS.some((p) => p.id === s.id) ? "count unavailable" : `${s.memberCount} members`})
                   </SelectItem>
                 ))}
               </SelectContent>

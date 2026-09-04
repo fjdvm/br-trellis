@@ -112,8 +112,8 @@ public sealed class SegmentService(
         var contacts = await activeContacts
             .CountAsync(c => c.CompanyId == null, cancellationToken);
 
-        var companies = await dbContext.Companies.AsNoTracking()
-            .CountAsync(c => c.DeletedAt == null, cancellationToken);
+        var companies = await activeContacts
+            .CountAsync(c => c.CompanyId != null, cancellationToken);
 
         // Ecommerce: contacts with at least one order
         var ecommerce = await activeContacts
