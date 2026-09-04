@@ -287,7 +287,7 @@ export function TemplatePreviewModal({
                   Actions
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" className="w-36 z-[100000] border border-border/60 bg-popover shadow-md">
+              <DropdownMenuContent side="top" align="start" className="w-36 z-[100000] border border-border/60 bg-popover shadow-md">
                 {onEditTemplate && (
                   <DropdownMenuItem
                     onClick={() => {

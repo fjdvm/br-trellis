@@ -174,7 +174,7 @@ export function TemplateCard({ template, onPreview, onUse, onEdit, onDelete }: T
                   <MoreVertical className="w-4 h-4 text-muted-foreground" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-36 border border-border/60 bg-popover shadow-md">
+              <DropdownMenuContent side="top" align="start" className="w-36 border border-border/60 bg-popover shadow-md">
                 {onEdit && (
                   <DropdownMenuItem onClick={() => onEdit(template)} className="cursor-pointer text-base py-2">
                     Edit
