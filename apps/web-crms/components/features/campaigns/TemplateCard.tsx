@@ -1,8 +1,14 @@
 "use client";
 
-import { Eye, Edit3, Trash2 } from "lucide-react";
+import { Eye, Edit3, Trash2, MoreVertical } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import type { Template } from "@/types/campaign";
 
 interface TemplateCardProps {
@@ -48,6 +54,8 @@ function renderFormattedContent(htmlOrText: string, format?: string): React.Reac
 }
 
 export function TemplateCard({ template, onPreview, onUse, onEdit, onDelete }: TemplateCardProps) {
+  const hasActions = Boolean(onEdit || onDelete);
+
   return (
     <div className="flex flex-col bg-card border border-border rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all duration-200">
       {/* Live Storefront Preview Frame */}
@@ -97,7 +105,7 @@ export function TemplateCard({ template, onPreview, onUse, onEdit, onDelete }: T
           {template.channel === "Email" && (
             <div className="absolute inset-1.5 z-10 bg-background border border-border rounded shadow-md p-2 text-left space-y-1 overflow-hidden">
               <div className="border-b border-border/50 pb-0.5 flex justify-between items-center text-[8px] text-muted-foreground">
-                <span className="semibold text-foreground truncate">To: customer@example.com</span>
+                <span className="font-semibold text-foreground truncate">To: customer@example.com</span>
                 <span>Inbox</span>
               </div>
               <div className="text-[10px] font-bold text-foreground truncate">Email Subject</div>
@@ -152,29 +160,38 @@ export function TemplateCard({ template, onPreview, onUse, onEdit, onDelete }: T
             <Eye className="w-3.5 h-3.5" />
             Preview
           </Button>
-          {onEdit && (
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => onEdit(template)}
-              className="gap-1 text-xs px-2"
-              title="Edit template"
-            >
-              <Edit3 className="w-3.5 h-3.5" />
-            </Button>
-          )}
-          {onDelete && (
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => onDelete(template)}
-              className="gap-1 text-xs px-2 text-destructive hover:bg-destructive/10"
-              title="Delete template"
-            >
-              <Trash2 className="w-3.5 h-3.5" />
-            </Button>
+
+          {hasActions && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  aria-label="Template Options"
+                  className="w-8 h-8 p-0"
+                >
+                  <MoreVertical className="w-4 h-4 text-muted-foreground" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-36">
+                {onEdit && (
+                  <DropdownMenuItem onClick={() => onEdit(template)} className="gap-2 cursor-pointer text-xs">
+                    <Edit3 className="w-3.5 h-3.5 text-muted-foreground" />
+                    Edit
+                  </DropdownMenuItem>
+                )}
+                {onDelete && (
+                  <DropdownMenuItem
+                    onClick={() => onDelete(template)}
+                    className="gap-2 cursor-pointer text-xs text-destructive focus:text-destructive"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    Delete
+                  </DropdownMenuItem>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
           )}
         </div>
       </div>
