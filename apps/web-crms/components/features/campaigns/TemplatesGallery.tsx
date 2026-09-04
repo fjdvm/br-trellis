@@ -457,7 +457,7 @@ export function TemplatesGallery() {
       {/* Drag and Drop Template Builder Modal */}
       {showBuilderModal && (
         <Dialog open={showBuilderModal} onOpenChange={setShowBuilderModal}>
-          <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col">
+          <DialogContent className="w-full max-w-[95vw] sm:max-w-[92vw] lg:max-w-7xl h-[92vh] max-h-[92vh] flex flex-col p-4 sm:p-6 overflow-hidden">
             <DialogHeader className="flex flex-row items-center justify-between border-b border-border pb-4">
               <div>
                 <DialogTitle className="text-xl font-bold">
@@ -472,9 +472,9 @@ export function TemplatesGallery() {
               <Badge variant="secondary">{builderChannel}</Badge>
             </DialogHeader>
 
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-4 flex-1 overflow-hidden my-4">
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-4 flex-1 min-h-0 overflow-y-auto md:overflow-hidden my-4">
               {/* Palette (Left Column) */}
-              <div className="md:col-span-4 bg-muted/40 border border-border rounded-lg p-4 space-y-4 flex flex-col">
+              <div className="md:col-span-4 bg-muted/40 border border-border rounded-lg p-4 space-y-4 flex flex-col min-h-0 overflow-y-auto">
                 <div className="space-y-2">
                   <Label className="text-xs uppercase font-bold text-muted-foreground">Template Settings</Label>
                   <Input

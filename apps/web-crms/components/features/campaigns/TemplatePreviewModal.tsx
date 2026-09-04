@@ -51,7 +51,7 @@ export function TemplatePreviewModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl max-h-[85vh] flex flex-col">
+      <DialogContent className="w-full max-w-[95vw] sm:max-w-[90vw] lg:max-w-6xl h-[90vh] max-h-[90vh] flex flex-col p-4 sm:p-6 overflow-hidden">
         {/* Modal Header */}
         <DialogHeader className="flex flex-row items-center justify-between space-y-0 pr-6 border-b border-border pb-3">
           <div>
