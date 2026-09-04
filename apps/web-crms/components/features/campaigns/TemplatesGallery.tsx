@@ -645,13 +645,15 @@ export function TemplatesGallery() {
                       <GripVertical className="w-8 h-8 opacity-40 animate-bounce" />
                       <p>Drag and drop elements here to compose your template content</p>
                     </div>
-                  ) : builderChannel === "Email" ? (
-                    <div className="max-w-2xl mx-auto bg-background border border-border/80 rounded-xl p-5 shadow-sm space-y-3 border-t-0 -mt-2">
-                      <div className="border-b border-dashed border-border pb-3 mb-1">
-                        <p className="text-[11px] font-mono text-center text-muted-foreground uppercase tracking-wider">
-                          — Drag & drop blocks inside email message body container —
-                        </p>
-                      </div>
+                  ) : (
+                    <div className={builderChannel === "Email" ? "max-w-2xl mx-auto bg-background border border-border/80 rounded-xl p-5 shadow-sm space-y-3 border-t-0 -mt-2" : "space-y-3"}>
+                      {builderChannel === "Email" && (
+                        <div className="border-b border-dashed border-border pb-3 mb-1">
+                          <p className="text-[11px] font-mono text-center text-muted-foreground uppercase tracking-wider">
+                            — Drag & drop blocks inside email message body container —
+                          </p>
+                        </div>
+                      )}
                       {blocks.map((block) => (
                         <div
                           key={block.id}
