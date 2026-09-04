@@ -72,4 +72,11 @@ public sealed class BlockTemplateController(IBlockTemplateService service) : Con
         var success = await service.ArchiveAsync(id, ct);
         return success ? NoContent() : NotFound();
     }
+
+    [HttpDelete("{id:guid}")]
+    public async Task<IActionResult> Delete(Guid id, CancellationToken ct = default)
+    {
+        var success = await service.ArchiveAsync(id, ct);
+        return success ? NoContent() : NotFound();
+    }
 }

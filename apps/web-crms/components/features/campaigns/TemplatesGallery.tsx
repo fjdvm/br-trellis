@@ -161,12 +161,12 @@ export function TemplatesGallery() {
     try {
       const { crmClient } = await import("@/lib/api/crm-client");
       await crmClient.blockTemplates.delete(deleteTemplateItem.id);
-      setDeleteTemplateItem(null);
-      refetch();
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Failed to delete template");
+      console.warn("Could not delete from backend API (may be a static template):", err);
     } finally {
+      setDeleteTemplateItem(null);
       setIsDeleting(false);
+      refetch();
     }
   }
 
