@@ -758,7 +758,7 @@ export function TemplatesGallery() {
                           {block.type === "carousel" && (
                             <div className="p-3 bg-muted/40 border border-dashed border-border rounded-md text-xs text-muted-foreground font-semibold flex items-center justify-between">
                               <SlidersHorizontal className="w-4 h-4 text-primary" />
-                              <span>Carousel Component Structural Block (No content entered here)</span>
+                              <span>Carousel Structural Block (Max 3 images)</span>
                             </div>
                           )}
 

@@ -282,6 +282,7 @@ export function ChannelContentForm({
                     };
 
                     const addSlide = () => {
+                      if (slides.length >= 3) return;
                       updateBlockValue([...slides, { imageUrl: "", caption: "", linkUrl: "" }]);
                     };
 
@@ -293,8 +294,17 @@ export function ChannelContentForm({
                     return (
                       <div key={blockId} className="space-y-sm border border-border/80 rounded-md p-3 bg-muted/20">
                         <div className="flex items-center justify-between">
-                          <Label className="font-semibold text-sm">{block.label || "Carousel Component"}</Label>
-                          <Button type="button" variant="outline" size="sm" onClick={addSlide}>
+                          <div className="flex items-center gap-2">
+                            <Label className="font-semibold text-sm">{block.label || "Carousel Component"}</Label>
+                            <span className="text-xs text-muted-foreground font-normal">(Max 3 images)</span>
+                          </div>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={addSlide}
+                            disabled={slides.length >= 3}
+                          >
                             + Add Slide
                           </Button>
                         </div>
