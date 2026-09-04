@@ -27,17 +27,26 @@ function renderFormattedText(text: string): React.ReactNode {
         return (
           <div className="space-y-1.5">
             {parsed.map((block: any, idx: number) => {
+              const alignClass =
+                block.textAlign === "center"
+                  ? "text-center justify-center items-center"
+                  : block.textAlign === "right"
+                  ? "text-right justify-end items-end"
+                  : "text-left justify-start items-start";
+
+              const textStyleClasses = `${block.isBold ? "font-bold" : ""} ${block.isItalic ? "italic" : ""}`;
+
               if (block.type === "heading") {
                 return (
-                  <div key={idx} className="font-bold text-foreground text-sm">
+                  <div key={idx} className={`font-bold text-foreground text-sm ${alignClass} ${textStyleClasses}`}>
                     {block.label || "Heading"}
                   </div>
                 );
               }
               if (block.type === "button") {
                 return (
-                  <div key={idx} className="pt-1">
-                    <span className="inline-block py-1 px-3 bg-primary text-primary-foreground text-xs font-semibold rounded shadow-xs">
+                  <div key={idx} className={`pt-1 flex ${alignClass}`}>
+                    <span className="inline-block py-1.5 px-4 bg-primary text-primary-foreground text-xs font-semibold rounded shadow-xs">
                       {block.label || "Button"}
                     </span>
                   </div>
@@ -45,20 +54,27 @@ function renderFormattedText(text: string): React.ReactNode {
               }
               if (block.type === "image") {
                 return (
-                  <div key={idx} className="w-full h-16 bg-muted/60 rounded flex items-center justify-center text-xs text-muted-foreground font-semibold border border-dashed border-border">
+                  <div key={idx} className={`w-full h-16 bg-muted/60 rounded flex items-center justify-center text-xs text-muted-foreground font-semibold border border-dashed border-border ${alignClass}`}>
                     📷 {block.label || "Image Component"}
                   </div>
                 );
               }
               if (block.type === "carousel") {
                 return (
-                  <div key={idx} className="w-full h-16 bg-muted/60 rounded flex items-center justify-center text-xs text-muted-foreground font-semibold border border-dashed border-border">
+                  <div key={idx} className={`w-full h-16 bg-muted/60 rounded flex items-center justify-center text-xs text-muted-foreground font-semibold border border-dashed border-border ${alignClass}`}>
                     🎠 {block.label || "Carousel Component"}
                   </div>
                 );
               }
+              if (block.type === "link") {
+                return (
+                  <div key={idx} className={`text-xs text-primary underline font-medium ${alignClass}`}>
+                    {block.label || "Link"}
+                  </div>
+                );
+              }
               return (
-                <div key={idx} className="text-xs text-muted-foreground leading-relaxed">
+                <div key={idx} className={`text-xs text-muted-foreground leading-relaxed ${alignClass} ${textStyleClasses}`}>
                   {block.label || block.type}
                 </div>
               );
