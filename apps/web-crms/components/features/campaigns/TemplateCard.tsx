@@ -174,19 +174,17 @@ export function TemplateCard({ template, onPreview, onUse, onEdit, onDelete }: T
                   <MoreVertical className="w-4 h-4 text-muted-foreground" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-36">
+              <DropdownMenuContent align="end" className="w-36 border border-border/60 bg-popover shadow-md">
                 {onEdit && (
-                  <DropdownMenuItem onClick={() => onEdit(template)} className="gap-2 cursor-pointer text-xs">
-                    <Edit3 className="w-3.5 h-3.5 text-muted-foreground" />
+                  <DropdownMenuItem onClick={() => onEdit(template)} className="cursor-pointer text-base py-2">
                     Edit
                   </DropdownMenuItem>
                 )}
                 {onDelete && (
                   <DropdownMenuItem
                     onClick={() => onDelete(template)}
-                    className="gap-2 cursor-pointer text-xs text-destructive focus:text-destructive"
+                    className="cursor-pointer text-base py-2 text-destructive focus:text-destructive"
                   >
-                    <Trash2 className="w-3.5 h-3.5" />
                     Delete
                   </DropdownMenuItem>
                 )}

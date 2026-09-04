@@ -287,16 +287,15 @@ export function TemplatePreviewModal({
                   Actions
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" className="w-36 z-[100000]">
+              <DropdownMenuContent align="start" className="w-36 z-[100000] border border-border/60 bg-popover shadow-md">
                 {onEditTemplate && (
                   <DropdownMenuItem
                     onClick={() => {
                       onOpenChange(false);
                       onEditTemplate(template);
                     }}
-                    className="gap-2 cursor-pointer text-xs"
+                    className="cursor-pointer text-base py-2"
                   >
-                    <Edit3 className="w-3.5 h-3.5 text-muted-foreground" />
                     Edit
                   </DropdownMenuItem>
                 )}
@@ -306,9 +305,8 @@ export function TemplatePreviewModal({
                       onOpenChange(false);
                       onDeleteTemplate(template);
                     }}
-                    className="gap-2 cursor-pointer text-xs text-destructive focus:text-destructive"
+                    className="cursor-pointer text-base py-2 text-destructive focus:text-destructive"
                   >
-                    <Trash2 className="w-3.5 h-3.5" />
                     Delete
                   </DropdownMenuItem>
                 )}
