@@ -11,9 +11,25 @@ interface TemplateCardProps {
   onUse: (template: Template) => void;
 }
 
-/** Helper to render HTML or formatted template strings */
-function renderFormattedContent(htmlOrText: string): React.ReactNode {
+/** Helper to render HTML, block arrays, or formatted template strings */
+function renderFormattedContent(htmlOrText: string, format?: string): React.ReactNode {
   if (!htmlOrText) return null;
+
+  if (format === "Blocks") {
+    try {
+      const blocks = JSON.parse(htmlOrText);
+      if (Array.isArray(blocks)) {
+        return (
+          <span className="font-sans font-medium text-foreground">
+            {blocks.map((b: any) => b.label || b.type).join(" • ")}
+          </span>
+        );
+      }
+    } catch (e) {
+      // Fall through if parsing fails
+    }
+  }
+
   if (/<[a-z][\s\S]*>/i.test(htmlOrText)) {
     return <span dangerouslySetInnerHTML={{ __html: htmlOrText }} />;
   }
@@ -63,7 +79,7 @@ export function TemplateCard({ template, onPreview, onUse }: TemplateCardProps) 
 
           {template.channel === "Banner" && (
             <div className="w-full bg-primary text-primary-foreground p-1.5 px-2 rounded text-[9.5px] font-medium shadow-xs flex items-center justify-between gap-1 mb-1">
-              <span className="truncate">{renderFormattedContent(template.content)}</span>
+              <span className="truncate">{renderFormattedContent(template.content, template.format)}</span>
               <span className="text-[8.5px] font-bold underline shrink-0">Learn More</span>
             </div>
           )}
@@ -84,7 +100,7 @@ export function TemplateCard({ template, onPreview, onUse }: TemplateCardProps) 
               </div>
               <div className="text-[10px] font-bold text-foreground truncate">Email Subject</div>
               <div className="text-[9px] text-muted-foreground line-clamp-2 leading-tight">
-                {renderFormattedContent(template.content)}
+                {renderFormattedContent(template.content, template.format)}
               </div>
             </div>
           )}
@@ -94,7 +110,7 @@ export function TemplateCard({ template, onPreview, onUse }: TemplateCardProps) 
               <div className="bg-card text-card-foreground border border-border p-2 rounded-lg text-center space-y-1 shadow-lg w-full max-w-[180px]">
                 <div className="text-[10px] font-bold text-foreground truncate">Special Announcement</div>
                 <div className="text-[8.5px] text-muted-foreground line-clamp-2 leading-tight">
-                  {renderFormattedContent(template.content)}
+                  {renderFormattedContent(template.content, template.format)}
                 </div>
                 <div className="bg-primary text-primary-foreground text-[8px] font-semibold py-0.5 px-2 rounded mt-0.5">
                   Claim Offer

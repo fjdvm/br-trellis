@@ -226,10 +226,35 @@ export function TemplatePreviewModal({
             </div>
 
             <div className="space-y-2">
-              <h4 className="text-sm font-bold text-foreground">Raw Content String</h4>
-              <pre className="p-md bg-slate-950 text-slate-100 rounded-lg text-xs font-mono overflow-x-auto whitespace-pre-wrap leading-relaxed border border-border">
-                {template.content}
-              </pre>
+              <h4 className="text-sm font-bold text-foreground">
+                {template.format === "Blocks" ? "Configured Template Blocks" : "Raw Content String"}
+              </h4>
+              {template.format === "Blocks" ? (
+                <div className="space-y-2">
+                  {(() => {
+                    try {
+                      const blocks = JSON.parse(template.content);
+                      if (Array.isArray(blocks)) {
+                        return blocks.map((b: any, idx: number) => (
+                          <div key={idx} className="p-3 bg-muted/40 border border-border rounded-md text-xs flex items-center justify-between">
+                            <span className="font-semibold text-foreground">{b.label || b.type}</span>
+                            <Badge variant="outline" className="uppercase text-[10px]">{b.type}</Badge>
+                          </div>
+                        ));
+                      }
+                    } catch (e) {}
+                    return (
+                      <pre className="p-md bg-slate-950 text-slate-100 rounded-lg text-xs font-mono overflow-x-auto whitespace-pre-wrap leading-relaxed border border-border">
+                        {template.content}
+                      </pre>
+                    );
+                  })()}
+                </div>
+              ) : (
+                <pre className="p-md bg-slate-950 text-slate-100 rounded-lg text-xs font-mono overflow-x-auto whitespace-pre-wrap leading-relaxed border border-border">
+                  {template.content}
+                </pre>
+              )}
             </div>
           </TabsContent>
         </Tabs>
