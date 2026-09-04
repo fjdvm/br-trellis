@@ -516,7 +516,6 @@ export function TemplatesGallery() {
                     <div>Links: <span className="font-semibold text-foreground">{constraints.maxLinks} max</span></div>
                     <div>Headings: <span className="font-semibold text-foreground">{constraints.maxHeadings} max</span></div>
                     <div>Paragraphs: <span className="font-semibold text-foreground">{constraints.maxTexts} max</span></div>
-                    <div>Buttons: <span className="font-semibold text-foreground">{constraints.maxButtons} max</span></div>
                   </div>
                 </div>
 
