@@ -169,6 +169,28 @@ public sealed partial class CampaignService
                     .Select(m => m.Email!));
             }
         }
+        else if (!string.IsNullOrWhiteSpace(campaign.TargetSegmentPreset))
+        {
+            var preset = campaign.TargetSegmentPreset.Trim().ToLowerInvariant();
+            IQueryable<Contact> query = dbContext.Contacts.AsNoTracking()
+                .Where(c => c.DeletedAt == null && c.Email != null && c.Email != "");
+
+            if (preset == "contacts")
+            {
+                query = query.Where(c => c.CompanyId == null);
+            }
+            else if (preset == "companies")
+            {
+                query = query.Where(c => c.CompanyId != null);
+            }
+            else if (preset == "ecommerce")
+            {
+                query = query.Where(c => c.Orders.Any());
+            }
+
+            var presetEmails = await query.Select(c => c.Email!).ToListAsync(cancellationToken);
+            recipients.AddRange(presetEmails);
+        }
 
         var explicitEmails = CampaignMapper.ParseEmails(campaign.TargetEmails);
         if (explicitEmails is not null)

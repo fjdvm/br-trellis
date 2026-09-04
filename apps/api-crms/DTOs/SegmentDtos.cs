@@ -24,3 +24,13 @@ public sealed record SegmentMemberDto(
     string? Phone,
     string? CompanyName,
     decimal LifetimeValue);
+
+/// <summary>
+/// Real-time counts for the four system preset segments shown in the campaign audience step.
+/// </summary>
+public sealed record AudienceCountsDto(
+    int All,
+    int Contacts,
+    int Companies,
+    int Ecommerce);
+

@@ -63,7 +63,7 @@ public static class CampaignMapper
             campaign.Title,
             ParseChannels(campaign.Channels),
             campaign.Status.ToString(),
-            campaign.TargetSegmentId?.ToString(),
+            campaign.TargetSegmentId?.ToString() ?? campaign.TargetSegmentPreset,
             ParseEmails(campaign.TargetEmails),
             campaign.CreatedAt,
             ToScheduleDto(campaign));
@@ -89,7 +89,7 @@ public static class CampaignMapper
             campaign.Title,
             ParseChannels(campaign.Channels),
             campaign.Status.ToString(),
-            campaign.TargetSegmentId?.ToString(),
+            campaign.TargetSegmentId?.ToString() ?? campaign.TargetSegmentPreset,
             ParseEmails(campaign.TargetEmails),
             campaign.CreatedAt,
             ToScheduleDto(campaign),

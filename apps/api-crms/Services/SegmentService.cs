@@ -102,6 +102,26 @@ public sealed class SegmentService(
         await segmentRepository.DeleteAsync(segment, cancellationToken);
     }
 
+    public async Task<AudienceCountsDto> GetAudienceCountsAsync(CancellationToken cancellationToken)
+    {
+        var activeContacts = dbContext.Contacts.AsNoTracking()
+            .Where(c => c.DeletedAt == null);
+
+        var all = await activeContacts.CountAsync(cancellationToken);
+
+        var contacts = await activeContacts
+            .CountAsync(c => c.CompanyId == null, cancellationToken);
+
+        var companies = await dbContext.Companies.AsNoTracking()
+            .CountAsync(c => c.DeletedAt == null, cancellationToken);
+
+        // Ecommerce: contacts with at least one order
+        var ecommerce = await activeContacts
+            .CountAsync(c => c.Orders.Any(), cancellationToken);
+
+        return new AudienceCountsDto(all, contacts, companies, ecommerce);
+    }
+
     private async Task<int> GetMemberCountAsync(Segment segment, CancellationToken cancellationToken)
     {
         if (segment.Type == SegmentType.Static)

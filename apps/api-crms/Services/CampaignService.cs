@@ -59,6 +59,7 @@ public sealed partial class CampaignService(
             Status = CampaignStatus.Draft,
             Channels = string.Join(",", channels.Select(c => c.ToString())),
             TargetSegmentId = ParseSegmentId(input.TargetAudience),
+            TargetSegmentPreset = ParseSegmentPreset(input.TargetAudience),
             TargetEmails = CampaignMapper.SerializeEmails(input.TargetEmails) is { Length: > 0 } e ? e : null,
             ScheduleType = ParseScheduleType(input.ScheduleType),
             StartDate = input.StartDate,
@@ -115,6 +116,7 @@ public sealed partial class CampaignService(
         if (input.TargetAudience is not null)
         {
             campaign.TargetSegmentId = ParseSegmentId(input.TargetAudience);
+            campaign.TargetSegmentPreset = ParseSegmentPreset(input.TargetAudience);
         }
 
         if (input.TargetEmails is not null)
@@ -222,6 +224,20 @@ public sealed partial class CampaignService(
             return null;
         }
         return Guid.TryParse(targetAudience.Trim(), out var id) ? id : null;
+    }
+
+    private static string? ParseSegmentPreset(string? targetAudience)
+    {
+        if (string.IsNullOrWhiteSpace(targetAudience))
+        {
+            return null;
+        }
+        var trimmed = targetAudience.Trim();
+        if (trimmed == "__none__")
+        {
+            return null;
+        }
+        return Guid.TryParse(trimmed, out _) ? null : trimmed;
     }
 
     private static List<CampaignChannelContent> BuildChannelContents(

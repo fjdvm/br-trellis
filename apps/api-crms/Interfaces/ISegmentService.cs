@@ -20,4 +20,6 @@ public interface ISegmentService
         CancellationToken cancellationToken);
 
     Task DeleteSegmentAsync(Guid segmentId, CancellationToken cancellationToken);
+
+    Task<AudienceCountsDto> GetAudienceCountsAsync(CancellationToken cancellationToken);
 }

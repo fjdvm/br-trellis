@@ -15,6 +15,13 @@ public sealed class SegmentController(ISegmentService segmentService) : Controll
         return Ok(await segmentService.ListSegmentsAsync(cancellationToken));
     }
 
+    [HttpGet("audience-counts")]
+    public async Task<ActionResult<AudienceCountsDto>> GetAudienceCounts(
+        CancellationToken cancellationToken)
+    {
+        return Ok(await segmentService.GetAudienceCountsAsync(cancellationToken));
+    }
+
     [HttpGet("{id:guid}/members")]
     public async Task<ActionResult<IReadOnlyList<SegmentMemberDto>>> GetSegmentMembers(
         Guid id,

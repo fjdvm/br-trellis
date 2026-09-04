@@ -6,13 +6,11 @@ import {
   Folder,
   UserPlus,
   FilterX,
-  ShieldCheck,
   Mail,
   X,
   ChevronDown,
 } from "lucide-react";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -23,6 +21,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import type { SegmentListItem } from "@/types/segment";
+import { useAudienceCounts } from "@/hooks/useAudienceCounts";
 
 const NO_SEGMENT = "__none__";
 
@@ -30,38 +29,34 @@ export const SYSTEM_PRESET_SEGMENTS: SegmentListItem[] = [
   {
     id: "all",
     name: "All",
-    memberCount: 1250,
-    description: "All Contacts, Companies, and Ecommerce Customers",
-    rule: "All CRM Records",
-    createdAt: "",
-    updatedAt: "",
+    type: "System",
+    isSystemDefined: true,
+    memberCount: 0,
+    rule: null,
   },
   {
     id: "ecommerce",
     name: "Ecommerce",
-    memberCount: 540,
-    description: "Active Ecommerce Customers & Store Buyers",
-    rule: "Source == Ecommerce",
-    createdAt: "",
-    updatedAt: "",
+    type: "System",
+    isSystemDefined: true,
+    memberCount: 0,
+    rule: null,
   },
   {
     id: "companies",
     name: "Companies",
-    memberCount: 320,
-    description: "Registered B2B Companies",
-    rule: "Type == Company",
-    createdAt: "",
-    updatedAt: "",
+    type: "System",
+    isSystemDefined: true,
+    memberCount: 0,
+    rule: null,
   },
   {
     id: "contacts",
     name: "Contacts",
-    memberCount: 890,
-    description: "Individual CRM Contacts",
-    rule: "Type == Contact",
-    createdAt: "",
-    updatedAt: "",
+    type: "System",
+    isSystemDefined: true,
+    memberCount: 0,
+    rule: null,
   },
 ];
 
@@ -92,12 +87,27 @@ export function Step2Audience({
   const [inputValue, setInputValue] = useState(() => emails ?? "");
   const [emailError, setEmailError] = useState<string | null>(null);
 
+  const { data: audienceCounts } = useAudienceCounts();
+
+  // Map live API counts onto the system preset segments
+  const PRESET_COUNT_MAP: Record<string, number> = {
+    all: audienceCounts?.all ?? 0,
+    contacts: audienceCounts?.contacts ?? 0,
+    companies: audienceCounts?.companies ?? 0,
+    ecommerce: audienceCounts?.ecommerce ?? 0,
+  };
+
   const combinedSegments = useMemo(() => {
     const customFiltered = segments.filter(
       (s) => !SYSTEM_PRESET_SEGMENTS.some((p) => p.id === s.id)
     );
-    return [...SYSTEM_PRESET_SEGMENTS, ...customFiltered];
-  }, [segments]);
+    const presetsWithRealCounts = SYSTEM_PRESET_SEGMENTS.map((p) => ({
+      ...p,
+      memberCount: PRESET_COUNT_MAP[p.id] ?? p.memberCount,
+    }));
+    return [...presetsWithRealCounts, ...customFiltered];
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [segments, audienceCounts]);
 
   const selectedSegment = useMemo(
     () => combinedSegments.find((s) => s.id === segmentId),

@@ -345,6 +345,10 @@ export const crmClient = {
       request<SegmentListItem[]>(`/api/v1/segments`),
     getMembers: (id: string) =>
       request<SegmentMember[]>(`/api/v1/segments/${id}/members`),
+    getAudienceCounts: () =>
+      request<{ all: number; contacts: number; companies: number; ecommerce: number }>(
+        `/api/v1/segments/audience-counts`
+      ),
   },
   companies: {
     list: (includeArchived = false) =>

@@ -656,6 +656,7 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
                 .HasConversion<string>();
             campaign.Property(e => e.Channels).HasColumnName("channels");
             campaign.Property(e => e.TargetSegmentId).HasColumnName("target_segment_id");
+            campaign.Property(e => e.TargetSegmentPreset).HasColumnName("target_segment_preset");
             campaign.Property(e => e.TargetEmails).HasColumnName("target_emails");
             campaign.Property(e => e.ResolvedRecipients).HasColumnName("resolved_recipients");
             campaign.Property(e => e.ScheduleType)

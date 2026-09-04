@@ -21,8 +21,9 @@ public sealed class Campaign
     public string Channels { get; set; } = string.Empty;
 
     // --- Audience (Email only) ---
-    // The chosen Segment, referenced by id. Banner/Popup leave this null.
+    // The chosen Segment, referenced by id or preset key. Banner/Popup leave this null.
     public Guid? TargetSegmentId { get; set; }
+    public string? TargetSegmentPreset { get; set; }
 
     // Free-text explicit email addresses (JSON array), merged with the Segment at
     // Launch. Null/empty when none.
