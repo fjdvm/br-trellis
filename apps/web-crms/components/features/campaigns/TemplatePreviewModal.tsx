@@ -274,49 +274,41 @@ export function TemplatePreviewModal({
         {/* Modal Footer */}
         <div className="flex items-center justify-between pt-3 border-t border-border mt-2">
           {isBlockTemplate && (onEditTemplate || onDeleteTemplate) ? (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
+            <div className="flex items-center gap-2">
+              {onEditTemplate && (
                 <Button
                   type="button"
                   variant="outline"
                   size="sm"
-                  aria-label="Template options menu"
-                  className="gap-1.5 text-xs"
+                  onClick={() => {
+                    onOpenChange(false);
+                    onEditTemplate(template);
+                  }}
+                  className="text-base font-medium px-4 py-2"
                 >
-                  <MoreVertical className="w-4 h-4 text-muted-foreground" />
-                  Actions
+                  Edit
                 </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent side="top" align="start" className="w-36 z-[100000] border border-border/60 bg-popover shadow-md">
-                {onEditTemplate && (
-                  <DropdownMenuItem
-                    onClick={() => {
-                      onOpenChange(false);
-                      onEditTemplate(template);
-                    }}
-                    className="cursor-pointer text-base py-2"
-                  >
-                    Edit
-                  </DropdownMenuItem>
-                )}
-                {onDeleteTemplate && (
-                  <DropdownMenuItem
-                    onClick={() => {
-                      onOpenChange(false);
-                      onDeleteTemplate(template);
-                    }}
-                    className="cursor-pointer text-base py-2 text-destructive focus:text-destructive"
-                  >
-                    Delete
-                  </DropdownMenuItem>
-                )}
-              </DropdownMenuContent>
-            </DropdownMenu>
+              )}
+              {onDeleteTemplate && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    onOpenChange(false);
+                    onDeleteTemplate(template);
+                  }}
+                  className="text-base font-medium px-4 py-2 text-destructive hover:bg-destructive/10 border-border/60"
+                >
+                  Delete
+                </Button>
+              )}
+            </div>
           ) : (
             <div />
           )}
 
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
+          <Button variant="outline" onClick={() => onOpenChange(false)} className="text-base font-medium px-4 py-2">
             Close
           </Button>
         </div>
