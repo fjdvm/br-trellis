@@ -46,20 +46,25 @@ public sealed class BlockTemplateRepository(AppDbContext dbContext) : IBlockTemp
 
     public async Task<BlockTemplate> UpdateAsync(BlockTemplate template, CancellationToken ct = default)
     {
-        var existing = await dbContext.BlockTemplates
+        var dbRecord = await dbContext.BlockTemplates
             .Include(t => t.Blocks)
             .FirstOrDefaultAsync(t => t.Id == template.Id, ct);
 
-        if (existing is not null)
+        if (dbRecord is not null)
         {
-            dbContext.TemplateBlocks.RemoveRange(existing.Blocks);
-            existing.Name = template.Name;
-            existing.Description = template.Description;
-            existing.Channel = template.Channel;
-            existing.UpdatedAt = DateTimeOffset.UtcNow;
-            existing.Blocks = template.Blocks;
+            dbRecord.Name = template.Name;
+            dbRecord.Description = template.Description;
+            dbRecord.Channel = template.Channel;
+            dbRecord.UpdatedAt = DateTimeOffset.UtcNow;
+
+            dbRecord.Blocks.Clear();
+            foreach (var block in template.Blocks)
+            {
+                dbRecord.Blocks.Add(block);
+            }
+
             await dbContext.SaveChangesAsync(ct);
-            return existing;
+            return dbRecord;
         }
 
         dbContext.BlockTemplates.Update(template);
