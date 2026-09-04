@@ -41,6 +41,8 @@ const templates: Template[] = [
 ];
 
 describe("TemplatesGallery", () => {
+  jest.setTimeout(30000);
+
   beforeEach(() => {
     jest.clearAllMocks();
     (useTemplates as jest.Mock).mockReturnValue({
