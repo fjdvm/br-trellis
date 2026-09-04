@@ -502,22 +502,6 @@ export function TemplatesGallery() {
                   </Select>
                 </div>
 
-                {/* Channel Constraints & Rules Section */}
-                <div className="bg-muted/70 border border-border/80 rounded-md p-3 space-y-2 text-xs">
-                  <div className="font-bold text-foreground flex items-center justify-between">
-                    <span>{builderChannel} Constraints & Rules</span>
-                    <Badge variant="outline" className="text-[10px]">
-                      Max Limits
-                    </Badge>
-                  </div>
-                  <div className="grid grid-cols-2 gap-x-2 gap-y-1 text-muted-foreground">
-                    <div>Carousel: <span className="font-semibold text-foreground">{constraints.maxCarousel} max</span></div>
-                    <div>Images: <span className="font-semibold text-foreground">{constraints.maxImages} max</span></div>
-                    <div>Links: <span className="font-semibold text-foreground">{constraints.maxLinks} max</span></div>
-                    <div>Headings: <span className="font-semibold text-foreground">{constraints.maxHeadings} max</span></div>
-                    <div>Paragraphs: <span className="font-semibold text-foreground">{constraints.maxTexts} max</span></div>
-                  </div>
-                </div>
 
                 <div className="space-y-2 flex-1 overflow-y-auto">
                   <Label className="text-xs uppercase font-bold text-muted-foreground">Draggable Blocks</Label>
