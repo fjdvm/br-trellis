@@ -77,7 +77,7 @@ describe("TemplatesGallery", () => {
     expect(screen.queryByText("Simple Announcement")).not.toBeInTheDocument();
   });
 
-  it("opens the template builder and enforces channel specific constraints", async () => {
+  it("opens the Email template builder with drag-and-drop palette when on the Email tab", async () => {
     const user = userEvent.setup();
     render(<TemplatesGallery />);
 
@@ -89,19 +89,31 @@ describe("TemplatesGallery", () => {
     expect(screen.getByText("CTA Button")).toBeInTheDocument();
   });
 
-  it("does not include Banner as a channel option in the template builder", async () => {
+  it("opens the Banner fixed-layout builder when on the Banner tab", async () => {
     const user = userEvent.setup();
     render(<TemplatesGallery />);
 
+    // Switch to Banner tab first
+    await user.click(screen.getByRole("tab", { name: /banner/i }));
     await user.click(screen.getByRole("button", { name: /template builder/i }));
 
-    // Open the channel select to inspect its options
-    const channelSelect = screen.getByRole("combobox");
-    await user.click(channelSelect);
+    // Fixed form fields should be visible, no drag-and-drop palette
+    expect(screen.getByLabelText(/message/i)).toBeInTheDocument();
+    expect(screen.queryByText("Draggable Blocks")).not.toBeInTheDocument();
+  });
 
-    expect(screen.queryByRole("option", { name: /^banner$/i })).not.toBeInTheDocument();
-    expect(screen.getByRole("option", { name: /^email$/i })).toBeInTheDocument();
-    expect(screen.getByRole("option", { name: /^popup$/i })).toBeInTheDocument();
+  it("opens the Popup fixed-layout builder when on the Popup tab", async () => {
+    const user = userEvent.setup();
+    render(<TemplatesGallery />);
+
+    // Switch to Popup tab first
+    await user.click(screen.getByRole("tab", { name: /popup/i }));
+    await user.click(screen.getByRole("button", { name: /template builder/i }));
+
+    // Fixed form fields should be visible, no drag-and-drop palette
+    expect(screen.getByLabelText(/heading/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/body message/i)).toBeInTheDocument();
+    expect(screen.queryByText("Draggable Blocks")).not.toBeInTheDocument();
   });
 
   it("shows a loading skeleton while templates load", () => {
@@ -115,7 +127,7 @@ describe("TemplatesGallery", () => {
     expect(screen.getByTestId("templates-gallery-loading")).toBeInTheDocument();
   });
 
-  it("saves a new template with multiple block types via the Template Builder UI", async () => {
+  it("saves a new Email template with multiple block types via the drag-and-drop builder", async () => {
     const user = userEvent.setup();
     const { crmClient } = await import("@/lib/api/crm-client");
     const createSpy = jest.spyOn(crmClient.blockTemplates, "create").mockResolvedValue({
