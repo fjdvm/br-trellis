@@ -273,14 +273,12 @@ export function Step2Audience({
                 <input
                   id="additional-emails"
                   aria-label="Additional emails"
-                  type="email"
+                  type="text"
+                  inputMode="email"
                   value={inputValue}
                   onChange={(e) => {
-                    const val = e.target.value;
-                    setInputValue(val);
+                    setInputValue(e.target.value);
                     if (emailError) setEmailError(null);
-                    const combined = [...parsedEmails, val].filter(Boolean).join("\n");
-                    onEmailsChange(combined);
                   }}
                   onKeyDown={handleKeyDown}
                   onBlur={handleBlur}
