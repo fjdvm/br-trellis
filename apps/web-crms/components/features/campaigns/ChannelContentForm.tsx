@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { Mail, PanelTop, AppWindow, Plus, Trash2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -185,6 +185,62 @@ export function ChannelContentForm({
       },
     });
   }
+
+  // ---------------------------------------------------------------------------
+  // Derive preview content — for block templates, build a JSON body that
+  // carries each block's actual user-entered value so the preview renders it.
+  // ---------------------------------------------------------------------------
+  const livePreviewContent = useMemo(() => {
+    if (!isBlockTemplate || parsedBlocks.length === 0) return value;
+
+    const previewBlocks = parsedBlocks.map((block) => ({
+      type: block.type,
+      label: block.label,
+      content: value.blockValues?.[block.id] ?? "",
+    }));
+
+    // Hoist the most relevant values for top-level preview props:
+    //   - First heading block → heading
+    //   - First text block → body (as JSON block array so preview renders all)
+    //   - First button block → ctaText
+    //   - First image block → imageUrl
+    const firstHeading = parsedBlocks.find((b) => b.type === "heading");
+    const firstButton = parsedBlocks.find((b) => b.type === "button");
+    const firstImage = parsedBlocks.find((b) => b.type === "image");
+
+    const headingVal =
+      firstHeading && typeof value.blockValues?.[firstHeading.id] === "string"
+        ? (value.blockValues[firstHeading.id] as string)
+        : undefined;
+
+    const btnVal =
+      firstButton &&
+      value.blockValues?.[firstButton.id] &&
+      typeof value.blockValues[firstButton.id] === "object" &&
+      !Array.isArray(value.blockValues[firstButton.id]) &&
+      "text" in (value.blockValues[firstButton.id] as object)
+        ? (value.blockValues[firstButton.id] as { text: string; url: string })
+        : null;
+
+    const imgVal =
+      firstImage &&
+      value.blockValues?.[firstImage.id] &&
+      typeof value.blockValues[firstImage.id] === "object" &&
+      !Array.isArray(value.blockValues[firstImage.id]) &&
+      "url" in (value.blockValues[firstImage.id] as object)
+        ? (value.blockValues[firstImage.id] as { url: string; alt: string })
+        : null;
+
+    return {
+      ...value,
+      // The full block list as JSON so the preview renders each one
+      body: JSON.stringify(previewBlocks),
+      heading: headingVal || value.heading,
+      ctaText: btnVal?.text || value.ctaText,
+      ctaUrl: btnVal?.url || value.ctaUrl,
+      imageUrl: imgVal?.url || value.imageUrl,
+    };
+  }, [isBlockTemplate, parsedBlocks, value]);
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-lg items-start">
@@ -560,7 +616,7 @@ export function ChannelContentForm({
       <div className="lg:col-span-5">
         <StorefrontLivePreview
           channel={channel}
-          content={value}
+          content={livePreviewContent}
           className="sticky top-24"
         />
       </div>
