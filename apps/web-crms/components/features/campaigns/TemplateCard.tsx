@@ -1,22 +1,14 @@
 "use client";
 
-import { Eye, Edit3, Trash2, MoreVertical } from "lucide-react";
+import { Eye } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import type { Template } from "@/types/campaign";
 
 interface TemplateCardProps {
   template: Template;
   onPreview: (template: Template) => void;
   onUse: (template: Template) => void;
-  onEdit?: (template: Template) => void;
-  onDelete?: (template: Template) => void;
 }
 
 /** Helper to render HTML, block arrays, or formatted template strings */
@@ -53,9 +45,7 @@ function renderFormattedContent(htmlOrText: string, format?: string): React.Reac
   });
 }
 
-export function TemplateCard({ template, onPreview, onUse, onEdit, onDelete }: TemplateCardProps) {
-  const hasActions = Boolean(onEdit || onDelete);
-
+export function TemplateCard({ template, onPreview, onUse }: TemplateCardProps) {
   return (
     <div className="flex flex-col bg-card border border-border rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all duration-200">
       {/* Live Storefront Preview Frame */}
@@ -149,50 +139,17 @@ export function TemplateCard({ template, onPreview, onUse, onEdit, onDelete }: T
         </div>
 
         {/* Footer Actions */}
-        <div className="pt-sm border-t border-border/40 flex items-center gap-1.5">
+        <div className="pt-sm border-t border-border/40">
           <Button
             type="button"
             variant="outline"
             size="sm"
             onClick={() => onPreview(template)}
-            className="flex-1 gap-1 text-xs"
+            className="w-full gap-1 text-xs"
           >
             <Eye className="w-3.5 h-3.5" />
             Preview
           </Button>
-
-          {hasActions && (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  aria-label="Template Options"
-                  className="w-8 h-8 p-0"
-                >
-                  <MoreVertical className="w-4 h-4 text-muted-foreground" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-36">
-                {onEdit && (
-                  <DropdownMenuItem onClick={() => onEdit(template)} className="gap-2 cursor-pointer text-xs">
-                    <Edit3 className="w-3.5 h-3.5 text-muted-foreground" />
-                    Edit
-                  </DropdownMenuItem>
-                )}
-                {onDelete && (
-                  <DropdownMenuItem
-                    onClick={() => onDelete(template)}
-                    className="gap-2 cursor-pointer text-xs text-destructive focus:text-destructive"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                    Delete
-                  </DropdownMenuItem>
-                )}
-              </DropdownMenuContent>
-            </DropdownMenu>
-          )}
         </div>
       </div>
     </div>

@@ -10,9 +10,15 @@ import {
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { StorefrontLivePreview } from "@/components/features/campaigns/StorefrontLivePreview";
-import { Code, Eye, FileText, Info, Layers, Sparkles } from "lucide-react";
+import { Code, Eye, FileText, Info, Layers, Sparkles, MoreVertical, Edit3, Trash2 } from "lucide-react";
 import type { Template } from "@/types/campaign";
 
 interface TemplatePreviewModalProps {
@@ -20,6 +26,8 @@ interface TemplatePreviewModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onUseTemplate: (template: Template) => void;
+  onEditTemplate?: (template: Template) => void;
+  onDeleteTemplate?: (template: Template) => void;
 }
 
 export function TemplatePreviewModal({
@@ -27,10 +35,14 @@ export function TemplatePreviewModal({
   open,
   onOpenChange,
   onUseTemplate,
+  onEditTemplate,
+  onDeleteTemplate,
 }: TemplatePreviewModalProps) {
   const [activeTab, setActiveTab] = useState<"preview" | "details" | "source">("preview");
 
   if (!template) return null;
+
+  const isBlockTemplate = template.format === "Blocks";
 
   // Extract double curly brace placeholders (e.g. {{subject}}, {{body}})
   const variables = Array.from(
@@ -53,6 +65,48 @@ export function TemplatePreviewModal({
               {template.description || "System preset communication framework."}
             </DialogDescription>
           </div>
+
+          {isBlockTemplate && (onEditTemplate || onDeleteTemplate) && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  aria-label="Template options menu"
+                  className="w-8 h-8 p-0 rounded-full"
+                >
+                  <MoreVertical className="w-4 h-4 text-muted-foreground hover:text-foreground" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-36 z-[100000]">
+                {onEditTemplate && (
+                  <DropdownMenuItem
+                    onClick={() => {
+                      onOpenChange(false);
+                      onEditTemplate(template);
+                    }}
+                    className="gap-2 cursor-pointer text-xs"
+                  >
+                    <Edit3 className="w-3.5 h-3.5 text-muted-foreground" />
+                    Edit
+                  </DropdownMenuItem>
+                )}
+                {onDeleteTemplate && (
+                  <DropdownMenuItem
+                    onClick={() => {
+                      onOpenChange(false);
+                      onDeleteTemplate(template);
+                    }}
+                    className="gap-2 cursor-pointer text-xs text-destructive focus:text-destructive"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    Delete
+                  </DropdownMenuItem>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
         </DialogHeader>
 
         {/* Tab Navigation in Template Details */}

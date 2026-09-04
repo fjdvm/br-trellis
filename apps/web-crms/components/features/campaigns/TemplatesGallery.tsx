@@ -411,8 +411,6 @@ export function TemplatesGallery() {
                       template={t}
                       onPreview={(tpl) => setPreviewTemplate(tpl)}
                       onUse={handleUseTemplate}
-                      onEdit={t.format === "Blocks" ? handleEditTemplate : undefined}
-                      onDelete={t.format === "Blocks" ? (tpl) => setDeleteTemplateItem(tpl) : undefined}
                     />
                   ))}
                 </div>
@@ -450,6 +448,8 @@ export function TemplatesGallery() {
         open={Boolean(previewTemplate)}
         onOpenChange={(open) => !open && setPreviewTemplate(null)}
         onUseTemplate={handleUseTemplate}
+        onEditTemplate={handleEditTemplate}
+        onDeleteTemplate={(tpl) => setDeleteTemplateItem(tpl)}
       />
 
       {/* Drag and Drop Template Builder Modal */}
