@@ -113,12 +113,17 @@ export function CampaignWizard({ existing }: { existing?: Campaign }) {
   function buildChannelContents(): CampaignChannelContentInput[] {
     return channels.map((channel) => {
       const c = contents[channel] ?? {};
+      // For block templates, serialise blockValues as JSON into the body field
+      // so the renderer can reconstruct the filled-in blocks later.
+      const body = c.blockValues && Object.keys(c.blockValues).length > 0
+        ? JSON.stringify(c.blockValues)
+        : (c.body ?? null);
       return {
         channel,
         templateId: c.templateId ?? null,
         subject: c.subject ?? null,
         heading: c.heading ?? null,
-        body: c.body ?? null,
+        body,
         imageUrl: c.imageUrl ?? null,
         linkUrl: c.linkUrl ?? null,
         ctaText: c.ctaText ?? null,

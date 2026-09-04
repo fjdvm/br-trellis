@@ -46,14 +46,113 @@ describe("ChannelContentForm with BlockTemplate", () => {
 
     render(<ChannelContentForm channel="Email" value={state} onChange={handleChange} />);
 
-    // Must show block labels as form headers/labels, NOT raw JSON string
-    expect(screen.getByLabelText("Main Body Text")).toBeInTheDocument();
-    expect(screen.getByText("Primary Action Button")).toBeInTheDocument();
+    // Blocks are numbered — labels include the position prefix
+    expect(screen.getByLabelText("1. Main Body Text")).toBeInTheDocument();
+    // Button, image, link, carousel are inside BlockGroup wrappers
+    expect(screen.getByText(/Primary Action Button/)).toBeInTheDocument();
     expect(screen.getByLabelText("Button Text")).toBeInTheDocument();
     expect(screen.getByLabelText("Button Link URL")).toBeInTheDocument();
-    expect(screen.getByText("Image Block")).toBeInTheDocument();
+    expect(screen.getByText(/Image Block/)).toBeInTheDocument();
     expect(screen.getAllByLabelText("Image URL").length).toBeGreaterThan(0);
     expect(screen.getByLabelText("Alt Text")).toBeInTheDocument();
-    expect(screen.getByText("Product Showcase")).toBeInTheDocument();
+    expect(screen.getByText(/Product Showcase/)).toBeInTheDocument();
+  });
+
+  it("shows field count summary equal to the number of blocks in the template", () => {
+    render(
+      <ChannelContentForm
+        channel="Email"
+        value={{ templateId: "bt-1", blockValues: {} }}
+        onChange={jest.fn()}
+      />
+    );
+    // 5 blocks → "5 fields from template"
+    expect(screen.getByText(/5 fields/i)).toBeInTheDocument();
+  });
+
+  it("labels all fields as optional", () => {
+    render(
+      <ChannelContentForm
+        channel="Email"
+        value={{ templateId: "bt-1", blockValues: {} }}
+        onChange={jest.fn()}
+      />
+    );
+    // Each field renders an "optional" hint
+    const optionalHints = screen.getAllByText(/optional/i);
+    expect(optionalHints.length).toBeGreaterThan(0);
+  });
+
+  it("renders one separate input for each block even when multiple blocks share the same type", () => {
+    const multiHeadingTemplate = {
+      id: "bt-multi",
+      name: "Multi-Heading Layout",
+      channel: "Email" as const,
+      format: "Blocks" as const,
+      content: JSON.stringify([
+        { id: "h1", type: "heading", label: "Hero Title", order: 1 },
+        { id: "h2", type: "heading", label: "Section Title", order: 2 },
+        { id: "h3", type: "heading", label: "Sub Title", order: 3 },
+        { id: "t1", type: "text", label: "Intro Text", order: 4 },
+      ]),
+      createdAt: "2026-01-01T00:00:00Z",
+    };
+
+    (useTemplates as jest.Mock).mockReturnValue({
+      data: [multiHeadingTemplate],
+      isLoading: false,
+      error: null,
+    });
+
+    render(
+      <ChannelContentForm
+        channel="Email"
+        value={{ templateId: "bt-multi", blockValues: {} }}
+        onChange={jest.fn()}
+      />
+    );
+
+    // 4 blocks total → "4 fields"
+    expect(screen.getByText(/4 fields/i)).toBeInTheDocument();
+
+    // Each heading gets its own numbered label
+    expect(screen.getByLabelText("1. Hero Title")).toBeInTheDocument();
+    expect(screen.getByLabelText("2. Section Title")).toBeInTheDocument();
+    expect(screen.getByLabelText("3. Sub Title")).toBeInTheDocument();
+    expect(screen.getByLabelText("4. Intro Text")).toBeInTheDocument();
+  });
+
+  it("renders carousel with Add Slide button and respects 3-slide limit", () => {
+    const carouselTemplate = {
+      id: "bt-carousel",
+      name: "Carousel Layout",
+      channel: "Email" as const,
+      format: "Blocks" as const,
+      content: JSON.stringify([
+        { id: "c1", type: "carousel", label: "Product Gallery", order: 1 },
+      ]),
+      createdAt: "2026-01-01T00:00:00Z",
+    };
+
+    (useTemplates as jest.Mock).mockReturnValue({
+      data: [carouselTemplate],
+      isLoading: false,
+      error: null,
+    });
+
+    render(
+      <ChannelContentForm
+        channel="Email"
+        value={{
+          templateId: "bt-carousel",
+          blockValues: { c1: [{ imageUrl: "", caption: "", linkUrl: "" }] },
+        }}
+        onChange={jest.fn()}
+      />
+    );
+
+    expect(screen.getByText(/Product Gallery/i)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /add slide/i })).toBeInTheDocument();
+    expect(screen.getByText(/1 of 3 slides/i)).toBeInTheDocument();
   });
 });
