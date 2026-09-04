@@ -596,7 +596,7 @@ export function TemplatesGallery() {
                         <div className="flex items-center justify-between text-xs">
                           <span className="font-bold text-foreground">Subject: <span className="font-normal text-muted-foreground">{builderName || "Campaign Announcement"}</span></span>
                         </div>
-                        <div className="flex items-center justify-between text-xs text-muted-foreground border-t border-border/50 pt-2">
+                        <div className="space-y-1 text-xs text-muted-foreground border-t border-border/50 pt-2">
                           <div>
                             <span className="font-semibold text-foreground">From:</span> Aura Store &lt;newsletter@aurastore.com&gt;
                           </div>
