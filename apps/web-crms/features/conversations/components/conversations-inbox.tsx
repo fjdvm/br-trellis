@@ -15,33 +15,16 @@ import { crmClient } from "@/lib/api/crm-client";
 import { useCurrentAgentId } from "@/hooks/useCurrentAgentId";
 import { useRefetchOnFocus } from "@/hooks/useRefetchOnFocus";
 import { useSignalR } from "@/hooks/useSignalR";
-import { isActiveStatus, isTerminalStatus } from "@/lib/tickets";
+import { isActiveStatus } from "@/lib/tickets";
 import type { TicketListItem } from "@/types/ticket-list";
 import { ConversationListItems } from "@/features/conversations/components/conversation-list-items";
 import { ConversationPane } from "@/features/conversations/components/conversation-pane";
-
-/**
- * The Inbox's conversation filter. The worklist only ever contains active
- * (Claimed/Ongoing) conversations under the Visibility Rule — terminal
- * (Completed/Canceled) tickets are never shown here — so the filter narrows
- * *within* the active set along two dimensions:
- *  - status: `All` (the default) shows every active conversation; `Claimed`
- *    and `Ongoing` narrow to that single status.
- *  - read state: `Unread` keeps conversations awaiting the agent
- *    (`waitingOn === "Agent"` — the same signal behind the "Waiting on you"
- *    badge), `Read` keeps the rest (the agent has already replied, so the
- *    turn is the customer's or nobody's).
- */
-type InboxFilter = "All" | "Claimed" | "Ongoing" | "Read" | "Unread";
-
-/** Human labels for the filter dropdown, in display order. */
-const INBOX_FILTER_LABELS: Record<InboxFilter, string> = {
-  All: "All",
-  Claimed: "Claimed",
-  Ongoing: "Ongoing",
-  Read: "Read",
-  Unread: "Unread",
-};
+import { useMarkConversationRead } from "@/features/conversations/hooks/use-mark-conversation-read";
+import {
+  type InboxFilter,
+  INBOX_FILTER_LABELS,
+} from "@/features/conversations/lib/inbox-types";
+import { useInboxFilter } from "@/features/conversations/hooks/use-inbox-filter";
 
 interface ConversationsInboxProps {
   /**
@@ -185,35 +168,7 @@ export function ConversationsInbox({
    * status; "Unread"/"Read" match on whether the conversation is awaiting the
    * agent (`waitingOn === "Agent"`).
    */
-  const conversations = useMemo(() => {
-    const matchesFilter = (t: TicketListItem) => {
-      switch (filter) {
-        case "Claimed":
-          return t.status === "Claimed";
-        case "Ongoing":
-          return t.status === "Ongoing";
-        case "Unread":
-          return t.waitingOn === "Agent";
-        case "Read":
-          return t.waitingOn !== "Agent";
-        case "All":
-        default:
-          return true;
-      }
-    };
-    return tickets
-      .filter(
-        (t) =>
-          t.assignedToId !== null &&
-          t.assignedToId === currentAgentId &&
-          isActiveStatus(t.status) &&
-          matchesFilter(t)
-      )
-      .sort(
-        (a, b) =>
-          new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
-      );
-  }, [tickets, currentAgentId, filter]);
+  const conversations = useInboxFilter(tickets, currentAgentId, filter);
 
   /**
    * The open conversation's ticket. Prefer the row already in the loaded list
@@ -236,42 +191,7 @@ export function ConversationsInbox({
    * returned row is merged locally so the "Waiting on you" badge clears and the
    * Unread filter drops it immediately, without waiting for the hub echo.
    */
-  const markedReadRef = useRef<string | null>(null);
-  useEffect(() => {
-    if (!selectedTicketId) return;
-    const row = selectedFromList;
-    if (!row) return;
-    if (markedReadRef.current === selectedTicketId) return;
-    if (isTerminalStatus(row.status)) return;
-    if (row.waitingOn !== "Agent") return;
-
-    markedReadRef.current = selectedTicketId;
-    void (async () => {
-      try {
-        const updated = await crmClient.conversationTickets.setWaitingOn(
-          selectedTicketId,
-          { waitingOn: "None" }
-        );
-        mergeTicket({
-          id: updated.id,
-          subject: updated.subject,
-          status: updated.status,
-          waitingOn: updated.waitingOn,
-          source: updated.source,
-          assignedToId: updated.assignedToId,
-          assignedToName: updated.assignedToName,
-          assignedToEmail: updated.assignedToEmail,
-          contactId: updated.contactId,
-          contact: updated.contact,
-          createdAt: updated.createdAt,
-          updatedAt: updated.updatedAt,
-        });
-      } catch {
-        // Best-effort: if the mark-read call fails, allow a later view to retry.
-        markedReadRef.current = null;
-      }
-    })();
-  }, [selectedTicketId, selectedFromList, mergeTicket]);
+  useMarkConversationRead(selectedTicketId, selectedFromList, mergeTicket);
 
   return (
     // Full-height split workspace: fills the viewport below the app header so
@@ -367,20 +287,5 @@ export function ConversationsInbox({
   );
 }
 
-interface ConversationPaneProps {
-  ticketId: string;
-  /**
-   * The ticket row from the loaded list, when the open conversation is one of
-   * my worklist conversations. `null` when deep-linked to a ticket outside my
-   * worklist — the pane then fetches it by id so contact/terminal are correct.
-   */
-  ticket: TicketListItem | null;
-  /**
-   * Whether the worklist list has finished loading. The pane waits for this
-   * before deciding to fetch by id, so a worklist conversation opened via
-   * navigation uses its already-loaded row instead of triggering a redundant
-   * `getById` during the list's initial load window.
-   */
-  listLoaded: boolean;
-}
+
 
