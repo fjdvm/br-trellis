@@ -14,6 +14,7 @@ export type ChannelPreviewContent = {
   ctaText?: string;
   ctaUrl?: string;
   dismissible?: boolean;
+  backgroundColor?: string;
 };
 
 // ---------------------------------------------------------------------------
@@ -403,7 +404,10 @@ export function StorefrontLivePreview({
           {channel === "Banner" && (
             <div
               key={`banner-${animKey}`}
-              style={{ animation: "slideDown 0.6s cubic-bezier(0.16,1,0.3,1) forwards" }}
+              style={{
+                animation: "slideDown 0.6s cubic-bezier(0.16,1,0.3,1) forwards",
+                ...(content.backgroundColor ? { backgroundColor: content.backgroundColor, backgroundImage: "none" } : {}),
+              }}
               className="w-full bg-gradient-to-r from-primary to-primary/90 text-primary-foreground p-3 px-4 rounded-lg flex items-center justify-between gap-3 shadow-md mb-2"
             >
               <div className="flex items-center gap-2.5 overflow-hidden">
@@ -490,7 +494,10 @@ export function StorefrontLivePreview({
                 className="absolute inset-0 bg-slate-950/60 backdrop-blur-xs"
               />
               <div
-                style={{ animation: "popIn 0.5s cubic-bezier(0.175,0.885,0.32,1.275) forwards" }}
+                style={{
+                  animation: "popIn 0.5s cubic-bezier(0.175,0.885,0.32,1.275) forwards",
+                  ...(content.backgroundColor ? { backgroundColor: content.backgroundColor } : {}),
+                }}
                 className="relative z-10 w-full bg-card border border-border shadow-2xl rounded-xl p-4 text-center space-y-3"
               >
                 {content.imageUrl && (

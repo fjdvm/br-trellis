@@ -40,6 +40,7 @@ export type ChannelContentState = {
   ctaText?: string;
   ctaUrl?: string;
   dismissible?: boolean;
+  backgroundColor?: string;
   blockValues?: Record<string, BlockValue>;
 };
 
@@ -609,12 +610,52 @@ export function ChannelContentForm({
       </div>
 
       {/* ── Right column: live preview ── */}
-      <div className="lg:col-span-5 lg:border-l lg:border-border lg:pl-lg py-lg">
+      <div className="lg:col-span-5 lg:border-l lg:border-border lg:pl-lg py-lg space-y-4">
         <StorefrontLivePreview
           channel={channel}
           content={livePreviewContent}
           className="sticky top-24"
         />
+
+        {/* Color picker for Banner and Popup channels */}
+        {(channel === "Banner" || channel === "Popup") && (
+          <div className="p-3 bg-muted/30 border border-border rounded-lg space-y-2 text-left">
+            <Label htmlFor={`${channel}-bg-color`} className="text-xs font-semibold text-foreground flex items-center justify-between">
+              <span>{channel} Background Color</span>
+              <span className="font-mono text-[11px] text-muted-foreground uppercase">
+                {value.backgroundColor || (channel === "Banner" ? "#0f172a" : "#ffffff")}
+              </span>
+            </Label>
+            <div className="flex items-center gap-3">
+              <input
+                id={`${channel}-bg-color`}
+                type="color"
+                value={value.backgroundColor || (channel === "Banner" ? "#0f172a" : "#ffffff")}
+                onChange={(e) => onChange({ backgroundColor: e.target.value })}
+                className="w-9 h-9 rounded cursor-pointer border border-border bg-transparent p-0.5"
+              />
+              <div className="flex items-center gap-1.5 flex-wrap">
+                {(channel === "Banner"
+                  ? ["#0f172a", "#2563eb", "#059669", "#d97706", "#dc2626", "#7c3aed"]
+                  : ["#ffffff", "#f8fafc", "#f1f5f9", "#fef2f2", "#f0fdf4", "#eff6ff"]
+                ).map((preset) => (
+                  <button
+                    key={preset}
+                    type="button"
+                    title={`Select color ${preset}`}
+                    onClick={() => onChange({ backgroundColor: preset })}
+                    style={{ backgroundColor: preset }}
+                    className={`w-6 h-6 rounded-full border ${
+                      (value.backgroundColor || (channel === "Banner" ? "#0f172a" : "#ffffff")) === preset
+                        ? "border-primary ring-2 ring-primary/40 scale-110"
+                        : "border-border/80 hover:scale-105"
+                    } transition-all cursor-pointer`}
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
