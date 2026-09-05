@@ -70,7 +70,7 @@ describe("ChannelContentForm with BlockTemplate", () => {
     expect(screen.getByText(/5 fields/i)).toBeInTheDocument();
   });
 
-  it("labels all fields as optional", () => {
+  it("does not render optional text hint on template fields", () => {
     render(
       <ChannelContentForm
         channel="Email"
@@ -78,9 +78,9 @@ describe("ChannelContentForm with BlockTemplate", () => {
         onChange={jest.fn()}
       />
     );
-    // Each field renders an "optional" hint
-    const optionalHints = screen.getAllByText(/optional/i);
-    expect(optionalHints.length).toBeGreaterThan(0);
+    // Optional text hint removed from form field headers
+    const optionalHints = screen.queryAllByText(/optional/i);
+    expect(optionalHints.length).toBe(0);
   });
 
   it("renders one separate input for each block even when multiple blocks share the same type", () => {

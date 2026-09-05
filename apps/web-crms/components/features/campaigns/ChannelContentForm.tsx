@@ -289,7 +289,7 @@ export function ChannelContentForm({
                 {parsedBlocks.length} {parsedBlocks.length === 1 ? "field" : "fields"}
               </Badge>
               <span className="text-sm text-muted-foreground">
-                from template — all fields are optional
+                from template
               </span>
             </div>
 
@@ -435,7 +435,7 @@ export function ChannelContentForm({
                     <BlockGroup key={block.id} label={labelPrefix + block.label} type="carousel">
                       <div className="flex items-center justify-between mb-3">
                         <span className="text-xs text-muted-foreground">
-                          {slides.length} of 3 slides · each image URL is optional
+                          {slides.length} of 3 slides
                         </span>
                         <Button
                           type="button"
@@ -516,9 +516,6 @@ export function ChannelContentForm({
         ) : (
           /* ── Non-block template: channel-specific flat fields ── */
           <div className="space-y-md pt-2">
-            <p className="text-sm text-muted-foreground px-3 py-2 bg-muted/50 border border-border rounded-md">
-              All fields are optional — fill in only what this template uses.
-            </p>
 
             {channel === "Email" && (
               <>
@@ -640,10 +637,12 @@ export function ChannelContentForm({
 function BlockGroup({
   label,
   type,
+  required,
   children,
 }: {
   label: string;
   type: string;
+  required?: boolean;
   children: React.ReactNode;
 }) {
   const typeColors: Record<string, string> = {
@@ -657,11 +656,13 @@ function BlockGroup({
   return (
     <div className="space-y-3 border border-border/70 rounded-lg p-4 bg-muted/20">
       <div className="flex items-center gap-2">
-        <span className="text-sm font-semibold text-foreground">{label}</span>
+        <span className="text-sm font-semibold text-foreground">
+          {label}
+          {required && <span className="text-destructive ml-1">*</span>}
+        </span>
         <span className={`text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded border ${badgeClass}`}>
           {type}
         </span>
-        <span className="ml-auto text-xs text-muted-foreground italic">optional</span>
       </div>
       {children}
     </div>
@@ -676,20 +677,24 @@ function TextField({
   id,
   label,
   value,
+  required,
   onChange,
   placeholder,
 }: {
   id: string;
   label: string;
   value?: string;
+  required?: boolean;
   onChange: (v: string) => void;
   placeholder?: string;
 }) {
   return (
     <div className="space-y-sm border border-border/70 rounded-lg p-4 bg-muted/20">
       <div className="flex items-center justify-between">
-        <Label htmlFor={id}>{label}</Label>
-        <span className="text-xs text-muted-foreground italic">optional</span>
+        <Label htmlFor={id}>
+          {label}
+          {required && <span className="text-destructive ml-1">*</span>}
+        </Label>
       </div>
       <Input
         id={id}
@@ -705,20 +710,24 @@ function SubTextField({
   id,
   label,
   value,
+  required,
   onChange,
   placeholder,
 }: {
   id: string;
   label: string;
   value?: string;
+  required?: boolean;
   onChange: (v: string) => void;
   placeholder?: string;
 }) {
   return (
     <div className="space-y-sm">
       <div className="flex items-center justify-between">
-        <Label htmlFor={id}>{label}</Label>
-        <span className="text-xs text-muted-foreground italic">optional</span>
+        <Label htmlFor={id}>
+          {label}
+          {required && <span className="text-destructive ml-1">*</span>}
+        </Label>
       </div>
       <Input
         id={id}
@@ -738,11 +747,13 @@ function RichTextEditorField({
   id,
   label,
   value,
+  required,
   onChange,
 }: {
   id: string;
   label: string;
   value?: string;
+  required?: boolean;
   onChange: (v: string) => void;
 }) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -776,9 +787,11 @@ function RichTextEditorField({
   return (
     <div className="space-y-sm text-left border border-border/70 rounded-lg p-4 bg-muted/20">
       <div className="flex items-center justify-between">
-        <Label htmlFor={id}>{label}</Label>
+        <Label htmlFor={id}>
+          {label}
+          {required && <span className="text-destructive ml-1">*</span>}
+        </Label>
         <div className="flex items-center gap-2">
-          <span className="text-xs text-muted-foreground italic">optional</span>
           {/* Rich Formatting Toolbar */}
           <div className="flex items-center gap-1 bg-muted/60 border border-border p-1 rounded-md">
             <button
