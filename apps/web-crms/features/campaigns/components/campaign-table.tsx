@@ -130,9 +130,9 @@ export function CampaignTable({
                 <TableCell>{audienceLabel(campaign)}</TableCell>
                 <TableCell>{formatDate(campaign.createdAt)}</TableCell>
                 <TableCell>
-                  {campaign.dispatchResult ? (
+                  {"dispatchResult" in campaign && campaign.dispatchResult ? (
                     <span className="text-foreground">
-                      {campaign.dispatchResult.processedRecipientCount} sent
+                      {(campaign as any).dispatchResult.processedRecipientCount} sent
                     </span>
                   ) : metrics[campaign.id] ? (
                     <span className="text-foreground">

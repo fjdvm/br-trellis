@@ -50,6 +50,7 @@ export function TasksPage() {
   };
 
   const handleAction = (task: ReturnType<typeof useTasks>["tasks"][number]) => {
+    if (!task.originalId) return;
     if (task.type === "anomaly") {
       handleAcknowledgeAnomaly(task.originalId);
     } else if (task.type === "unclaimed_ticket") {
@@ -125,7 +126,7 @@ export function TasksPage() {
                         {task.title.toUpperCase()}
                       </Badge>
                       <span className="text-[11px] text-muted-foreground font-medium">
-                        {formatTimeAgo(task.date)}
+                        {formatTimeAgo(task.date || "")}
                       </span>
                     </div>
                     <p className="text-body-sm font-medium text-foreground">

@@ -87,11 +87,11 @@ export function useConversationMessages(ticketId: string) {
         id: tempId,
         ticketId,
         senderType: "Staff",
-        senderId: input.senderId ?? null,
-        senderName: input.senderName ?? "Support Staff",
-        senderEmail: input.senderEmail ?? null,
-        body: input.body,
-        createdAt: new Date().toISOString(),
+        senderContactId: null,
+        senderStaffId: input.senderStaffId,
+        senderStaffName: input.senderStaffName ?? "Support Staff",
+        content: input.content,
+        sentAt: new Date().toISOString(),
       };
 
       lastOptimisticUpdateRef.current = Date.now();

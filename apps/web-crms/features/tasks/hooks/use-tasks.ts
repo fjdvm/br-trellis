@@ -40,7 +40,8 @@ export function normalizeTasks(
   (anomaliesRes.anomalies ?? []).forEach((anomaly) => {
     if (!anomaly.acknowledged) {
       tasks.push({
-        id: `anomaly-${anomaly.id}`,
+        id: `anomaly-${anomaly.id || anomaly.anomalyId}`,
+        originalId: anomaly.id || anomaly.anomalyId,
         type: "anomaly",
         title: anomaly.title || anomaly.metric || "Anomaly Detected",
         description: anomaly.description || `Anomaly in ${anomaly.metric}`,
@@ -49,6 +50,7 @@ export function normalizeTasks(
         actionable: true,
         actionType: "acknowledge_anomaly",
         originalData: anomaly,
+        date: anomaly.detectedAt || new Date().toISOString(),
       });
     }
   });
@@ -56,20 +58,23 @@ export function normalizeTasks(
   // Ticket tasks
   tickets.forEach((ticket) => {
     if (ticket.status === "Unclaimed") {
+      const t = ticket as any;
       const isHigh =
-        ticket.priority?.toLowerCase() === "high" ||
-        ticket.priority?.toLowerCase() === "urgent";
+        t.priority?.toLowerCase() === "high" ||
+        t.priority?.toLowerCase() === "urgent";
 
       tasks.push({
         id: `ticket-${ticket.id}`,
+        originalId: ticket.id,
         type: "unclaimed_ticket",
-        title: `Unclaimed Ticket: ${ticket.subject || ticket.title}`,
-        description: ticket.description || "Customer waiting for response",
+        title: `Unclaimed Ticket: ${t.subject || t.title || t.ticketNumber || ticket.id}`,
+        description: t.description || "Customer waiting for response",
         severity: isHigh ? "high" : "medium",
         source: "Support",
         actionable: true,
         actionType: "claim_ticket",
         originalData: ticket,
+        date: ticket.createdAt,
       });
     }
   });
@@ -78,6 +83,7 @@ export function normalizeTasks(
   campaigns.forEach((campaign) => {
     tasks.push({
       id: `campaign-${campaign.id}`,
+      originalId: campaign.id,
       type: "draft_campaign",
       title: `Draft Campaign: ${campaign.name}`,
       description: "Campaign waiting for review/launch",
@@ -86,6 +92,7 @@ export function normalizeTasks(
       actionable: true,
       actionType: "review_campaign",
       originalData: campaign,
+      date: campaign.updatedAt,
     });
   });
 
@@ -98,6 +105,7 @@ export function normalizeTasks(
     ) {
       tasks.push({
         id: `customer-${customer.id}`,
+        originalId: customer.id,
         type: "at_risk_customer",
         title: `At-Risk Customer: ${customer.name}`,
         description:
@@ -108,6 +116,7 @@ export function normalizeTasks(
         actionable: true,
         actionType: "contact_customer",
         originalData: customer,
+        date: new Date().toISOString(),
       });
     }
   });
@@ -132,7 +141,7 @@ export function useTasks() {
             .catch(() => ({ anomalies: [] as Anomaly[] })),
           ticketsApi
             .list(1, 100)
-            .catch(() => ({ items: [] as TicketListItem[] })),
+            .catch(() => ({ items: [] as any[] })),
           campaignsApi
             .list("Draft")
             .catch(() => [] as DraftCampaign[]),
@@ -146,7 +155,7 @@ export function useTasks() {
           anomaliesRes,
           ticketsRes.items ?? [],
           (draftCampaignsRes as DraftCampaign[]) ?? [],
-          ((customersRes as PaginatedCustomers).items ?? [])
+          (customersRes.items as CustomerItem[]) ?? []
         )
       );
     } catch (err) {
