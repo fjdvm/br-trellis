@@ -252,7 +252,7 @@ export function ChannelContentForm({
   }, [isBlockTemplate, parsedBlocks, value]);
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-12 gap-lg items-start">
+    <div className="grid grid-cols-1 lg:grid-cols-12 gap-lg items-stretch">
       {/* ── Left column: form ── */}
       <div className="lg:col-span-7 space-y-md p-lg">
         {/* Channel header */}
@@ -622,7 +622,7 @@ export function ChannelContentForm({
       </div>
 
       {/* ── Right column: live preview ── */}
-      <div className="lg:col-span-5 lg:border-l lg:border-border lg:pl-lg">
+      <div className="lg:col-span-5 lg:border-l lg:border-border lg:pl-lg py-lg">
         <StorefrontLivePreview
           channel={channel}
           content={livePreviewContent}
