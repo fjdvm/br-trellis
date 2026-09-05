@@ -337,14 +337,14 @@ export function ChannelContentForm({
                   return (
                     <BlockGroup key={block.id} label={labelPrefix + block.label} type="button">
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <TextField
+                        <SubTextField
                           id={`${channel}-block-${block.id}-text`}
                           label="Button Text"
                           placeholder="e.g. Shop Now"
                           value={bv.text}
                           onChange={(t) => update({ ...bv, text: t })}
                         />
-                        <TextField
+                        <SubTextField
                           id={`${channel}-block-${block.id}-url`}
                           label="Button Link URL"
                           placeholder="https://…"
@@ -364,14 +364,14 @@ export function ChannelContentForm({
                   return (
                     <BlockGroup key={block.id} label={labelPrefix + block.label} type="image">
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <TextField
+                        <SubTextField
                           id={`${channel}-block-${block.id}-url`}
                           label="Image URL"
                           placeholder="https://cdn.example.com/image.jpg"
                           value={iv.url}
                           onChange={(u) => update({ ...iv, url: u })}
                         />
-                        <TextField
+                        <SubTextField
                           id={`${channel}-block-${block.id}-alt`}
                           label="Alt Text"
                           placeholder="Describe the image…"
@@ -391,14 +391,14 @@ export function ChannelContentForm({
                   return (
                     <BlockGroup key={block.id} label={labelPrefix + block.label} type="link">
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <TextField
+                        <SubTextField
                           id={`${channel}-block-${block.id}-text`}
                           label="Link Text"
                           placeholder="e.g. Learn More"
                           value={lv.text}
                           onChange={(t) => update({ ...lv, text: t })}
                         />
-                        <TextField
+                        <SubTextField
                           id={`${channel}-block-${block.id}-url`}
                           label="Link URL"
                           placeholder="https://…"
@@ -686,6 +686,35 @@ function TextField({
   placeholder?: string;
 }) {
   return (
+    <div className="space-y-sm border border-border/70 rounded-lg p-4 bg-muted/20">
+      <div className="flex items-center justify-between">
+        <Label htmlFor={id}>{label}</Label>
+        <span className="text-xs text-muted-foreground italic">optional</span>
+      </div>
+      <Input
+        id={id}
+        value={value ?? ""}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+      />
+    </div>
+  );
+}
+
+function SubTextField({
+  id,
+  label,
+  value,
+  onChange,
+  placeholder,
+}: {
+  id: string;
+  label: string;
+  value?: string;
+  onChange: (v: string) => void;
+  placeholder?: string;
+}) {
+  return (
     <div className="space-y-sm">
       <div className="flex items-center justify-between">
         <Label htmlFor={id}>{label}</Label>
@@ -745,7 +774,7 @@ function RichTextEditorField({
   }
 
   return (
-    <div className="space-y-sm text-left">
+    <div className="space-y-sm text-left border border-border/70 rounded-lg p-4 bg-muted/20">
       <div className="flex items-center justify-between">
         <Label htmlFor={id}>{label}</Label>
         <div className="flex items-center gap-2">
