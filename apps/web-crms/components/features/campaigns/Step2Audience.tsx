@@ -258,11 +258,6 @@ export function Step2Audience({
                   Add specific email addresses
                   {emailsRequired && <span className="text-destructive ml-0.5">*</span>}
                 </h3>
-                {emailsRequired ? (
-                  <Badge variant="destructive" className="text-xs">Required</Badge>
-                ) : (
-                  <Badge variant="secondary" className="text-xs">Optional</Badge>
-                )}
               </div>
             </div>
             {/* Only allow collapsing when not required */}
