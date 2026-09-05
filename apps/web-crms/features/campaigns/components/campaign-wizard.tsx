@@ -2,19 +2,9 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
-import { ArrowLeft, ArrowRight, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from "@/components/ui/dialog";
 import { useSegments } from "@/hooks/useSegments";
 import { crmClient } from "@/lib/api/crm-client";
 import { type ChannelContentState } from "@/features/campaigns/components/channel-content-form";
@@ -27,196 +17,47 @@ import { CampaignStepper } from "@/features/campaigns/components/campaign-steppe
 import { Step1Channels } from "@/features/campaigns/components/step1-channels";
 import { Step2Audience, SYSTEM_PRESET_SEGMENTS } from "@/features/campaigns/components/step2-audience";
 import { Step3Content } from "@/features/campaigns/components/step3-content";
-import type {
-  Campaign,
-  CampaignChannel,
-  CampaignChannelContentInput,
-  CreateCampaignInput,
-  UpdateCampaignInput,
-} from "@/types/campaign";
-
-const NO_SEGMENT = "__none__";
-
-type Step = "Platform" | "Audience" | "Content" | "Schedule" | "Review";
-
-const STEP_PHASE: Record<Step, 0 | 1 | 2> = {
-  Platform: 0,
-  Audience: 1,
-  Content: 2,
-  Schedule: 2,
-  Review: 2,
-};
+import { StepReview } from "@/features/campaigns/components/step-review";
+import { CampaignCancelModal } from "@/features/campaigns/components/campaign-cancel-modal";
+import type { Campaign } from "@/types/campaign";
+import {
+  useCampaignWizardState,
+  NO_SEGMENT,
+  STEP_PHASE,
+  type Step,
+} from "@/features/campaigns/hooks/use-campaign-wizard-state";
 
 export function CampaignWizard({ existing }: { existing?: Campaign }) {
-  const router = useRouter();
   const { data: segments } = useSegments();
 
-  const [step, setStep] = useState<Step>("Platform");
-  const [showCancelModal, setShowCancelModal] = useState(false);
-  const [title, setTitle] = useState(existing?.title ?? "");
-  const [channels, setChannels] = useState<CampaignChannel[]>(existing?.channels ?? []);
-  const [segmentId, setSegmentId] = useState<string>(existing?.targetAudience ?? NO_SEGMENT);
-  const [emails, setEmails] = useState<string>((existing?.targetEmails ?? []).join("\n"));
-  const [contents, setContents] = useState<Record<string, ChannelContentState>>(() => {
-    const initial: Record<string, ChannelContentState> = {};
-    for (const c of existing?.channelContents ?? []) {
-      initial[c.channel] = {
-        templateId: c.templateId ?? undefined,
-        subject: c.subject ?? undefined,
-        heading: c.heading ?? undefined,
-        body: c.body ?? undefined,
-        imageUrl: c.imageUrl ?? undefined,
-        linkUrl: c.linkUrl ?? undefined,
-        ctaText: c.ctaText ?? undefined,
-        ctaUrl: c.ctaUrl ?? undefined,
-        dismissible: c.dismissible ?? false,
-      };
-    }
-    return initial;
-  });
-  const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [schedule, setSchedule] = useState<ScheduleState>({
-    scheduleType: existing?.schedule?.scheduleType ?? "SendNow",
-    startDate: toLocalInput(existing?.schedule?.startDate),
-    endDate: toLocalInput(existing?.schedule?.endDate),
-  });
-
-  const emailSelected = channels.includes("Email");
-  const hasStorefrontChannel = channels.includes("Banner") || channels.includes("Popup");
-
-  const steps = useMemo<Step[]>(() => {
-    return emailSelected
-      ? ["Platform", "Audience", "Content", "Schedule", "Review"]
-      : ["Platform", "Content", "Schedule", "Review"];
-  }, [emailSelected]);
-
-  function toggleChannel(channel: CampaignChannel) {
-    setChannels((prev) =>
-      prev.includes(channel) ? prev.filter((c) => c !== channel) : [...prev, channel]
-    );
-  }
-
-  function updateContent(channel: CampaignChannel, patch: Partial<ChannelContentState>) {
-    setContents((prev) => ({ ...prev, [channel]: { ...prev[channel], ...patch } }));
-  }
-
-  function goNext() {
-    const idx = steps.indexOf(step);
-    if (idx < steps.length - 1) setStep(steps[idx + 1]);
-  }
-  function goBack() {
-    const idx = steps.indexOf(step);
-    if (idx > 0) setStep(steps[idx - 1]);
-  }
-
-  function buildChannelContents(): CampaignChannelContentInput[] {
-    return channels.map((channel) => {
-      const c = contents[channel] ?? {};
-      // For block templates, serialise blockValues as JSON into the body field
-      // so the renderer can reconstruct the filled-in blocks later.
-      const body = c.blockValues && Object.keys(c.blockValues).length > 0
-        ? JSON.stringify(c.blockValues)
-        : (c.body ?? null);
-      return {
-        channel,
-        templateId: c.templateId ?? null,
-        subject: c.subject ?? null,
-        heading: c.heading ?? null,
-        body,
-        imageUrl: c.imageUrl ?? null,
-        linkUrl: c.linkUrl ?? null,
-        ctaText: c.ctaText ?? null,
-        ctaUrl: c.ctaUrl ?? null,
-        dismissible: c.dismissible ?? false,
-      };
-    });
-  }
-
-  async function saveDraft() {
-    setSubmitting(true);
-    setError(null);
-    try {
-      const audience = segmentId !== NO_SEGMENT ? segmentId : undefined;
-      const targetEmails = emails
-        .split(/[,\n]/)
-        .map((e) => e.trim())
-        .filter((e) => e.length > 0);
-
-      const payload: CreateCampaignInput = {
-        title: title.trim(),
-        channels,
-        targetAudience: audience,
-        targetEmails: targetEmails.length > 0 ? targetEmails : undefined,
-        scheduleType: schedule.scheduleType,
-        startDate: schedule.startDate ? new Date(schedule.startDate).toISOString() : undefined,
-        endDate: schedule.endDate ? new Date(schedule.endDate).toISOString() : undefined,
-        channelContents: buildChannelContents(),
-      };
-
-      if (existing) {
-        const update: UpdateCampaignInput = { ...payload };
-        await crmClient.campaigns.update(existing.id, update);
-        router.push(`/campaigns/${existing.id}`);
-      } else {
-        const created = await crmClient.campaigns.create(payload);
-        router.push(`/campaigns/${created.id}`);
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to save campaign.");
-      setSubmitting(false);
-    }
-  }
-
-  async function saveAndLaunch() {
-    setSubmitting(true);
-    setError(null);
-    try {
-      const audience = segmentId !== NO_SEGMENT ? segmentId : undefined;
-      const targetEmails = emails
-        .split(/[,\n]/)
-        .map((e) => e.trim())
-        .filter((e) => e.length > 0);
-
-      const payload: CreateCampaignInput = {
-        title: title.trim(),
-        channels,
-        targetAudience: audience,
-        targetEmails: targetEmails.length > 0 ? targetEmails : undefined,
-        scheduleType: schedule.scheduleType,
-        startDate: schedule.startDate ? new Date(schedule.startDate).toISOString() : undefined,
-        endDate: schedule.endDate ? new Date(schedule.endDate).toISOString() : undefined,
-        channelContents: buildChannelContents(),
-      };
-
-      let campaignId = existing?.id;
-      if (existing) {
-        const update: UpdateCampaignInput = { ...payload };
-        await crmClient.campaigns.update(existing.id, update);
-      } else {
-        const created = await crmClient.campaigns.create(payload);
-        campaignId = created.id;
-      }
-      if (campaignId) {
-        await crmClient.campaigns.updateStatus(campaignId, "Active");
-        router.push(`/campaigns/${campaignId}`);
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to launch campaign.");
-      setSubmitting(false);
-    }
-  }
-
-  useEffect(() => {
-    function handleBeforeUnload(e: BeforeUnloadEvent) {
-      if (title.trim() || channels.length > 0) {
-        e.preventDefault();
-        e.returnValue = "";
-      }
-    }
-    window.addEventListener("beforeunload", handleBeforeUnload);
-    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
-  }, [title, channels]);
+  const {
+    router,
+    step,
+    setStep,
+    showCancelModal,
+    setShowCancelModal,
+    title,
+    setTitle,
+    channels,
+    segmentId,
+    setSegmentId,
+    emails,
+    setEmails,
+    contents,
+    submitting,
+    error,
+    schedule,
+    setSchedule,
+    emailSelected,
+    hasStorefrontChannel,
+    toggleChannel,
+    updateContent,
+    steps,
+    goNext,
+    goBack,
+    saveDraft,
+    saveAndLaunch,
+  } = useCampaignWizardState(existing);
 
   const canProceedPlatform = title.trim().length > 0 && channels.length > 0;
 
@@ -315,49 +156,14 @@ export function CampaignWizard({ existing }: { existing?: Campaign }) {
           )}
 
           {step === "Review" && (
-            <div className="space-y-md">
-              <h3 className="text-headline-md font-bold text-foreground">
-                Review Campaign Configuration
-              </h3>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-md bg-muted/30 p-md rounded-lg text-base">
-                <div>
-                  <span className="text-muted-foreground block font-medium">Campaign Title</span>
-                  <span className="font-semibold text-foreground">{title || "—"}</span>
-                </div>
-                <div>
-                  <span className="text-muted-foreground block font-medium">Selected Channels</span>
-                  <span className="font-semibold text-foreground">
-                    {channels.join(", ") || "None"}
-                  </span>
-                </div>
-                {emailSelected && (
-                  <div>
-                    <span className="text-muted-foreground block font-medium">Target Audience</span>
-                    <span className="font-semibold text-foreground">
-                      {segmentId !== NO_SEGMENT
-                        ? [...SYSTEM_PRESET_SEGMENTS, ...segments].find((s) => s.id === segmentId)?.name ?? segmentId
-                        : "Custom email addresses"}
-                    </span>
-                  </div>
-                )}
-                <div>
-                  <span className="text-muted-foreground block font-medium">Schedule</span>
-                  <span className="font-semibold text-foreground">
-                    {schedule.scheduleType === "SendNow"
-                      ? "Send Immediately"
-                      : `Scheduled (${schedule.startDate || "TBD"} – ${
-                          schedule.endDate || "No end date"
-                        })`}
-                  </span>
-                </div>
-              </div>
-
-              <p className="text-base text-muted-foreground">
-                Clicking <strong>Save Draft</strong> creates a pending draft campaign. You can preview,
-                test, and launch it whenever you are ready.
-              </p>
-            </div>
+            <StepReview
+              title={title}
+              channels={channels}
+              emailSelected={emailSelected}
+              segmentId={segmentId}
+              segments={segments}
+              schedule={schedule}
+            />
           )}
         </CardContent>
 
@@ -423,43 +229,18 @@ export function CampaignWizard({ existing }: { existing?: Campaign }) {
       </Card>
 
       {/* Save Draft / Cancel Confirmation Modal */}
-      {showCancelModal && (
-        <Dialog open={showCancelModal} onOpenChange={setShowCancelModal}>
-          <DialogContent className="max-w-md border border-gray-200 dark:border-border">
-            <DialogHeader>
-              <DialogTitle className="text-xl font-bold">Save Campaign Draft?</DialogTitle>
-              <DialogDescription className="mt-2 text-base">
-                Would you like to save your campaign as a draft before leaving?
-              </DialogDescription>
-            </DialogHeader>
-            <DialogFooter className="mt-4 gap-2 sm:gap-0 sm:justify-between flex-col-reverse sm:flex-row">
-              <Button
-                variant="destructive"
-                onClick={() => {
-                  setShowCancelModal(false);
-                  router.push("/campaigns");
-                }}
-              >
-                Discard & Leave
-              </Button>
-              <div className="flex gap-2">
-                <Button variant="outline" onClick={() => setShowCancelModal(false)}>
-                  Continue Editing
-                </Button>
-                <Button
-                  onClick={async () => {
-                    setShowCancelModal(false);
-                    await saveDraft();
-                  }}
-                  disabled={submitting || (step === "Platform" && !canProceedPlatform)}
-                >
-                  Save Draft
-                </Button>
-              </div>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      )}
+      <CampaignCancelModal
+        showCancelModal={showCancelModal}
+        setShowCancelModal={setShowCancelModal}
+        onDiscardAndLeave={() => {
+          setShowCancelModal(false);
+          router.push("/campaigns");
+        }}
+        onSaveDraft={saveDraft}
+        submitting={submitting}
+        canProceedPlatform={canProceedPlatform}
+        step={step}
+      />
     </div>
   );
 }

@@ -1,5 +1,5 @@
-import React from "react";
-import { Button } from "@/components/ui/button";
+"use client";
+
 import {
   Dialog,
   DialogContent,
@@ -8,24 +8,31 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 
-interface CampaignCancelModalProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  onDiscard: () => void;
+export interface CampaignCancelModalProps {
+  showCancelModal: boolean;
+  setShowCancelModal: (open: boolean) => void;
+  onDiscardAndLeave: () => void;
   onSaveDraft: () => Promise<void>;
-  saveDisabled: boolean;
+  submitting: boolean;
+  canProceedPlatform: boolean;
+  step: string;
 }
 
 export function CampaignCancelModal({
-  open,
-  onOpenChange,
-  onDiscard,
+  showCancelModal,
+  setShowCancelModal,
+  onDiscardAndLeave,
   onSaveDraft,
-  saveDisabled,
+  submitting,
+  canProceedPlatform,
+  step,
 }: CampaignCancelModalProps) {
+  if (!showCancelModal) return null;
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={showCancelModal} onOpenChange={setShowCancelModal}>
       <DialogContent className="max-w-md border border-gray-200 dark:border-border">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold">Save Campaign Draft?</DialogTitle>
@@ -34,19 +41,22 @@ export function CampaignCancelModal({
           </DialogDescription>
         </DialogHeader>
         <DialogFooter className="mt-4 gap-2 sm:gap-0 sm:justify-between flex-col-reverse sm:flex-row">
-          <Button variant="destructive" onClick={onDiscard}>
+          <Button
+            variant="destructive"
+            onClick={onDiscardAndLeave}
+          >
             Discard & Leave
           </Button>
           <div className="flex gap-2">
-            <Button variant="outline" onClick={() => onOpenChange(false)}>
+            <Button variant="outline" onClick={() => setShowCancelModal(false)}>
               Continue Editing
             </Button>
             <Button
               onClick={async () => {
-                onOpenChange(false);
+                setShowCancelModal(false);
                 await onSaveDraft();
               }}
-              disabled={saveDisabled}
+              disabled={submitting || (step === "Platform" && !canProceedPlatform)}
             >
               Save Draft
             </Button>
