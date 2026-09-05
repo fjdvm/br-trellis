@@ -814,7 +814,7 @@ export function TemplatesGallery() {
           <DialogContent
             className={
               builderChannel === "Email"
-                ? "w-full max-w-[95vw] sm:max-w-[92vw] lg:max-w-7xl h-[92vh] max-h-[92vh] flex flex-col p-4 sm:p-6 overflow-hidden"
+                ? "w-full max-w-[98vw] xl:max-w-[96vw] h-[95vh] max-h-[95vh] flex flex-col p-4 sm:p-6 overflow-hidden"
                 : "w-full max-w-2xl flex flex-col p-4 sm:p-6"
             }
           >
