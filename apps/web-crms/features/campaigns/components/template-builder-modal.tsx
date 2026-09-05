@@ -34,6 +34,7 @@ export interface TemplateBuilderModalProps {
   addBlock: (type: BlockType) => void;
   updateBlock: (id: string, patch: Partial<TemplateBlock>) => void;
   removeBlock: (id: string) => void;
+  reorderBlocks: (activeId: string, overId: string) => void;
   handleSaveTemplate: () => void;
   isSaveDisabled: () => boolean;
   isSaving: boolean;
@@ -59,6 +60,7 @@ export function TemplateBuilderModal({
   addBlock,
   updateBlock,
   removeBlock,
+  reorderBlocks,
   handleSaveTemplate,
   isSaveDisabled,
   isSaving,
@@ -129,6 +131,7 @@ export function TemplateBuilderModal({
           addBlock={addBlock}
           updateBlock={updateBlock}
           removeBlock={removeBlock}
+          reorderBlocks={reorderBlocks}
           setBuilderError={setBuilderError}
         />
 

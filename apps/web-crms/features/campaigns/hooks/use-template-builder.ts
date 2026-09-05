@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { arrayMove } from "@dnd-kit/sortable";
 import { blockTemplatesApi } from "@/features/campaigns/services/campaigns-api";
 import { validateBlockCount, getChannelConstraints, type BlockType, type ChannelConstraints } from "@/features/campaigns/services/template-constraints";
 import type { CampaignChannel, Template } from "@/features/campaigns/types";
@@ -159,6 +160,16 @@ export function useTemplateBuilder({ channel, refetch }: UseTemplateBuilderParam
     setBuilderError(null);
   }
 
+  function reorderBlocks(activeId: string, overId: string) {
+    if (activeId === overId) return;
+    setBlocks((prev) => {
+      const oldIndex = prev.findIndex((b) => b.id === activeId);
+      const newIndex = prev.findIndex((b) => b.id === overId);
+      if (oldIndex === -1 || newIndex === -1) return prev;
+      return arrayMove(prev, oldIndex, newIndex);
+    });
+  }
+
   function isSaveDisabled() {
     if (isSaving) return true;
     if (!builderName.trim()) return true;
@@ -276,6 +287,7 @@ export function useTemplateBuilder({ channel, refetch }: UseTemplateBuilderParam
     addBlock,
     updateBlock,
     removeBlock,
+    reorderBlocks,
     isSaveDisabled,
     handleSaveTemplate,
   };

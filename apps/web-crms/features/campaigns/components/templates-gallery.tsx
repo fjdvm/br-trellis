@@ -80,6 +80,7 @@ export function TemplatesGallery() {
     addBlock,
     updateBlock,
     removeBlock,
+    reorderBlocks,
     isSaveDisabled,
     handleSaveTemplate,
   } = useTemplateBuilder({ channel, refetch });
@@ -242,7 +243,6 @@ export function TemplatesGallery() {
         onDeleteTemplate={(tpl) => setDeleteTemplateItem(tpl)}
       />
 
-      {/* ── Template Builder Modal ── */}
       <TemplateBuilderModal
         showBuilderModal={showBuilderModal}
         setShowBuilderModal={setShowBuilderModal}
@@ -263,6 +263,7 @@ export function TemplatesGallery() {
         addBlock={addBlock}
         updateBlock={updateBlock}
         removeBlock={removeBlock}
+        reorderBlocks={reorderBlocks}
         handleSaveTemplate={handleSaveTemplate}
         isSaveDisabled={isSaveDisabled}
         isSaving={isSaving}

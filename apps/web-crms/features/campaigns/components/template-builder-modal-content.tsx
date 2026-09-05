@@ -29,6 +29,7 @@ interface TemplateBuilderModalContentProps {
   addBlock: (type: BlockType) => void;
   updateBlock: (id: string, patch: Partial<TemplateBlock>) => void;
   removeBlock: (id: string) => void;
+  reorderBlocks: (activeId: string, overId: string) => void;
   setBuilderError: (msg: string | null) => void;
 }
 
@@ -47,6 +48,7 @@ export function TemplateBuilderModalContent({
   addBlock,
   updateBlock,
   removeBlock,
+  reorderBlocks,
   setBuilderError,
 }: TemplateBuilderModalContentProps) {
   if (builderChannel === "Banner") {
@@ -158,6 +160,7 @@ export function TemplateBuilderModalContent({
       addBlock={addBlock}
       updateBlock={updateBlock}
       removeBlock={removeBlock}
+      reorderBlocks={reorderBlocks}
       setBuilderError={setBuilderError}
     />
   );
