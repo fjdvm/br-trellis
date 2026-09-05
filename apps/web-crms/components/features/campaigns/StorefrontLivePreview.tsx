@@ -459,15 +459,6 @@ export function StorefrontLivePreview({
           {channel === "Email" && (
             <div className="absolute inset-x-3 bottom-3 top-20 z-20 bg-background rounded-lg shadow-xl overflow-hidden text-left flex flex-col">
               <div className="p-4 space-y-3 flex-1 overflow-y-auto">
-                {content.imageUrl && (
-                  <div className="w-full h-32 bg-muted rounded-lg overflow-hidden">
-                    <img
-                      src={content.imageUrl}
-                      alt="Email hero"
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                )}
                 <div className="text-sm text-foreground leading-relaxed whitespace-pre-wrap font-sans">
                   {renderFormattedText(
                     content.body ||
