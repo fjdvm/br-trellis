@@ -958,7 +958,7 @@ export function TemplatesGallery() {
                     const type = e.dataTransfer.getData("text/plain");
                     if (type) addBlock(type as BlockType);
                   }}
-                  className="lg:col-span-5 bg-slate-100 dark:bg-slate-950 border-2 border-dashed border-border rounded-xl p-4 flex flex-col justify-between overflow-y-auto min-h-[380px]"
+                  className="lg:col-span-6 bg-slate-100 dark:bg-slate-950 border-2 border-dashed border-border rounded-xl p-4 flex flex-col justify-between overflow-y-auto min-h-[380px]"
                 >
                   <div className="space-y-3">
                     {/* Canvas Frame Header */}
@@ -1032,7 +1032,7 @@ export function TemplatesGallery() {
                 </div>
 
                 {/* 3. Clean Unconfigured Component Preview */}
-                <div className="lg:col-span-4 bg-background border border-border rounded-xl p-4 flex flex-col justify-between overflow-y-auto min-h-[380px] shadow-sm">
+                <div className="lg:col-span-3 bg-background border border-border rounded-xl p-4 flex flex-col justify-between overflow-y-auto min-h-[380px] shadow-sm">
                   <div className="space-y-3">
                     {/* Header */}
                     <div className="bg-slate-900 text-slate-200 p-2.5 px-3 rounded-lg border border-slate-800 flex items-center justify-between shadow-xs">
