@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Mail, PanelTop, AppWindow } from "lucide-react";
+import { Mail, PanelTop, AppWindow, ChevronLeft, ChevronRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import type { CampaignChannel } from "@/types/campaign";
 
@@ -127,7 +127,7 @@ function renderFormattedText(text: string): React.ReactNode {
                       <img
                         src={src}
                         alt={iv?.alt || block.label}
-                        className="w-full h-20 object-cover rounded"
+                        className="w-full h-48 object-cover rounded-lg shadow-xs"
                       />
                     </div>
                   );
@@ -135,7 +135,7 @@ function renderFormattedText(text: string): React.ReactNode {
                 return (
                   <div
                     key={idx}
-                    className={`w-full h-14 bg-muted/60 rounded flex items-center justify-center text-xs text-muted-foreground font-semibold ${alignClass}`}
+                    className={`w-full h-32 bg-muted/60 border border-dashed border-border rounded-lg flex flex-col items-center justify-center text-xs text-muted-foreground font-semibold ${alignClass}`}
                   >
                     📷 {block.label}
                   </div>
@@ -145,35 +145,7 @@ function renderFormattedText(text: string): React.ReactNode {
               // ── carousel ───────────────────────────────────────────────────
               if (block.type === "carousel") {
                 const slides = Array.isArray(block.content) ? block.content : [];
-                const filledSlides = slides.filter((s) => s.imageUrl?.trim());
-                if (filledSlides.length > 0) {
-                  return (
-                    <div key={idx} className="flex gap-1.5 overflow-hidden">
-                      {filledSlides.map((slide, si) => (
-                        <div key={si} className="flex-1 min-w-0">
-                          <img
-                            src={slide.imageUrl}
-                            alt={slide.caption || `Slide ${si + 1}`}
-                            className="w-full h-14 object-cover rounded"
-                          />
-                          {slide.caption && (
-                            <p className="text-[10px] text-muted-foreground truncate mt-0.5 text-center">
-                              {slide.caption}
-                            </p>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  );
-                }
-                return (
-                  <div
-                    key={idx}
-                    className={`w-full h-14 bg-muted/60 rounded flex items-center justify-center text-xs text-muted-foreground font-semibold ${alignClass}`}
-                  >
-                    🎠 {block.label}
-                  </div>
-                );
+                return <CarouselBlock key={idx} block={block} slides={slides} alignClass={alignClass} />;
               }
 
               // ── link ───────────────────────────────────────────────────────
@@ -237,6 +209,93 @@ function renderFormattedText(text: string): React.ReactNode {
     }
     return part;
   });
+}
+
+// ---------------------------------------------------------------------------
+// CarouselBlock
+// ---------------------------------------------------------------------------
+function CarouselBlock({
+  block,
+  slides,
+  alignClass,
+}: {
+  block: PreviewBlock;
+  slides: Array<{ imageUrl?: string; caption?: string; linkUrl?: string }>;
+  alignClass: string;
+}) {
+  const [activeIndex, setActiveIndex] = useState(0);
+  const filledSlides = slides.filter((s) => s.imageUrl?.trim());
+
+  if (filledSlides.length === 0) {
+    return (
+      <div
+        className={`w-full h-32 bg-muted/60 border border-dashed border-border rounded-lg flex flex-col items-center justify-center text-xs text-muted-foreground font-semibold ${alignClass}`}
+      >
+        🎠 {block.label}
+      </div>
+    );
+  }
+
+  const currentSlide = filledSlides[activeIndex] ?? filledSlides[0];
+
+  function prevSlide() {
+    setActiveIndex((i) => (i === 0 ? filledSlides.length - 1 : i - 1));
+  }
+  function nextSlide() {
+    setActiveIndex((i) => (i === filledSlides.length - 1 ? 0 : i + 1));
+  }
+
+  return (
+    <div className="relative group w-full rounded-lg overflow-hidden border border-border shadow-xs bg-card">
+      <div className="relative w-full h-44 bg-muted">
+        <img
+          src={currentSlide.imageUrl}
+          alt={currentSlide.caption || `Slide ${activeIndex + 1}`}
+          className="w-full h-full object-cover"
+        />
+        {filledSlides.length > 1 && (
+          <>
+            <button
+              type="button"
+              onClick={prevSlide}
+              aria-label="Previous slide"
+              className="absolute left-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-slate-900/60 hover:bg-slate-900 text-white flex items-center justify-center transition-colors cursor-pointer shadow-md"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+            <button
+              type="button"
+              onClick={nextSlide}
+              aria-label="Next slide"
+              className="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-slate-900/60 hover:bg-slate-900 text-white flex items-center justify-center transition-colors cursor-pointer shadow-md"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          </>
+        )}
+        {filledSlides.length > 1 && (
+          <div className="absolute bottom-2 inset-x-0 flex justify-center gap-1.5 z-10">
+            {filledSlides.map((_, i) => (
+              <button
+                key={i}
+                type="button"
+                onClick={() => setActiveIndex(i)}
+                aria-label={`Go to slide ${i + 1}`}
+                className={`h-1.5 rounded-full transition-all cursor-pointer ${
+                  i === activeIndex ? "w-5 bg-white" : "w-1.5 bg-white/50 hover:bg-white/80"
+                }`}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+      {currentSlide.caption && (
+        <div className="p-2 bg-card text-xs text-center text-foreground font-medium border-t border-border">
+          {currentSlide.caption}
+        </div>
+      )}
+    </div>
+  );
 }
 
 // ---------------------------------------------------------------------------
