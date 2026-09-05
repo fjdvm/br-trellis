@@ -1050,6 +1050,8 @@ export function TemplatesGallery() {
                         <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                         Clean Output
                       </span>
+                    </div>
+
                     {/* Email output card */}
                     <div className="bg-card border border-border/80 rounded-xl shadow-xs p-4 space-y-3 text-left">
                       <div className="border-b border-border/60 pb-2 space-y-1">
