@@ -684,7 +684,7 @@ export function TemplatesGallery() {
             preview canonical communication patterns.
           </p>
         </div>
-        <Button onClick={handleOpenCreateModal} className="gap-2 shrink-0">
+        <Button onClick={handleOpenCreateModal} className="hidden sm:inline-flex gap-2 shrink-0">
           <PlusCircle className="w-4 h-4" />
           Template Builder
         </Button>
