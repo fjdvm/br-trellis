@@ -11,20 +11,15 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from "@/components/ui/dialog";
 import { CampaignChannelBadge } from "@/features/campaigns/components/campaign-channel-badge";
 import { CampaignStatusBadge } from "@/features/campaigns/components/campaign-status-badge";
 import { CampaignDraftView } from "@/features/campaigns/components/campaign-draft-view";
 import { CampaignActiveView } from "@/features/campaigns/components/campaign-active-view";
 import { CampaignEndedView } from "@/features/campaigns/components/campaign-ended-view";
+import { CampaignDetailModals } from "@/features/campaigns/components/campaign-detail-modals";
 import { crmClient } from "@/lib/api/crm-client";
+
+
 import { useCampaign } from "@/hooks/useCampaign";
 import { useSegments } from "@/hooks/useSegments";
 import type { Campaign, CampaignAnalytics } from "@/types/campaign";
@@ -245,57 +240,18 @@ export function CampaignDetail({ id }: { id: string }) {
         />
       )}
 
-      {/* Launch Confirmation Modal */}
-      {showLaunchModal && (
-        <Dialog open={showLaunchModal} onOpenChange={setShowLaunchModal}>
-          <DialogContent className="max-w-md border border-gray-200 dark:border-border">
-            <DialogHeader>
-              <DialogTitle className="text-xl font-bold flex items-center gap-2">
-                <Rocket className="w-5 h-5 text-primary" />
-                Confirm Launch
-              </DialogTitle>
-              <DialogDescription className="mt-2 text-base">
-                Are you sure you want to launch this campaign? This action will immediately trigger dispatches to{" "}
-                <strong className="text-foreground">{recipientCount} recipients</strong> across{" "}
-                {campaign.channels.length} {campaign.channels.length === 1 ? "channel" : "channels"}.
-              </DialogDescription>
-            </DialogHeader>
-            <DialogFooter className="mt-4 gap-2">
-              <Button variant="outline" onClick={() => setShowLaunchModal(false)}>
-                Cancel
-              </Button>
-              <Button onClick={launch} disabled={busy} className="shadow-sm">
-                {busy ? "Launching…" : "Confirm Launch"}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      )}
-
-      {/* End Campaign Confirmation Modal */}
-      {showEndModal && (
-        <Dialog open={showEndModal} onOpenChange={setShowEndModal}>
-          <DialogContent className="max-w-md border border-gray-200 dark:border-border">
-            <DialogHeader>
-              <DialogTitle className="text-xl font-bold flex items-center gap-2 text-destructive">
-                <StopCircle className="w-5 h-5 text-destructive" />
-                Confirm End Campaign
-              </DialogTitle>
-              <DialogDescription className="mt-2 text-base">
-                Are you sure you want to end this active campaign? Active dispatches and banners will be stopped immediately.
-              </DialogDescription>
-            </DialogHeader>
-            <DialogFooter className="mt-4 gap-2">
-              <Button variant="outline" onClick={() => setShowEndModal(false)}>
-                Cancel
-              </Button>
-              <Button variant="destructive" onClick={endCampaign} disabled={busy}>
-                {busy ? "Ending…" : "Confirm End Campaign"}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      )}
+      {/* Launch & End Campaign Modals */}
+      <CampaignDetailModals
+        campaign={campaign}
+        recipientCount={recipientCount}
+        showLaunchModal={showLaunchModal}
+        setShowLaunchModal={setShowLaunchModal}
+        showEndModal={showEndModal}
+        setShowEndModal={setShowEndModal}
+        onLaunch={launch}
+        onEndCampaign={endCampaign}
+        busy={busy}
+      />
     </div>
   );
 }
