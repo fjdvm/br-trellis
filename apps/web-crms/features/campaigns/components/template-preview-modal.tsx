@@ -18,7 +18,10 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { StorefrontLivePreview } from "@/features/campaigns/components/storefront-live-preview";
+import { TemplateDetailsTab } from "@/features/campaigns/components/template-details-tab";
+import { TemplateSourceTab } from "@/features/campaigns/components/template-source-tab";
 import { Code, Eye, FileText, Info, Layers, Sparkles, MoreVertical, Edit3, Trash2 } from "lucide-react";
+
 import type { Template } from "@/types/campaign";
 
 interface TemplatePreviewModalProps {
@@ -113,161 +116,13 @@ export function TemplatePreviewModal({
           </TabsContent>
 
           {/* Tab 2: Template Specifications & Details */}
-          <TabsContent value="details" className="flex-1 overflow-y-auto my-3 mt-4 space-y-4 focus:outline-none text-left">
-            {/* Stat Cards Row */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-md">
-              <div className="bg-muted/30 p-md rounded-lg border border-border/50 flex flex-col">
-                <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Recipients</span>
-                <span className="text-headline-sm font-bold text-foreground mt-1">1 contact</span>
-              </div>
-              <div className="bg-muted/30 p-md rounded-lg border border-border/50 flex flex-col">
-                <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Dispatched</span>
-                <span className="text-headline-sm font-bold text-foreground mt-1">1 sent</span>
-              </div>
-              <div className="bg-muted/30 p-md rounded-lg border border-border/50 flex flex-col">
-                <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Open Rate</span>
-                <span className="text-headline-sm font-bold text-foreground mt-1">0%</span>
-              </div>
-              <div className="bg-muted/30 p-md rounded-lg border border-border/50 flex flex-col">
-                <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Click Rate</span>
-                <span className="text-headline-sm font-bold text-foreground mt-1">0%</span>
-              </div>
-            </div>
-
-            {/* Hourly Engagement Rate Graph Chart Below Stat Cards */}
-            <div className="bg-card border border-border rounded-xl p-md space-y-sm shadow-xs">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h4 className="text-sm font-bold text-foreground">Hourly Engagement Rate</h4>
-                  <p className="text-xs text-muted-foreground">Aggregate clicks &amp; conversions during launch window</p>
-                </div>
-                <Badge variant="secondary" className="text-xs font-semibold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800">
-                  +18.4% vs benchmark
-                </Badge>
-              </div>
-
-              {/* Bar Chart Wireframe */}
-              <div className="h-32 w-full flex items-end justify-between gap-sm pt-md pb-xs border-b border-border/50">
-                {[
-                  { day: "Hour 1", count: 1, height: "100%", bg: "bg-gradient-to-t from-violet-600 to-violet-400 group-hover:from-violet-500 group-hover:to-violet-300" },
-                  { day: "Hour 2", count: 0, height: "6px", bg: "bg-gradient-to-t from-purple-500/50 to-purple-400/30" },
-                  { day: "Hour 3", count: 0, height: "6px", bg: "bg-gradient-to-t from-indigo-500/50 to-indigo-400/30" },
-                  { day: "Hour 4", count: 0, height: "6px", bg: "bg-gradient-to-t from-pink-500/50 to-pink-400/30" },
-                  { day: "Hour 5", count: 0, height: "6px", bg: "bg-gradient-to-t from-fuchsia-500/50 to-fuchsia-400/30" },
-                  { day: "Hour 6", count: 0, height: "6px", bg: "bg-gradient-to-t from-sky-500/50 to-sky-400/30" },
-                  { day: "Hour 7", count: 0, height: "6px", bg: "bg-gradient-to-t from-emerald-500/50 to-emerald-400/30" },
-                ].map((item) => (
-                  <div key={item.day} className="flex-1 flex flex-col items-center h-full justify-end group">
-                    <span className="text-xs text-muted-foreground mb-1 font-semibold">{item.count}</span>
-                    <div
-                      className={`w-full ${item.bg} rounded-t transition-all shadow-xs`}
-                      style={{ height: item.height }}
-                    />
-                    <span className="text-xs text-muted-foreground mt-1.5">{item.day}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Two Column Grid for Dispatch Result & Engagement Analytics */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-md">
-              {/* Dispatch Result Container */}
-              <div className="bg-card border border-border rounded-xl p-md shadow-xs space-y-sm">
-                <h4 className="text-sm font-bold text-foreground">Dispatch Result</h4>
-                <div className="flex flex-col space-y-1.5 text-base">
-                  <div>
-                    <span className="text-muted-foreground">Recipients: </span>
-                    <span className="font-semibold text-foreground">1</span>
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground">Sent: </span>
-                    <span className="font-semibold text-foreground">1</span>
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground">Failed: </span>
-                    <span className="font-semibold text-foreground">0</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Engagement Analytics Container */}
-              <div className="bg-card border border-border rounded-xl p-md shadow-xs space-y-sm">
-                <h4 className="text-sm font-bold text-foreground">Engagement Analytics</h4>
-                <div className="grid grid-cols-2 gap-2 text-base">
-                  <div>
-                    <span className="text-muted-foreground block text-xs">Open Rate</span>
-                    <span className="font-semibold text-foreground text-base">0%</span>
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground block text-xs">Click Rate</span>
-                    <span className="font-semibold text-foreground text-base">0%</span>
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground block text-xs">Opened</span>
-                    <span className="font-semibold text-foreground text-base">0</span>
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground block text-xs">Clicked</span>
-                    <span className="font-semibold text-foreground text-base">0</span>
-                  </div>
-                </div>
-              </div>
-            </div>
+          <TabsContent value="details" className="flex-1 overflow-y-auto my-3 mt-4 focus:outline-none">
+            <TemplateDetailsTab />
           </TabsContent>
 
           {/* Tab 3: Source Code & Dynamic Variables */}
-          <TabsContent value="source" className="flex-1 overflow-y-auto my-3 mt-4 space-y-4 focus:outline-none text-left">
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <h4 className="text-sm font-bold text-foreground flex items-center gap-1.5">
-                  <Layers className="w-4 h-4 text-primary" />
-                  Detected Template Variables ({variables.length})
-                </h4>
-              </div>
-              {variables.length > 0 ? (
-                <div className="flex flex-wrap gap-2">
-                  {variables.map((v) => (
-                    <Badge key={v} variant="outline" className="font-mono text-xs bg-muted/60 text-foreground border-border px-2 py-1">
-                      {"{{" + v + "}}"}
-                    </Badge>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-xs text-muted-foreground italic">No dynamic variables detected in this template content string.</p>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <h4 className="text-sm font-bold text-foreground">
-                {template.format === "Blocks" ? "Configured Template Blocks" : "Raw Content String"}
-              </h4>
-              {template.format === "Blocks" ? (
-                <div className="space-y-2">
-                  {(() => {
-                    try {
-                      const blocks = JSON.parse(template.content);
-                      if (Array.isArray(blocks)) {
-                        return blocks.map((b: any, idx: number) => (
-                          <div key={idx} className="p-3 bg-muted/40 border border-border rounded-md text-xs flex items-center justify-between">
-                            <span className="font-semibold text-foreground">{b.label || b.type}</span>
-                            <Badge variant="outline" className="uppercase text-[10px]">{b.type}</Badge>
-                          </div>
-                        ));
-                      }
-                    } catch (e) {}
-                    return (
-                      <pre className="p-md bg-slate-950 text-slate-100 rounded-lg text-xs font-mono overflow-x-auto whitespace-pre-wrap leading-relaxed border border-border">
-                        {template.content}
-                      </pre>
-                    );
-                  })()}
-                </div>
-              ) : (
-                <pre className="p-md bg-slate-950 text-slate-100 rounded-lg text-xs font-mono overflow-x-auto whitespace-pre-wrap leading-relaxed border border-border">
-                  {template.content}
-                </pre>
-              )}
-            </div>
+          <TabsContent value="source" className="flex-1 overflow-y-auto my-3 mt-4 focus:outline-none">
+            <TemplateSourceTab template={template} variables={variables} />
           </TabsContent>
         </Tabs>
 
