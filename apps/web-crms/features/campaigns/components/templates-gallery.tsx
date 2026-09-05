@@ -44,9 +44,7 @@ function useSafeRouter() {
   }
 }
 
-// ---------------------------------------------------------------------------
 // Main TemplatesGallery
-// ---------------------------------------------------------------------------
 export function TemplatesGallery() {
   const router = useSafeRouter();
   const { data: templates, isLoading, error, refetch } = useTemplates();

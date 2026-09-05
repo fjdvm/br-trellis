@@ -24,9 +24,7 @@ import { CHANNEL_ICON, renderFormattedText } from "@/features/campaigns/helpers/
 import { useTemplates } from "@/features/campaigns/hooks/useTemplates";
 import type { CampaignChannel } from "@/features/campaigns/types";
 
-// ---------------------------------------------------------------------------
 // Types
-// ---------------------------------------------------------------------------
 
 export type BlockValue =
   | string
@@ -50,9 +48,7 @@ export type ChannelContentState = {
 
 import { useLivePreviewContent } from "@/features/campaigns/components/use-live-preview-content";
 
-// ---------------------------------------------------------------------------
 // ChannelContentForm
-// ---------------------------------------------------------------------------
 
 export function ChannelContentForm({
   channel,

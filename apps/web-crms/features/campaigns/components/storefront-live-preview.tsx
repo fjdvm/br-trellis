@@ -19,9 +19,7 @@ export type ChannelPreviewContent = {
 
 import { renderFormattedText } from "@/features/campaigns/components/preview-text-renderer";
 
-// ---------------------------------------------------------------------------
 // StorefrontLivePreview
-// ---------------------------------------------------------------------------
 export function StorefrontLivePreview({
   channel,
   content,

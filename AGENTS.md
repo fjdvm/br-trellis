@@ -42,7 +42,7 @@
 - For frontend, always look at the `.design-ref/` directory for designs. Strictly follow the layout, but for themes and UI, use what we have.
 - Don't change the header and sidebar.
 - The `.design-ref/` directory is just a basis for layout and designs.
-- Issues and requirements are the source of truth; designs are just a guideline.
+- Do not write unnecessary comments (e.g. dashed line dividers like `// -----`, block borders, or redundant section labels). Keep comments meaningful and concise.
 - Always normalize data on input and format consistently on output:
   - **Input (backend):** Trim whitespace from all string fields. Lowercase emails. Normalize phone numbers to a consistent format. Apply normalization in Services or Validators before persisting.
   - **Input (frontend):** Trim form field values before submitting to the API.
