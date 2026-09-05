@@ -186,6 +186,85 @@ function renderFormattedText(text: string): React.ReactNode {
     }
   }
 
+  // ── JSON block object dictionary (blockValues) ────────────────────────────
+  if (text.trim().startsWith("{") && text.trim().endsWith("}")) {
+    try {
+      const parsedDict = JSON.parse(text);
+      if (typeof parsedDict === "object" && parsedDict !== null && !Array.isArray(parsedDict)) {
+        const entries = Object.entries(parsedDict);
+        if (entries.length > 0) {
+          return (
+            <div className="space-y-3">
+              {entries.map(([key, val], idx) => {
+                if (val === null || val === undefined) return null;
+
+                // 1) String value (Heading or Paragraph text)
+                if (typeof val === "string") {
+                  if (!val.trim()) return null;
+                  return (
+                    <div key={key || idx} className="text-xs text-muted-foreground leading-relaxed whitespace-pre-wrap">
+                      {val}
+                    </div>
+                  );
+                }
+
+                // 2) Array value (Carousel items)
+                if (Array.isArray(val)) {
+                  const slides = val as Array<{ imageUrl?: string; caption?: string; linkUrl?: string }>;
+                  return (
+                    <CarouselBlock
+                      key={key || idx}
+                      block={{ type: "carousel", label: "Carousel", content: slides }}
+                      slides={slides}
+                      alignClass="flex flex-col text-left justify-start items-start"
+                    />
+                  );
+                }
+
+                // 3) Object value (Image, Button/Link, or object content)
+                if (typeof val === "object") {
+                  const obj = val as Record<string, unknown>;
+
+                  // Image object: { url, alt }
+                  if ("url" in obj && typeof obj.url === "string" && !("text" in obj)) {
+                    const src = obj.url.trim();
+                    if (!src) return null;
+                    return (
+                      <div key={key || idx} className="w-full">
+                        <img
+                          src={src}
+                          alt={typeof obj.alt === "string" ? obj.alt : ""}
+                          className="w-full h-48 object-cover rounded-lg shadow-xs"
+                        />
+                      </div>
+                    );
+                  }
+
+                  // Button / Link object: { text, url }
+                  if ("text" in obj && typeof obj.text === "string") {
+                    const label = obj.text.trim();
+                    if (!label) return null;
+                    return (
+                      <div key={key || idx} className="pt-1 flex">
+                        <span className="inline-block py-1.5 px-4 bg-primary text-primary-foreground text-xs font-semibold rounded shadow-xs">
+                          {label}
+                        </span>
+                      </div>
+                    );
+                  }
+                }
+
+                return null;
+              })}
+            </div>
+          );
+        }
+      }
+    } catch {
+      // fall through
+    }
+  }
+
   // ── HTML ──────────────────────────────────────────────────────────────────
   if (/<[a-z][\s\S]*>/i.test(text)) {
     return <span dangerouslySetInnerHTML={{ __html: text }} />;
