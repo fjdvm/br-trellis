@@ -283,16 +283,6 @@ export function ChannelContentForm({
         {/* ── Block template: per-block inputs ── */}
         {isBlockTemplate ? (
           <div className="space-y-6 pt-2">
-            {/* Field count summary */}
-            <div className="flex items-center gap-2 px-3 py-2 bg-muted/50 border border-border rounded-md">
-              <Badge variant="secondary" className="text-xs font-semibold">
-                {parsedBlocks.length} {parsedBlocks.length === 1 ? "field" : "fields"}
-              </Badge>
-              <span className="text-sm text-muted-foreground">
-                from template
-              </span>
-            </div>
-
             {parsedBlocks.map((block, idx) => {
               const val = value.blockValues?.[block.id];
 

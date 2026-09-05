@@ -58,18 +58,6 @@ describe("ChannelContentForm with BlockTemplate", () => {
     expect(screen.getAllByText(/Product Showcase/).length).toBeGreaterThan(0);
   });
 
-  it("shows field count summary equal to the number of blocks in the template", () => {
-    render(
-      <ChannelContentForm
-        channel="Email"
-        value={{ templateId: "bt-1", blockValues: {} }}
-        onChange={jest.fn()}
-      />
-    );
-    // 5 blocks → "5 fields from template"
-    expect(screen.getByText(/5 fields/i)).toBeInTheDocument();
-  });
-
   it("does not render optional text hint on template fields", () => {
     render(
       <ChannelContentForm
@@ -111,9 +99,6 @@ describe("ChannelContentForm with BlockTemplate", () => {
         onChange={jest.fn()}
       />
     );
-
-    // 4 blocks total → "4 fields"
-    expect(screen.getByText(/4 fields/i)).toBeInTheDocument();
 
     // Each heading gets its own numbered label
     expect(screen.getByLabelText("1. Hero Title")).toBeInTheDocument();
