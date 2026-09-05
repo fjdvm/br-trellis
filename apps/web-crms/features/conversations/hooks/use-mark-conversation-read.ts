@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { crmClient } from "@/lib/api/crm-client";
+import { conversationTicketsApi } from "@/features/conversations/services/conversations-api";
 import { isTerminalStatus } from "@/features/conversations/services/tickets";
 import type { TicketListItem } from "@/features/conversations/types";
 
@@ -21,7 +21,7 @@ export function useMarkConversationRead(
     markedReadRef.current = selectedTicketId;
     void (async () => {
       try {
-        const updated = await crmClient.conversationTickets.setWaitingOn(
+        const updated = await conversationTicketsApi.setWaitingOn(
           selectedTicketId,
           { waitingOn: "None" }
         );

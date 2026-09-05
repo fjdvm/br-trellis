@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { crmClient } from "@/lib/api/crm-client";
+import { ticketsApi } from "@/features/conversations/services/conversations-api";
 import { LegacyTicket as Ticket } from "@/features/conversations/types";
 
 export function useTicket(id: string | null) {
@@ -14,7 +14,7 @@ export function useTicket(id: string | null) {
     setIsLoading(true);
     setError(null);
     try {
-      const data = await crmClient.tickets.getById(id);
+      const data = await ticketsApi.getById(id);
       setTicket(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load ticket.");

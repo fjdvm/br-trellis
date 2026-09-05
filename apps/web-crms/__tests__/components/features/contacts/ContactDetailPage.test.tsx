@@ -1,16 +1,18 @@
 import { render, screen } from "@testing-library/react";
 import { ContactDetailPage } from "@/features/contacts/components/contact-detail-page";
-import { crmClient } from "@/lib/api/crm-client";
+import { contactsApi } from "@/features/contacts/services/contacts-api";
+import { companiesApi } from "@/features/contacts/services/companies-api";
 
-jest.mock("@/lib/api/crm-client", () => ({
-  crmClient: {
-    contacts: {
+jest.mock("@/features/contacts/services/contacts-api", () => ({
+  contactsApi: {
       getById: jest.fn(),
-    },
-    companies: {
+    }
+}));
+
+jest.mock("@/features/contacts/services/companies-api", () => ({
+  companiesApi: {
       list: jest.fn().mockResolvedValue([]),
-    },
-  },
+    }
 }));
 
 jest.mock("next/navigation", () => ({
@@ -19,7 +21,7 @@ jest.mock("next/navigation", () => ({
 
 describe("ContactDetailPage", () => {
   it("renders core fields, company, and timeline entries", async () => {
-    jest.mocked(crmClient.contacts.getById).mockResolvedValue({
+    jest.mocked(contactsApi.getById).mockResolvedValue({
       id: "contact-1",
       name: "Maya Chen",
       email: "maya@example.com",
@@ -63,7 +65,7 @@ describe("ContactDetailPage", () => {
   });
 
   it("renders empty state when no timeline entries exist", async () => {
-    jest.mocked(crmClient.contacts.getById).mockResolvedValue({
+    jest.mocked(contactsApi.getById).mockResolvedValue({
       id: "contact-2",
       name: "Bob Smith",
       email: "bob@example.com",
@@ -84,7 +86,7 @@ describe("ContactDetailPage", () => {
   });
 
   it("renders company absence gracefully", async () => {
-    jest.mocked(crmClient.contacts.getById).mockResolvedValue({
+    jest.mocked(contactsApi.getById).mockResolvedValue({
       id: "contact-3",
       name: "NoCompany Contact",
       email: null,

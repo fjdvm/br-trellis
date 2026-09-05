@@ -18,7 +18,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { crmClient } from "@/lib/api/crm-client";
+import { contactsApi } from "@/features/contacts/services/contacts-api";
+import { companiesApi } from "@/features/contacts/services/companies-api";
 import { BackButton } from "@/components/shared/BackButton";
 import { formatName, formatEmail } from "@/lib/format-display";
 import type { ContactFieldErrors } from "@/features/contacts/schemas/contact-validators";
@@ -44,6 +45,7 @@ export function ContactDetailPage({ contactId }: ContactDetailPageProps) {
   const [editEmail, setEditEmail] = useState("");
   const [editPhone, setEditPhone] = useState("");
   const [editCompanyId, setEditCompanyId] = useState<string>("");
+  const [companySearch, setCompanySearch] = useState("");
   const [companies, setCompanies] = useState<CompanyListItem[]>([]);
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -53,7 +55,7 @@ export function ContactDetailPage({ contactId }: ContactDetailPageProps) {
 
   useEffect(() => {
     if (isEditing && companies.length === 0) {
-      crmClient.companies.list(false).then(setCompanies).catch(() => {});
+      companiesApi.list(false).then(setCompanies).catch(() => {});
     }
   }, [isEditing, companies.length]);
 
@@ -62,7 +64,7 @@ export function ContactDetailPage({ contactId }: ContactDetailPageProps) {
 
     async function loadContact() {
       try {
-        const result = await crmClient.contacts.getById(contactId);
+        const result = await contactsApi.getById(contactId);
         if (isCurrent) {
           setContact(result);
           setEditName(result.name ?? "");
@@ -91,7 +93,7 @@ export function ContactDetailPage({ contactId }: ContactDetailPageProps) {
     setShowSaveDialog(false);
     setIsSaving(true);
     try {
-      const updated = await crmClient.contacts.update(contactId, {
+      const updated = await contactsApi.update(contactId, {
         name: editName.trim() || undefined,
         email: editEmail.trim() || undefined,
         phone: editPhone.trim() || undefined,
@@ -110,7 +112,7 @@ export function ContactDetailPage({ contactId }: ContactDetailPageProps) {
     setShowDeleteDialog(false);
     setIsDeleting(true);
     try {
-      await crmClient.contacts.delete(contactId);
+      await contactsApi.delete(contactId);
       router.push("/contacts");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to delete.");

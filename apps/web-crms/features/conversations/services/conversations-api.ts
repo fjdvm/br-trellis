@@ -17,6 +17,16 @@ import {
   SetWaitingOnInput,
   CreateTicketInput as CreateConversationTicketInput,
 } from "@/features/conversations/types";
+import {
+  CannedReplyCategoryListItem,
+  CannedReplyCategoryDetail,
+  CreateCannedReplyCategoryInput,
+  UpdateCannedReplyCategoryInput,
+  CannedReplyListItem,
+  CannedReplyDetail,
+  CreateCannedReplyInput,
+  UpdateCannedReplyInput,
+} from "@/features/campaigns/types";
 
 export const ticketsApi = {
   list: (page = 1, pageSize = 20, status?: string, assignedToIdOrCustomerId?: string) => {
@@ -119,5 +129,65 @@ export const messagesApi = {
   markRead: (ticketId: string, messageId: string) =>
     request<void>(`/api/v1/tickets/${ticketId}/messages/${messageId}/read`, {
       method: "PUT",
+    }),
+};
+
+export const cannedReplyCategoriesApi = {
+  list: (includeArchived = false) =>
+    request<CannedReplyCategoryListItem[]>(
+      `/api/v1/canned-reply-categories?includeArchived=${includeArchived}`
+    ),
+  getById: (id: string) =>
+    request<CannedReplyCategoryDetail>(`/api/v1/canned-reply-categories/${id}`),
+  create: (body: CreateCannedReplyCategoryInput) =>
+    request<CannedReplyCategoryDetail>(`/api/v1/canned-reply-categories`, {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
+  update: (id: string, body: UpdateCannedReplyCategoryInput) =>
+    request<CannedReplyCategoryDetail>(`/api/v1/canned-reply-categories/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(body),
+    }),
+  archive: (id: string) =>
+    request<void>(`/api/v1/canned-reply-categories/${id}`, {
+      method: "DELETE",
+    }),
+  restore: (id: string) =>
+    request<CannedReplyCategoryDetail>(`/api/v1/canned-reply-categories/${id}/restore`, {
+      method: "POST",
+    }),
+};
+
+export const cannedRepliesApi = {
+  list: (includeArchived = false, categoryId?: string) => {
+    const params = new URLSearchParams();
+    params.set("includeArchived", String(includeArchived));
+    if (categoryId) {
+      params.set("categoryId", categoryId);
+    }
+    return request<CannedReplyListItem[]>(
+      `/api/v1/canned-replies?${params.toString()}`
+    );
+  },
+  getById: (id: string) =>
+    request<CannedReplyDetail>(`/api/v1/canned-replies/${id}`),
+  create: (body: CreateCannedReplyInput) =>
+    request<CannedReplyDetail>(`/api/v1/canned-replies`, {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
+  update: (id: string, body: UpdateCannedReplyInput) =>
+    request<CannedReplyDetail>(`/api/v1/canned-replies/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(body),
+    }),
+  archive: (id: string) =>
+    request<void>(`/api/v1/canned-replies/${id}`, {
+      method: "DELETE",
+    }),
+  restore: (id: string) =>
+    request<CannedReplyDetail>(`/api/v1/canned-replies/${id}/restore`, {
+      method: "POST",
     }),
 };

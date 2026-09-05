@@ -1,7 +1,7 @@
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import {  TicketListPage  } from "@/features/conversations/components/ticket-list-page";
-import { crmClient } from "@/lib/api/crm-client";
+import { conversationTicketsApi } from "@/features/conversations/services/conversations-api";
 import type { TicketListItem } from "@/features/conversations/types";
 
 // Radix Select relies on pointer-capture and scrollIntoView APIs that jsdom
@@ -42,14 +42,12 @@ jest.mock("next-auth/react", () => ({
   }),
 }));
 
-jest.mock("@/lib/api/crm-client", () => ({
-  crmClient: {
-    conversationTickets: {
+jest.mock("@/features/conversations/services/conversations-api", () => ({
+  conversationTicketsApi: {
       list: jest.fn(),
       claim: jest.fn(),
       changeStatus: jest.fn(),
-    },
-  },
+    }
 }));
 
 function makeTicket(overrides: Partial<TicketListItem> = {}): TicketListItem {
@@ -76,12 +74,12 @@ describe("TicketListPage", () => {
     // Default: resolve to an empty list. Individual tests override as needed.
     // Guarantees no test ever awaits an uninitialised (undefined-returning)
     // mock if it runs in an unexpected order.
-    jest.mocked(crmClient.conversationTickets.list).mockResolvedValue([]);
+    jest.mocked(conversationTicketsApi.list).mockResolvedValue([]);
   });
 
   it("hides all row actions for a ticket claimed by another agent (owner-only)", async () => {
     jest
-      .mocked(crmClient.conversationTickets.list)
+      .mocked(conversationTicketsApi.list)
       .mockResolvedValue([
         makeTicket({
           id: "t-other",
@@ -106,7 +104,7 @@ describe("TicketListPage", () => {
 
   it("shows owner actions for a ticket claimed by the current agent", async () => {
     jest
-      .mocked(crmClient.conversationTickets.list)
+      .mocked(conversationTicketsApi.list)
       .mockResolvedValue([
         makeTicket({
           id: "t-mine",
@@ -127,7 +125,7 @@ describe("TicketListPage", () => {
   });
 
   it("renders tickets with subject, status, waiting-on, formatted contact, and assignee", async () => {
-    jest.mocked(crmClient.conversationTickets.list).mockResolvedValue([
+    jest.mocked(conversationTicketsApi.list).mockResolvedValue([
       makeTicket(),
       makeTicket({
         id: "t-2",
@@ -157,7 +155,7 @@ describe("TicketListPage", () => {
   });
 
   it("falls back to email then dash for contact, and Unassigned for assignee", async () => {
-    jest.mocked(crmClient.conversationTickets.list).mockResolvedValue([
+    jest.mocked(conversationTicketsApi.list).mockResolvedValue([
       makeTicket({
         id: "t-email",
         subject: "Email only",
@@ -179,7 +177,7 @@ describe("TicketListPage", () => {
 
   it("shows the loading skeleton while fetching", async () => {
     let resolve: (value: TicketListItem[]) => void = () => {};
-    jest.mocked(crmClient.conversationTickets.list).mockReturnValue(
+    jest.mocked(conversationTicketsApi.list).mockReturnValue(
       new Promise<TicketListItem[]>((r) => {
         resolve = r;
       })
@@ -197,7 +195,7 @@ describe("TicketListPage", () => {
 
   it("shows an error state when the fetch fails", async () => {
     jest
-      .mocked(crmClient.conversationTickets.list)
+      .mocked(conversationTicketsApi.list)
       .mockRejectedValue(new Error("Boom"));
 
     render(<TicketListPage />);
@@ -206,7 +204,7 @@ describe("TicketListPage", () => {
   });
 
   it("shows the unfiltered empty state when there are no tickets", async () => {
-    jest.mocked(crmClient.conversationTickets.list).mockResolvedValue([]);
+    jest.mocked(conversationTicketsApi.list).mockResolvedValue([]);
 
     render(<TicketListPage />);
 
@@ -214,7 +212,7 @@ describe("TicketListPage", () => {
   });
 
   it("shows the filtered empty state when a filter is active and nothing matches", async () => {
-    jest.mocked(crmClient.conversationTickets.list).mockResolvedValue([]);
+    jest.mocked(conversationTicketsApi.list).mockResolvedValue([]);
     const user = userEvent.setup({ pointerEventsCheck: 0 });
 
     render(<TicketListPage />);
@@ -234,20 +232,20 @@ describe("TicketListPage", () => {
   });
 
   it("re-fetches with the selected status filter", async () => {
-    jest.mocked(crmClient.conversationTickets.list).mockResolvedValue([]);
+    jest.mocked(conversationTicketsApi.list).mockResolvedValue([]);
     const user = userEvent.setup({ pointerEventsCheck: 0 });
 
     render(<TicketListPage />);
 
     await waitFor(() =>
-      expect(crmClient.conversationTickets.list).toHaveBeenCalledWith("All", "All", "All")
+      expect(conversationTicketsApi.list).toHaveBeenCalledWith("All", "All", "All")
     );
 
     await user.click(screen.getByLabelText("Filter by status"));
     await user.click(await screen.findByRole("option", { name: "Claimed" }));
 
     await waitFor(() =>
-      expect(crmClient.conversationTickets.list).toHaveBeenCalledWith(
+      expect(conversationTicketsApi.list).toHaveBeenCalledWith(
         "Claimed",
         "All",
         "All"
@@ -256,20 +254,20 @@ describe("TicketListPage", () => {
   });
 
   it("re-fetches with the selected waiting-on filter", async () => {
-    jest.mocked(crmClient.conversationTickets.list).mockResolvedValue([]);
+    jest.mocked(conversationTicketsApi.list).mockResolvedValue([]);
     const user = userEvent.setup({ pointerEventsCheck: 0 });
 
     render(<TicketListPage />);
 
     await waitFor(() =>
-      expect(crmClient.conversationTickets.list).toHaveBeenCalledWith("All", "All", "All")
+      expect(conversationTicketsApi.list).toHaveBeenCalledWith("All", "All", "All")
     );
 
     await user.click(screen.getByLabelText("Filter by waiting on"));
     await user.click(await screen.findByRole("option", { name: "Customer" }));
 
     await waitFor(() =>
-      expect(crmClient.conversationTickets.list).toHaveBeenCalledWith(
+      expect(conversationTicketsApi.list).toHaveBeenCalledWith(
         "All",
         "Customer",
         "All"
@@ -278,13 +276,13 @@ describe("TicketListPage", () => {
   });
 
   it("re-fetches with the selected source filter", async () => {
-    jest.mocked(crmClient.conversationTickets.list).mockResolvedValue([]);
+    jest.mocked(conversationTicketsApi.list).mockResolvedValue([]);
     const user = userEvent.setup({ pointerEventsCheck: 0 });
 
     render(<TicketListPage />);
 
     await waitFor(() =>
-      expect(crmClient.conversationTickets.list).toHaveBeenCalledWith(
+      expect(conversationTicketsApi.list).toHaveBeenCalledWith(
         "All",
         "All",
         "All"
@@ -295,7 +293,7 @@ describe("TicketListPage", () => {
     await user.click(await screen.findByRole("option", { name: "Manual" }));
 
     await waitFor(() =>
-      expect(crmClient.conversationTickets.list).toHaveBeenCalledWith(
+      expect(conversationTicketsApi.list).toHaveBeenCalledWith(
         "All",
         "All",
         "Manual"
@@ -304,7 +302,7 @@ describe("TicketListPage", () => {
   });
 
   it("renders a Source badge per row", async () => {
-    jest.mocked(crmClient.conversationTickets.list).mockResolvedValue([
+    jest.mocked(conversationTicketsApi.list).mockResolvedValue([
       makeTicket({ id: "t-email", subject: "From email", source: "Email" }),
       makeTicket({ id: "t-manual", subject: "By hand", source: "Manual" }),
     ]);
@@ -318,7 +316,7 @@ describe("TicketListPage", () => {
   });
 
   it("renders the Source filter on the default Tickets screen", async () => {
-    jest.mocked(crmClient.conversationTickets.list).mockResolvedValue([]);
+    jest.mocked(conversationTicketsApi.list).mockResolvedValue([]);
 
     render(<TicketListPage />);
 
@@ -328,7 +326,7 @@ describe("TicketListPage", () => {
   });
 
   it("renders the New Ticket button on the default Tickets screen", async () => {
-    jest.mocked(crmClient.conversationTickets.list).mockResolvedValue([]);
+    jest.mocked(conversationTicketsApi.list).mockResolvedValue([]);
 
     render(<TicketListPage />);
 
@@ -339,7 +337,7 @@ describe("TicketListPage", () => {
 
   it("navigates to the ticket detail route on row click", async () => {
     jest
-      .mocked(crmClient.conversationTickets.list)
+      .mocked(conversationTicketsApi.list)
       .mockResolvedValue([makeTicket({ id: "t-42", subject: "Clickable" })]);
 
     render(<TicketListPage />);
@@ -355,7 +353,7 @@ describe("TicketListPage", () => {
 
   it("shows a Claim button on an Unclaimed row and hides it once claimed", async () => {
     jest
-      .mocked(crmClient.conversationTickets.list)
+      .mocked(conversationTicketsApi.list)
       .mockResolvedValue([makeTicket({ id: "t-1", status: "Unclaimed" })]);
 
     render(<TicketListPage />);
@@ -367,7 +365,7 @@ describe("TicketListPage", () => {
   });
 
   it("shows a Claim button on an Ongoing row with a null assignee", async () => {
-    jest.mocked(crmClient.conversationTickets.list).mockResolvedValue([
+    jest.mocked(conversationTicketsApi.list).mockResolvedValue([
       makeTicket({ id: "t-1", status: "Ongoing", assignedToId: null }),
     ]);
 
@@ -380,7 +378,7 @@ describe("TicketListPage", () => {
   });
 
   it("hides the Claim button on a Claimed (assigned) row", async () => {
-    jest.mocked(crmClient.conversationTickets.list).mockResolvedValue([
+    jest.mocked(conversationTicketsApi.list).mockResolvedValue([
       makeTicket({ id: "t-1", status: "Claimed", assignedToId: "s-1" }),
     ]);
 
@@ -394,9 +392,9 @@ describe("TicketListPage", () => {
 
   it("claims a row with the session identity and updates the row in place", async () => {
     jest
-      .mocked(crmClient.conversationTickets.list)
+      .mocked(conversationTicketsApi.list)
       .mockResolvedValue([makeTicket({ id: "t-1", status: "Unclaimed" })]);
-    jest.mocked(crmClient.conversationTickets.claim).mockResolvedValue(
+    jest.mocked(conversationTicketsApi.claim).mockResolvedValue(
       makeTicket({
         id: "t-1",
         status: "Claimed",
@@ -411,7 +409,7 @@ describe("TicketListPage", () => {
     fireEvent.click(await screen.findByRole("button", { name: "Claim ticket" }));
 
     await waitFor(() =>
-      expect(crmClient.conversationTickets.claim).toHaveBeenCalledWith("t-1", {
+      expect(conversationTicketsApi.claim).toHaveBeenCalledWith("t-1", {
         staffId: "auth|amelia",
         staffName: "amelia ward",
         staffEmail: "Amelia.Ward@Trellis.io",
@@ -425,15 +423,15 @@ describe("TicketListPage", () => {
         screen.queryByRole("button", { name: "Claim ticket" })
       ).not.toBeInTheDocument()
     );
-    expect(crmClient.conversationTickets.list).toHaveBeenCalledTimes(1);
+    expect(conversationTicketsApi.list).toHaveBeenCalledTimes(1);
   });
 
   it("does not navigate when the Claim button is clicked (stopPropagation)", async () => {
     jest
-      .mocked(crmClient.conversationTickets.list)
+      .mocked(conversationTicketsApi.list)
       .mockResolvedValue([makeTicket({ id: "t-1", status: "Unclaimed" })]);
     jest
-      .mocked(crmClient.conversationTickets.claim)
+      .mocked(conversationTicketsApi.claim)
       .mockResolvedValue(makeTicket({ id: "t-1", status: "Claimed", assignedToId: "auth|amelia" }));
 
     render(<TicketListPage />);
@@ -441,17 +439,17 @@ describe("TicketListPage", () => {
     fireEvent.click(await screen.findByRole("button", { name: "Claim ticket" }));
 
     await waitFor(() =>
-      expect(crmClient.conversationTickets.claim).toHaveBeenCalled()
+      expect(conversationTicketsApi.claim).toHaveBeenCalled()
     );
     expect(mockPush).not.toHaveBeenCalled();
   });
 
   it("shows a Cancel button on a non-terminal row and gates it behind a confirmation dialog", async () => {
     jest
-      .mocked(crmClient.conversationTickets.list)
+      .mocked(conversationTicketsApi.list)
       .mockResolvedValue([makeTicket({ id: "t-1", status: "Claimed", assignedToId: "auth|amelia" })]);
     jest
-      .mocked(crmClient.conversationTickets.changeStatus)
+      .mocked(conversationTicketsApi.changeStatus)
       .mockResolvedValue(makeTicket({ id: "t-1", status: "Canceled", assignedToId: "auth|amelia" }));
     const user = userEvent.setup({ pointerEventsCheck: 0 });
 
@@ -460,26 +458,26 @@ describe("TicketListPage", () => {
     await user.click(await screen.findByRole("button", { name: "Cancel ticket" }));
 
     // Dialog open; API not called yet.
-    expect(crmClient.conversationTickets.changeStatus).not.toHaveBeenCalled();
+    expect(conversationTicketsApi.changeStatus).not.toHaveBeenCalled();
 
     // Confirm inside the dialog.
     const confirmButtons = screen.getAllByRole("button", { name: /Cancel Ticket/i });
     await user.click(confirmButtons[confirmButtons.length - 1]);
 
     await waitFor(() =>
-      expect(crmClient.conversationTickets.changeStatus).toHaveBeenCalledWith("t-1", {
+      expect(conversationTicketsApi.changeStatus).toHaveBeenCalledWith("t-1", {
         status: "Canceled",
       })
     );
     // Row updates in place; navigation never fired.
     expect(await screen.findByText("Canceled")).toBeInTheDocument();
     expect(mockPush).not.toHaveBeenCalled();
-    expect(crmClient.conversationTickets.list).toHaveBeenCalledTimes(1);
+    expect(conversationTicketsApi.list).toHaveBeenCalledTimes(1);
   });
 
   it("renders neither Claim nor Cancel on a terminal (Completed) row", async () => {
     jest
-      .mocked(crmClient.conversationTickets.list)
+      .mocked(conversationTicketsApi.list)
       .mockResolvedValue([makeTicket({ id: "t-1", status: "Completed", assignedToId: "s-1" })]);
 
     render(<TicketListPage />);
@@ -495,7 +493,7 @@ describe("TicketListPage", () => {
 
   it("renders neither Claim nor Cancel on a terminal (Canceled) row", async () => {
     jest
-      .mocked(crmClient.conversationTickets.list)
+      .mocked(conversationTicketsApi.list)
       .mockResolvedValue([makeTicket({ id: "t-1", status: "Canceled", assignedToId: "s-1" })]);
 
     render(<TicketListPage />);

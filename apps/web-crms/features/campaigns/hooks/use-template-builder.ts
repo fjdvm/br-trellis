@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { blockTemplatesApi } from "@/features/campaigns/services/campaigns-api";
 import { validateBlockCount, getChannelConstraints, type BlockType, type ChannelConstraints } from "@/features/campaigns/services/template-constraints";
 import type { CampaignChannel, Template } from "@/features/campaigns/types";
 import type { TemplateBlock, BannerFields, PopupFields } from "@/features/campaigns/components/template-builder-components";
@@ -119,8 +120,7 @@ export function useTemplateBuilder({ channel, refetch }: UseTemplateBuilderParam
     if (!deleteTemplateItem) return;
     setIsDeleting(true);
     try {
-      const { crmClient } = await import("@/lib/api/crm-client");
-      await crmClient.blockTemplates.delete(deleteTemplateItem.id);
+      await blockTemplatesApi.delete(deleteTemplateItem.id);
     } catch (err) {
       console.warn("Could not delete from backend API (may be a static template):", err);
     } finally {
@@ -193,8 +193,6 @@ export function useTemplateBuilder({ channel, refetch }: UseTemplateBuilderParam
     setBuilderError(null);
 
     try {
-      const { crmClient } = await import("@/lib/api/crm-client");
-
       if (builderChannel === "Email") {
         const payload = {
           name: builderName.trim(),
@@ -210,9 +208,9 @@ export function useTemplateBuilder({ channel, refetch }: UseTemplateBuilderParam
           })),
         };
         if (editingTemplateId) {
-          await crmClient.blockTemplates.update(editingTemplateId, payload);
+          await blockTemplatesApi.update(editingTemplateId, payload);
         } else {
-          await crmClient.blockTemplates.create(payload);
+          await blockTemplatesApi.create(payload);
         }
       } else {
         const payload = {
@@ -229,9 +227,9 @@ export function useTemplateBuilder({ channel, refetch }: UseTemplateBuilderParam
           }[],
         };
         if (editingTemplateId) {
-          await crmClient.blockTemplates.update(editingTemplateId, payload);
+          await blockTemplatesApi.update(editingTemplateId, payload);
         } else {
-          await crmClient.blockTemplates.create(payload);
+          await blockTemplatesApi.create(payload);
         }
       }
 

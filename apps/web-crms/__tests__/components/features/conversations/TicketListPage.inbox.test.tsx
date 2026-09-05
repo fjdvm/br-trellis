@@ -1,7 +1,7 @@
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import {  TicketListPage  } from "@/features/conversations/components/ticket-list-page";
-import { crmClient } from "@/lib/api/crm-client";
+import { conversationTicketsApi } from "@/features/conversations/services/conversations-api";
 import type { TicketListItem } from "@/features/conversations/types";
 
 // Radix Select relies on pointer-capture and scrollIntoView APIs that jsdom
@@ -42,14 +42,12 @@ jest.mock("next-auth/react", () => ({
   }),
 }));
 
-jest.mock("@/lib/api/crm-client", () => ({
-  crmClient: {
-    conversationTickets: {
+jest.mock("@/features/conversations/services/conversations-api", () => ({
+  conversationTicketsApi: {
       list: jest.fn(),
       claim: jest.fn(),
       changeStatus: jest.fn(),
-    },
-  },
+    }
 }));
 
 function makeTicket(overrides: Partial<TicketListItem> = {}): TicketListItem {
@@ -86,7 +84,7 @@ const inboxProps = {
 describe("TicketListPage (Inbox props)", () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    jest.mocked(crmClient.conversationTickets.list).mockResolvedValue([]);
+    jest.mocked(conversationTicketsApi.list).mockResolvedValue([]);
   });
 
   it("renders the overridden page copy (heading, description, card title)", async () => {
@@ -105,7 +103,7 @@ describe("TicketListPage (Inbox props)", () => {
     render(<TicketListPage {...inboxProps} />);
 
     await waitFor(() =>
-      expect(crmClient.conversationTickets.list).toHaveBeenCalledWith(
+      expect(conversationTicketsApi.list).toHaveBeenCalledWith(
         "All",
         "Agent",
         "All"
@@ -132,7 +130,7 @@ describe("TicketListPage (Inbox props)", () => {
   });
 
   it("excludes Completed and Canceled tickets returned by the API via the result filter", async () => {
-    jest.mocked(crmClient.conversationTickets.list).mockResolvedValue([
+    jest.mocked(conversationTicketsApi.list).mockResolvedValue([
       makeTicket({ id: "t-open", subject: "Still open", status: "Unclaimed" }),
       makeTicket({
         id: "t-done",
@@ -158,7 +156,7 @@ describe("TicketListPage (Inbox props)", () => {
   });
 
   it("keeps excluding terminal tickets after the Waiting On filter is changed away from Agent", async () => {
-    jest.mocked(crmClient.conversationTickets.list).mockResolvedValue([
+    jest.mocked(conversationTicketsApi.list).mockResolvedValue([
       makeTicket({ id: "t-open", subject: "Still open", status: "Ongoing", assignedToId: "s-1" }),
       makeTicket({
         id: "t-done",
@@ -179,7 +177,7 @@ describe("TicketListPage (Inbox props)", () => {
     await user.click(await screen.findByRole("option", { name: "Customer" }));
 
     await waitFor(() =>
-      expect(crmClient.conversationTickets.list).toHaveBeenCalledWith(
+      expect(conversationTicketsApi.list).toHaveBeenCalledWith(
         "All",
         "Customer",
         "All"
@@ -192,7 +190,7 @@ describe("TicketListPage (Inbox props)", () => {
   });
 
   it("shows the queue-empty message when nothing matches the default Inbox filter", async () => {
-    jest.mocked(crmClient.conversationTickets.list).mockResolvedValue([]);
+    jest.mocked(conversationTicketsApi.list).mockResolvedValue([]);
 
     render(<TicketListPage {...inboxProps} />);
 
@@ -202,7 +200,7 @@ describe("TicketListPage (Inbox props)", () => {
   });
 
   it("shows the queue-empty message when only terminal tickets come back (filtered out to nothing at the default filter)", async () => {
-    jest.mocked(crmClient.conversationTickets.list).mockResolvedValue([
+    jest.mocked(conversationTicketsApi.list).mockResolvedValue([
       makeTicket({ id: "t-done", subject: "All done", status: "Completed", assignedToId: "s-9" }),
     ]);
 
@@ -216,7 +214,7 @@ describe("TicketListPage (Inbox props)", () => {
   });
 
   it("shows the narrowed empty message once filters are changed away from the Inbox default", async () => {
-    jest.mocked(crmClient.conversationTickets.list).mockResolvedValue([]);
+    jest.mocked(conversationTicketsApi.list).mockResolvedValue([]);
     const user = userEvent.setup({ pointerEventsCheck: 0 });
 
     render(<TicketListPage {...inboxProps} />);
@@ -236,9 +234,9 @@ describe("TicketListPage (Inbox props)", () => {
 
   it("still supports Claim and row-click navigation through the Inbox props", async () => {
     jest
-      .mocked(crmClient.conversationTickets.list)
+      .mocked(conversationTicketsApi.list)
       .mockResolvedValue([makeTicket({ id: "t-1", status: "Unclaimed" })]);
-    jest.mocked(crmClient.conversationTickets.claim).mockResolvedValue(
+    jest.mocked(conversationTicketsApi.claim).mockResolvedValue(
       makeTicket({
         id: "t-1",
         status: "Claimed",
@@ -252,7 +250,7 @@ describe("TicketListPage (Inbox props)", () => {
     // Claim works and updates in place.
     fireEvent.click(await screen.findByRole("button", { name: "Claim ticket" }));
     await waitFor(() =>
-      expect(crmClient.conversationTickets.claim).toHaveBeenCalledWith("t-1", {
+      expect(conversationTicketsApi.claim).toHaveBeenCalledWith("t-1", {
         staffId: "auth|amelia",
         staffName: "amelia ward",
         staffEmail: "Amelia.Ward@Trellis.io",
@@ -269,12 +267,12 @@ describe("TicketListPage (Inbox props)", () => {
 
   it("supports Cancel (with confirmation dialog) through the Inbox props and drops the now-terminal row", async () => {
     jest
-      .mocked(crmClient.conversationTickets.list)
+      .mocked(conversationTicketsApi.list)
       .mockResolvedValue([
         makeTicket({ id: "t-1", status: "Claimed", assignedToId: "auth|amelia" }),
       ]);
     jest
-      .mocked(crmClient.conversationTickets.changeStatus)
+      .mocked(conversationTicketsApi.changeStatus)
       .mockResolvedValue(
         makeTicket({ id: "t-1", status: "Canceled", assignedToId: "auth|amelia" })
       );
@@ -285,7 +283,7 @@ describe("TicketListPage (Inbox props)", () => {
     await user.click(await screen.findByRole("button", { name: "Cancel ticket" }));
 
     // Dialog gates the call: nothing sent until the user confirms.
-    expect(crmClient.conversationTickets.changeStatus).not.toHaveBeenCalled();
+    expect(conversationTicketsApi.changeStatus).not.toHaveBeenCalled();
 
     const confirmButtons = screen.getAllByRole("button", {
       name: /Cancel Ticket/i,
@@ -293,7 +291,7 @@ describe("TicketListPage (Inbox props)", () => {
     await user.click(confirmButtons[confirmButtons.length - 1]);
 
     await waitFor(() =>
-      expect(crmClient.conversationTickets.changeStatus).toHaveBeenCalledWith(
+      expect(conversationTicketsApi.changeStatus).toHaveBeenCalledWith(
         "t-1",
         { status: "Canceled" }
       )
@@ -305,7 +303,7 @@ describe("TicketListPage (Inbox props)", () => {
       expect(screen.queryByText("Cannot log in")).not.toBeInTheDocument()
     );
     // No full-list refetch happened.
-    expect(crmClient.conversationTickets.list).toHaveBeenCalledTimes(1);
+    expect(conversationTicketsApi.list).toHaveBeenCalledTimes(1);
     expect(mockPush).not.toHaveBeenCalled();
   });
 });

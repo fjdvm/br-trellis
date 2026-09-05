@@ -10,7 +10,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { crmClient } from "@/lib/api/crm-client";
+import { customerIdentityApi } from "@/features/customers/services/customers-api";
 import { formatName, formatEmail } from "@/lib/format-display";
 import { TableSkeleton } from "@/components/shared/TableSkeleton";
 import { ScrollableTable } from "@/components/shared/ScrollableTable";
@@ -30,7 +30,7 @@ export function CustomerListTable() {
 
     async function loadCustomers() {
       try {
-        const result = await crmClient.customerIdentity.listCustomers();
+        const result = await customerIdentityApi.listCustomers();
         if (isCurrent) {
           setCustomers(result);
         }

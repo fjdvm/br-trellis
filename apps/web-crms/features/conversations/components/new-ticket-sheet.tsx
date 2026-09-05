@@ -14,7 +14,8 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { crmClient } from "@/lib/api/crm-client";
+import { contactsApi } from "@/features/contacts/services/contacts-api";
+import { conversationTicketsApi } from "@/features/conversations/services/conversations-api";
 import { formatName, formatEmail } from "@/lib/format-display";
 import type { ContactListItem } from "@/features/contacts/types";
 
@@ -51,7 +52,7 @@ export function NewTicketSheet({ onCreated }: NewTicketSheetProps) {
   // Load contacts for the optional picker only once the sheet is opened.
   useEffect(() => {
     if (open) {
-      crmClient.contacts
+      contactsApi
         .list()
         .then(setContacts)
         .catch(() => {});
@@ -76,7 +77,7 @@ export function NewTicketSheet({ onCreated }: NewTicketSheetProps) {
     setIsSubmitting(true);
     setError(null);
     try {
-      await crmClient.conversationTickets.create({
+      await conversationTicketsApi.create({
         subject: trimmed,
         contactId: contactId || undefined,
       });

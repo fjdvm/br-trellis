@@ -8,7 +8,7 @@ import { ContactListTable } from "@/features/contacts/components/contact-list-ta
 import { AddContactSheet } from "@/features/contacts/components/add-contact-sheet";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { crmClient } from "@/lib/api/crm-client";
+import { contactsApi } from "@/features/contacts/services/contacts-api";
 import { filterContactsBySource, type ContactSourceFilter } from "@/features/contacts/services/contacts";
 import type { ContactListItem } from "@/features/contacts/types";
 
@@ -28,23 +28,16 @@ export interface ContactListPageProps {
   cardTitle?: string;
   /**
    * Which origin-slice of the contact list to show. Applied as an in-memory
-   * pass over the already-fetched full list — no new server-side query
-   * parameter. Defaults to `"all"` (every contact, matching All Contacts).
+   * partition so every contact is counted by either ecommerce or
+   * non-ecommerce (see ADR 0003). Defaults to `"all"`.
    */
   sourceFilter?: ContactSourceFilter;
   /**
-   * When supplied, renders a persistent, non-interactive badge in the card
-   * header naming the active filter (e.g. "Source: Ecommerce"), with a dismiss
-   * control that navigates back to `/contacts` (All Contacts). Omitted on the
-   * All Contacts screen, which has no filter to indicate.
+   * Optional badge text shown above the table (e.g. "Derived view:
+   * sourceSystem = ecommerce"). Omitted when absent.
    */
   filterIndicatorLabel?: string;
-  /**
-   * Whether to render the "Add Contact" button. Defaults to `true` (the All
-   * Contacts screen). The filtered variants pass `false`: creating a contact
-   * from a filtered view it might not even appear in once created is
-   * misleading, so Add Contact belongs on All Contacts only.
-   */
+  /** Whether the "Add Contact" header button is visible. Defaults to true. */
   showAddButton?: boolean;
 }
 
@@ -65,7 +58,7 @@ export function ContactListPage({
   const loadContacts = useCallback(async (showRefreshSpinner = false) => {
     if (showRefreshSpinner) setIsRefreshing(true);
     try {
-      const result = await crmClient.contacts.list();
+      const result = await contactsApi.list();
       setContacts(result);
       setError(null);
     } catch (err) {

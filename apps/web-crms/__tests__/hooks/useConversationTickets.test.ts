@@ -3,15 +3,13 @@ import {
   useConversationTickets,
   sortTicketsByActivity,
 } from "@/features/conversations/hooks/useConversationTickets";
-import { crmClient } from "@/lib/api/crm-client";
+import { ticketsApi } from "@/features/conversations/services/conversations-api";
 import { TicketListItem } from "@/features/conversations/types";
 
-jest.mock("@/lib/api/crm-client", () => ({
-  crmClient: {
-    tickets: {
+jest.mock("@/features/conversations/services/conversations-api", () => ({
+  ticketsApi: {
       list: jest.fn(),
-    },
-  },
+    }
 }));
 
 describe("sortTicketsByActivity", () => {
@@ -90,7 +88,7 @@ describe("useConversationTickets", () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    (crmClient.tickets.list as jest.Mock).mockImplementation((page, pageSize, status) => {
+    (ticketsApi.list as jest.Mock).mockImplementation((page, pageSize, status) => {
       if (status === "Claimed") {
         return Promise.resolve({
           items: mockClaimed,

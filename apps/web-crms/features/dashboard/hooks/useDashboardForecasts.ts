@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { aiClient } from "@/lib/api/ai-client";
+import { aiClient } from "@/features/dashboard/services/ai-client";
 
 export function useDashboardForecasts(days = 7) {
   const [ticketVolume, setTicketVolume] = useState<any>(null);

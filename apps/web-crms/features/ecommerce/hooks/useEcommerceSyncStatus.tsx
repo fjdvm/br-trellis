@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useCallback, useContext, useEffect, useState } from "react";
-import { crmClient } from "@/lib/api/crm-client";
+import { ecommerceSyncStatusApi } from "@/features/ecommerce/services/ecommerce-api";
 import type { EcommerceSyncStatus, EcommerceSyncStatusState } from "@/features/ecommerce/types";
 
 interface EcommerceSyncStatusContextValue {
@@ -28,7 +28,7 @@ export function EcommerceSyncStatusProvider({ children }: { children: React.Reac
   const load = useCallback(async () => {
     setIsLoading(true);
     try {
-      const result = await crmClient.ecommerceSyncStatus.get();
+      const result = await ecommerceSyncStatusApi.get();
       setSyncStatus(result);
       setError(null);
     } catch (err) {

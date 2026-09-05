@@ -1,18 +1,16 @@
 import { render, screen } from "@testing-library/react";
 import { CustomerListTable } from "@/features/customers/components/customer-list-table";
-import { crmClient } from "@/lib/api/crm-client";
+import { customerIdentityApi } from "@/features/customers/services/customers-api";
 
-jest.mock("@/lib/api/crm-client", () => ({
-  crmClient: {
-    customerIdentity: {
+jest.mock("@/features/customers/services/customers-api", () => ({
+  customerIdentityApi: {
       listCustomers: jest.fn(),
-    },
-  },
+    }
 }));
 
 describe("CustomerListTable", () => {
   it("displays each customer's linked source references", async () => {
-    jest.mocked(crmClient.customerIdentity.listCustomers).mockResolvedValue([
+    jest.mocked(customerIdentityApi.listCustomers).mockResolvedValue([
       {
         id: "customer-1",
         name: "Maya Chen",

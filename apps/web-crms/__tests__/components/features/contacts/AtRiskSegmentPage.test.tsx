@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { SegmentsListPage } from "@/features/contacts/components/segments-list-page";
-import { crmClient } from "@/lib/api/crm-client";
+import { segmentsApi } from "@/features/contacts/services/segments-api";
 
 const mockPush = jest.fn();
 
@@ -11,13 +11,11 @@ jest.mock("next/navigation", () => ({
   }),
 }));
 
-jest.mock("@/lib/api/crm-client", () => ({
-  crmClient: {
-    segments: {
+jest.mock("@/features/contacts/services/segments-api", () => ({
+  segmentsApi: {
       list: jest.fn(),
       getMembers: jest.fn(),
-    },
-  },
+    }
 }));
 
 describe("At-Risk Customers via SegmentsListPage (preSelectedSegmentName)", () => {
@@ -26,7 +24,7 @@ describe("At-Risk Customers via SegmentsListPage (preSelectedSegmentName)", () =
   });
 
   it("renders At-Risk segment members instead of a coming-soon placeholder", async () => {
-    jest.mocked(crmClient.segments.list).mockResolvedValue([
+    jest.mocked(segmentsApi.list).mockResolvedValue([
       {
         id: "seg-at-risk",
         name: "At-Risk Customers",
@@ -42,7 +40,7 @@ describe("At-Risk Customers via SegmentsListPage (preSelectedSegmentName)", () =
       },
     ]);
 
-    jest.mocked(crmClient.segments.getMembers).mockResolvedValue([
+    jest.mocked(segmentsApi.getMembers).mockResolvedValue([
       {
         id: "ct-1",
         name: "Sofia Nakamura",
@@ -68,11 +66,11 @@ describe("At-Risk Customers via SegmentsListPage (preSelectedSegmentName)", () =
     expect(screen.getByText("Ava Patel")).toBeInTheDocument();
     expect(screen.getByText("At-Risk Customers")).toBeInTheDocument();
     expect(screen.queryByText("Coming Soon")).not.toBeInTheDocument();
-    expect(crmClient.segments.getMembers).toHaveBeenCalledWith("seg-at-risk");
+    expect(segmentsApi.getMembers).toHaveBeenCalledWith("seg-at-risk");
   });
 
   it("shows error when At-Risk segment is not found", async () => {
-    jest.mocked(crmClient.segments.list).mockResolvedValue([]);
+    jest.mocked(segmentsApi.list).mockResolvedValue([]);
 
     render(<SegmentsListPage preSelectedSegmentName="At-Risk Customers" />);
 
@@ -84,7 +82,7 @@ describe("At-Risk Customers via SegmentsListPage (preSelectedSegmentName)", () =
   it("navigates to contact detail when clicking a member row", async () => {
     const user = userEvent.setup();
 
-    jest.mocked(crmClient.segments.list).mockResolvedValue([
+    jest.mocked(segmentsApi.list).mockResolvedValue([
       {
         id: "seg-at-risk",
         name: "At-Risk Customers",
@@ -95,7 +93,7 @@ describe("At-Risk Customers via SegmentsListPage (preSelectedSegmentName)", () =
       },
     ]);
 
-    jest.mocked(crmClient.segments.getMembers).mockResolvedValue([
+    jest.mocked(segmentsApi.getMembers).mockResolvedValue([
       {
         id: "ct-1",
         name: "Sofia Nakamura",
@@ -117,7 +115,7 @@ describe("At-Risk Customers via SegmentsListPage (preSelectedSegmentName)", () =
   });
 
   it("does not show Back to Segments button when preSelectedSegmentName is set", async () => {
-    jest.mocked(crmClient.segments.list).mockResolvedValue([
+    jest.mocked(segmentsApi.list).mockResolvedValue([
       {
         id: "seg-at-risk",
         name: "At-Risk Customers",
@@ -128,7 +126,7 @@ describe("At-Risk Customers via SegmentsListPage (preSelectedSegmentName)", () =
       },
     ]);
 
-    jest.mocked(crmClient.segments.getMembers).mockResolvedValue([
+    jest.mocked(segmentsApi.getMembers).mockResolvedValue([
       {
         id: "ct-1",
         name: "Sofia Nakamura",

@@ -3,7 +3,7 @@ import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { CampaignDetail } from "@/features/campaigns/components/campaign-detail";
 import { useCampaign } from "@/features/campaigns/hooks/useCampaign";
-import { crmClient } from "@/lib/api/crm-client";
+import { campaignsApi } from "@/features/campaigns/services/campaigns-api";
 import type { Campaign } from "@/features/campaigns/types";
 
 jest.mock("next/navigation", () => ({
@@ -11,8 +11,8 @@ jest.mock("next/navigation", () => ({
 }));
 jest.mock("@/features/campaigns/hooks/useCampaign", () => ({ useCampaign: jest.fn() }));
 jest.mock("@/features/contacts/hooks/useSegments", () => ({ useSegments: jest.fn(() => ({ data: [], isLoading: false })) }));
-jest.mock("@/lib/api/crm-client", () => ({
-  crmClient: { campaigns: { updateStatus: jest.fn(), getAnalytics: jest.fn() } },
+jest.mock("@/features/campaigns/services/campaigns-api", () => ({
+  campaignsApi: { updateStatus: jest.fn(), getAnalytics: jest.fn() }
 }));
 
 const campaign: Campaign = {
@@ -37,7 +37,7 @@ const campaign: Campaign = {
 describe("CampaignDetail", () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    (crmClient.campaigns.getAnalytics as jest.Mock).mockResolvedValue(null);
+    (campaignsApi.getAnalytics as jest.Mock).mockResolvedValue(null);
   });
 
   it("shows the campaign title, status and channels", () => {
@@ -71,14 +71,14 @@ describe("CampaignDetail", () => {
   it("shows a Launch button for a Draft campaign and calls updateStatus(Active) on click", async () => {
     const refetch = jest.fn();
     (useCampaign as jest.Mock).mockReturnValue({ data: campaign, isLoading: false, error: null, refetch });
-    (crmClient.campaigns.updateStatus as jest.Mock).mockResolvedValue({ id: "c1", status: "Active" });
+    (campaignsApi.updateStatus as jest.Mock).mockResolvedValue({ id: "c1", status: "Active" });
     const user = userEvent.setup({ delay: null });
     render(<CampaignDetail id="c1" />);
 
     const launch = screen.getByRole("button", { name: /launch/i });
     await user.click(launch);
     await waitFor(() =>
-      expect(crmClient.campaigns.updateStatus).toHaveBeenCalledWith("c1", "Active")
+      expect(campaignsApi.updateStatus).toHaveBeenCalledWith("c1", "Active")
     );
   });
 
@@ -122,7 +122,7 @@ describe("CampaignDetail", () => {
       error: null,
       refetch: jest.fn(),
     });
-    (crmClient.campaigns.getAnalytics as jest.Mock).mockResolvedValue({
+    (campaignsApi.getAnalytics as jest.Mock).mockResolvedValue({
       sentCount: 4,
       openedCount: 2,
       clickedCount: 1,

@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useEffect } from "react";
-import { aiClient } from "@/lib/api/ai-client";
-import { crmClient } from "@/lib/api/crm-client";
+import { aiClient } from "@/features/dashboard/services/ai-client";
+import { ticketsApi } from "@/features/conversations/services/conversations-api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -39,7 +39,7 @@ export function TasksPage() {
 
   const handleClaimTicket = async (id: string) => {
     try {
-      await crmClient.tickets.claim(id);
+      await ticketsApi.claim(id);
       toast.success("Ticket claimed successfully.");
       fetchTasks();
     } catch (err) {

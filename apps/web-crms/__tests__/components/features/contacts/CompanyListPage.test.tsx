@@ -1,6 +1,7 @@
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { CompanyListPage } from "@/features/contacts/components/company-list-page";
-import { crmClient } from "@/lib/api/crm-client";
+import { contactsApi } from "@/features/contacts/services/contacts-api";
+import { companiesApi } from "@/features/contacts/services/companies-api";
 
 jest.mock("next/navigation", () => ({
   useRouter: () => ({
@@ -8,13 +9,11 @@ jest.mock("next/navigation", () => ({
   }),
 }));
 
-jest.mock("@/lib/api/crm-client", () => ({
-  crmClient: {
-    companies: {
+jest.mock("@/features/contacts/services/companies-api", () => ({
+  companiesApi: {
       list: jest.fn(),
       create: jest.fn(),
-    },
-  },
+    }
 }));
 
 // Radix Select/Sheet rely on pointer-capture APIs jsdom lacks.
@@ -33,7 +32,7 @@ describe("CompanyListPage", () => {
   });
 
   it("renders companies with name, buyer type, member count, and created date", async () => {
-    jest.mocked(crmClient.companies.list).mockResolvedValue([
+    jest.mocked(companiesApi.list).mockResolvedValue([
       {
         id: "co-1",
         name: "Acme Corp",
@@ -61,7 +60,7 @@ describe("CompanyListPage", () => {
   });
 
   it("hides archived companies by default", async () => {
-    jest.mocked(crmClient.companies.list).mockResolvedValue([
+    jest.mocked(companiesApi.list).mockResolvedValue([
       {
         id: "co-1",
         name: "Active Co",
@@ -74,28 +73,28 @@ describe("CompanyListPage", () => {
     render(<CompanyListPage />);
 
     await screen.findByText("Active Co");
-    expect(crmClient.companies.list).toHaveBeenCalledWith(false);
+    expect(companiesApi.list).toHaveBeenCalledWith(false);
   });
 
   it("toggles archived companies when Show Archived button is clicked", async () => {
-    jest.mocked(crmClient.companies.list).mockResolvedValue([]);
+    jest.mocked(companiesApi.list).mockResolvedValue([]);
 
     render(<CompanyListPage />);
 
     await waitFor(() => {
-      expect(crmClient.companies.list).toHaveBeenCalledWith(false);
+      expect(companiesApi.list).toHaveBeenCalledWith(false);
     });
 
     const toggleButton = screen.getByText("Show Archived");
     fireEvent.click(toggleButton);
 
     await waitFor(() => {
-      expect(crmClient.companies.list).toHaveBeenCalledWith(true);
+      expect(companiesApi.list).toHaveBeenCalledWith(true);
     });
   });
 
   it("shows empty state when no companies", async () => {
-    jest.mocked(crmClient.companies.list).mockResolvedValue([]);
+    jest.mocked(companiesApi.list).mockResolvedValue([]);
 
     render(<CompanyListPage />);
 
@@ -103,8 +102,8 @@ describe("CompanyListPage", () => {
   });
 
   it("creates a company via the Add Company sheet and refetches the list", async () => {
-    jest.mocked(crmClient.companies.list).mockResolvedValue([]);
-    jest.mocked(crmClient.companies.create).mockResolvedValue({
+    jest.mocked(companiesApi.list).mockResolvedValue([]);
+    jest.mocked(companiesApi.create).mockResolvedValue({
       id: "co-new",
       name: "New Co",
       buyerType: "Institutional",
@@ -117,7 +116,7 @@ describe("CompanyListPage", () => {
 
     render(<CompanyListPage />);
     await waitFor(() =>
-      expect(crmClient.companies.list).toHaveBeenCalledTimes(1)
+      expect(companiesApi.list).toHaveBeenCalledTimes(1)
     );
 
     // Open the sheet.
@@ -130,29 +129,29 @@ describe("CompanyListPage", () => {
     fireEvent.click(screen.getByRole("button", { name: /Create Company/i }));
 
     await waitFor(() =>
-      expect(crmClient.companies.create).toHaveBeenCalledWith({
+      expect(companiesApi.create).toHaveBeenCalledWith({
         name: "New Co",
         buyerType: "Institutional",
       })
     );
     // List refetched after creation (initial + post-create).
     await waitFor(() =>
-      expect(crmClient.companies.list).toHaveBeenCalledTimes(2)
+      expect(companiesApi.list).toHaveBeenCalledTimes(2)
     );
   });
 
   it("does not submit the Add Company sheet without a name", async () => {
-    jest.mocked(crmClient.companies.list).mockResolvedValue([]);
+    jest.mocked(companiesApi.list).mockResolvedValue([]);
 
     render(<CompanyListPage />);
     await waitFor(() =>
-      expect(crmClient.companies.list).toHaveBeenCalledTimes(1)
+      expect(companiesApi.list).toHaveBeenCalledTimes(1)
     );
 
     fireEvent.click(screen.getByRole("button", { name: /Add Company/i }));
     fireEvent.click(await screen.findByRole("button", { name: /Create Company/i }));
 
     expect(await screen.findByText("Company name is required.")).toBeInTheDocument();
-    expect(crmClient.companies.create).not.toHaveBeenCalled();
+    expect(companiesApi.create).not.toHaveBeenCalled();
   });
 });

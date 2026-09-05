@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { crmClient } from "@/lib/api/crm-client";
+import { messagesApi } from "@/features/conversations/services/conversations-api";
 import { Message } from "@/features/conversations/types";
 
 export function useMessages(ticketId: string | null) {
@@ -18,7 +18,7 @@ export function useMessages(ticketId: string | null) {
     setIsLoading(true);
     setError(null);
     try {
-      const data = await crmClient.messages.listByTicket(ticketId);
+      const data = await messagesApi.listByTicket(ticketId);
       setMessages(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load messages.");

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { crmClient } from "@/lib/api/crm-client";
+import { segmentsApi } from "@/features/contacts/services/segments-api";
 import type { SegmentListItem } from "@/features/contacts/types";
 
 export function useSegments() {
@@ -11,7 +11,7 @@ export function useSegments() {
     setIsLoading(true);
     setError(null);
     try {
-      const res = await crmClient.segments.list();
+      const res = await segmentsApi.list();
       setData(res ?? []);
     } catch (err) {
       setError(err instanceof Error ? err : new Error("Failed to load segments"));

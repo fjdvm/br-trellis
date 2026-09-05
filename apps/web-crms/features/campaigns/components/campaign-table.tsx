@@ -25,7 +25,7 @@ import {
 } from "@/components/shared/TablePagination";
 import { CampaignChannelBadge } from "@/features/campaigns/components/campaign-channel-badge";
 import { CampaignStatusBadge } from "@/features/campaigns/components/campaign-status-badge";
-import { crmClient } from "@/lib/api/crm-client";
+import { campaignsApi } from "@/features/campaigns/services/campaigns-api";
 import type { CampaignEngagementMetrics, CampaignListItem } from "@/features/campaigns/types";
 
 function formatDate(iso: string): string {
@@ -68,7 +68,7 @@ export function CampaignTable({
       return;
     }
     let mounted = true;
-    crmClient.campaigns
+    campaignsApi
       .getEngagementMetrics(campaigns.map((c) => c.id))
       .then((list) => {
         if (!mounted) return;
@@ -78,20 +78,16 @@ export function CampaignTable({
         }
         setMetrics(map);
       })
-      .catch(() => mounted && setMetrics({}));
+      .catch(() => {
+        if (mounted) setMetrics({});
+      });
     return () => {
       mounted = false;
     };
-  }, [ids]);
+  }, [ids, campaigns]);
 
   if (campaigns.length === 0) {
     return <div className="p-xl text-muted-foreground text-base">No campaigns found.</div>;
-  }
-
-  function rate(campaign: CampaignListItem, kind: "openRate" | "clickRate"): string {
-    if (!campaign.channels.includes("Email")) return "—";
-    const m = metrics[campaign.id];
-    return m ? `${m[kind]}%` : "—";
   }
 
   return (
@@ -100,69 +96,60 @@ export function CampaignTable({
         <Table>
           <TableHeader className="sticky top-0 bg-background z-10">
             <TableRow>
-              <TableHead className="min-w-[240px]">Campaign Name</TableHead>
-              <TableHead className="min-w-[160px]">Channels</TableHead>
+              <TableHead className="min-w-[140px]">Ref #</TableHead>
+              <TableHead className="min-w-[200px]">Campaign Title</TableHead>
               <TableHead className="min-w-[120px]">Status</TableHead>
-              <TableHead className="min-w-[180px]">Audience</TableHead>
-              <TableHead className="min-w-[110px]">Open Rate</TableHead>
-              <TableHead className="min-w-[110px]">Click Rate</TableHead>
-              <TableHead className="min-w-[140px]">Created Date</TableHead>
-              <TableHead className="min-w-[100px] text-right">Actions</TableHead>
+              <TableHead className="min-w-[160px]">Channels</TableHead>
+              <TableHead className="min-w-[180px]">Target Audience</TableHead>
+              <TableHead className="min-w-[130px]">Created</TableHead>
+              <TableHead className="min-w-[160px]">Sent / Delivery</TableHead>
+              <TableHead className="w-[48px]"></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {pagination.pageItems.map((campaign) => (
               <TableRow
                 key={campaign.id}
-                className="cursor-pointer hover:bg-muted/50 group"
+                className="cursor-pointer hover:bg-muted/50"
                 onClick={() => router.push(`/campaigns/${campaign.id}`)}
               >
-                <TableCell className="text-base font-medium">
-                  <div className="flex flex-col">
-                    <span className="font-semibold text-foreground group-hover:underline underline-offset-4">
-                      {campaign.title}
-                    </span>
-                    <span className="text-sm text-muted-foreground">ID: {shortRef(campaign.id)}</span>
-                  </div>
+                <TableCell className="font-mono text-muted-foreground">
+                  {shortRef(campaign.id)}
                 </TableCell>
-                <TableCell className="text-base">
-                  <span className="flex flex-wrap gap-1">
-                    {campaign.channels.map((c) => (
-                      <CampaignChannelBadge key={c} channel={c} />
-                    ))}
-                  </span>
-                </TableCell>
-                <TableCell className="text-base">
+                <TableCell className="font-medium">{campaign.title}</TableCell>
+                <TableCell>
                   <CampaignStatusBadge status={campaign.status} />
                 </TableCell>
-                <TableCell className="text-base text-foreground font-normal">
-                  {audienceLabel(campaign)}
+                <TableCell>
+                  <div className="flex flex-wrap gap-1">
+                    {campaign.channels.map((ch) => (
+                      <CampaignChannelBadge key={ch} channel={ch} />
+                    ))}
+                  </div>
                 </TableCell>
-                <TableCell className="text-base text-foreground font-medium">
-                  {rate(campaign, "openRate")}
+                <TableCell>{audienceLabel(campaign)}</TableCell>
+                <TableCell>{formatDate(campaign.createdAt)}</TableCell>
+                <TableCell>
+                  {campaign.dispatchResult ? (
+                    <span className="text-foreground">
+                      {campaign.dispatchResult.processedRecipientCount} sent
+                    </span>
+                  ) : metrics[campaign.id] ? (
+                    <span className="text-foreground">
+                      {metrics[campaign.id].sentCount} sent ({metrics[campaign.id].openRate}% open)
+                    </span>
+                  ) : (
+                    "—"
+                  )}
                 </TableCell>
-                <TableCell className="text-base text-foreground font-medium">
-                  {rate(campaign, "clickRate")}
-                </TableCell>
-                <TableCell className="text-sm text-muted-foreground">
-                  {formatDate(campaign.createdAt)}
-                </TableCell>
-                <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
+                <TableCell onClick={(e) => e.stopPropagation()}>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-9 w-9 p-0 hover:bg-muted text-foreground"
-                        aria-label="Campaign actions"
-                      >
-                        <MoreVertical className="w-5 h-5" />
+                      <Button variant="ghost" size="icon" className="h-8 w-8">
+                        <MoreVertical className="h-4 w-4" />
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent
-                      align="end"
-                      className="w-48 border border-gray-200 dark:border-gray-700 bg-popover shadow-md p-1"
-                    >
+                    <DropdownMenuContent align="end">
                       <DropdownMenuItem
                         className="text-base font-medium py-2.5 px-3 cursor-pointer"
                         onClick={() => router.push(`/campaigns/${campaign.id}`)}
@@ -175,7 +162,7 @@ export function CampaignTable({
                             className="text-base font-medium py-2.5 px-3 cursor-pointer"
                             onClick={async () => {
                               try {
-                                await crmClient.campaigns.updateStatus(campaign.id, "Active");
+                                await campaignsApi.updateStatus(campaign.id, "Active");
                                 onRefetch?.();
                               } catch (err) {
                                 console.error(err);
@@ -197,7 +184,7 @@ export function CampaignTable({
                           className="text-base font-medium py-2.5 px-3 cursor-pointer text-destructive focus:text-destructive"
                           onClick={async () => {
                             try {
-                              await crmClient.campaigns.updateStatus(campaign.id, "Ended");
+                              await campaignsApi.updateStatus(campaign.id, "Ended");
                               onRefetch?.();
                             } catch (err) {
                               console.error(err);

@@ -1,7 +1,7 @@
 /**
  * @jest-environment node
  */
-import { aiClient } from "@/lib/api/ai-client";
+import { aiClient } from "@/features/dashboard/services/ai-client";
 
 const BASE = "https://localhost:5005";
 

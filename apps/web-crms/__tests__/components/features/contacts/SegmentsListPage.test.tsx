@@ -1,6 +1,6 @@
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { SegmentsListPage } from "@/features/contacts/components/segments-list-page";
-import { crmClient } from "@/lib/api/crm-client";
+import { segmentsApi } from "@/features/contacts/services/segments-api";
 
 jest.mock("next/navigation", () => ({
   useRouter: () => ({
@@ -8,13 +8,11 @@ jest.mock("next/navigation", () => ({
   }),
 }));
 
-jest.mock("@/lib/api/crm-client", () => ({
-  crmClient: {
-    segments: {
+jest.mock("@/features/contacts/services/segments-api", () => ({
+  segmentsApi: {
       list: jest.fn(),
       getMembers: jest.fn(),
-    },
-  },
+    }
 }));
 
 describe("SegmentsListPage", () => {
@@ -23,7 +21,7 @@ describe("SegmentsListPage", () => {
   });
 
   it("renders segments with name, type, rule badges, and member count", async () => {
-    jest.mocked(crmClient.segments.list).mockResolvedValue([
+    jest.mocked(segmentsApi.list).mockResolvedValue([
       {
         id: "seg-1",
         name: "At-Risk Customers",
@@ -62,7 +60,7 @@ describe("SegmentsListPage", () => {
   });
 
   it("shows membership view when View Members button is clicked", async () => {
-    jest.mocked(crmClient.segments.list).mockResolvedValue([
+    jest.mocked(segmentsApi.list).mockResolvedValue([
       {
         id: "seg-1",
         name: "At-Risk Customers",
@@ -78,7 +76,7 @@ describe("SegmentsListPage", () => {
       },
     ]);
 
-    jest.mocked(crmClient.segments.getMembers).mockResolvedValue([
+    jest.mocked(segmentsApi.getMembers).mockResolvedValue([
       {
         id: "contact-1",
         name: "Sofia Nakamura",
@@ -104,11 +102,11 @@ describe("SegmentsListPage", () => {
     });
     expect(screen.getByText("sofia.n@initech.co")).toBeInTheDocument();
     expect(screen.getByText("Back to Segments")).toBeInTheDocument();
-    expect(crmClient.segments.getMembers).toHaveBeenCalledWith("seg-1");
+    expect(segmentsApi.getMembers).toHaveBeenCalledWith("seg-1");
   });
 
   it("navigates back to list from membership view", async () => {
-    jest.mocked(crmClient.segments.list).mockResolvedValue([
+    jest.mocked(segmentsApi.list).mockResolvedValue([
       {
         id: "seg-1",
         name: "VIP List",
@@ -119,7 +117,7 @@ describe("SegmentsListPage", () => {
       },
     ]);
 
-    jest.mocked(crmClient.segments.getMembers).mockResolvedValue([
+    jest.mocked(segmentsApi.getMembers).mockResolvedValue([
       {
         id: "contact-1",
         name: "Maya Chen",

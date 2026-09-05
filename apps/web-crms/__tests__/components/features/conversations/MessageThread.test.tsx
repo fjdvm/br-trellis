@@ -1,7 +1,7 @@
 import { render, screen, waitFor, act, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MessageThread } from "@/features/conversations/components/message-thread";
-import { crmClient } from "@/lib/api/crm-client";
+import { conversationMessagesApi } from "@/features/conversations/services/conversations-api";
 import { useSignalR } from "@/hooks/useSignalR";
 import type { ConversationMessage } from "@/features/conversations/types";
 
@@ -18,13 +18,11 @@ jest.mock("next-auth/react", () => ({
   }),
 }));
 
-jest.mock("@/lib/api/crm-client", () => ({
-  crmClient: {
-    conversationMessages: {
+jest.mock("@/features/conversations/services/conversations-api", () => ({
+  conversationMessagesApi: {
       listByTicket: jest.fn(),
       postStaffMessage: jest.fn(),
-    },
-  },
+    }
 }));
 
 // The real-time hook is exercised by its own test (`useSignalR.test.ts`); here
@@ -36,8 +34,8 @@ jest.mock("@/hooks/useSignalR", () => ({
 }));
 
 const mocked = {
-  list: jest.mocked(crmClient.conversationMessages.listByTicket),
-  post: jest.mocked(crmClient.conversationMessages.postStaffMessage),
+  list: jest.mocked(conversationMessagesApi.listByTicket),
+  post: jest.mocked(conversationMessagesApi.postStaffMessage),
 };
 
 // jsdom does not implement scrollIntoView, which the messenger layout calls to

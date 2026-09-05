@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DataTable, Column } from "@/components/shared/DataTable";
 import { TableSkeleton } from "@/components/shared/TableSkeleton";
-import { crmClient } from "@/lib/api/crm-client";
+import { workflowRunsApi } from "@/features/automation/services/workflow-runs-api";
 import type { WorkflowRunListItem } from "@/features/ecommerce/types";
 
 function getStatusVariant(status: string): "default" | "outline" | "destructive" {
@@ -69,7 +69,7 @@ export function WorkflowRunsPage() {
 
   const loadRuns = useCallback(async () => {
     try {
-      const result = await crmClient.workflowRuns.list();
+      const result = await workflowRunsApi.list();
       setRuns(result);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unable to load runs.");

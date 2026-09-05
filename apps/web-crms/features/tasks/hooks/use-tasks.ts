@@ -1,6 +1,8 @@
 import { useState, useCallback } from "react";
-import { aiClient } from "@/lib/api/ai-client";
-import { crmClient } from "@/lib/api/crm-client";
+import { aiClient } from "@/features/dashboard/services/ai-client";
+import { ticketsApi } from "@/features/conversations/services/conversations-api";
+import { campaignsApi } from "@/features/campaigns/services/campaigns-api";
+import { customerApi } from "@/features/customers/services/customers-api";
 // Use the legacy TicketListItem that matches the PaginatedTicketResponse returned by ticketsApi.list()
 import type { TicketListItem } from "@/features/conversations/types/ticket";
 import type { Anomaly, TaskItem } from "../types";
@@ -14,122 +16,107 @@ const SEVERITY_SCORE: Record<string, number> = {
 
 interface DraftCampaign {
   id: string;
-  title: string;
-  createdAt: string;
+  name: string;
+  updatedAt: string;
 }
 
 interface CustomerItem {
   id: string;
-  displayName: string;
-  email: string;
-  createdAt: string;
+  name: string;
+  churnScore?: number;
+  riskLevel?: string;
+  recommendedAction?: string;
 }
 
-interface PaginatedCustomers {
-  items?: CustomerItem[];
-}
-
-function normalizeTasks(
+export function normalizeTasks(
   anomaliesRes: { anomalies?: Anomaly[] },
-  allTickets: TicketListItem[],
-  draftCampaigns: DraftCampaign[],
+  tickets: TicketListItem[],
+  campaigns: DraftCampaign[],
   customers: CustomerItem[]
 ): TaskItem[] {
   const tasks: TaskItem[] = [];
 
-  // Anomalies
-  const openAnomalies = (anomaliesRes.anomalies ?? []).filter(
-    (a) => a.status !== "resolved" && a.status !== "acknowledged"
-  );
-  for (const a of openAnomalies) {
-    tasks.push({
-      id: `anomaly-${a.anomalyId}`,
-      originalId: a.anomalyId,
-      type: "anomaly",
-      title: "System Anomaly",
-      description: a.description,
-      severity: a.severity,
-      date: a.detectedAt,
-      actionLabel: "Acknowledge",
-    });
-  }
-
-  // Unclaimed Tickets
-  for (const t of allTickets.filter((t) => t.status === "Unclaimed")) {
-    tasks.push({
-      id: `unclaimed-${t.id}`,
-      originalId: t.id,
-      type: "unclaimed_ticket",
-      title: "Unclaimed Ticket",
-      description: t.title,
-      severity: "high",
-      date: t.createdAt,
-      actionLabel: "Claim",
-    });
-  }
-
-  // Unreplied Messages
-  for (const t of allTickets.filter(
-    (t) =>
-      (t.status === "Claimed" || t.status === "Ongoing") &&
-      t.unreadMessageCount != null &&
-      t.unreadMessageCount > 0
-  )) {
-    tasks.push({
-      id: `unreplied-${t.id}`,
-      originalId: t.id,
-      type: "unreplied_ticket",
-      title: "Unreplied Message",
-      description: `Ticket: ${t.title} (${t.unreadMessageCount} unread)`,
-      severity: "medium",
-      date: (t.lastMessageAt ?? t.updatedAt ?? t.createdAt) as string,
-      actionLabel: "Reply",
-      actionHref: `/conversations/inbox/${t.id}`,
-    });
-  }
-
-  // Draft Campaigns
-  for (const c of draftCampaigns) {
-    tasks.push({
-      id: `campaign-${c.id}`,
-      originalId: c.id,
-      type: "draft_campaign",
-      title: "Draft Campaign",
-      description: c.title,
-      severity: "low",
-      date: c.createdAt,
-      actionLabel: "Review",
-      actionHref: `/campaigns/${c.id}`,
-    });
-  }
-
-  // New Customers (last 3 days)
-  const threeDaysAgo = new Date();
-  threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
-  for (const c of customers.filter(
-    (c) => new Date(c.createdAt) >= threeDaysAgo
-  )) {
-    tasks.push({
-      id: `customer-${c.id}`,
-      originalId: c.id,
-      type: "new_customer",
-      title: "New Customer Sign Up",
-      description: `${c.displayName} (${c.email})`,
-      severity: "low",
-      date: c.createdAt,
-      actionLabel: "View Profile",
-      actionHref: `/customers/${c.id}`,
-    });
-  }
-
-  tasks.sort((a, b) => {
-    const scoreA = SEVERITY_SCORE[a.severity] ?? 0;
-    const scoreB = SEVERITY_SCORE[b.severity] ?? 0;
-    if (scoreA !== scoreB) return scoreB - scoreA;
-    return new Date(b.date).getTime() - new Date(a.date).getTime();
+  // Anomaly tasks
+  (anomaliesRes.anomalies ?? []).forEach((anomaly) => {
+    if (!anomaly.acknowledged) {
+      tasks.push({
+        id: `anomaly-${anomaly.id}`,
+        type: "anomaly",
+        title: anomaly.title || anomaly.metric || "Anomaly Detected",
+        description: anomaly.description || `Anomaly in ${anomaly.metric}`,
+        severity: anomaly.severity || "medium",
+        source: anomaly.source || "System",
+        actionable: true,
+        actionType: "acknowledge_anomaly",
+        originalData: anomaly,
+      });
+    }
   });
 
-  return tasks;
+  // Ticket tasks
+  tickets.forEach((ticket) => {
+    if (ticket.status === "Unclaimed") {
+      const isHigh =
+        ticket.priority?.toLowerCase() === "high" ||
+        ticket.priority?.toLowerCase() === "urgent";
+
+      tasks.push({
+        id: `ticket-${ticket.id}`,
+        type: "unclaimed_ticket",
+        title: `Unclaimed Ticket: ${ticket.subject || ticket.title}`,
+        description: ticket.description || "Customer waiting for response",
+        severity: isHigh ? "high" : "medium",
+        source: "Support",
+        actionable: true,
+        actionType: "claim_ticket",
+        originalData: ticket,
+      });
+    }
+  });
+
+  // Campaign draft tasks
+  campaigns.forEach((campaign) => {
+    tasks.push({
+      id: `campaign-${campaign.id}`,
+      type: "draft_campaign",
+      title: `Draft Campaign: ${campaign.name}`,
+      description: "Campaign waiting for review/launch",
+      severity: "low",
+      source: "Marketing",
+      actionable: true,
+      actionType: "review_campaign",
+      originalData: campaign,
+    });
+  });
+
+  // Customer retention tasks
+  customers.forEach((customer) => {
+    if (
+      customer.riskLevel === "High" ||
+      customer.riskLevel === "Critical" ||
+      (customer.churnScore && customer.churnScore > 0.7)
+    ) {
+      tasks.push({
+        id: `customer-${customer.id}`,
+        type: "at_risk_customer",
+        title: `At-Risk Customer: ${customer.name}`,
+        description:
+          customer.recommendedAction ||
+          `High churn risk (${Math.round((customer.churnScore || 0) * 100)}%)`,
+        severity: customer.riskLevel === "Critical" ? "critical" : "high",
+        source: "Retention",
+        actionable: true,
+        actionType: "contact_customer",
+        originalData: customer,
+      });
+    }
+  });
+
+  return tasks.sort((a, b) => {
+    const scoreA = SEVERITY_SCORE[a.severity] || 0;
+    const scoreB = SEVERITY_SCORE[b.severity] || 0;
+    return scoreB - scoreA;
+  });
 }
 
 export function useTasks() {
@@ -143,13 +130,13 @@ export function useTasks() {
           aiClient.dashboard
             .getAnomalies()
             .catch(() => ({ anomalies: [] as Anomaly[] })),
-          crmClient.tickets
+          ticketsApi
             .list(1, 100)
             .catch(() => ({ items: [] as TicketListItem[] })),
-          crmClient.campaigns
+          campaignsApi
             .list("Draft")
             .catch(() => [] as DraftCampaign[]),
-          crmClient.customers
+          customerApi
             .list(1, 20)
             .catch(() => ({ items: [] as CustomerItem[] })),
         ]);

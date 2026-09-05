@@ -1,7 +1,7 @@
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import {  TicketListPage  } from "@/features/conversations/components/ticket-list-page";
-import { crmClient } from "@/lib/api/crm-client";
+import { conversationTicketsApi } from "@/features/conversations/services/conversations-api";
 import type { TicketListItem } from "@/features/conversations/types";
 
 // Radix Select relies on pointer-capture and scrollIntoView APIs that jsdom
@@ -52,14 +52,12 @@ jest.mock("next-auth/react", () => ({
   }),
 }));
 
-jest.mock("@/lib/api/crm-client", () => ({
-  crmClient: {
-    conversationTickets: {
+jest.mock("@/features/conversations/services/conversations-api", () => ({
+  conversationTicketsApi: {
       list: jest.fn(),
       claim: jest.fn(),
       changeStatus: jest.fn(),
-    },
-  },
+    }
 }));
 
 function makeTicket(overrides: Partial<TicketListItem> = {}): TicketListItem {
@@ -102,7 +100,7 @@ describe("TicketListPage (My Assigned props)", () => {
       name: "amelia ward",
       email: "Amelia.Ward@Trellis.io",
     };
-    jest.mocked(crmClient.conversationTickets.list).mockResolvedValue([]);
+    jest.mocked(conversationTicketsApi.list).mockResolvedValue([]);
   });
 
   it("renders the overridden page copy (heading, description, card title)", async () => {
@@ -137,7 +135,7 @@ describe("TicketListPage (My Assigned props)", () => {
     render(<TicketListPage {...assignedProps} />);
 
     await waitFor(() =>
-      expect(crmClient.conversationTickets.list).toHaveBeenCalledWith(
+      expect(conversationTicketsApi.list).toHaveBeenCalledWith(
         "All",
         "All",
         "All"
@@ -146,7 +144,7 @@ describe("TicketListPage (My Assigned props)", () => {
   });
 
   it("renders only tickets whose assignedToId matches the session id", async () => {
-    jest.mocked(crmClient.conversationTickets.list).mockResolvedValue([
+    jest.mocked(conversationTicketsApi.list).mockResolvedValue([
       makeTicket({ id: "t-mine", subject: "Mine", assignedToId: "auth|amelia" }),
       makeTicket({
         id: "t-theirs",
@@ -162,7 +160,7 @@ describe("TicketListPage (My Assigned props)", () => {
   });
 
   it("excludes tickets assigned to a different agent and unassigned tickets", async () => {
-    jest.mocked(crmClient.conversationTickets.list).mockResolvedValue([
+    jest.mocked(conversationTicketsApi.list).mockResolvedValue([
       makeTicket({ id: "t-mine", subject: "Mine", assignedToId: "auth|amelia" }),
       makeTicket({
         id: "t-theirs",
@@ -192,7 +190,7 @@ describe("TicketListPage (My Assigned props)", () => {
       name: "amelia ward",
       email: "Amelia.Ward@Trellis.io",
     };
-    jest.mocked(crmClient.conversationTickets.list).mockResolvedValue([
+    jest.mocked(conversationTicketsApi.list).mockResolvedValue([
       makeTicket({
         id: "t-by-username",
         subject: "Matched by username",
@@ -213,7 +211,7 @@ describe("TicketListPage (My Assigned props)", () => {
   });
 
   it("includes Completed and Canceled tickets assigned to the current agent (no terminal exclusion)", async () => {
-    jest.mocked(crmClient.conversationTickets.list).mockResolvedValue([
+    jest.mocked(conversationTicketsApi.list).mockResolvedValue([
       makeTicket({
         id: "t-done",
         subject: "All done",
@@ -235,7 +233,7 @@ describe("TicketListPage (My Assigned props)", () => {
   });
 
   it("never renders a Claim button, even for an Ongoing ticket assigned to the current agent", async () => {
-    jest.mocked(crmClient.conversationTickets.list).mockResolvedValue([
+    jest.mocked(conversationTicketsApi.list).mockResolvedValue([
       makeTicket({
         id: "t-mine",
         subject: "Mine ongoing",
@@ -253,7 +251,7 @@ describe("TicketListPage (My Assigned props)", () => {
   });
 
   it("keeps the Status and Waiting On filters interactive", async () => {
-    jest.mocked(crmClient.conversationTickets.list).mockResolvedValue([
+    jest.mocked(conversationTicketsApi.list).mockResolvedValue([
       makeTicket({ id: "t-mine", subject: "Mine", assignedToId: "auth|amelia" }),
     ]);
     const user = userEvent.setup({ pointerEventsCheck: 0 });
@@ -266,7 +264,7 @@ describe("TicketListPage (My Assigned props)", () => {
     await user.click(await screen.findByRole("option", { name: "Ongoing" }));
 
     await waitFor(() =>
-      expect(crmClient.conversationTickets.list).toHaveBeenCalledWith(
+      expect(conversationTicketsApi.list).toHaveBeenCalledWith(
         "Ongoing",
         "All",
         "All"
@@ -275,7 +273,7 @@ describe("TicketListPage (My Assigned props)", () => {
   });
 
   it("shows the assigned-empty message when the agent has no assigned tickets", async () => {
-    jest.mocked(crmClient.conversationTickets.list).mockResolvedValue([]);
+    jest.mocked(conversationTicketsApi.list).mockResolvedValue([]);
 
     render(<TicketListPage {...assignedProps} />);
 
@@ -285,7 +283,7 @@ describe("TicketListPage (My Assigned props)", () => {
   });
 
   it("shows the assigned-empty message when only other agents' tickets come back (filtered to nothing at the default filter)", async () => {
-    jest.mocked(crmClient.conversationTickets.list).mockResolvedValue([
+    jest.mocked(conversationTicketsApi.list).mockResolvedValue([
       makeTicket({ id: "t-theirs", subject: "Theirs", assignedToId: "auth|bob" }),
     ]);
 
@@ -298,7 +296,7 @@ describe("TicketListPage (My Assigned props)", () => {
   });
 
   it("supports Cancel (with confirmation dialog) and updates the row in place from the mutation response", async () => {
-    jest.mocked(crmClient.conversationTickets.list).mockResolvedValue([
+    jest.mocked(conversationTicketsApi.list).mockResolvedValue([
       makeTicket({
         id: "t-1",
         subject: "Cannot log in",
@@ -306,7 +304,7 @@ describe("TicketListPage (My Assigned props)", () => {
         assignedToId: "auth|amelia",
       }),
     ]);
-    jest.mocked(crmClient.conversationTickets.changeStatus).mockResolvedValue(
+    jest.mocked(conversationTicketsApi.changeStatus).mockResolvedValue(
       makeTicket({
         id: "t-1",
         subject: "Cannot log in",
@@ -323,7 +321,7 @@ describe("TicketListPage (My Assigned props)", () => {
     );
 
     // Dialog gates the call: nothing sent until the user confirms.
-    expect(crmClient.conversationTickets.changeStatus).not.toHaveBeenCalled();
+    expect(conversationTicketsApi.changeStatus).not.toHaveBeenCalled();
 
     const confirmButtons = screen.getAllByRole("button", {
       name: /Cancel Ticket/i,
@@ -331,7 +329,7 @@ describe("TicketListPage (My Assigned props)", () => {
     await user.click(confirmButtons[confirmButtons.length - 1]);
 
     await waitFor(() =>
-      expect(crmClient.conversationTickets.changeStatus).toHaveBeenCalledWith(
+      expect(conversationTicketsApi.changeStatus).toHaveBeenCalledWith(
         "t-1",
         { status: "Canceled" }
       )
@@ -341,11 +339,11 @@ describe("TicketListPage (My Assigned props)", () => {
     // Canceled status badge, updated in place with no full refetch.
     expect(await screen.findByText("Canceled")).toBeInTheDocument();
     expect(screen.getByText("Cannot log in")).toBeInTheDocument();
-    expect(crmClient.conversationTickets.list).toHaveBeenCalledTimes(1);
+    expect(conversationTicketsApi.list).toHaveBeenCalledTimes(1);
   });
 
   it("navigates to the ticket detail page on row click", async () => {
-    jest.mocked(crmClient.conversationTickets.list).mockResolvedValue([
+    jest.mocked(conversationTicketsApi.list).mockResolvedValue([
       makeTicket({ id: "t-1", subject: "Cannot log in", assignedToId: "auth|amelia" }),
     ]);
 
@@ -359,7 +357,7 @@ describe("TicketListPage (My Assigned props)", () => {
 
   it("shows the loading skeleton before the fetch resolves", () => {
     let resolveList: (value: TicketListItem[]) => void = () => {};
-    jest.mocked(crmClient.conversationTickets.list).mockReturnValue(
+    jest.mocked(conversationTicketsApi.list).mockReturnValue(
       new Promise<TicketListItem[]>((resolve) => {
         resolveList = resolve;
       })
@@ -374,7 +372,7 @@ describe("TicketListPage (My Assigned props)", () => {
 
   it("shows an inline error when the fetch fails", async () => {
     jest
-      .mocked(crmClient.conversationTickets.list)
+      .mocked(conversationTicketsApi.list)
       .mockRejectedValue(new Error("Boom"));
 
     render(<TicketListPage {...assignedProps} />);

@@ -9,38 +9,44 @@ jest.mock("next-auth/react", () => ({
 import React from "react";
 import { render, screen, waitFor } from "@testing-library/react";
 import { ConversationsInbox as Conversations } from "@/features/conversations/components/conversations-inbox";
-import { crmClient } from "@/lib/api/crm-client";
+import { customerApi } from "@/features/customers/services/customers-api";
+import { conversationTicketsApi, messagesApi, ticketsApi } from "@/features/conversations/services/conversations-api";
+import { templatesApi } from "@/features/campaigns/services/campaigns-api";
 
-jest.mock("@/lib/api/crm-client", () => ({
-  crmClient: {
-    conversationTickets: {
+jest.mock("@/features/conversations/services/conversations-api", () => ({
+  conversationTicketsApi: {
       list: jest.fn(),
       getById: jest.fn(),
       unclaim: jest.fn(),
       cancel: jest.fn(),
       updateStatus: jest.fn(),
     },
-    tickets: {
+  ticketsApi: {
       list: jest.fn(),
       getById: jest.fn(),
       unclaim: jest.fn(),
       cancel: jest.fn(),
       updateStatus: jest.fn(),
     },
-    messages: {
+  messagesApi: {
       listByTicket: jest.fn(),
       create: jest.fn(),
       markRead: jest.fn(),
-    },
-    customers: {
+    }
+}));
+
+jest.mock("@/features/customers/services/customers-api", () => ({
+  customerApi: {
       getById: jest.fn(),
       getMarketingHistory: jest.fn(),
       getOrders: jest.fn(),
-    },
-    templates: {
+    }
+}));
+
+jest.mock("@/features/campaigns/services/campaigns-api", () => ({
+  templatesApi: {
       list: jest.fn(),
-    },
-  },
+    }
 }));
 
 jest.mock("@/hooks/useSignalR", () => ({
@@ -54,7 +60,7 @@ describe("Conversations", () => {
   beforeEach(() => {
     jest.clearAllMocks();
 
-    (crmClient.conversationTickets.list as jest.Mock).mockResolvedValue([
+    (conversationTicketsApi.list as jest.Mock).mockResolvedValue([
       {
         id: "ticket-101",
         subject: "Account locked",
@@ -71,7 +77,7 @@ describe("Conversations", () => {
       },
     ]);
 
-    (crmClient.tickets.getById as jest.Mock).mockResolvedValue({
+    (ticketsApi.getById as jest.Mock).mockResolvedValue({
       id: "ticket-101",
       title: "Account locked",
       description: "User cannot log in",
@@ -82,7 +88,7 @@ describe("Conversations", () => {
       updatedAt: "2026-08-01T10:05:00Z",
     });
 
-    (crmClient.messages.listByTicket as jest.Mock).mockResolvedValue([
+    (messagesApi.listByTicket as jest.Mock).mockResolvedValue([
       {
         id: "m-1",
         senderId: "cust-1",
@@ -93,23 +99,23 @@ describe("Conversations", () => {
       },
     ]);
 
-    (crmClient.customers.getById as jest.Mock).mockResolvedValue({
+    (customerApi.getById as jest.Mock).mockResolvedValue({
       id: "cust-1",
       name: "Charlie Brown",
       email: "charlie@example.com",
     });
 
-    (crmClient.customers.getMarketingHistory as jest.Mock).mockResolvedValue({
+    (customerApi.getMarketingHistory as jest.Mock).mockResolvedValue({
       items: [],
       totalCount: 0,
     });
 
-    (crmClient.customers.getOrders as jest.Mock).mockResolvedValue({
+    (customerApi.getOrders as jest.Mock).mockResolvedValue({
       items: [],
       totalCount: 0,
     });
 
-    (crmClient.templates.list as jest.Mock).mockResolvedValue([
+    (templatesApi.list as jest.Mock).mockResolvedValue([
       { id: "tmpl-1", title: "Greeting", content: "Hello! How can I help you?" },
     ]);
   });

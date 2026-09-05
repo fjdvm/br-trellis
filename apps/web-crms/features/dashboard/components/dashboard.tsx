@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useDashboardHub } from "@/features/dashboard/hooks/useDashboardHub";
-import { aiClient } from "@/lib/api/ai-client";
+import { aiClient } from "@/features/dashboard/services/ai-client";
 import type { LucideIcon } from "lucide-react";
 
 export interface KpiCardProps {

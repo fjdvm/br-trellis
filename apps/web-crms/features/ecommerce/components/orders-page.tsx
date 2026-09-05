@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DataTable, Column } from "@/components/shared/DataTable";
 import { TableSkeleton } from "@/components/shared/TableSkeleton";
-import { crmClient } from "@/lib/api/crm-client";
+import { ecommerceOrdersApi } from "@/features/ecommerce/services/ecommerce-api";
 import { useEcommerceSyncStatus } from "@/features/ecommerce/hooks/useEcommerceSyncStatus";
 import { EcommerceConnectPrompt } from "./ecommerce-connect-prompt";
 import type { OrderListItem } from "@/features/ecommerce/types";
@@ -70,7 +70,7 @@ export function OrdersPage() {
 
   const loadOrders = useCallback(async () => {
     try {
-      const result = await crmClient.ecommerceOrders.list();
+      const result = await ecommerceOrdersApi.list();
       setOrders(result);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unable to load orders.");

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { crmClient } from "@/lib/api/crm-client";
+import { customerApi } from "@/features/customers/services/customers-api";
 import { CustomerListItem } from "@/features/customers/types";
 
 interface UseCustomersOptions {
@@ -26,7 +26,7 @@ export function useCustomers({ page = 1, pageSize = 20, search = "", customerTyp
     setError(null);
     const currentRequestId = ++lastRequestIdRef.current;
     try {
-      const data = await crmClient.customers.list(page, pageSize, customerType, search);
+      const data = await customerApi.list(page, pageSize, customerType, search);
       if (currentRequestId === lastRequestIdRef.current) {
         setCustomers(data.items || []);
         setTotalCount(data.totalCount || 0);

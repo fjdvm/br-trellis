@@ -23,7 +23,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { crmClient } from "@/lib/api/crm-client";
+import { contactsApi } from "@/features/contacts/services/contacts-api";
+import { companiesApi } from "@/features/contacts/services/companies-api";
 import {
   validateContactFields,
   hasErrors,
@@ -51,7 +52,7 @@ export function AddContactSheet({ onCreated }: AddContactSheetProps) {
 
   useEffect(() => {
     if (open) {
-      crmClient.companies.list(false).then(setCompanies).catch(() => {});
+      companiesApi.list(false).then(setCompanies).catch(() => {});
     }
   }, [open]);
 
@@ -73,7 +74,7 @@ export function AddContactSheet({ onCreated }: AddContactSheetProps) {
     setError(null);
 
     try {
-      await crmClient.contacts.create({
+      await contactsApi.create({
         name: name.trim() || undefined,
         email: email.trim() || undefined,
         phone: phone.trim() || undefined,

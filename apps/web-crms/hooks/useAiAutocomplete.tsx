@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import { aiClient } from "@/lib/api/ai-client";
+import { aiClient } from "@/features/dashboard/services/ai-client";
 
 export function useAiAutocomplete(context?: string) {
   const [suggestion, setSuggestion] = useState<string>("");

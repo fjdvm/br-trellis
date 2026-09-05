@@ -10,7 +10,7 @@
  */
 import { render, screen } from "@testing-library/react";
 import {  TicketListPage  } from "@/features/conversations/components/ticket-list-page";
-import { crmClient } from "@/lib/api/crm-client";
+import { conversationTicketsApi } from "@/features/conversations/services/conversations-api";
 import type { TicketListItem } from "@/features/conversations/types";
 import liveTickets from "../../../fixtures/live-tickets.json";
 
@@ -31,14 +31,12 @@ jest.mock("next-auth/react", () => ({
   }),
 }));
 
-jest.mock("@/lib/api/crm-client", () => ({
-  crmClient: {
-    conversationTickets: {
+jest.mock("@/features/conversations/services/conversations-api", () => ({
+  conversationTicketsApi: {
       list: jest.fn(),
       claim: jest.fn(),
       changeStatus: jest.fn(),
-    },
-  },
+    }
 }));
 
 describe("TicketListPage against live API payload", () => {
@@ -49,7 +47,7 @@ describe("TicketListPage against live API payload", () => {
   it("renders every seeded ticket from the real endpoint response", async () => {
     // Cast: the fixture is real API JSON; the shape is validated by rendering.
     jest
-      .mocked(crmClient.conversationTickets.list)
+      .mocked(conversationTicketsApi.list)
       .mockResolvedValue(liveTickets as unknown as TicketListItem[]);
 
     render(<TicketListPage />);

@@ -4,15 +4,15 @@ import userEvent from "@testing-library/user-event";
 import { CampaignWizard } from "@/features/campaigns/components/campaign-wizard";
 import { useTemplates } from "@/features/campaigns/hooks/useTemplates";
 import { useSegments } from "@/features/contacts/hooks/useSegments";
-import { crmClient } from "@/lib/api/crm-client";
+import { campaignsApi } from "@/features/campaigns/services/campaigns-api";
 
 jest.mock("next/navigation", () => ({
   useRouter: () => ({ push: jest.fn() }),
 }));
 jest.mock("@/features/campaigns/hooks/useTemplates", () => ({ useTemplates: jest.fn() }));
 jest.mock("@/features/contacts/hooks/useSegments", () => ({ useSegments: jest.fn() }));
-jest.mock("@/lib/api/crm-client", () => ({
-  crmClient: { campaigns: { create: jest.fn() } },
+jest.mock("@/features/campaigns/services/campaigns-api", () => ({
+  campaignsApi: { create: jest.fn() }
 }));
 
 describe("CampaignWizard — Banner & Popup channels (#160)", () => {
@@ -22,7 +22,7 @@ describe("CampaignWizard — Banner & Popup channels (#160)", () => {
     jest.clearAllMocks();
     (useTemplates as jest.Mock).mockReturnValue({ data: [], isLoading: false, error: null });
     (useSegments as jest.Mock).mockReturnValue({ data: [], isLoading: false, error: null });
-    (crmClient.campaigns.create as jest.Mock).mockResolvedValue({ id: "new" });
+    (campaignsApi.create as jest.Mock).mockResolvedValue({ id: "new" });
   });
 
   it("skips the Audience step when Email is not among the selected channels", async () => {
@@ -79,8 +79,8 @@ describe("CampaignWizard — Banner & Popup channels (#160)", () => {
     await waitFor(() => expect(screen.getByRole("button", { name: /save draft/i })).toBeInTheDocument());
     await user.click(screen.getByRole("button", { name: /save draft/i }));
 
-    await waitFor(() => expect(crmClient.campaigns.create).toHaveBeenCalled());
-    const payload = (crmClient.campaigns.create as jest.Mock).mock.calls[0][0];
+    await waitFor(() => expect(campaignsApi.create).toHaveBeenCalled());
+    const payload = (campaignsApi.create as jest.Mock).mock.calls[0][0];
     expect(payload.channels.sort()).toEqual(["Banner", "Popup"]);
     const banner = payload.channelContents.find((c: { channel: string }) => c.channel === "Banner");
     const popup = payload.channelContents.find((c: { channel: string }) => c.channel === "Popup");

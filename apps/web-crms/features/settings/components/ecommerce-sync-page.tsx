@@ -6,7 +6,7 @@ import { DetailSkeleton } from "@/components/shared/DetailSkeleton";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { crmClient } from "@/lib/api/crm-client";
+import { ecommerceSyncStatusApi } from "@/features/ecommerce/services/ecommerce-api";
 import type { EcommerceSyncStatus } from "@/features/ecommerce/types";
 
 function formatTimestamp(value: string | null): string {
@@ -76,7 +76,7 @@ export function EcommerceSyncPage() {
   const loadStatus = useCallback(async (refresh = false) => {
     if (refresh) setIsRefreshing(true);
     try {
-      const result = await crmClient.ecommerceSyncStatus.get();
+      const result = await ecommerceSyncStatusApi.get();
       setSyncStatus(result);
       setError(null);
     } catch (err) {

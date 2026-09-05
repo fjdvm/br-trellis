@@ -129,8 +129,8 @@ describe("TemplatesGallery", () => {
 
   it("saves a new Email template with multiple block types via the drag-and-drop builder", async () => {
     const user = userEvent.setup();
-    const { crmClient } = await import("@/lib/api/crm-client");
-    const createSpy = jest.spyOn(crmClient.blockTemplates, "create").mockResolvedValue({
+    const { blockTemplatesApi } = await import("@/features/campaigns/services/campaigns-api");
+    const createSpy = jest.spyOn(blockTemplatesApi, "create").mockResolvedValue({
       id: "new-b1",
       name: "New Custom Template",
       description: "Custom layout",

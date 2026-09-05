@@ -1,19 +1,21 @@
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { NewTicketSheet } from "@/features/conversations/components/new-ticket-sheet";
-import { crmClient } from "@/lib/api/crm-client";
+import { contactsApi } from "@/features/contacts/services/contacts-api";
+import { conversationTicketsApi } from "@/features/conversations/services/conversations-api";
 import type { ContactListItem } from "@/features/contacts/types";
 import type { TicketDetail } from "@/features/conversations/types";
 
-jest.mock("@/lib/api/crm-client", () => ({
-  crmClient: {
-    conversationTickets: {
+jest.mock("@/features/conversations/services/conversations-api", () => ({
+  conversationTicketsApi: {
       create: jest.fn(),
-    },
-    contacts: {
+    }
+}));
+
+jest.mock("@/features/contacts/services/contacts-api", () => ({
+  contactsApi: {
       list: jest.fn(),
-    },
-  },
+    }
 }));
 
 function makeContact(overrides: Partial<ContactListItem> = {}): ContactListItem {
@@ -50,9 +52,9 @@ function makeTicketDetail(overrides: Partial<TicketDetail> = {}): TicketDetail {
 describe("NewTicketSheet", () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    jest.mocked(crmClient.contacts.list).mockResolvedValue([]);
+    jest.mocked(contactsApi.list).mockResolvedValue([]);
     jest
-      .mocked(crmClient.conversationTickets.create)
+      .mocked(conversationTicketsApi.create)
       .mockResolvedValue(makeTicketDetail());
   });
 
@@ -76,7 +78,7 @@ describe("NewTicketSheet", () => {
     // Submit the form with an empty subject.
     await user.click(screen.getByRole("button", { name: /create ticket/i }));
 
-    expect(crmClient.conversationTickets.create).not.toHaveBeenCalled();
+    expect(conversationTicketsApi.create).not.toHaveBeenCalled();
     // A validation message is shown (the exact error copy, not the sheet's
     // description text which also mentions the subject).
     expect(await screen.findByText("Subject is required.")).toBeInTheDocument();
@@ -92,7 +94,7 @@ describe("NewTicketSheet", () => {
     await user.click(screen.getByRole("button", { name: /create ticket/i }));
 
     await waitFor(() =>
-      expect(crmClient.conversationTickets.create).toHaveBeenCalledWith({
+      expect(conversationTicketsApi.create).toHaveBeenCalledWith({
         subject: "Cannot log in",
         contactId: undefined,
       })
@@ -102,7 +104,7 @@ describe("NewTicketSheet", () => {
 
   it("populates the contact picker from contacts.list and submits the chosen contactId", async () => {
     jest
-      .mocked(crmClient.contacts.list)
+      .mocked(contactsApi.list)
       .mockResolvedValue([
         makeContact({ id: "c-1", name: "jane doe" }),
         makeContact({ id: "c-2", name: "john roe", email: "john@example.com" }),
@@ -123,7 +125,7 @@ describe("NewTicketSheet", () => {
     await user.click(screen.getByRole("button", { name: /create ticket/i }));
 
     await waitFor(() =>
-      expect(crmClient.conversationTickets.create).toHaveBeenCalledWith({
+      expect(conversationTicketsApi.create).toHaveBeenCalledWith({
         subject: "Billing question",
         contactId: "c-2",
       })
@@ -132,7 +134,7 @@ describe("NewTicketSheet", () => {
 
   it("surfaces the backend error and does not call onCreated on failure", async () => {
     jest
-      .mocked(crmClient.conversationTickets.create)
+      .mocked(conversationTicketsApi.create)
       .mockRejectedValue(new Error("Contact does not exist."));
     const user = userEvent.setup();
     const onCreated = jest.fn();
@@ -150,7 +152,7 @@ describe("NewTicketSheet", () => {
 
   it("disables the submit button while the create request is in flight", async () => {
     let resolveCreate: (value: TicketDetail) => void = () => {};
-    jest.mocked(crmClient.conversationTickets.create).mockReturnValue(
+    jest.mocked(conversationTicketsApi.create).mockReturnValue(
       new Promise<TicketDetail>((resolve) => {
         resolveCreate = resolve;
       })

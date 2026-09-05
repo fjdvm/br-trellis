@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { crmClient } from "@/lib/api/crm-client";
+import { customerApi } from "@/features/customers/services/customers-api";
 import { Customer } from "@/features/customers/types";
 
 export function useCustomer(id: string) {
@@ -29,7 +29,7 @@ export function useCustomer(id: string) {
     const currentRequestId = ++lastRequestIdRef.current;
     setError(null);
     try {
-      const data = await crmClient.customers.getById(id);
+      const data = await customerApi.getById(id);
       if (currentRequestId === lastRequestIdRef.current) {
         setCustomer(data);
       }

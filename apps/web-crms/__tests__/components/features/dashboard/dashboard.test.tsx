@@ -5,7 +5,7 @@ import {  KpiRow  } from "@/features/dashboard/components/dashboard";
 import {  LiveStatusStrip  } from "@/features/dashboard/components/dashboard";
 import {  AttentionFeed  } from "@/features/dashboard/components/dashboard";
 import { Ticket } from "lucide-react";
-import { aiClient } from "@/lib/api/ai-client";
+import { aiClient } from "@/features/dashboard/services/ai-client";
 
 // Mock useDashboardHub hook
 jest.mock("@/features/dashboard/hooks/useDashboardHub", () => ({
@@ -26,7 +26,7 @@ jest.mock("@/features/dashboard/hooks/useDashboardHub", () => ({
 }));
 
 // Mock aiClient
-jest.mock("@/lib/api/ai-client", () => ({
+jest.mock("@/features/dashboard/services/ai-client", () => ({
   aiClient: {
     dashboard: {
       getAnomalies: jest.fn(),

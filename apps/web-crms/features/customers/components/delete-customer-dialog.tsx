@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { crmClient } from "@/lib/api/crm-client";
+import { customerApi } from "@/features/customers/services/customers-api";
 import type { CustomerListItem } from "@/features/customers/types";
 
 export function DeleteCustomerDialog({
@@ -30,7 +30,7 @@ export function DeleteCustomerDialog({
   const handleDelete = async () => {
     setIsDeleting(true);
     try {
-      await crmClient.customers.delete(customer.id);
+      await customerApi.delete(customer.id);
       toast.success("Customer deleted");
       onOpenChange(false);
       onDeleted?.();

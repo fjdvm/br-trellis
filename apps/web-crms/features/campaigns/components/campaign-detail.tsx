@@ -17,7 +17,7 @@ import { CampaignDraftView } from "@/features/campaigns/components/campaign-draf
 import { CampaignActiveView } from "@/features/campaigns/components/campaign-active-view";
 import { CampaignEndedView } from "@/features/campaigns/components/campaign-ended-view";
 import { CampaignDetailModals } from "@/features/campaigns/components/campaign-detail-modals";
-import { crmClient } from "@/lib/api/crm-client";
+import { campaignsApi } from "@/features/campaigns/services/campaigns-api";
 
 
 import { useCampaign } from "@/features/campaigns/hooks/useCampaign";
@@ -41,7 +41,7 @@ export function CampaignDetail({ id }: { id: string }) {
       return;
     }
     let mounted = true;
-    crmClient.campaigns
+    campaignsApi
       .getAnalytics(campaign.id)
       .then((a) => mounted && setAnalytics(a))
       .catch(() => mounted && setAnalytics(null));
@@ -76,7 +76,7 @@ export function CampaignDetail({ id }: { id: string }) {
     setActionError(null);
     setShowLaunchModal(false);
     try {
-      await crmClient.campaigns.updateStatus(campaign!.id, "Active");
+      await campaignsApi.updateStatus(campaign!.id, "Active");
       await refetch();
     } catch (err) {
       setActionError(err instanceof Error ? err.message : "Failed to launch campaign.");
@@ -90,7 +90,7 @@ export function CampaignDetail({ id }: { id: string }) {
     setActionError(null);
     setShowEndModal(false);
     try {
-      await crmClient.campaigns.updateStatus(campaign!.id, "Ended");
+      await campaignsApi.updateStatus(campaign!.id, "Ended");
       await refetch();
     } catch (err) {
       setActionError(err instanceof Error ? err.message : "Failed to end campaign.");
@@ -103,7 +103,7 @@ export function CampaignDetail({ id }: { id: string }) {
     setBusy(true);
     setActionError(null);
     try {
-      const created = await crmClient.campaigns.create({
+      const created = await campaignsApi.create({
         title: `${campaign!.title} (Copy)`,
         channels: campaign!.channels,
         targetAudience: campaign!.targetAudience,

@@ -21,7 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { crmClient } from "@/lib/api/crm-client";
+import { companiesApi } from "@/features/contacts/services/companies-api";
 
 /** Buyer types mirror the backend `BuyerType` enum (api-crms/Enums/BuyerType.cs). */
 const BUYER_TYPES = ["Institutional", "Individual"] as const;
@@ -63,7 +63,7 @@ export function NewCompanySheet({ onCreated }: NewCompanySheetProps) {
     setIsSubmitting(true);
     setError(null);
     try {
-      await crmClient.companies.create({ name: trimmed, buyerType });
+      await companiesApi.create({ name: trimmed, buyerType });
       resetForm();
       setOpen(false);
       onCreated?.();

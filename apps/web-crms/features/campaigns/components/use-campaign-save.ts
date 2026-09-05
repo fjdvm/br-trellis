@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { crmClient } from "@/lib/api/crm-client";
+import { campaignsApi } from "@/features/campaigns/services/campaigns-api";
 import { type ChannelContentState } from "@/features/campaigns/components/channel-content-form";
 import type { ScheduleState } from "@/features/campaigns/components/schedule-step";
 import type {
@@ -81,10 +81,10 @@ export function useCampaignSave({
 
       if (existing) {
         const update: UpdateCampaignInput = { ...payload };
-        await crmClient.campaigns.update(existing.id, update);
+        await campaignsApi.update(existing.id, update);
         router.push(`/campaigns/${existing.id}`);
       } else {
-        const created = await crmClient.campaigns.create(payload);
+        const created = await campaignsApi.create(payload);
         router.push(`/campaigns/${created.id}`);
       }
     } catch (err) {
@@ -117,13 +117,13 @@ export function useCampaignSave({
       let campaignId = existing?.id;
       if (existing) {
         const update: UpdateCampaignInput = { ...payload };
-        await crmClient.campaigns.update(existing.id, update);
+        await campaignsApi.update(existing.id, update);
       } else {
-        const created = await crmClient.campaigns.create(payload);
+        const created = await campaignsApi.create(payload);
         campaignId = created.id;
       }
       if (campaignId) {
-        await crmClient.campaigns.updateStatus(campaignId, "Active");
+        await campaignsApi.updateStatus(campaignId, "Active");
         router.push(`/campaigns/${campaignId}`);
       }
     } catch (err) {

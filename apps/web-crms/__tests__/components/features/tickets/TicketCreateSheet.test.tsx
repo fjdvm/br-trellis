@@ -1,14 +1,12 @@
 import React from "react";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { TicketCreateSheet } from "@/features/tickets/components/ticket-create-sheet";
-import { crmClient } from "@/lib/api/crm-client";
+import { ticketsApi } from "@/features/conversations/services/conversations-api";
 
-jest.mock("@/lib/api/crm-client", () => ({
-  crmClient: {
-    tickets: {
+jest.mock("@/features/conversations/services/conversations-api", () => ({
+  ticketsApi: {
       create: jest.fn(),
-    },
-  },
+    }
 }));
 
 describe("TicketCreateSheet", () => {
@@ -20,7 +18,7 @@ describe("TicketCreateSheet", () => {
   });
 
   it("opens modal and submits ticket form", async () => {
-    (crmClient.tickets.create as jest.Mock).mockResolvedValue({
+    (ticketsApi.create as jest.Mock).mockResolvedValue({
       id: "1",
       title: "Login issue",
       description: "Cannot login",
@@ -48,7 +46,7 @@ describe("TicketCreateSheet", () => {
     fireEvent.click(screen.getByRole("button", { name: "Submit Ticket" }));
 
     await waitFor(() => {
-      expect(crmClient.tickets.create).toHaveBeenCalledWith(
+      expect(ticketsApi.create).toHaveBeenCalledWith(
         { title: "Login issue", description: "Cannot login", imageUrl: "" },
         "00000000-0000-0000-0000-000000000001"
       );

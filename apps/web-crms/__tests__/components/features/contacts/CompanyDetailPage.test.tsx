@@ -1,13 +1,12 @@
 import { render, screen } from "@testing-library/react";
 import { CompanyDetailPage } from "@/features/contacts/components/company-detail-page";
-import { crmClient } from "@/lib/api/crm-client";
+import { contactsApi } from "@/features/contacts/services/contacts-api";
+import { companiesApi } from "@/features/contacts/services/companies-api";
 
-jest.mock("@/lib/api/crm-client", () => ({
-  crmClient: {
-    companies: {
+jest.mock("@/features/contacts/services/companies-api", () => ({
+  companiesApi: {
       getById: jest.fn(),
-    },
-  },
+    }
 }));
 
 jest.mock("next/navigation", () => ({
@@ -20,7 +19,7 @@ describe("CompanyDetailPage", () => {
   });
 
   it("renders company detail with name, buyer type, and member contacts", async () => {
-    jest.mocked(crmClient.companies.getById).mockResolvedValue({
+    jest.mocked(companiesApi.getById).mockResolvedValue({
       id: "co-1",
       name: "Acme Corp",
       buyerType: "Institutional",
@@ -57,7 +56,7 @@ describe("CompanyDetailPage", () => {
   });
 
   it("renders primary contact when present", async () => {
-    jest.mocked(crmClient.companies.getById).mockResolvedValue({
+    jest.mocked(companiesApi.getById).mockResolvedValue({
       id: "co-1",
       name: "Test Co",
       buyerType: "Individual",
@@ -82,7 +81,7 @@ describe("CompanyDetailPage", () => {
   });
 
   it("shows archived indicator for archived company", async () => {
-    jest.mocked(crmClient.companies.getById).mockResolvedValue({
+    jest.mocked(companiesApi.getById).mockResolvedValue({
       id: "co-1",
       name: "Archived Co",
       buyerType: "Institutional",

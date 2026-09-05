@@ -17,7 +17,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { TicketCancelDialog } from "@/features/conversations/components/ticket-cancel-dialog";
-import { crmClient } from "@/lib/api/crm-client";
+import { conversationTicketsApi } from "@/features/conversations/services/conversations-api";
 import { useCurrentAgentId } from "@/hooks/useCurrentAgentId";
 import { STATUS_BADGE_VARIANT, SOURCE_BADGE_VARIANT, isActiveStatus, isTerminalStatus } from "@/features/conversations/services/tickets";
 import { formatName, formatEmail } from "@/lib/format-display";
@@ -81,7 +81,7 @@ export function TicketDetailPage({ ticketId }: TicketDetailPageProps) {
   const loadTicket = useCallback(async () => {
     setIsLoading(true);
     try {
-      const result = await crmClient.conversationTickets.getById(ticketId);
+      const result = await conversationTicketsApi.getById(ticketId);
       setTicket(result);
       setLoadError(null);
     } catch (err) {
@@ -113,7 +113,7 @@ export function TicketDetailPage({ ticketId }: TicketDetailPageProps) {
 
   function handleClaim() {
     void runMutation("claim", () =>
-      crmClient.conversationTickets.claim(ticketId, {
+      conversationTicketsApi.claim(ticketId, {
         staffId: currentAgentId ?? "",
         staffName: session?.user?.name ?? "",
         staffEmail: session?.user?.email ?? "",
@@ -123,26 +123,26 @@ export function TicketDetailPage({ ticketId }: TicketDetailPageProps) {
 
   function handleUnclaim() {
     void runMutation("unclaim", () =>
-      crmClient.conversationTickets.unclaim(ticketId)
+      conversationTicketsApi.unclaim(ticketId)
     );
   }
 
   function handleAdvance(next: TicketStatus) {
     void runMutation("advance", () =>
-      crmClient.conversationTickets.changeStatus(ticketId, { status: next })
+      conversationTicketsApi.changeStatus(ticketId, { status: next })
     );
   }
 
   function handleCancelConfirmed() {
     setShowCancelDialog(false);
     void runMutation("cancel", () =>
-      crmClient.conversationTickets.changeStatus(ticketId, { status: "Canceled" })
+      conversationTicketsApi.changeStatus(ticketId, { status: "Canceled" })
     );
   }
 
   function handleSetWaitingOn(value: TicketWaitingOn) {
     void runMutation("waitingOn", () =>
-      crmClient.conversationTickets.setWaitingOn(ticketId, { waitingOn: value })
+      conversationTicketsApi.setWaitingOn(ticketId, { waitingOn: value })
     );
   }
 

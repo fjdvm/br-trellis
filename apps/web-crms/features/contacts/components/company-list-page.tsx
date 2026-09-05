@@ -15,7 +15,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { crmClient } from "@/lib/api/crm-client";
+import { companiesApi } from "@/features/contacts/services/companies-api";
 import { ScrollableTable } from "@/components/shared/ScrollableTable";
 import {
   TablePagination,
@@ -36,7 +36,7 @@ export function CompanyListPage() {
   const loadCompanies = useCallback(async () => {
     setIsLoading(true);
     try {
-      const result = await crmClient.companies.list(showArchived);
+      const result = await companiesApi.list(showArchived);
       setCompanies(result);
       setError(null);
     } catch (err) {

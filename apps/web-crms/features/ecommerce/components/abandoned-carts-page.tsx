@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DataTable, Column } from "@/components/shared/DataTable";
 import { TableSkeleton } from "@/components/shared/TableSkeleton";
-import { crmClient } from "@/lib/api/crm-client";
+import { ecommerceCartsApi } from "@/features/ecommerce/services/ecommerce-api";
 import { useEcommerceSyncStatus } from "@/features/ecommerce/hooks/useEcommerceSyncStatus";
 import { EcommerceConnectPrompt } from "./ecommerce-connect-prompt";
 import type { CartListItem } from "@/features/ecommerce/types";
@@ -69,7 +69,7 @@ export function AbandonedCartsPage() {
 
   const loadCarts = useCallback(async () => {
     try {
-      const result = await crmClient.ecommerceCarts.list("Abandoned");
+      const result = await ecommerceCartsApi.list("Abandoned");
       setCarts(result);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unable to load carts.");

@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { ContactListPage } from "@/features/contacts/components/contact-list-page";
-import { crmClient } from "@/lib/api/crm-client";
+import { contactsApi } from "@/features/contacts/services/contacts-api";
 import type { ContactListItem } from "@/features/contacts/types";
 
 const mockPush = jest.fn();
@@ -11,12 +11,10 @@ jest.mock("next/navigation", () => ({
   }),
 }));
 
-jest.mock("@/lib/api/crm-client", () => ({
-  crmClient: {
-    contacts: {
+jest.mock("@/features/contacts/services/contacts-api", () => ({
+  contactsApi: {
       list: jest.fn(),
-    },
-  },
+    }
 }));
 
 function makeContact(overrides: Partial<ContactListItem> = {}): ContactListItem {
@@ -64,7 +62,7 @@ describe("Contacts view (/contacts/direct props)", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     jest
-      .mocked(crmClient.contacts.list)
+      .mocked(contactsApi.list)
       .mockResolvedValue([noLink, posOnly, ecomOnly, bothLinks]);
   });
 

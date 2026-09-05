@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { crmClient } from "@/lib/api/crm-client";
+import { marketingInteractionsApi } from "@/features/customers/services/customers-api";
 import { MarketingInteraction } from "@/features/customers/types";
 
 interface UseCustomerMarketingOptions {
@@ -26,7 +26,7 @@ export function useCustomerMarketingHistory({
     setIsLoading(true);
     setError(null);
     try {
-      const data = await crmClient.marketingInteractions.listByCustomer(customerId, page, pageSize);
+      const data = await marketingInteractionsApi.listByCustomer(customerId, page, pageSize);
       setInteractions(data.items || []);
       setTotalCount(data.totalCount || 0);
       setTotalPages(data.totalPages || 1);
@@ -41,7 +41,7 @@ export function useCustomerMarketingHistory({
     if (!customerId) return;
     setIsLoading(true);
     let isMounted = true;
-    crmClient.marketingInteractions.listByCustomer(customerId, page, pageSize)
+    marketingInteractionsApi.listByCustomer(customerId, page, pageSize)
       .then((data) => {
         if (isMounted) {
           setInteractions(data.items || []);

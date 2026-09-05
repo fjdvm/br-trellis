@@ -1,7 +1,7 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MessageThread } from "@/features/conversations/components/message-thread";
-import { crmClient } from "@/lib/api/crm-client";
+import { cannedRepliesApi, conversationMessagesApi } from "@/features/conversations/services/conversations-api";
 import type { ConversationMessage } from "@/features/conversations/types";
 import type { CannedReplyListItem } from "@/features/campaigns/types";
 
@@ -19,22 +19,20 @@ jest.mock("next-auth/react", () => ({
   }),
 }));
 
-jest.mock("@/lib/api/crm-client", () => ({
-  crmClient: {
-    conversationMessages: {
+jest.mock("@/features/conversations/services/conversations-api", () => ({
+  conversationMessagesApi: {
       listByTicket: jest.fn(),
       postStaffMessage: jest.fn(),
     },
-    cannedReplies: {
+  cannedRepliesApi: {
       list: jest.fn(),
-    },
-  },
+    }
 }));
 
 const mocked = {
-  list: jest.mocked(crmClient.conversationMessages.listByTicket),
-  post: jest.mocked(crmClient.conversationMessages.postStaffMessage),
-  cannedList: jest.mocked(crmClient.cannedReplies.list),
+  list: jest.mocked(conversationMessagesApi.listByTicket),
+  post: jest.mocked(conversationMessagesApi.postStaffMessage),
+  cannedList: jest.mocked(cannedRepliesApi.list),
 };
 
 beforeAll(() => {

@@ -8,7 +8,7 @@ jest.mock("next/navigation", () => ({
 }));
 
 // Mock AI API client
-jest.mock("@/lib/api/ai-client", () => ({
+jest.mock("@/features/dashboard/services/ai-client", () => ({
   aiClient: {
     config: {
       getChurnThreshold: jest.fn(() => Promise.resolve({ churn_threshold: 0.60 })),

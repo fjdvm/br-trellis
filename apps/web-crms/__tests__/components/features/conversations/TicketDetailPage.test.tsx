@@ -1,7 +1,7 @@
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { TicketDetailPage } from "@/features/conversations/components/ticket-detail-page";
-import { crmClient } from "@/lib/api/crm-client";
+import { conversationMessagesApi, conversationTicketsApi } from "@/features/conversations/services/conversations-api";
 import type { TicketDetail } from "@/features/conversations/types";
 
 // Radix Select relies on pointer-capture and scrollIntoView APIs that jsdom
@@ -40,20 +40,18 @@ jest.mock("next-auth/react", () => ({
   }),
 }));
 
-jest.mock("@/lib/api/crm-client", () => ({
-  crmClient: {
-    conversationTickets: {
+jest.mock("@/features/conversations/services/conversations-api", () => ({
+  conversationTicketsApi: {
       getById: jest.fn(),
       claim: jest.fn(),
       unclaim: jest.fn(),
       changeStatus: jest.fn(),
       setWaitingOn: jest.fn(),
     },
-    conversationMessages: {
+  conversationMessagesApi: {
       listByTicket: jest.fn(),
       postStaffMessage: jest.fn(),
-    },
-  },
+    }
 }));
 
 function makeTicket(overrides: Partial<TicketDetail> = {}): TicketDetail {
@@ -76,12 +74,12 @@ function makeTicket(overrides: Partial<TicketDetail> = {}): TicketDetail {
 }
 
 const mocked = {
-  getById: jest.mocked(crmClient.conversationTickets.getById),
-  claim: jest.mocked(crmClient.conversationTickets.claim),
-  unclaim: jest.mocked(crmClient.conversationTickets.unclaim),
-  changeStatus: jest.mocked(crmClient.conversationTickets.changeStatus),
-  setWaitingOn: jest.mocked(crmClient.conversationTickets.setWaitingOn),
-  listMessages: jest.mocked(crmClient.conversationMessages.listByTicket),
+  getById: jest.mocked(conversationTicketsApi.getById),
+  claim: jest.mocked(conversationTicketsApi.claim),
+  unclaim: jest.mocked(conversationTicketsApi.unclaim),
+  changeStatus: jest.mocked(conversationTicketsApi.changeStatus),
+  setWaitingOn: jest.mocked(conversationTicketsApi.setWaitingOn),
+  listMessages: jest.mocked(conversationMessagesApi.listByTicket),
 };
 
 describe("TicketDetailPage", () => {

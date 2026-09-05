@@ -1,14 +1,12 @@
 import { renderHook, waitFor, act } from "@testing-library/react";
 import { useCustomer } from "@/features/customers/hooks/useCustomer";
-import { crmClient } from "@/lib/api/crm-client";
+import { customerApi } from "@/features/customers/services/customers-api";
 import type { Customer } from "@/features/customers/types";
 
-jest.mock("@/lib/api/crm-client", () => ({
-  crmClient: {
-    customers: {
+jest.mock("@/features/customers/services/customers-api", () => ({
+  customerApi: {
       getById: jest.fn(),
-    },
-  },
+    }
 }));
 
 const mockCustomer: Customer = {
@@ -30,14 +28,14 @@ describe("useCustomer", () => {
   });
 
   it("starts with isLoading true and customer null", () => {
-    (crmClient.customers.getById as jest.Mock).mockReturnValue(new Promise(() => {}));
+    (customerApi.getById as jest.Mock).mockReturnValue(new Promise(() => {}));
     const { result } = renderHook(() => useCustomer("abc123"));
     expect(result.current.isLoading).toBe(true);
     expect(result.current.customer).toBeNull();
   });
 
   it("loads customer data on mount", async () => {
-    (crmClient.customers.getById as jest.Mock).mockResolvedValue(mockCustomer);
+    (customerApi.getById as jest.Mock).mockResolvedValue(mockCustomer);
     const { result } = renderHook(() => useCustomer("abc123"));
 
     await waitFor(() => expect(result.current.isLoading).toBe(false));
@@ -47,16 +45,16 @@ describe("useCustomer", () => {
   });
 
   it("calls getById with the provided id", async () => {
-    (crmClient.customers.getById as jest.Mock).mockResolvedValue(mockCustomer);
+    (customerApi.getById as jest.Mock).mockResolvedValue(mockCustomer);
     renderHook(() => useCustomer("abc123"));
 
     await waitFor(() =>
-      expect(crmClient.customers.getById).toHaveBeenCalledWith("abc123")
+      expect(customerApi.getById).toHaveBeenCalledWith("abc123")
     );
   });
 
   it("sets error state when fetch fails", async () => {
-    (crmClient.customers.getById as jest.Mock).mockRejectedValue(
+    (customerApi.getById as jest.Mock).mockRejectedValue(
       new Error("Customer not found")
     );
     const { result } = renderHook(() => useCustomer("bad-id"));
@@ -69,11 +67,11 @@ describe("useCustomer", () => {
 
   it("does not fetch when id is empty string", () => {
     renderHook(() => useCustomer(""));
-    expect(crmClient.customers.getById).not.toHaveBeenCalled();
+    expect(customerApi.getById).not.toHaveBeenCalled();
   });
 
   it("exposes setCustomer to allow optimistic updates", async () => {
-    (crmClient.customers.getById as jest.Mock).mockResolvedValue(mockCustomer);
+    (customerApi.getById as jest.Mock).mockResolvedValue(mockCustomer);
     const { result } = renderHook(() => useCustomer("abc123"));
 
     await waitFor(() => expect(result.current.isLoading).toBe(false));
@@ -88,17 +86,17 @@ describe("useCustomer", () => {
 
   it("polls for customer details every 10 seconds", async () => {
     jest.useFakeTimers();
-    (crmClient.customers.getById as jest.Mock).mockResolvedValue(mockCustomer);
+    (customerApi.getById as jest.Mock).mockResolvedValue(mockCustomer);
     
     renderHook(() => useCustomer("abc123"));
     
-    expect(crmClient.customers.getById).toHaveBeenCalledTimes(1);
+    expect(customerApi.getById).toHaveBeenCalledTimes(1);
 
     await act(async () => {
       jest.advanceTimersByTime(10000);
     });
 
-    expect(crmClient.customers.getById).toHaveBeenCalledTimes(2);
+    expect(customerApi.getById).toHaveBeenCalledTimes(2);
 
     jest.useRealTimers();
   });

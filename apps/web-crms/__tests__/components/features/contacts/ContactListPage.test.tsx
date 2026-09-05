@@ -1,7 +1,7 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { ContactListPage } from "@/features/contacts/components/contact-list-page";
-import { crmClient } from "@/lib/api/crm-client";
+import { contactsApi } from "@/features/contacts/services/contacts-api";
 import type { ContactListItem } from "@/features/contacts/types";
 
 const mockPush = jest.fn();
@@ -12,12 +12,10 @@ jest.mock("next/navigation", () => ({
   }),
 }));
 
-jest.mock("@/lib/api/crm-client", () => ({
-  crmClient: {
-    contacts: {
+jest.mock("@/features/contacts/services/contacts-api", () => ({
+  contactsApi: {
       list: jest.fn(),
-    },
-  },
+    }
 }));
 
 function makeContact(overrides: Partial<ContactListItem> = {}): ContactListItem {
@@ -64,7 +62,7 @@ const allContacts = [noLink, posOnly, ecomOnly, bothLinks];
 describe("ContactListPage (default / All Contacts behavior)", () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    jest.mocked(crmClient.contacts.list).mockResolvedValue(allContacts);
+    jest.mocked(contactsApi.list).mockResolvedValue(allContacts);
   });
 
   it("renders the default heading, description, and card title", async () => {
@@ -110,7 +108,7 @@ describe("ContactListPage (default / All Contacts behavior)", () => {
 describe("ContactListPage (non-ecommerce / Contacts view)", () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    jest.mocked(crmClient.contacts.list).mockResolvedValue(allContacts);
+    jest.mocked(contactsApi.list).mockResolvedValue(allContacts);
   });
 
   it("shows only contacts without a confirmed ecommerce link", async () => {
@@ -163,7 +161,7 @@ describe("ContactListPage (non-ecommerce / Contacts view)", () => {
 describe("ContactListPage (ecommerce / Ecommerce Contacts view)", () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    jest.mocked(crmClient.contacts.list).mockResolvedValue(allContacts);
+    jest.mocked(contactsApi.list).mockResolvedValue(allContacts);
   });
 
   it("shows only contacts with at least one confirmed ecommerce link, including the merge case", async () => {
@@ -184,7 +182,7 @@ describe("ContactListPage (ecommerce / Ecommerce Contacts view)", () => {
   });
 
   it("matches ecommerce case-insensitively (e.g. 'Ecommerce')", async () => {
-    jest.mocked(crmClient.contacts.list).mockResolvedValue([
+    jest.mocked(contactsApi.list).mockResolvedValue([
       makeContact({
         id: "c-upper",
         name: "Upper Case Uma",
@@ -203,7 +201,7 @@ describe("ContactListPage (ecommerce / Ecommerce Contacts view)", () => {
 describe("ContactListPage (partition invariant)", () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    jest.mocked(crmClient.contacts.list).mockResolvedValue(allContacts);
+    jest.mocked(contactsApi.list).mockResolvedValue(allContacts);
   });
 
   it("places every contact in exactly one of Contacts or Ecommerce Contacts", async () => {
@@ -211,7 +209,7 @@ describe("ContactListPage (partition invariant)", () => {
       <ContactListPage sourceFilter="non-ecommerce" />
     );
     await waitFor(() =>
-      expect(crmClient.contacts.list).toHaveBeenCalled()
+      expect(contactsApi.list).toHaveBeenCalled()
     );
     const nonEcom = [
       screen.queryByText("No Link Nadia"),

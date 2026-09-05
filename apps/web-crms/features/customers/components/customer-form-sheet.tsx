@@ -13,7 +13,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-import { crmClient } from "@/lib/api/crm-client";
+import { customerApi } from "@/features/customers/services/customers-api";
 
 import type { CustomerType } from "@/features/customers/types";
 
@@ -41,7 +41,7 @@ export function CustomerFormSheet({
     setIsSubmitting(true);
 
     try {
-      await crmClient.customers.create({
+      await customerApi.create({
         firstName,
         lastName,
         email,
@@ -69,55 +69,63 @@ export function CustomerFormSheet({
             Create a new customer profile in the system.
           </SheetDescription>
         </SheetHeader>
+
         <form onSubmit={handleSubmit} className="space-y-4 py-4">
           <div className="space-y-2">
-            <Label htmlFor="first-name">First Name *</Label>
+            <Label htmlFor="firstName">First Name</Label>
             <Input
-              id="first-name"
-              required
+              id="firstName"
               value={firstName}
               onChange={(e) => setFirstName(e.target.value)}
+              required
             />
           </div>
+
           <div className="space-y-2">
-            <Label htmlFor="last-name">Last Name *</Label>
+            <Label htmlFor="lastName">Last Name</Label>
             <Input
-              id="last-name"
-              required
+              id="lastName"
               value={lastName}
               onChange={(e) => setLastName(e.target.value)}
+              required
             />
           </div>
+
           <div className="space-y-2">
-            <Label htmlFor="email-address">Email Address *</Label>
+            <Label htmlFor="email">Email</Label>
             <Input
-              id="email-address"
+              id="email"
               type="email"
-              required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              required
             />
           </div>
+
           <div className="space-y-2">
-            <Label htmlFor="phone-number">Phone Number</Label>
+            <Label htmlFor="phone">Phone Number</Label>
             <Input
-              id="phone-number"
+              id="phone"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
             />
           </div>
+
           <div className="space-y-2">
-            <Label htmlFor="customer-type">Customer Type *</Label>
+            <Label htmlFor="customerType">Customer Type</Label>
             <select
-              id="customer-type"
-              className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-xs"
+              id="customerType"
               value={customerType}
               onChange={(e) => setCustomerType(e.target.value as CustomerType)}
+              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               <option value="Regular">Regular</option>
               <option value="VIP">VIP</option>
+              <option value="Wholesale">Wholesale</option>
+              <option value="InstitutionalBuyer">Institutional Buyer</option>
             </select>
           </div>
+
           <div className="space-y-2">
             <Label htmlFor="address">Address</Label>
             <Input
@@ -126,6 +134,7 @@ export function CustomerFormSheet({
               onChange={(e) => setAddress(e.target.value)}
             />
           </div>
+
           <SheetFooter className="pt-4">
             <Button
               type="button"
@@ -135,7 +144,7 @@ export function CustomerFormSheet({
               Cancel
             </Button>
             <Button type="submit" disabled={isSubmitting}>
-              Create Profile
+              {isSubmitting ? "Saving..." : "Create Profile"}
             </Button>
           </SheetFooter>
         </form>

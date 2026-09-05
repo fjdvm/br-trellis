@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DataTable, Column } from "@/components/shared/DataTable";
 import { TableSkeleton } from "@/components/shared/TableSkeleton";
-import { crmClient } from "@/lib/api/crm-client";
+import { ecommerceProductsApi } from "@/features/ecommerce/services/ecommerce-api";
 import { useEcommerceSyncStatus } from "@/features/ecommerce/hooks/useEcommerceSyncStatus";
 import { EcommerceConnectPrompt } from "./ecommerce-connect-prompt";
 import type { ProductListItem } from "@/features/ecommerce/types";
@@ -57,7 +57,7 @@ export function ProductsPage() {
 
   const loadProducts = useCallback(async () => {
     try {
-      const result = await crmClient.ecommerceProducts.list();
+      const result = await ecommerceProductsApi.list();
       setProducts(result);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unable to load products.");

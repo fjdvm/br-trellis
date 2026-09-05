@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { crmClient } from "@/lib/api/crm-client";
+import { ticketsApi } from "@/features/conversations/services/conversations-api";
 import { LegacyTicketListItem, PaginatedTicketResponse } from "@/features/conversations/types";
 
 export function useTickets(
@@ -20,7 +20,7 @@ export function useTickets(
     setIsLoading(true);
     setError(null);
     try {
-      const res = await crmClient.tickets.list(page, pageSize, status, assignedToIdOrCustomerId);
+      const res = await ticketsApi.list(page, pageSize, status, assignedToIdOrCustomerId);
       setTickets(res.items);
       setTotalCount(res.totalCount);
       setData(res);

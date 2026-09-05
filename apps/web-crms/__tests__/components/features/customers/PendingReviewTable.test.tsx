@@ -1,18 +1,16 @@
 import { render, screen } from "@testing-library/react";
 import { PendingReviewTable } from "@/features/customers/components/pending-review-table";
-import { crmClient } from "@/lib/api/crm-client";
+import { customerIdentityApi } from "@/features/customers/services/customers-api";
 
-jest.mock("@/lib/api/crm-client", () => ({
-  crmClient: {
-    customerIdentity: {
+jest.mock("@/features/customers/services/customers-api", () => ({
+  customerIdentityApi: {
       listPendingReviewCustomers: jest.fn(),
-    },
-  },
+    }
 }));
 
 describe("PendingReviewTable", () => {
   it("displays a pending Customer with its candidate confidence", async () => {
-    jest.mocked(crmClient.customerIdentity.listPendingReviewCustomers).mockResolvedValue([
+    jest.mocked(customerIdentityApi.listPendingReviewCustomers).mockResolvedValue([
       {
         customer: {
           id: "pending-customer",

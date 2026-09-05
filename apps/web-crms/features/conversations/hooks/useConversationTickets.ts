@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { crmClient } from "@/lib/api/crm-client";
+import { ticketsApi } from "@/features/conversations/services/conversations-api";
 import { LegacyTicketListItem as TicketListItem } from "@/features/conversations/types";
 
 export function sortTicketsByActivity(items: TicketListItem[]): TicketListItem[] {
@@ -28,8 +28,8 @@ export function useConversationTickets(initialTicketId?: string) {
       setError(null);
 
       const [claimedRes, ongoingRes] = await Promise.all([
-        crmClient.tickets.list(1, 100, "Claimed"),
-        crmClient.tickets.list(1, 100, "Ongoing"),
+        ticketsApi.list(1, 100, "Claimed"),
+        ticketsApi.list(1, 100, "Ongoing"),
       ]);
 
       const map = new Map<string, TicketListItem>();

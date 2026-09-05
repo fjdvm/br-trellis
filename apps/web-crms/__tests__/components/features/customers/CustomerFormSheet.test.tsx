@@ -2,14 +2,12 @@ import React from "react";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { toast } from "sonner";
 import { CustomerFormSheet } from "@/features/customers/components/customer-form-sheet";
-import { crmClient } from "@/lib/api/crm-client";
+import { customerApi } from "@/features/customers/services/customers-api";
 
-jest.mock("@/lib/api/crm-client", () => ({
-  crmClient: {
-    customers: {
+jest.mock("@/features/customers/services/customers-api", () => ({
+  customerApi: {
       create: jest.fn(),
-    },
-  },
+    }
 }));
 
 jest.mock("sonner", () => ({
@@ -37,16 +35,16 @@ describe("CustomerFormSheet", () => {
     );
 
     expect(screen.getByText("Add Customer Profile")).toBeInTheDocument();
-    expect(screen.getByLabelText("First Name *")).toBeInTheDocument();
-    expect(screen.getByLabelText("Last Name *")).toBeInTheDocument();
-    expect(screen.getByLabelText("Email Address *")).toBeInTheDocument();
-    expect(screen.getByLabelText("Phone Number")).toBeInTheDocument();
-    expect(screen.getByLabelText("Customer Type *")).toBeInTheDocument();
-    expect(screen.getByLabelText("Address")).toBeInTheDocument();
+    expect(screen.getByLabelText(/first name/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/last name/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/phone/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/customer type/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/address/i)).toBeInTheDocument();
   });
 
   it("submits customer form successfully", async () => {
-    (crmClient.customers.create as jest.Mock).mockResolvedValue({ id: "cust-100" });
+    (customerApi.create as jest.Mock).mockResolvedValue({ id: "cust-100" });
 
     render(
       <CustomerFormSheet
@@ -56,14 +54,14 @@ describe("CustomerFormSheet", () => {
       />
     );
 
-    fireEvent.change(screen.getByLabelText("First Name *"), { target: { value: "Jane" } });
-    fireEvent.change(screen.getByLabelText("Last Name *"), { target: { value: "Doe" } });
-    fireEvent.change(screen.getByLabelText("Email Address *"), { target: { value: "jane@example.com" } });
+    fireEvent.change(screen.getByLabelText(/first name/i), { target: { value: "Jane" } });
+    fireEvent.change(screen.getByLabelText(/last name/i), { target: { value: "Doe" } });
+    fireEvent.change(screen.getByLabelText(/email/i), { target: { value: "jane@example.com" } });
 
     fireEvent.click(screen.getByRole("button", { name: /create profile/i }));
 
     await waitFor(() => {
-      expect(crmClient.customers.create).toHaveBeenCalledWith({
+      expect(customerApi.create).toHaveBeenCalledWith({
         firstName: "Jane",
         lastName: "Doe",
         email: "jane@example.com",

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { crmClient } from "@/lib/api/crm-client";
+import { ordersApi } from "@/features/customers/services/customers-api";
 import { OrderHistory } from "@/features/customers/types";
 
 export function useCustomerOrders(customerId: string) {
@@ -14,7 +14,7 @@ export function useCustomerOrders(customerId: string) {
     setIsLoading(true);
     setError(null);
     try {
-      const data = await crmClient.orders.listByCustomer(customerId);
+      const data = await ordersApi.listByCustomer(customerId);
       setOrders(data || []);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load order history.");
@@ -27,7 +27,7 @@ export function useCustomerOrders(customerId: string) {
     if (!customerId) return;
     setIsLoading(true);
     let isMounted = true;
-    crmClient.orders.listByCustomer(customerId)
+    ordersApi.listByCustomer(customerId)
       .then((data) => {
         if (isMounted) {
           setOrders(data || []);

@@ -15,7 +15,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { crmClient } from "@/lib/api/crm-client";
+import { segmentsApi } from "@/features/contacts/services/segments-api";
 import { BackButton } from "@/components/shared/BackButton";
 import { ScrollableTable } from "@/components/shared/ScrollableTable";
 import {
@@ -28,9 +28,20 @@ import type { SegmentListItem, SegmentMember } from "@/features/contacts/types";
 interface SegmentsListPageProps {
   /** When provided, auto-selects the first system-defined segment matching this name */
   preSelectedSegmentName?: string;
+  /** Back button navigation destination URL */
+  backHref?: string;
+  /** Page title override */
+  title?: string;
+  /** Description override */
+  description?: string;
 }
 
-export function SegmentsListPage({ preSelectedSegmentName }: SegmentsListPageProps = {}) {
+export function SegmentsListPage({
+  preSelectedSegmentName,
+  backHref = "/contacts",
+  title = "Segments & Audiences",
+  description = "Saved filters, dynamic rules, and system-defined audiences.",
+}: SegmentsListPageProps = {}) {
   const router = useRouter();
   const [segments, setSegments] = useState<SegmentListItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -47,7 +58,7 @@ export function SegmentsListPage({ preSelectedSegmentName }: SegmentsListPagePro
     setIsMembersLoading(true);
     setMembersError(null);
     try {
-      const result = await crmClient.segments.getMembers(segment.id);
+      const result = await segmentsApi.getMembers(segment.id);
       setMembers(result);
     } catch (err) {
       setMembersError(err instanceof Error ? err.message : "Unable to load members.");
@@ -58,7 +69,7 @@ export function SegmentsListPage({ preSelectedSegmentName }: SegmentsListPagePro
 
   const loadSegments = useCallback(async () => {
     try {
-      const result = await crmClient.segments.list();
+      const result = await segmentsApi.list();
       setSegments(result);
       setError(null);
 

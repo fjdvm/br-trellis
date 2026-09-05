@@ -1,14 +1,12 @@
 import { renderHook, waitFor, act } from "@testing-library/react";
 import { useMessages } from "@/features/conversations/hooks/useMessages";
-import { crmClient } from "@/lib/api/crm-client";
+import { messagesApi } from "@/features/conversations/services/conversations-api";
 import type { Message } from "@/features/conversations/types";
 
-jest.mock("@/lib/api/crm-client", () => ({
-  crmClient: {
-    messages: {
+jest.mock("@/features/conversations/services/conversations-api", () => ({
+  messagesApi: {
       listByTicket: jest.fn(),
-    },
-  },
+    }
 }));
 
 const mockMessages: Message[] = [
@@ -39,22 +37,22 @@ describe("useMessages", () => {
     const { result } = renderHook(() => useMessages(null));
     expect(result.current.isLoading).toBe(false);
     expect(result.current.messages).toEqual([]);
-    expect(crmClient.messages.listByTicket).not.toHaveBeenCalled();
+    expect(messagesApi.listByTicket).not.toHaveBeenCalled();
   });
 
   it("loads messages on mount when ticketId is provided", async () => {
-    (crmClient.messages.listByTicket as jest.Mock).mockResolvedValue(mockMessages);
+    (messagesApi.listByTicket as jest.Mock).mockResolvedValue(mockMessages);
     const { result } = renderHook(() => useMessages("ticket-123"));
 
     await waitFor(() => expect(result.current.isLoading).toBe(false));
 
     expect(result.current.messages).toEqual(mockMessages);
     expect(result.current.error).toBeNull();
-    expect(crmClient.messages.listByTicket).toHaveBeenCalledWith("ticket-123");
+    expect(messagesApi.listByTicket).toHaveBeenCalledWith("ticket-123");
   });
 
   it("sets error state when API request fails", async () => {
-    (crmClient.messages.listByTicket as jest.Mock).mockRejectedValue(
+    (messagesApi.listByTicket as jest.Mock).mockRejectedValue(
       new Error("Failed to load messages")
     );
     const { result } = renderHook(() => useMessages("ticket-123"));
@@ -66,7 +64,7 @@ describe("useMessages", () => {
   });
 
   it("appends new message without making a network call", async () => {
-    (crmClient.messages.listByTicket as jest.Mock).mockResolvedValue(mockMessages);
+    (messagesApi.listByTicket as jest.Mock).mockResolvedValue(mockMessages);
     const { result } = renderHook(() => useMessages("ticket-123"));
 
     await waitFor(() => expect(result.current.isLoading).toBe(false));
@@ -87,11 +85,11 @@ describe("useMessages", () => {
     expect(result.current.messages).toHaveLength(3);
     expect(result.current.messages[2]).toEqual(newMsg);
     // Ensure no additional network call was made
-    expect(crmClient.messages.listByTicket).toHaveBeenCalledTimes(1);
+    expect(messagesApi.listByTicket).toHaveBeenCalledTimes(1);
   });
 
   it("does not duplicate messages when appendMessage is called with an existing ID", async () => {
-    (crmClient.messages.listByTicket as jest.Mock).mockResolvedValue(mockMessages);
+    (messagesApi.listByTicket as jest.Mock).mockResolvedValue(mockMessages);
     const { result } = renderHook(() => useMessages("ticket-123"));
 
     await waitFor(() => expect(result.current.isLoading).toBe(false));

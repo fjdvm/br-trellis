@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { crmClient } from "@/lib/api/crm-client";
+import { conversationTicketsApi } from "@/features/conversations/services/conversations-api";
 import { MessageThread } from "@/features/conversations/components/message-thread";
 import type { ConversationAction } from "@/features/conversations/components/conversation-actions-menu";
 import { isTerminalStatus } from "@/features/conversations/services/tickets";
@@ -50,7 +50,7 @@ export function ConversationPane({ ticketId, ticket, listLoaded }: ConversationP
     let cancelled = false;
     void (async () => {
       try {
-        const detail = await crmClient.conversationTickets.getById(ticketId);
+        const detail = await conversationTicketsApi.getById(ticketId);
         if (!cancelled) {
           setResolved({
             id: detail.id,
@@ -80,7 +80,7 @@ export function ConversationPane({ ticketId, ticket, listLoaded }: ConversationP
   const isTerminal = resolved ? isTerminalStatus(resolved.status) : false;
 
   function handleMessageSent() {
-    void crmClient.conversationTickets.setWaitingOn(ticketId, {
+    void conversationTicketsApi.setWaitingOn(ticketId, {
       waitingOn: "Customer",
     });
   }
@@ -102,8 +102,8 @@ export function ConversationPane({ ticketId, ticket, listLoaded }: ConversationP
       try {
         const updated =
           action === "unclaim"
-            ? await crmClient.conversationTickets.unclaim(ticketId)
-            : await crmClient.conversationTickets.changeStatus(ticketId, {
+            ? await conversationTicketsApi.unclaim(ticketId)
+            : await conversationTicketsApi.changeStatus(ticketId, {
                 status:
                   action === "ongoing"
                     ? "Ongoing"

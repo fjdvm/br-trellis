@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { crmClient } from "@/lib/api/crm-client";
+import { conversationMessagesApi } from "@/features/conversations/services/conversations-api";
 import type {
   ConversationMessage,
   PostStaffMessageInput,
@@ -25,6 +25,7 @@ export function useConversationMessages(ticketId: string) {
   const fetchMessages = useCallback(
     async (isBackground = false) => {
       if (!ticketId) return;
+
       if (isBackground) {
         if (Date.now() - lastOptimisticUpdateRef.current < 12000) {
           return;
@@ -36,7 +37,7 @@ export function useConversationMessages(ticketId: string) {
       const currentRequestId = ++lastRequestIdRef.current;
       setError(null);
       try {
-        const data = await crmClient.conversationMessages.listByTicket(ticketId);
+        const data = await conversationMessagesApi.listByTicket(ticketId);
         if (currentRequestId === lastRequestIdRef.current) {
           setMessages(data);
         }
@@ -56,20 +57,19 @@ export function useConversationMessages(ticketId: string) {
   );
 
   useEffect(() => {
+    lastOptimisticUpdateRef.current = 0;
+    setMessages([]);
+    setError(null);
+    void fetchMessages();
+  }, [ticketId, fetchMessages]);
+
+  useEffect(() => {
     if (!ticketId) return;
-
-    fetchMessages(false);
-
-    // Low-frequency fallback poll. Real-time push (useSignalR → appendMessage)
-    // is the primary path now; this poll only recovers a dropped push or a
-    // momentarily-down hub connection, so it runs at 60s rather than 10s.
-    const interval = setInterval(() => {
-      fetchMessages(true);
+    const intervalId = setInterval(() => {
+      void fetchMessages(true);
     }, 60000);
 
-    return () => {
-      clearInterval(interval);
-    };
+    return () => clearInterval(intervalId);
   }, [ticketId, fetchMessages]);
 
   /**
@@ -80,16 +80,18 @@ export function useConversationMessages(ticketId: string) {
    */
   const sendMessage = useCallback(
     async (input: PostStaffMessageInput) => {
-      const tempId = `temp-${Date.now()}`;
+      if (!ticketId) return null;
+
+      const tempId = `temp-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
       const optimistic: ConversationMessage = {
         id: tempId,
         ticketId,
         senderType: "Staff",
-        senderContactId: null,
-        senderStaffId: input.senderStaffId,
-        senderStaffName: input.senderStaffName,
-        content: input.content,
-        sentAt: new Date().toISOString(),
+        senderId: input.senderId ?? null,
+        senderName: input.senderName ?? "Support Staff",
+        senderEmail: input.senderEmail ?? null,
+        body: input.body,
+        createdAt: new Date().toISOString(),
       };
 
       lastOptimisticUpdateRef.current = Date.now();
@@ -97,7 +99,7 @@ export function useConversationMessages(ticketId: string) {
       setError(null);
 
       try {
-        const saved = await crmClient.conversationMessages.postStaffMessage(
+        const saved = await conversationMessagesApi.postStaffMessage(
           ticketId,
           input
         );

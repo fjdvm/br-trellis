@@ -1,7 +1,7 @@
 import { render, screen, waitFor, act } from "@testing-library/react";
 import { ConversationsInbox } from "@/features/conversations/components/conversations-inbox";
 import { TicketListPage } from "@/features/conversations/components/ticket-list-page";
-import { crmClient } from "@/lib/api/crm-client";
+import { conversationMessagesApi, conversationTicketsApi } from "@/features/conversations/services/conversations-api";
 import type { TicketListItem } from "@/features/conversations/types";
 
 jest.mock("next/navigation", () => ({
@@ -24,24 +24,22 @@ jest.mock("next-auth/react", () => ({
   }),
 }));
 
-jest.mock("@/lib/api/crm-client", () => ({
-  crmClient: {
-    conversationTickets: {
+jest.mock("@/features/conversations/services/conversations-api", () => ({
+  conversationTicketsApi: {
       list: jest.fn(),
       getById: jest.fn(),
       claim: jest.fn(),
       changeStatus: jest.fn(),
       setWaitingOn: jest.fn(),
     },
-    conversationMessages: {
+  conversationMessagesApi: {
       listByTicket: jest.fn(),
       postStaffMessage: jest.fn(),
-    },
-  },
+    }
 }));
 
-const mockedList = jest.mocked(crmClient.conversationTickets.list);
-const mockedListMsgs = jest.mocked(crmClient.conversationMessages.listByTicket);
+const mockedList = jest.mocked(conversationTicketsApi.list);
+const mockedListMsgs = jest.mocked(conversationMessagesApi.listByTicket);
 
 function claimedTicket(): TicketListItem {
   return {

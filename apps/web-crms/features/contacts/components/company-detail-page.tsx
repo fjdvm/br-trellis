@@ -26,7 +26,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { crmClient } from "@/lib/api/crm-client";
+import { companiesApi } from "@/features/contacts/services/companies-api";
 import { BackButton } from "@/components/shared/BackButton";
 import { formatName, formatEmail } from "@/lib/format-display";
 import { CompanyContactsTable } from "@/features/contacts/components/company-contacts-table";
@@ -56,7 +56,7 @@ export function CompanyDetailPage({ companyId }: CompanyDetailPageProps) {
 
   const loadCompany = useCallback(async () => {
     try {
-      const result = await crmClient.companies.getById(companyId);
+      const result = await companiesApi.getById(companyId);
       setCompany(result);
       setError(null);
     } catch (err) {
@@ -84,7 +84,7 @@ export function CompanyDetailPage({ companyId }: CompanyDetailPageProps) {
     if (!company) return;
     setIsSaving(true);
     try {
-      const updated = await crmClient.companies.update(company.id, {
+      const updated = await companiesApi.update(company.id, {
         name: editName.trim(),
         buyerType: editBuyerType,
       });
@@ -101,7 +101,7 @@ export function CompanyDetailPage({ companyId }: CompanyDetailPageProps) {
     if (!company) return;
     setShowArchiveDialog(false);
     try {
-      await crmClient.companies.archive(company.id);
+      await companiesApi.archive(company.id);
       router.push("/contacts/companies");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to archive.");

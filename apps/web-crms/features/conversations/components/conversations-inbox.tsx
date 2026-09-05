@@ -11,7 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { crmClient } from "@/lib/api/crm-client";
+import { conversationTicketsApi } from "@/features/conversations/services/conversations-api";
 import { useCurrentAgentId } from "@/hooks/useCurrentAgentId";
 import { useRefetchOnFocus } from "@/hooks/useRefetchOnFocus";
 import { useSignalR } from "@/hooks/useSignalR";
@@ -103,7 +103,7 @@ export function ConversationsInbox({
     try {
       // The existing ticket-list endpoint, unchanged — the Visibility Rule is a
       // client-side filter over the full list, no new query params.
-      const result = await crmClient.conversationTickets.list();
+      const result = await conversationTicketsApi.list();
       setTickets(result);
       setError(null);
     } catch (err) {

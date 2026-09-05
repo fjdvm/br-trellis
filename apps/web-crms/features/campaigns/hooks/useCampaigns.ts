@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useSession } from "next-auth/react";
-import { crmClient } from "@/lib/api/crm-client";
+import { campaignsApi } from "@/features/campaigns/services/campaigns-api";
 import { CampaignListItem } from "@/features/campaigns/types";
 
 export function useCampaigns(status?: string) {
@@ -13,7 +13,7 @@ export function useCampaigns(status?: string) {
     setIsLoading(true);
     setError(null);
     try {
-      const res = await crmClient.campaigns.list(status);
+      const res = await campaignsApi.list(status);
       setData(res ?? []);
     } catch (err) {
       setError(err instanceof Error ? err : new Error("Failed to load campaigns"));

@@ -1,6 +1,6 @@
 import { render, screen, fireEvent, waitFor, within } from "@testing-library/react";
 import { CannedRepliesPage } from "@/features/conversations/components/canned-replies-page";
-import { crmClient } from "@/lib/api/crm-client";
+import { cannedRepliesApi, cannedReplyCategoriesApi } from "@/features/conversations/services/conversations-api";
 
 // useSession is overridden per describe via this mutable holder so we can flip
 // canWrite / isSuperUser without re-mocking the module each time.
@@ -21,31 +21,29 @@ jest.mock("next/navigation", () => ({
   useRouter: () => ({ push: jest.fn() }),
 }));
 
-jest.mock("@/lib/api/crm-client", () => ({
-  crmClient: {
-    cannedReplyCategories: {
+jest.mock("@/features/conversations/services/conversations-api", () => ({
+  cannedReplyCategoriesApi: {
       list: jest.fn(),
       create: jest.fn(),
       update: jest.fn(),
       archive: jest.fn(),
       restore: jest.fn(),
     },
-    cannedReplies: {
+  cannedRepliesApi: {
       list: jest.fn(),
       create: jest.fn(),
       update: jest.fn(),
       archive: jest.fn(),
       restore: jest.fn(),
-    },
-  },
+    }
 }));
 
 const api = {
-  catList: jest.mocked(crmClient.cannedReplyCategories.list),
-  catCreate: jest.mocked(crmClient.cannedReplyCategories.create),
-  replyList: jest.mocked(crmClient.cannedReplies.list),
-  replyArchive: jest.mocked(crmClient.cannedReplies.archive),
-  replyRestore: jest.mocked(crmClient.cannedReplies.restore),
+  catList: jest.mocked(cannedReplyCategoriesApi.list),
+  catCreate: jest.mocked(cannedReplyCategoriesApi.create),
+  replyList: jest.mocked(cannedRepliesApi.list),
+  replyArchive: jest.mocked(cannedRepliesApi.archive),
+  replyRestore: jest.mocked(cannedRepliesApi.restore),
 };
 
 beforeAll(() => {

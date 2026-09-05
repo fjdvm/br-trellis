@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { crmClient } from "@/lib/api/crm-client";
+import { segmentsApi } from "@/features/contacts/services/segments-api";
 
 export interface AudienceCounts {
   all: number;
@@ -18,24 +18,20 @@ export function useAudienceCounts() {
 
   useEffect(() => {
     let mounted = true;
-    if (crmClient.segments?.getAudienceCounts) {
-      crmClient.segments
-        .getAudienceCounts()
-        .then((res) => {
-          if (mounted) setData(res);
-        })
-        .catch((err) => {
-          if (mounted) {
-            setIsError(true);
-            setError(err instanceof Error ? err : new Error(String(err)));
-          }
-        })
-        .finally(() => {
-          if (mounted) setIsLoading(false);
-        });
-    } else {
-      setIsLoading(false);
-    }
+    segmentsApi
+      .getAudienceCounts()
+      .then((res) => {
+        if (mounted) setData(res);
+      })
+      .catch((err) => {
+        if (mounted) {
+          setIsError(true);
+          setError(err instanceof Error ? err : new Error(String(err)));
+        }
+      })
+      .finally(() => {
+        if (mounted) setIsLoading(false);
+      });
     return () => {
       mounted = false;
     };

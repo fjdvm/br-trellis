@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { crmClient } from "@/lib/api/crm-client";
+import { campaignsApi } from "@/features/campaigns/services/campaigns-api";
 import { Campaign } from "@/features/campaigns/types";
 
 export function useCampaign(id: string | null) {
@@ -15,7 +15,7 @@ export function useCampaign(id: string | null) {
     setIsLoading(true);
     setError(null);
     try {
-      const res = await crmClient.campaigns.getById(id);
+      const res = await campaignsApi.getById(id);
       setData(res);
     } catch (err) {
       setError(err instanceof Error ? err : new Error("Failed to load campaign detail"));

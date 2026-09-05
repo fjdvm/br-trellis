@@ -1,19 +1,17 @@
 import { renderHook, act, waitFor } from "@testing-library/react";
 import { useConversationMessages } from "@/features/conversations/hooks/useConversationMessages";
-import { crmClient } from "@/lib/api/crm-client";
+import { conversationMessagesApi } from "@/features/conversations/services/conversations-api";
 import type { ConversationMessage } from "@/features/conversations/types";
 
-jest.mock("@/lib/api/crm-client", () => ({
-  crmClient: {
-    conversationMessages: {
+jest.mock("@/features/conversations/services/conversations-api", () => ({
+  conversationMessagesApi: {
       listByTicket: jest.fn(),
       postStaffMessage: jest.fn(),
-    },
-  },
+    }
 }));
 
-const listByTicket = crmClient.conversationMessages.listByTicket as jest.Mock;
-const postStaffMessage = crmClient.conversationMessages.postStaffMessage as jest.Mock;
+const listByTicket = conversationMessagesApi.listByTicket as jest.Mock;
+const postStaffMessage = conversationMessagesApi.postStaffMessage as jest.Mock;
 
 const SAVED_ID = "9a77b4e9-bed6-40b3-a476-b15fd9a06069";
 

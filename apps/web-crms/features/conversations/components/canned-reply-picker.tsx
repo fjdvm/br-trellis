@@ -43,8 +43,8 @@ export function CannedReplyPicker({ disabled, onSelect }: CannedReplyPickerProps
       setError(null);
       try {
         // Lazy import keeps the composer bundle lean and lets tests mock it.
-        const { crmClient } = await import("@/lib/api/crm-client");
-        const result = await crmClient.cannedReplies.list(false);
+        const { cannedRepliesApi } = await import("@/features/conversations/services/conversations-api");
+        const result = await cannedRepliesApi.list(false);
         setReplies(result);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Unable to load canned replies.");

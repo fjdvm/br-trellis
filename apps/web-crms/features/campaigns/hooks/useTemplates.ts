@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { crmClient } from "@/lib/api/crm-client";
+import { templatesApi, blockTemplatesApi } from "@/features/campaigns/services/campaigns-api";
 import { Template, BlockTemplate } from "@/features/campaigns/types";
 
 export function useTemplates(channel?: string) {
@@ -12,8 +12,8 @@ export function useTemplates(channel?: string) {
     setError(null);
     try {
       const [legacyRes, blockRes] = await Promise.all([
-        crmClient.templates.list(channel).catch(() => []),
-        crmClient.blockTemplates.list(channel).catch(() => []),
+        templatesApi.list(channel).catch(() => []),
+        blockTemplatesApi.list(channel).catch(() => []),
       ]);
 
       const blockTemplatesAsTemplates: Template[] = (blockRes ?? []).map((bt: BlockTemplate) => ({

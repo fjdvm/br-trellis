@@ -1,14 +1,12 @@
 import { renderHook, waitFor, act } from "@testing-library/react";
 import { useCustomers } from "@/features/customers/hooks/useCustomers";
-import { crmClient } from "@/lib/api/crm-client";
+import { customerApi } from "@/features/customers/services/customers-api";
 import type { CustomerListItem } from "@/features/customers/types";
 
-jest.mock("@/lib/api/crm-client", () => ({
-  crmClient: {
-    customers: {
+jest.mock("@/features/customers/services/customers-api", () => ({
+  customerApi: {
       list: jest.fn(),
-    },
-  },
+    }
 }));
 
 const mockCustomers: CustomerListItem[] = [
@@ -44,13 +42,13 @@ describe("useCustomers", () => {
   });
 
   it("starts with isLoading true", () => {
-    (crmClient.customers.list as jest.Mock).mockReturnValue(new Promise(() => {}));
+    (customerApi.list as jest.Mock).mockReturnValue(new Promise(() => {}));
     const { result } = renderHook(() => useCustomers());
     expect(result.current.isLoading).toBe(true);
   });
 
   it("loads customers on mount", async () => {
-    (crmClient.customers.list as jest.Mock).mockResolvedValue(mockResponse);
+    (customerApi.list as jest.Mock).mockResolvedValue(mockResponse);
     const { result } = renderHook(() => useCustomers());
 
     await waitFor(() => expect(result.current.isLoading).toBe(false));
@@ -62,7 +60,7 @@ describe("useCustomers", () => {
   });
 
   it("sets error state on fetch failure", async () => {
-    (crmClient.customers.list as jest.Mock).mockRejectedValue(new Error("API error"));
+    (customerApi.list as jest.Mock).mockRejectedValue(new Error("API error"));
     const { result } = renderHook(() => useCustomers());
 
     await waitFor(() => expect(result.current.isLoading).toBe(false));
@@ -71,12 +69,12 @@ describe("useCustomers", () => {
     expect(result.current.customers).toEqual([]);
   });
 
-  it("calls crmClient.customers.list with correct search parameter", async () => {
-    (crmClient.customers.list as jest.Mock).mockResolvedValue(mockResponse);
+  it("calls customerApi.list with correct search parameter", async () => {
+    (customerApi.list as jest.Mock).mockResolvedValue(mockResponse);
     renderHook(() => useCustomers({ search: "alice" }));
 
     await waitFor(() =>
-      expect(crmClient.customers.list).toHaveBeenCalledWith(1, 20, undefined, "alice")
+      expect(customerApi.list).toHaveBeenCalledWith(1, 20, undefined, "alice")
     );
   });
 
@@ -88,7 +86,7 @@ describe("useCustomers", () => {
       page: 1,
       pageSize: 20,
     };
-    (crmClient.customers.list as jest.Mock).mockResolvedValue(mockFilteredResponse);
+    (customerApi.list as jest.Mock).mockResolvedValue(mockFilteredResponse);
     const { result } = renderHook(() => useCustomers({ search: "alice" }));
 
     await waitFor(() => expect(result.current.isLoading).toBe(false));
@@ -96,31 +94,31 @@ describe("useCustomers", () => {
     expect(result.current.customers).toEqual([mockCustomers[0]]);
   });
 
-  it("calls crmClient.customers.list with correct page and pageSize", async () => {
-    (crmClient.customers.list as jest.Mock).mockResolvedValue(mockResponse);
+  it("calls customerApi.list with correct page and pageSize", async () => {
+    (customerApi.list as jest.Mock).mockResolvedValue(mockResponse);
     renderHook(() => useCustomers({ page: 3, pageSize: 10 }));
 
     await waitFor(() =>
-      expect(crmClient.customers.list).toHaveBeenCalledWith(3, 10, undefined, "")
+      expect(customerApi.list).toHaveBeenCalledWith(3, 10, undefined, "")
     );
   });
 
-  it("calls crmClient.customers.list with correct customerType filter", async () => {
-    (crmClient.customers.list as jest.Mock).mockResolvedValue(mockResponse);
+  it("calls customerApi.list with correct customerType filter", async () => {
+    (customerApi.list as jest.Mock).mockResolvedValue(mockResponse);
     renderHook(() => useCustomers({ page: 1, pageSize: 20, customerType: "Contact" }));
 
     await waitFor(() =>
-      expect(crmClient.customers.list).toHaveBeenCalledWith(1, 20, "Contact", "")
+      expect(customerApi.list).toHaveBeenCalledWith(1, 20, "Contact", "")
     );
   });
 
   it("exposes a refetch function that re-fetches customers", async () => {
-    (crmClient.customers.list as jest.Mock).mockResolvedValue(mockResponse);
+    (customerApi.list as jest.Mock).mockResolvedValue(mockResponse);
     const { result } = renderHook(() => useCustomers());
 
     await waitFor(() => expect(result.current.isLoading).toBe(false));
 
-    (crmClient.customers.list as jest.Mock).mockResolvedValue({
+    (customerApi.list as jest.Mock).mockResolvedValue({
       ...mockResponse,
       totalCount: 5,
     });
@@ -133,17 +131,17 @@ describe("useCustomers", () => {
 
   it("polls for customer updates every 10 seconds", async () => {
     jest.useFakeTimers();
-    (crmClient.customers.list as jest.Mock).mockResolvedValue(mockResponse);
+    (customerApi.list as jest.Mock).mockResolvedValue(mockResponse);
     
     renderHook(() => useCustomers());
     
-    expect(crmClient.customers.list).toHaveBeenCalledTimes(1);
+    expect(customerApi.list).toHaveBeenCalledTimes(1);
 
     await act(async () => {
       jest.advanceTimersByTime(10000);
     });
 
-    expect(crmClient.customers.list).toHaveBeenCalledTimes(2);
+    expect(customerApi.list).toHaveBeenCalledTimes(2);
 
     jest.useRealTimers();
   });

@@ -22,7 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { crmClient } from "@/lib/api/crm-client";
+import { cannedRepliesApi } from "@/features/conversations/services/conversations-api";
 import type {
   CannedReplyListItem,
   CannedReplyCategoryListItem,
@@ -90,13 +90,13 @@ export function CannedReplySheet({ categories, reply, onSaved }: CannedReplyShee
     setError(null);
     try {
       if (isEdit && reply) {
-        await crmClient.cannedReplies.update(reply.id, {
+        await cannedRepliesApi.update(reply.id, {
           name: trimmedName,
           body: trimmedBody,
           categoryId,
         });
       } else {
-        await crmClient.cannedReplies.create({
+        await cannedRepliesApi.create({
           name: trimmedName,
           body: trimmedBody,
           categoryId,

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { AlertTriangle, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { aiClient } from "@/lib/api/ai-client";
+import { aiClient } from "@/features/dashboard/services/ai-client";
 import { PriorityWeightsConfig, ConfidenceThresholdsConfig } from "@/types/config";
 import { AiAccessRestricted } from "./ai-access-restricted";
 import { AiRiskThresholdsCard } from "./ai-risk-thresholds-card";

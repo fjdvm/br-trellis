@@ -3,7 +3,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { crmClient } from "@/lib/api/crm-client";
+import { ticketsApi } from "@/features/conversations/services/conversations-api";
 
 export function TicketCreateSheet({
   onSuccess,
@@ -19,7 +19,7 @@ export function TicketCreateSheet({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await crmClient.tickets.create(
+      await ticketsApi.create(
         { title, description, imageUrl: "" },
         "00000000-0000-0000-0000-000000000001"
       );

@@ -32,7 +32,10 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { ScrollableTable } from "@/components/shared/ScrollableTable";
-import { crmClient } from "@/lib/api/crm-client";
+import {
+  cannedReplyCategoriesApi,
+  cannedRepliesApi,
+} from "@/features/conversations/services/conversations-api";
 import { useConversationsCanWrite } from "@/features/conversations/hooks/useConversationsCanWrite";
 import { NewCannedCategorySheet } from "@/features/conversations/components/new-canned-category-sheet";
 import { CannedReplySheet } from "@/features/conversations/components/canned-reply-sheet";
@@ -68,8 +71,8 @@ export function CannedRepliesPage() {
     try {
       const categoryId = categoryFilter === ALL_CATEGORIES ? undefined : categoryFilter;
       const [cats, reps] = await Promise.all([
-        crmClient.cannedReplyCategories.list(showArchived),
-        crmClient.cannedReplies.list(showArchived, categoryId),
+        cannedReplyCategoriesApi.list(showArchived),
+        cannedRepliesApi.list(showArchived, categoryId),
       ]);
       setCategories(cats);
       setReplies(reps);
@@ -88,21 +91,26 @@ export function CannedRepliesPage() {
   // Only active categories can receive new/edited replies (and populate the filter).
   const activeCategories = categories.filter((c) => c.deletedAt === null);
 
-  async function restoreReply(id: string) {
+  async function handleToggleArchive(id: string, currentlyArchived: boolean) {
+    if (!currentlyArchived) {
+      const item = replies.find((r) => r.id === id);
+      if (item) setPendingArchive(item);
+      return;
+    }
     try {
-      await crmClient.cannedReplies.restore(id);
-      await load();
+      await cannedRepliesApi.restore(id);
+      void load();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to restore.");
+      setError(err instanceof Error ? err.message : "Failed to restore canned reply.");
     }
   }
 
-  async function confirmArchive() {
+  async function handleConfirmArchive() {
+    if (!pendingArchive) return;
     const pending = pendingArchive;
     setPendingArchive(null);
-    if (!pending) return;
     try {
-      await crmClient.cannedReplies.archive(pending.id);
+      await cannedRepliesApi.archive(pending.id);
       await load();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to archive.");
@@ -206,7 +214,7 @@ export function CannedRepliesPage() {
                                 />
                               )}
                               {isArchived ? (
-                                <Button variant="outline" size="sm" onClick={() => void restoreReply(reply.id)}>
+                                <Button variant="outline" size="sm" onClick={() => void handleToggleArchive(reply.id, true)}>
                                   <ArchiveRestore className="w-4 h-4 mr-1" />
                                   Restore
                                 </Button>
@@ -247,7 +255,7 @@ export function CannedRepliesPage() {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmArchive}>Archive</AlertDialogAction>
+            <AlertDialogAction onClick={handleConfirmArchive}>Archive</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

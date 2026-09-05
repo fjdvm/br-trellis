@@ -2,17 +2,15 @@ import React from "react";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { TicketDetailSheet } from "@/features/tickets/components/ticket-detail-sheet";
 import { useTicket } from "@/features/conversations/hooks/useTicket";
-import { crmClient } from "@/lib/api/crm-client";
+import { ticketsApi } from "@/features/conversations/services/conversations-api";
 
 jest.mock("@/features/conversations/hooks/useTicket");
-jest.mock("@/lib/api/crm-client", () => ({
-  crmClient: {
-    tickets: {
+jest.mock("@/features/conversations/services/conversations-api", () => ({
+  ticketsApi: {
       claim: jest.fn(),
       unclaim: jest.fn(),
       updateStatus: jest.fn(),
-    },
-  },
+    }
 }));
 
 const mockUseTicket = useTicket as jest.MockedFunction<typeof useTicket>;
@@ -63,7 +61,7 @@ describe("TicketDetailSheet", () => {
       refetch: jest.fn(),
     });
 
-    (crmClient.tickets.claim as jest.Mock).mockResolvedValue(undefined);
+    (ticketsApi.claim as jest.Mock).mockResolvedValue(undefined);
 
     render(
       <TicketDetailSheet
@@ -79,7 +77,7 @@ describe("TicketDetailSheet", () => {
     fireEvent.click(claimButton);
 
     await waitFor(() => {
-      expect(crmClient.tickets.claim).toHaveBeenCalledWith("t-1");
+      expect(ticketsApi.claim).toHaveBeenCalledWith("t-1");
       expect(onShowToast).toHaveBeenCalledWith("Ticket claimed successfully.");
       expect(onRefresh).toHaveBeenCalled();
       expect(onClose).toHaveBeenCalled();
@@ -103,7 +101,7 @@ describe("TicketDetailSheet", () => {
       refetch: jest.fn(),
     });
 
-    (crmClient.tickets.claim as jest.Mock).mockRejectedValue(new Error("API Error"));
+    (ticketsApi.claim as jest.Mock).mockRejectedValue(new Error("API Error"));
 
     render(
       <TicketDetailSheet
@@ -118,7 +116,7 @@ describe("TicketDetailSheet", () => {
     fireEvent.click(claimButton);
 
     await waitFor(() => {
-      expect(crmClient.tickets.claim).toHaveBeenCalledWith("t-1");
+      expect(ticketsApi.claim).toHaveBeenCalledWith("t-1");
       expect(onShowToast).toHaveBeenCalledWith("Failed to claim ticket.");
       expect(onRefresh).not.toHaveBeenCalled();
       expect(onClose).not.toHaveBeenCalled();
@@ -143,7 +141,7 @@ describe("TicketDetailSheet", () => {
       refetch: jest.fn(),
     });
 
-    (crmClient.tickets.unclaim as jest.Mock).mockResolvedValue(undefined);
+    (ticketsApi.unclaim as jest.Mock).mockResolvedValue(undefined);
 
     render(
       <TicketDetailSheet
@@ -158,7 +156,7 @@ describe("TicketDetailSheet", () => {
     fireEvent.click(unclaimButton);
 
     await waitFor(() => {
-      expect(crmClient.tickets.unclaim).toHaveBeenCalledWith("t-1");
+      expect(ticketsApi.unclaim).toHaveBeenCalledWith("t-1");
       expect(onShowToast).toHaveBeenCalledWith("Ticket status set to Unclaimed.");
       expect(onRefresh).toHaveBeenCalled();
       expect(onClose).toHaveBeenCalled();

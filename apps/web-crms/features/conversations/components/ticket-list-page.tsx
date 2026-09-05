@@ -8,7 +8,7 @@ import { TableSkeleton } from "@/components/shared/TableSkeleton";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TicketCancelDialog } from "@/features/conversations/components/ticket-cancel-dialog";
 import { TicketFilters } from "@/features/conversations/components/ticket-filters";
-import { crmClient } from "@/lib/api/crm-client";
+import { conversationTicketsApi } from "@/features/conversations/services/conversations-api";
 import { useClientPagination } from "@/components/shared/TablePagination";
 import { useCurrentAgentId } from "@/hooks/useCurrentAgentId";
 import { useRefetchOnFocus } from "@/hooks/useRefetchOnFocus";
@@ -43,9 +43,12 @@ export interface TicketListPageProps {
   initialStatusFilter?: TicketStatus | "All";
   statusOptions?: readonly (TicketStatus | "All")[];
   initialWaitingOnFilter?: TicketWaitingOn | "All";
+  initialSourceFilter?: TicketSource | "All";
+  resultFilter?: (ticket: TicketListItem) => boolean;
   excludeTerminal?: boolean;
   terminalOnly?: boolean;
   assignedToMe?: boolean;
+  activeFilterBadgeLabel?: string;
   showSourceFilter?: boolean;
   showNewTicketButton?: boolean;
   emptyMessage?: string;
@@ -53,12 +56,14 @@ export interface TicketListPageProps {
 }
 
 export function TicketListPage({
-  heading = "Tickets",
-  description = "Support tickets from customers.",
-  cardTitle = "All Tickets",
+  heading = "All Tickets",
+  description = "Complete history of customer support requests.",
+  cardTitle = "Ticket registry",
   initialStatusFilter = "All",
   statusOptions = STATUS_OPTIONS,
   initialWaitingOnFilter = "All",
+  initialSourceFilter = "All",
+  resultFilter,
   excludeTerminal = false,
   terminalOnly = false,
   assignedToMe = false,
@@ -116,7 +121,7 @@ export function TicketListPage({
       setIsLoading(true);
     }
     try {
-      const result = await crmClient.conversationTickets.list(
+      const result = await conversationTicketsApi.list(
         statusFilter,
         waitingOnFilter,
         sourceFilter
@@ -167,7 +172,7 @@ export function TicketListPage({
 
   function handleClaim(ticket: TicketListItem) {
     void runRowMutation(ticket.id, "claim", () =>
-      crmClient.conversationTickets.claim(ticket.id, {
+      conversationTicketsApi.claim(ticket.id, {
         staffId: currentAgentId ?? "",
         staffName: session?.user?.name ?? "",
         staffEmail: session?.user?.email ?? "",
@@ -180,7 +185,7 @@ export function TicketListPage({
     setCancelTarget(null);
     if (!ticket) return;
     void runRowMutation(ticket.id, "cancel", () =>
-      crmClient.conversationTickets.changeStatus(ticket.id, {
+      conversationTicketsApi.changeStatus(ticket.id, {
         status: "Canceled",
       })
     );

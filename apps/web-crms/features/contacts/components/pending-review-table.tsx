@@ -10,7 +10,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { crmClient } from "@/lib/api/crm-client";
+import { contactsApi } from "@/features/contacts/services/contacts-api";
 import { formatName, formatEmail } from "@/lib/format-display";
 import { TableSkeleton } from "@/components/shared/TableSkeleton";
 import { ScrollableTable } from "@/components/shared/ScrollableTable";
@@ -30,7 +30,7 @@ export function PendingReviewTable() {
 
     async function loadPendingReviews() {
       try {
-        const result = await crmClient.contacts.listPendingReview();
+        const result = await contactsApi.listPendingReview();
         if (isCurrent) {
           setPendingReviews(result);
         }

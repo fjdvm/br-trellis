@@ -1,7 +1,7 @@
 import { render, screen, fireEvent, waitFor, act } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import {  ConversationsInbox  } from "@/features/conversations/components/conversations-inbox";
-import { crmClient } from "@/lib/api/crm-client";
+import { conversationMessagesApi, conversationTicketsApi } from "@/features/conversations/services/conversations-api";
 import { useSignalR } from "@/hooks/useSignalR";
 import type { TicketListItem } from "@/features/conversations/types";
 
@@ -44,18 +44,16 @@ jest.mock("next-auth/react", () => ({
   useSession: () => ({ data: { user: mockUser }, status: "authenticated" }),
 }));
 
-jest.mock("@/lib/api/crm-client", () => ({
-  crmClient: {
-    conversationTickets: {
+jest.mock("@/features/conversations/services/conversations-api", () => ({
+  conversationTicketsApi: {
       list: jest.fn(),
       getById: jest.fn(),
       setWaitingOn: jest.fn(),
     },
-    conversationMessages: {
+  conversationMessagesApi: {
       listByTicket: jest.fn(),
       postStaffMessage: jest.fn(),
-    },
-  },
+    }
 }));
 
 // Real-time hook mocked to a no-op (it's covered by its own test). Capturing the
@@ -66,11 +64,11 @@ jest.mock("@/hooks/useSignalR", () => ({
 }));
 
 const mocked = {
-  list: jest.mocked(crmClient.conversationTickets.list),
-  getById: jest.mocked(crmClient.conversationTickets.getById),
-  setWaitingOn: jest.mocked(crmClient.conversationTickets.setWaitingOn),
-  listMessages: jest.mocked(crmClient.conversationMessages.listByTicket),
-  postMessage: jest.mocked(crmClient.conversationMessages.postStaffMessage),
+  list: jest.mocked(conversationTicketsApi.list),
+  getById: jest.mocked(conversationTicketsApi.getById),
+  setWaitingOn: jest.mocked(conversationTicketsApi.setWaitingOn),
+  listMessages: jest.mocked(conversationMessagesApi.listByTicket),
+  postMessage: jest.mocked(conversationMessagesApi.postStaffMessage),
 };
 
 function makeTicket(overrides: Partial<TicketListItem> = {}): TicketListItem {

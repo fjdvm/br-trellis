@@ -14,7 +14,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { crmClient } from "@/lib/api/crm-client";
+import { cannedReplyCategoriesApi } from "@/features/conversations/services/conversations-api";
 
 interface NewCannedCategorySheetProps {
   /** Called after a category is successfully created (e.g. to refetch). */
@@ -50,7 +50,7 @@ export function NewCannedCategorySheet({ onCreated }: NewCannedCategorySheetProp
     setIsSubmitting(true);
     setError(null);
     try {
-      await crmClient.cannedReplyCategories.create({ name: trimmed });
+      await cannedReplyCategoriesApi.create({ name: trimmed });
       resetForm();
       setOpen(false);
       onCreated?.();

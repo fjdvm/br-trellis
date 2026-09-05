@@ -2,7 +2,7 @@ import React from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { useTicket } from "@/features/conversations/hooks/useTicket";
-import { crmClient } from "@/lib/api/crm-client";
+import { ticketsApi } from "@/features/conversations/services/conversations-api";
 
 export function TicketDetailSheet({
   ticketId,
@@ -21,7 +21,7 @@ export function TicketDetailSheet({
 
   const handleClaim = async () => {
     try {
-      await crmClient.tickets.claim(ticketId);
+      await ticketsApi.claim(ticketId);
       onShowToast?.("Ticket claimed successfully.");
       onRefresh?.();
       onClose();
@@ -32,7 +32,7 @@ export function TicketDetailSheet({
 
   const handleUnclaim = async () => {
     try {
-      await crmClient.tickets.unclaim(ticketId);
+      await ticketsApi.unclaim(ticketId);
       onShowToast?.("Ticket status set to Unclaimed.");
       onRefresh?.();
       onClose();

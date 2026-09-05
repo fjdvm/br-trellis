@@ -1,8 +1,8 @@
 import { renderHook, waitFor } from "@testing-library/react";
 import { useDashboardForecasts } from "@/features/dashboard/hooks/useDashboardForecasts";
-import { aiClient } from "@/lib/api/ai-client";
+import { aiClient } from "@/features/dashboard/services/ai-client";
 
-jest.mock("@/lib/api/ai-client", () => ({
+jest.mock("@/features/dashboard/services/ai-client", () => ({
   aiClient: {
     forecasts: {
       getTicketVolume: jest.fn(),

@@ -2,15 +2,13 @@ import React from "react";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { toast } from "sonner";
 import { DeleteCustomerDialog } from "@/features/customers/components/delete-customer-dialog";
-import { crmClient } from "@/lib/api/crm-client";
+import { customerApi } from "@/features/customers/services/customers-api";
 import type { CustomerListItem } from "@/features/customers/types";
 
-jest.mock("@/lib/api/crm-client", () => ({
-  crmClient: {
-    customers: {
+jest.mock("@/features/customers/services/customers-api", () => ({
+  customerApi: {
       delete: jest.fn(),
-    },
-  },
+    }
 }));
 
 jest.mock("sonner", () => ({
@@ -76,7 +74,7 @@ describe("DeleteCustomerDialog", () => {
   });
 
   it("calls onDeleted and closes dialog after successful delete", async () => {
-    (crmClient.customers.delete as jest.Mock).mockResolvedValue(undefined);
+    (customerApi.delete as jest.Mock).mockResolvedValue(undefined);
 
     render(
       <DeleteCustomerDialog
@@ -90,7 +88,7 @@ describe("DeleteCustomerDialog", () => {
     fireEvent.click(screen.getByRole("button", { name: /delete customer/i }));
 
     await waitFor(() => {
-      expect(crmClient.customers.delete).toHaveBeenCalledWith("cust-1");
+      expect(customerApi.delete).toHaveBeenCalledWith("cust-1");
       expect(onDeleted).toHaveBeenCalledTimes(1);
       expect(onOpenChange).toHaveBeenCalledWith(false);
     });
@@ -98,7 +96,7 @@ describe("DeleteCustomerDialog", () => {
 
   it("shows 'Deleting...' while the delete is in flight", async () => {
     let resolveDelete!: () => void;
-    (crmClient.customers.delete as jest.Mock).mockReturnValue(
+    (customerApi.delete as jest.Mock).mockReturnValue(
       new Promise<void>((res) => {
         resolveDelete = res;
       })
@@ -123,7 +121,7 @@ describe("DeleteCustomerDialog", () => {
   });
 
   it("shows error toast and does not call onDeleted on failure", async () => {
-    (crmClient.customers.delete as jest.Mock).mockRejectedValue(new Error("Network error"));
+    (customerApi.delete as jest.Mock).mockRejectedValue(new Error("Network error"));
 
     render(
       <DeleteCustomerDialog

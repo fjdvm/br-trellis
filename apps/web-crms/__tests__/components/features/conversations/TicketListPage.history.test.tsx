@@ -1,7 +1,7 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import {  TicketListPage  } from "@/features/conversations/components/ticket-list-page";
-import { crmClient } from "@/lib/api/crm-client";
+import { conversationTicketsApi } from "@/features/conversations/services/conversations-api";
 import type { TicketListItem } from "@/features/conversations/types";
 
 // Radix Select relies on pointer-capture and scrollIntoView APIs that jsdom
@@ -42,14 +42,12 @@ jest.mock("next-auth/react", () => ({
   }),
 }));
 
-jest.mock("@/lib/api/crm-client", () => ({
-  crmClient: {
-    conversationTickets: {
+jest.mock("@/features/conversations/services/conversations-api", () => ({
+  conversationTicketsApi: {
       list: jest.fn(),
       claim: jest.fn(),
       changeStatus: jest.fn(),
-    },
-  },
+    }
 }));
 
 function makeTicket(overrides: Partial<TicketListItem> = {}): TicketListItem {
@@ -85,7 +83,7 @@ const historyProps = {
 describe("TicketListPage (History props)", () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    jest.mocked(crmClient.conversationTickets.list).mockResolvedValue([]);
+    jest.mocked(conversationTicketsApi.list).mockResolvedValue([]);
   });
 
   it("renders the overridden page copy (heading, description, card title)", async () => {
@@ -113,7 +111,7 @@ describe("TicketListPage (History props)", () => {
     render(<TicketListPage {...historyProps} />);
 
     await waitFor(() =>
-      expect(crmClient.conversationTickets.list).toHaveBeenCalledWith(
+      expect(conversationTicketsApi.list).toHaveBeenCalledWith(
         "All",
         "All",
         "All"
@@ -122,7 +120,7 @@ describe("TicketListPage (History props)", () => {
   });
 
   it("shows terminal tickets from multiple agents (team-wide, not scoped to the signed-in agent)", async () => {
-    jest.mocked(crmClient.conversationTickets.list).mockResolvedValue([
+    jest.mocked(conversationTicketsApi.list).mockResolvedValue([
       makeTicket({
         id: "t-mine",
         subject: "Mine done",
@@ -153,7 +151,7 @@ describe("TicketListPage (History props)", () => {
   });
 
   it("excludes non-terminal tickets returned by the API, regardless of filters", async () => {
-    jest.mocked(crmClient.conversationTickets.list).mockResolvedValue([
+    jest.mocked(conversationTicketsApi.list).mockResolvedValue([
       makeTicket({ id: "t-done", subject: "All done", status: "Completed" }),
       makeTicket({ id: "t-cancel", subject: "Dropped", status: "Canceled" }),
       makeTicket({
@@ -183,7 +181,7 @@ describe("TicketListPage (History props)", () => {
   });
 
   it("keeps excluding non-terminal tickets even after the Waiting On filter is changed", async () => {
-    jest.mocked(crmClient.conversationTickets.list).mockResolvedValue([
+    jest.mocked(conversationTicketsApi.list).mockResolvedValue([
       makeTicket({ id: "t-done", subject: "All done", status: "Completed" }),
       makeTicket({
         id: "t-open",
@@ -203,7 +201,7 @@ describe("TicketListPage (History props)", () => {
     await user.click(await screen.findByRole("option", { name: "Customer" }));
 
     await waitFor(() =>
-      expect(crmClient.conversationTickets.list).toHaveBeenCalledWith(
+      expect(conversationTicketsApi.list).toHaveBeenCalledWith(
         "All",
         "Customer",
         "All"
@@ -243,7 +241,7 @@ describe("TicketListPage (History props)", () => {
   });
 
   it("narrows to Completed-only when the Status filter is set to Completed", async () => {
-    jest.mocked(crmClient.conversationTickets.list).mockResolvedValue([]);
+    jest.mocked(conversationTicketsApi.list).mockResolvedValue([]);
     const user = userEvent.setup({ pointerEventsCheck: 0 });
 
     render(<TicketListPage {...historyProps} />);
@@ -254,7 +252,7 @@ describe("TicketListPage (History props)", () => {
     await user.click(await screen.findByRole("option", { name: "Completed" }));
 
     await waitFor(() =>
-      expect(crmClient.conversationTickets.list).toHaveBeenCalledWith(
+      expect(conversationTicketsApi.list).toHaveBeenCalledWith(
         "Completed",
         "All",
         "All"
@@ -263,7 +261,7 @@ describe("TicketListPage (History props)", () => {
   });
 
   it("exposes the Source filter, matching the Tickets screen", async () => {
-    jest.mocked(crmClient.conversationTickets.list).mockResolvedValue([]);
+    jest.mocked(conversationTicketsApi.list).mockResolvedValue([]);
     const user = userEvent.setup({ pointerEventsCheck: 0 });
 
     render(<TicketListPage {...historyProps} />);
@@ -274,7 +272,7 @@ describe("TicketListPage (History props)", () => {
     await user.click(await screen.findByRole("option", { name: "Manual" }));
 
     await waitFor(() =>
-      expect(crmClient.conversationTickets.list).toHaveBeenCalledWith(
+      expect(conversationTicketsApi.list).toHaveBeenCalledWith(
         "All",
         "All",
         "Manual"
@@ -283,7 +281,7 @@ describe("TicketListPage (History props)", () => {
   });
 
   it("shows the History-empty message when no finished tickets come back", async () => {
-    jest.mocked(crmClient.conversationTickets.list).mockResolvedValue([]);
+    jest.mocked(conversationTicketsApi.list).mockResolvedValue([]);
 
     render(<TicketListPage {...historyProps} />);
 
@@ -293,7 +291,7 @@ describe("TicketListPage (History props)", () => {
   });
 
   it("shows the History-empty message when only non-terminal tickets come back (filtered to nothing)", async () => {
-    jest.mocked(crmClient.conversationTickets.list).mockResolvedValue([
+    jest.mocked(conversationTicketsApi.list).mockResolvedValue([
       makeTicket({
         id: "t-open",
         subject: "Still open",
