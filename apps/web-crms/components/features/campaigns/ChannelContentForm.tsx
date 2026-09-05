@@ -97,6 +97,9 @@ export function ChannelContentForm({
     id: string;
     type: string;
     label: string;
+    textAlign?: "left" | "center" | "right";
+    isBold?: boolean;
+    isItalic?: boolean;
     order?: number;
   }> = [];
 
@@ -109,6 +112,9 @@ export function ChannelContentForm({
             id: (b.id as string) || `block-${idx}`,
             type: (b.type as string) || "text",
             label: (b.label as string) || (b.type as string) || `Block ${idx + 1}`,
+            textAlign: (b.textAlign as "left" | "center" | "right") || undefined,
+            isBold: (b.isBold as boolean) ?? undefined,
+            isItalic: (b.isItalic as boolean) ?? undefined,
             order: (b.order as number) ?? idx,
           }))
           .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
@@ -196,6 +202,9 @@ export function ChannelContentForm({
     const previewBlocks = parsedBlocks.map((block) => ({
       type: block.type,
       label: block.label,
+      textAlign: block.textAlign,
+      isBold: block.isBold,
+      isItalic: block.isItalic,
       content: value.blockValues?.[block.id] ?? "",
     }));
 

@@ -1072,10 +1072,10 @@ export function TemplatesGallery() {
                           {blocks.map((block) => {
                             const alignClass =
                               block.textAlign === "center"
-                                ? "text-center justify-center items-center"
+                                ? "flex flex-col text-center justify-center items-center"
                                 : block.textAlign === "right"
-                                ? "text-right justify-end items-end"
-                                : "text-left justify-start items-start";
+                                ? "flex flex-col text-right justify-end items-end"
+                                : "flex flex-col text-left justify-start items-start";
 
                             const fontStyle = `${block.isBold ? "font-bold" : ""} ${block.isItalic ? "italic" : ""}`.trim();
 
