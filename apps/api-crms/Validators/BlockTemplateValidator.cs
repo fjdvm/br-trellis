@@ -43,7 +43,7 @@ public static class BlockTemplateValidator
         switch (channel)
         {
             case CampaignChannel.Email:
-                if (carouselCount > 1) return (false, "Email templates allow a maximum of 1 carousel component.");
+                if (carouselCount > 1) return (false, "Email templates allow a maximum of 1 stacked images component.");
                 if (imageCount > 3) return (false, "Email templates allow a maximum of 3 image components.");
                 if (linkCount > 3) return (false, "Email templates allow a maximum of 3 link components.");
                 if (headingCount > 3) return (false, "Email templates allow a maximum of 3 heading components.");
@@ -52,7 +52,7 @@ public static class BlockTemplateValidator
                 break;
 
             case CampaignChannel.Banner:
-                if (carouselCount > 0) return (false, "Banner templates do not allow carousel components.");
+                if (carouselCount > 0) return (false, "Banner templates do not allow stacked images components.");
                 if (headingCount > 0) return (false, "Banner templates do not allow heading components.");
                 if (imageCount > 1) return (false, "Banner templates allow a maximum of 1 image component.");
                 if (linkCount > 1) return (false, "Banner templates allow a maximum of 1 link component.");
@@ -61,7 +61,7 @@ public static class BlockTemplateValidator
                 break;
 
             case CampaignChannel.Popup:
-                if (carouselCount > 0) return (false, "Popup templates do not allow carousel components.");
+                if (carouselCount > 0) return (false, "Popup templates do not allow stacked images components.");
                 if (imageCount > 1) return (false, "Popup templates allow a maximum of 1 image component.");
                 if (linkCount > 2) return (false, "Popup templates allow a maximum of 2 link components.");
                 if (headingCount > 1) return (false, "Popup templates allow a maximum of 1 heading component.");

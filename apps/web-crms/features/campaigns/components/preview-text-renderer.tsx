@@ -1,6 +1,6 @@
-import { CarouselBlock, type PreviewBlock } from "@/features/campaigns/components/carousel-block";
+import { StackedImagesBlock, type PreviewBlock } from "@/features/campaigns/components/carousel-block";
 
-export { CarouselBlock, type PreviewBlock };
+export { StackedImagesBlock, type PreviewBlock };
 
 
 export function renderFormattedText(text: string): React.ReactNode {
@@ -102,7 +102,7 @@ export function renderFormattedText(text: string): React.ReactNode {
 
               if (block.type === "carousel") {
                 const slides = Array.isArray(block.content) ? block.content : [];
-                return <CarouselBlock key={idx} block={block} slides={slides} alignClass={alignClass} />;
+                return <StackedImagesBlock key={idx} block={block} slides={slides} alignClass={alignClass} />;
               }
 
               if (block.type === "link") {
@@ -163,9 +163,9 @@ export function renderFormattedText(text: string): React.ReactNode {
                 if (Array.isArray(val)) {
                   const slides = val as Array<{ imageUrl?: string; caption?: string; linkUrl?: string }>;
                   return (
-                    <CarouselBlock
+                    <StackedImagesBlock
                       key={key || idx}
-                      block={{ type: "carousel", label: "Carousel", content: slides }}
+                      block={{ type: "carousel", label: "Stacked Images", content: slides }}
                       slides={slides}
                       alignClass="flex flex-col text-left justify-start items-start"
                     />

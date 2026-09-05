@@ -19,7 +19,7 @@ import {
   AlignLeft,
   Image,
   MousePointerClick,
-  SlidersHorizontal,
+  Images,
   Link as LinkIcon,
 } from "lucide-react";
 import { type TemplateBlock } from "@/features/campaigns/components/template-builder-components";
@@ -71,7 +71,7 @@ export function EmailBuilderContent({
   );
 
   const paletteItems = [
-    { type: "carousel" as const, label: "Carousel", icon: SlidersHorizontal, max: constraints.maxCarousel },
+    { type: "carousel" as const, label: "Stacked Images", icon: Images, max: constraints.maxCarousel },
     { type: "image" as const, label: "Image Placeholder", icon: Image, max: constraints.maxImages },
     { type: "link" as const, label: "Text Link", icon: LinkIcon, max: constraints.maxLinks },
     { type: "heading" as const, label: "Heading Title", icon: Type, max: constraints.maxHeadings },

@@ -85,7 +85,7 @@ describe("TemplatesGallery", () => {
     await user.click(builderBtn);
 
     expect(screen.getByText("Draggable Blocks")).toBeInTheDocument();
-    expect(screen.getByText("Carousel")).toBeInTheDocument();
+    expect(screen.getByText("Stacked Images")).toBeInTheDocument();
     expect(screen.getByText("CTA Button")).toBeInTheDocument();
   });
 

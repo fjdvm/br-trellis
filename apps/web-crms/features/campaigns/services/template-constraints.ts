@@ -46,7 +46,7 @@ export function validateBlockCount(
   switch (blockType) {
     case "carousel":
       max = constraints.maxCarousel;
-      label = "carousel";
+      label = "stacked images";
       break;
     case "image":
       max = constraints.maxImages;
