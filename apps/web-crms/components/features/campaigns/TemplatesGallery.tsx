@@ -840,7 +840,7 @@ export function TemplatesGallery() {
             {builderChannel === "Email" && (
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 flex-1 min-h-0 overflow-y-auto lg:overflow-hidden my-4">
                 {/* 1. Palette */}
-                <div className="lg:col-span-3 bg-muted/40 border border-border rounded-lg p-4 space-y-4 flex flex-col min-h-0 max-h-[320px] lg:max-h-none overflow-y-auto">
+                <div className="lg:col-span-3 bg-muted/40 border border-border rounded-lg p-4 space-y-4 flex flex-col max-h-[320px] lg:max-h-none lg:min-h-0 overflow-y-auto">
                   <div className="space-y-2 shrink-0">
                     <Label className="text-xs uppercase font-bold text-muted-foreground">
                       Template Settings
