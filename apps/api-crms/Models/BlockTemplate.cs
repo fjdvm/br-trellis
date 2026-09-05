@@ -32,7 +32,7 @@ public sealed class TemplateBlock
     // Block type: heading, text, image, link, button, carousel
     public string Type { get; set; } = string.Empty;
 
-    // Structural Label (e.g. "Main headline", "Hero image") - NO actual text content!
+    // Structural Label (e.g. "Main headline", "Hero image") - shown while editing.
     public string Label { get; set; } = string.Empty;
 
     // Order within the template layout (0-indexed)
@@ -42,4 +42,10 @@ public sealed class TemplateBlock
     public string? TextAlign { get; set; }
     public bool IsBold { get; set; }
     public bool IsItalic { get; set; }
+
+    // The block's actual content, shaped per Type and consumed by
+    // EmailBodyRenderer: plain text for heading/text, {"text","url"} for
+    // button/link, {"url","alt"} for image, or a JSON array of
+    // {"imageUrl","caption","linkUrl"} slides for carousel. Null until filled in.
+    public string? Content { get; set; }
 }

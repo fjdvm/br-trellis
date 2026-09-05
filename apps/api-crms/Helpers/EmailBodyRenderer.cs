@@ -1,12 +1,18 @@
 using System.Net;
 using System.Text.Encodings.Web;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 
 namespace api_crms.Helpers;
 
 public static class EmailBodyRenderer
 {
-    public static string RenderToHtml(string? body)
+    // Matches the "**bold**" / "*italic*" markers the rich-text editor's
+    // Bold/Italic toolbar buttons insert around selected plain text.
+    private static readonly Regex MarkdownLite = new(@"(\*\*.*?\*\*|\*.*?\*)", RegexOptions.Compiled);
+    private static readonly Regex LooksLikeHtml = new(@"<[a-z][\s\S]*>", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
+    public static string RenderToHtml(string? body, bool wrapContainer = true)
     {
         if (string.IsNullOrWhiteSpace(body))
         {
@@ -16,7 +22,11 @@ public static class EmailBodyRenderer
         var trimmed = body.Trim();
         if (!trimmed.StartsWith("{") && !trimmed.StartsWith("["))
         {
-            return body;
+            // Already-authored HTML (e.g. a legacy Html-format template) passes
+            // through untouched. Otherwise this is plain text from the rich-text
+            // editor: encode it and turn its "**bold**"/"*italic*" markers into
+            // real tags so they don't leak as literal asterisks.
+            return LooksLikeHtml.IsMatch(trimmed) ? body : RenderPlainText(body);
         }
 
         try
@@ -29,7 +39,7 @@ public static class EmailBodyRenderer
                 var content = RenderJsonObject(root);
                 if (!string.IsNullOrWhiteSpace(content))
                 {
-                    return WrapInEmailContainer(content);
+                    return wrapContainer ? WrapInEmailContainer(content) : content;
                 }
             }
             else if (root.ValueKind == JsonValueKind.Array)
@@ -37,7 +47,7 @@ public static class EmailBodyRenderer
                 var content = RenderJsonArray(root);
                 if (!string.IsNullOrWhiteSpace(content))
                 {
-                    return WrapInEmailContainer(content);
+                    return wrapContainer ? WrapInEmailContainer(content) : content;
                 }
             }
         }
@@ -47,6 +57,29 @@ public static class EmailBodyRenderer
         }
 
         return body;
+    }
+
+    private static string RenderPlainText(string text) => EncodeBodyText(text).Replace("\n", "<br/>");
+
+    // Shared by every free-text body/heading/paragraph rendering path (not URLs,
+    // button/link labels, or captions): HTML-encodes the text, then turns the rich
+    // text editor's "**bold**"/"*italic*" markers into real tags.
+    private static string EncodeBodyText(string text)
+    {
+        var encoded = HtmlEncoder.Default.Encode(text);
+        return MarkdownLite.Replace(encoded, match =>
+        {
+            var value = match.Value;
+            if (value.StartsWith("**") && value.EndsWith("**") && value.Length >= 4)
+            {
+                return $"<strong>{value[2..^2]}</strong>";
+            }
+            if (value.StartsWith("*") && value.EndsWith("*") && value.Length >= 2)
+            {
+                return $"<em>{value[1..^1]}</em>";
+            }
+            return value;
+        });
     }
 
     private static string RenderJsonObject(JsonElement root)
@@ -64,7 +97,7 @@ public static class EmailBodyRenderer
                         var text = val.GetString();
                         if (!string.IsNullOrWhiteSpace(text))
                         {
-                            var encoded = HtmlEncoder.Default.Encode(text).Replace("\n", "<br/>");
+                            var encoded = EncodeBodyText(text).Replace("\n", "<br/>");
                             html.Append($"<p style=\"font-size:16px;line-height:1.6;color:#374151;margin:12px 0;\">{encoded}</p>");
                         }
                         break;
@@ -161,7 +194,7 @@ public static class EmailBodyRenderer
                     var displayText = !string.IsNullOrWhiteSpace(text) ? text : label;
                     if (!string.IsNullOrWhiteSpace(displayText))
                     {
-                        var encoded = HtmlEncoder.Default.Encode(displayText).Replace("\n", "<br/>");
+                        var encoded = EncodeBodyText(displayText).Replace("\n", "<br/>");
                         if (type == "heading")
                         {
                             html.Append($"<h2 style=\"font-size:20px;font-weight:bold;color:#111827;margin:16px 0 8px 0;{alignStyle}\">{encoded}</h2>");
@@ -234,7 +267,7 @@ public static class EmailBodyRenderer
             }
             else if (!string.IsNullOrWhiteSpace(label))
             {
-                var encoded = HtmlEncoder.Default.Encode(label);
+                var encoded = EncodeBodyText(label);
                 html.Append($"<p style=\"font-size:16px;line-height:1.6;color:#374151;margin:8px 0;{alignStyle}{fontStyle}\">{encoded}</p>");
             }
         }

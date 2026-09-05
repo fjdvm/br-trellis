@@ -1,5 +1,6 @@
 using api_crms.DTOs;
 using api_crms.Enums;
+using api_crms.Helpers;
 using api_crms.Mappers;
 using api_crms.Models;
 using Microsoft.EntityFrameworkCore;
@@ -50,12 +51,13 @@ public sealed partial class CampaignService
 
             var emailContent = campaign.ChannelContents
                 .FirstOrDefault(cc => cc.Channel == CampaignChannel.Email);
+            var body = await ResolveChannelBodyAsync(emailContent, cancellationToken) ?? string.Empty;
 
             due.Add(new DueCampaignDto(
                 campaign.Id,
                 campaign.Title,
                 emailContent?.Subject ?? campaign.Title,
-                emailContent?.Body ?? string.Empty,
+                body,
                 recipients));
         }
 
@@ -123,16 +125,43 @@ public sealed partial class CampaignService
             return null;
         }
 
+        var body = await ResolveChannelBodyAsync(content, cancellationToken);
+        var renderedBody = EmailBodyRenderer.RenderToHtml(body, wrapContainer: false);
+
         return new ActiveChannelContentDto(
             match.Id,
             channelName,
             content.Heading,
-            content.Body,
+            renderedBody,
             content.ImageUrl,
             content.LinkUrl,
             content.CtaText,
             content.CtaUrl,
             content.Dismissible);
+    }
+
+    // The real content source for a Channel: when the Channel content references a
+    // Template (TemplateId), that Template's Blocks are the source of truth (#166) —
+    // falling back to the flat Body field only when no Template is referenced or it
+    // no longer exists. Used by both storefront display and Email dispatch so
+    // neither one renders a stale/empty structural skeleton.
+    private async Task<string?> ResolveChannelBodyAsync(
+        CampaignChannelContent? content,
+        CancellationToken cancellationToken)
+    {
+        if (content?.TemplateId is { } templateId)
+        {
+            var template = await dbContext.BlockTemplates
+                .Include(t => t.Blocks)
+                .AsNoTracking()
+                .FirstOrDefaultAsync(t => t.Id == templateId, cancellationToken);
+            if (template is not null)
+            {
+                return BlockTemplateContentRenderer.ToBlocksJson(template, content.Body);
+            }
+        }
+
+        return content?.Body;
     }
 
     public async Task<bool> RecordEventAsync(

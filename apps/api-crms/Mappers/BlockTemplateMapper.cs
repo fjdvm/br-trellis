@@ -25,7 +25,8 @@ public static class BlockTemplateMapper
                     b.Order,
                     b.TextAlign,
                     b.IsBold,
-                    b.IsItalic))
+                    b.IsItalic,
+                    b.Content))
                 .ToList());
     }
 
@@ -54,6 +55,7 @@ public static class BlockTemplateMapper
                 TextAlign = string.IsNullOrWhiteSpace(b.TextAlign) ? "left" : b.TextAlign.Trim().ToLowerInvariant(),
                 IsBold = b.IsBold ?? false,
                 IsItalic = b.IsItalic ?? false,
+                Content = b.Content,
             })
             .ToList();
 

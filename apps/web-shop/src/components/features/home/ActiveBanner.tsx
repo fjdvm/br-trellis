@@ -14,7 +14,7 @@ export function ActiveBanner({ content }: { content: ActiveContent }) {
 
   return (
     <div className="w-full bg-primary text-primary-foreground text-center py-2 px-4 flex items-center justify-center gap-3 text-sm">
-      <span>{content.body}</span>
+      <span dangerouslySetInnerHTML={{ __html: content.body ?? "" }} />
       {content.linkUrl && (
         <a href={content.linkUrl} className="underline font-medium">
           Learn more

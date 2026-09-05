@@ -84,6 +84,7 @@ public sealed class BlockTemplateService(IBlockTemplateRepository repository) : 
                 TextAlign = string.IsNullOrWhiteSpace(b.TextAlign) ? "left" : b.TextAlign.Trim().ToLowerInvariant(),
                 IsBold = b.IsBold ?? false,
                 IsItalic = b.IsItalic ?? false,
+                Content = b.Content,
             })
             .ToList();
 

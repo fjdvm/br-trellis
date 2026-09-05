@@ -20,17 +20,14 @@ import {
   BlockTemplateFields,
   NonBlockTemplateFields,
 } from "@/features/campaigns/components/channel-form-block-fields";
-import { CHANNEL_ICON, renderFormattedText } from "@/features/campaigns/helpers/channel-utils";
+import { CHANNEL_ICON } from "@/features/campaigns/helpers/channel-utils";
 import { useTemplates } from "@/features/campaigns/hooks/useTemplates";
 import type { CampaignChannel } from "@/features/campaigns/types";
+import type { BlockContentValue } from "@/features/campaigns/types/block-template";
 
 // Types
 
-export type BlockValue =
-  | string
-  | { text: string; url: string }
-  | { url: string; alt: string }
-  | Array<{ imageUrl: string; caption?: string; linkUrl?: string }>;
+export type BlockValue = BlockContentValue;
 
 export type ChannelContentState = {
   templateId?: string;

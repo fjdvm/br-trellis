@@ -31,7 +31,12 @@ export function ActivePopup({ content }: { content: ActiveContent }) {
           <img src={content.imageUrl} alt="" className="w-full rounded-md mb-4" />
         )}
         {content.heading && <h2 className="text-xl font-bold mb-2">{content.heading}</h2>}
-        {content.body && <p className="text-muted-foreground mb-4">{content.body}</p>}
+        {content.body && (
+          <div
+            className="text-muted-foreground mb-4"
+            dangerouslySetInnerHTML={{ __html: content.body }}
+          />
+        )}
         {content.ctaText && content.ctaUrl && (
           <a
             href={content.ctaUrl}

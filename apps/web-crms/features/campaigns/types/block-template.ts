@@ -1,5 +1,14 @@
 import type { CampaignChannel } from "@/features/campaigns/types";
 
+// A block's real content, shaped per block type and consumed by
+// EmailBodyRenderer: plain text for heading/text, {text,url} for button/link,
+// {url,alt} for image, or a list of {imageUrl,caption,linkUrl} slides for carousel.
+export type BlockContentValue =
+  | string
+  | { text: string; url: string }
+  | { url: string; alt: string }
+  | Array<{ imageUrl: string; caption?: string; linkUrl?: string }>;
+
 export interface TemplateBlock {
   id?: string;
   type: string;
@@ -8,6 +17,7 @@ export interface TemplateBlock {
   textAlign?: string | null;
   isBold?: boolean;
   isItalic?: boolean;
+  content?: BlockContentValue | null;
 }
 
 export interface BlockTemplate {
@@ -32,5 +42,6 @@ export interface CreateBlockTemplateInput {
     textAlign?: string | null;
     isBold?: boolean;
     isItalic?: boolean;
+    content?: BlockContentValue | null;
   }[];
 }

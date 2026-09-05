@@ -7,7 +7,8 @@ public sealed record TemplateBlockDto(
     int Order,
     string? TextAlign,
     bool IsBold,
-    bool IsItalic);
+    bool IsItalic,
+    string? Content);
 
 public sealed record CreateTemplateBlockInput(
     string Type,
@@ -15,7 +16,8 @@ public sealed record CreateTemplateBlockInput(
     int Order,
     string? TextAlign,
     bool? IsBold,
-    bool? IsItalic);
+    bool? IsItalic,
+    string? Content = null);
 
 public sealed record BlockTemplateDto(
     Guid Id,

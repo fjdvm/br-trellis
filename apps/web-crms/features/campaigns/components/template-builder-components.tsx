@@ -1,9 +1,11 @@
 import React from "react";
-import { Trash2, Bold, Italic, AlignLeft, AlignCenter, AlignRight, Type, Image, MousePointerClick, SlidersHorizontal, Link as LinkIcon } from "lucide-react";
+import { Trash2, Bold, Italic, AlignLeft, AlignCenter, AlignRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { BlockContentEditor } from "@/features/campaigns/components/block-content-editor";
 import type { BlockType } from "@/features/campaigns/services/template-constraints";
+import type { BlockContentValue } from "@/features/campaigns/types/block-template";
 
 export { BannerFixedPreview, BannerBuilderForm, type BannerFields } from "@/features/campaigns/components/banner-builder-components";
 export { PopupFixedPreview, PopupBuilderForm, type PopupFields } from "@/features/campaigns/components/popup-builder-components";
@@ -15,6 +17,7 @@ export interface TemplateBlock {
   textAlign?: "left" | "center" | "right";
   isBold?: boolean;
   isItalic?: boolean;
+  content?: BlockContentValue | null;
 }
 
 export function EmailBlockCard({
@@ -109,27 +112,15 @@ export function EmailBlockCard({
         </div>
       </div>
 
-      <BlockTypeIndicator type={block.type} />
+      <BlockContentEditor
+        type={block.type}
+        idPrefix={`template-block-${block.id}`}
+        value={block.content ?? undefined}
+        onChange={(content) => onUpdate({ content })}
+        label="Content"
+      />
     </div>
   );
 }
 
-function BlockTypeIndicator({ type }: { type: BlockType }) {
-  const map: Record<BlockType, { icon: React.ReactNode; label: string }> = {
-    heading: { icon: <Type className="w-4 h-4 text-primary" />, label: "Heading Title Structural Block" },
-    text: { icon: <AlignLeft className="w-4 h-4 text-primary" />, label: "Paragraph Text Structural Block" },
-    carousel: { icon: <SlidersHorizontal className="w-4 h-4 text-primary" />, label: "Carousel Structural Block (Max 3 images)" },
-    image: { icon: <Image className="w-4 h-4 text-primary" />, label: "Image Component Structural Block" },
-    link: { icon: <LinkIcon className="w-4 h-4 text-primary" />, label: "Text Link Structural Block" },
-    button: { icon: <MousePointerClick className="w-4 h-4 text-primary" />, label: "CTA Button Structural Block" },
-  };
-  const item = map[type];
-  if (!item) return null;
-  return (
-    <div className="p-3 bg-muted/40 border border-dashed border-border rounded-md text-xs text-muted-foreground font-semibold flex items-center justify-between">
-      {item.icon}
-      <span>{item.label}</span>
-    </div>
-  );
-}
 

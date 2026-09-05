@@ -80,6 +80,7 @@ export function useTemplateBuilder({ channel, refetch }: UseTemplateBuilderParam
               textAlign: (b.textAlign as "left" | "center" | "right") || "left",
               isBold: (b.isBold as boolean) ?? false,
               isItalic: (b.isItalic as boolean) ?? false,
+              content: (b.content as TemplateBlock["content"]) ?? null,
             }));
           }
         } catch (e) {}
@@ -205,6 +206,7 @@ export function useTemplateBuilder({ channel, refetch }: UseTemplateBuilderParam
             textAlign: b.textAlign || "left",
             isBold: b.isBold ?? false,
             isItalic: b.isItalic ?? false,
+            content: b.content ?? null,
           })),
         };
         if (editingTemplateId) {

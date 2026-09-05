@@ -13,6 +13,7 @@ import {
   Link as LinkIcon,
 } from "lucide-react";
 import { EmailBlockCard, type TemplateBlock } from "@/features/campaigns/components/template-builder-components";
+import { renderFormattedText } from "@/features/campaigns/components/preview-text-renderer";
 import type { BlockType, ChannelConstraints } from "@/features/campaigns/services/template-constraints";
 
 interface EmailBuilderContentProps {
@@ -228,86 +229,20 @@ export function EmailBuilderContent({
                 No components added yet. Add blocks from the palette to see how they render.
               </div>
             ) : (
-              <div className="space-y-3 pt-1">
-                {blocks.map((block) => {
-                  const alignClass =
-                    block.textAlign === "center"
-                      ? "flex flex-col text-center justify-center items-center"
-                      : block.textAlign === "right"
-                      ? "flex flex-col text-right justify-end items-end"
-                      : "flex flex-col text-left justify-start items-start";
-
-                  const fontStyle = `${block.isBold ? "font-bold" : ""} ${block.isItalic ? "italic" : ""}`.trim();
-
-                  if (block.type === "heading") {
-                    return (
-                      <h3
-                        key={block.id}
-                        className={`text-base font-bold text-foreground ${alignClass} ${fontStyle}`}
-                      >
-                        {block.label || "Heading Title"}
-                      </h3>
-                    );
-                  }
-
-                  if (block.type === "text") {
-                    return (
-                      <p
-                        key={block.id}
-                        className={`text-xs text-muted-foreground leading-relaxed whitespace-pre-wrap ${alignClass} ${fontStyle}`}
-                      >
-                        {block.label || "Paragraph text content will render here."}
-                      </p>
-                    );
-                  }
-
-                  if (block.type === "button") {
-                    return (
-                      <div key={block.id} className={`pt-1 flex ${alignClass}`}>
-                        <span className="inline-block py-2 px-4 bg-primary text-primary-foreground text-xs font-semibold rounded shadow-xs cursor-pointer hover:opacity-90 transition-opacity">
-                          {block.label || "CTA Action Button"}
-                        </span>
-                      </div>
-                    );
-                  }
-
-                  if (block.type === "image") {
-                    return (
-                      <div
-                        key={block.id}
-                        className="w-full h-28 bg-muted rounded-lg flex flex-col items-center justify-center text-xs text-muted-foreground font-medium border border-dashed border-border gap-1"
-                      >
-                        <Image className="w-6 h-6 text-primary opacity-80" />
-                        <span>{block.label || "Image Component Placeholder"}</span>
-                      </div>
-                    );
-                  }
-
-                  if (block.type === "link") {
-                    return (
-                      <div
-                        key={block.id}
-                        className={`text-xs text-primary underline font-medium cursor-pointer ${alignClass}`}
-                      >
-                        {block.label || "Text Link Anchor"}
-                      </div>
-                    );
-                  }
-
-                  if (block.type === "carousel") {
-                    return (
-                      <div
-                        key={block.id}
-                        className="w-full h-24 bg-muted/70 rounded-lg flex items-center justify-center text-xs text-muted-foreground font-semibold border border-dashed border-border gap-2"
-                      >
-                        <SlidersHorizontal className="w-5 h-5 text-primary opacity-80" />
-                        <span>🎠 Carousel ({block.label || "3 Slides"})</span>
-                      </div>
-                    );
-                  }
-
-                  return null;
-                })}
+              <div className="pt-1 text-xs">
+                {renderFormattedText(
+                  JSON.stringify(
+                    blocks.map((block, index) => ({
+                      type: block.type,
+                      label: block.label,
+                      order: index,
+                      textAlign: block.textAlign,
+                      isBold: block.isBold,
+                      isItalic: block.isItalic,
+                      content: block.content,
+                    }))
+                  )
+                )}
               </div>
             )}
           </div>
