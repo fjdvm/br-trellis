@@ -3,38 +3,20 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
-import type { LucideIcon } from "lucide-react";
 import {
-  Loader2,
   UserPlus,
   UserMinus,
   ChevronRight,
   XCircle,
   MessageSquare,
 } from "lucide-react";
+import { ActionButton } from "@/features/conversations/components/action-button";
 import { DetailSkeleton } from "@/components/shared/DetailSkeleton";
 import { BackButton } from "@/components/shared/BackButton";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+import { Card, CardContent } from "@/components/ui/card";
+import { TicketCancelDialog } from "@/features/conversations/components/ticket-cancel-dialog";
 import { crmClient } from "@/lib/api/crm-client";
 import { useCurrentAgentId } from "@/hooks/useCurrentAgentId";
 import { STATUS_BADGE_VARIANT, SOURCE_BADGE_VARIANT, isActiveStatus, isTerminalStatus } from "@/lib/tickets";
@@ -44,21 +26,17 @@ import type {
   TicketStatus,
   TicketWaitingOn,
 } from "@/types/ticket-detail";
+import { TicketDetailsSidebar } from "@/features/conversations/components/ticket-details-sidebar";
 
 interface TicketDetailPageProps {
   ticketId: string;
 }
 
-/** The single forward status advance for a claimable/in-progress ticket. */
 const NEXT_STATUS: Partial<Record<TicketStatus, TicketStatus>> = {
   Claimed: "Ongoing",
   Ongoing: "Completed",
 };
 
-/** The three WaitingOn values a ticket can point at (mirrors the backend enum). */
-const WAITING_ON_OPTIONS: TicketWaitingOn[] = ["Agent", "Customer", "None"];
-
-/** Which in-flight mutation is running, so we can disable the right control. */
 type PendingAction =
   | "claim"
   | "unclaim"
@@ -82,17 +60,11 @@ function isTerminal(ticket: TicketDetail): boolean {
   return isTerminalStatus(ticket.status);
 }
 
-/**
- * Whether the signed-in agent may act on a *claimed* ticket. A claimed ticket's
- * lifecycle actions (Unclaim, advance status, Cancel) belong to its owner only;
- * other agents see no action buttons. An unowned ticket (no assignee) has no
- * owner yet, so anyone may act. `currentAgentId` null (no session) owns nothing.
- */
 function canActOnTicket(
   ticket: TicketDetail,
   currentAgentId: string | null
 ): boolean {
-  if (ticket.assignedToId == null) return true; // unowned
+  if (ticket.assignedToId == null) return true;
   return currentAgentId != null && ticket.assignedToId === currentAgentId;
 }
 
@@ -306,108 +278,21 @@ export function TicketDetailPage({ ticketId }: TicketDetailPageProps) {
       )}
 
       <div className="grid grid-cols-1 gap-lg items-start">
-        {/* The ticket Details card (lifecycle-only; the message thread now
-            lives in the Conversations section, reachable via the link above). */}
-        <aside data-testid="details-sidebar" className="min-w-0">
-          <Card className="shadow-none border-border">
-            <CardHeader className="pb-md p-lg">
-              <CardTitle className="text-title-lg font-bold">Details</CardTitle>
-            </CardHeader>
-            <CardContent className="p-lg pt-0 space-y-md">
-              <div className="grid grid-cols-2 gap-md text-base items-center">
-                <div className="text-muted-foreground">Waiting On</div>
-                <div className="min-w-0">
-                  <Select
-                    value={ticket.waitingOn}
-                    onValueChange={(value) =>
-                      handleSetWaitingOn(value as TicketWaitingOn)
-                    }
-                    disabled={pending === "waitingOn" || isTerminal(ticket)}
-                  >
-                    <SelectTrigger
-                      className="w-full max-w-[200px]"
-                      aria-label="Set waiting on"
-                    >
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {WAITING_ON_OPTIONS.map((option) => (
-                        <SelectItem key={option} value={option}>
-                          {option}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="text-muted-foreground">Assignee</div>
-                <div className="min-w-0 break-words">{formatName(ticket.assignedToName) ?? "\u2014"}</div>
-                <div className="text-muted-foreground">Assignee email</div>
-                <div className="min-w-0 break-words">{formatEmail(ticket.assignedToEmail) ?? "\u2014"}</div>
-              </div>
-
-              {ticket.contact && (
-                <>
-                  <Separator />
-                  <div className="grid grid-cols-2 gap-md text-base">
-                    <div className="text-muted-foreground">Contact</div>
-                    <div className="min-w-0 break-words">{formatName(ticket.contact.name) ?? "\u2014"}</div>
-                    <div className="text-muted-foreground">Contact email</div>
-                    <div className="min-w-0 break-words">{formatEmail(ticket.contact.email) ?? "\u2014"}</div>
-                  </div>
-                </>
-              )}
-            </CardContent>
-          </Card>
-        </aside>
+        <TicketDetailsSidebar
+          ticket={ticket}
+          pending={pending}
+          isTerminal={isTerminal(ticket)}
+          onSetWaitingOn={handleSetWaitingOn}
+        />
       </div>
 
-      <AlertDialog open={showCancelDialog} onOpenChange={setShowCancelDialog}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Cancel Ticket</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to cancel this ticket? Canceling is terminal
-              and cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Keep Ticket</AlertDialogCancel>
-            <AlertDialogAction variant="destructive" onClick={handleCancelConfirmed}>
-              Cancel Ticket
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <TicketCancelDialog
+        open={showCancelDialog}
+        onOpenChange={setShowCancelDialog}
+        onConfirm={handleCancelConfirmed}
+      />
     </div>
   );
 }
 
-interface ActionButtonProps {
-  label: string;
-  icon: LucideIcon;
-  loading: boolean;
-  disabled: boolean;
-  onClick: () => void;
-  variant?: "default" | "outline" | "destructive";
-}
 
-/** A ticket action button: swaps its icon for a spinner while its mutation runs. */
-function ActionButton({
-  label,
-  icon: Icon,
-  loading,
-  disabled,
-  onClick,
-  variant = "default",
-}: ActionButtonProps) {
-  return (
-    <Button variant={variant} size="sm" onClick={onClick} disabled={disabled}>
-      {loading ? (
-        <Loader2 className="w-4 h-4 animate-spin" />
-      ) : (
-        <Icon className="w-4 h-4" />
-      )}
-      <span className="ml-1">{label}</span>
-    </Button>
-  );
-}
