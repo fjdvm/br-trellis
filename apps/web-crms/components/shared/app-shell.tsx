@@ -3,8 +3,8 @@
 import React, { useState, useEffect, Suspense } from "react";
 import { usePathname } from "next/navigation";
 import { SidebarProvider, useSidebar } from "@/components/ui/sidebar";
-import { Sidebar } from "./Sidebar";
-import { Header } from "./Header";
+import { Sidebar } from "./sidebar";
+import { Header } from "./header";
 import { AskSentraCXPanel } from "@/features/dashboard/components/ask-sentracx-panel";
 import { EcommerceSyncStatusProvider } from "@/features/ecommerce/hooks/useEcommerceSyncStatus";
 

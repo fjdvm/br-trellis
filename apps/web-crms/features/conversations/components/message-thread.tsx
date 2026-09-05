@@ -5,8 +5,8 @@ import { useSession } from "next-auth/react";
 import { MessageSquare, Loader2 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useConversationMessages } from "@/features/conversations/hooks/useConversationMessages";
-import { useCurrentAgentId } from "@/hooks/useCurrentAgentId";
-import { useSignalR } from "@/hooks/useSignalR";
+import { useCurrentAgentId } from "@/hooks/use-current-agent-id";
+import { useSignalR } from "@/hooks/use-signal-r";
 import { formatName, formatEmail } from "@/lib/format-display";
 import {
   MessageGroupRow,

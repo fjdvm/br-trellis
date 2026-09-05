@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { Archive, ArchiveRestore, MessageSquareText } from "lucide-react";
-import { TableSkeleton } from "@/components/shared/TableSkeleton";
+import { TableSkeleton } from "@/components/shared/table-skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -31,7 +31,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { ScrollableTable } from "@/components/shared/ScrollableTable";
+import { ScrollableTable } from "@/components/shared/scrollable-table";
 import {
   cannedReplyCategoriesApi,
   cannedRepliesApi,

@@ -14,7 +14,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { systems } from "./SidebarNav";
+import { systems, type SystemChild } from "./sidebar-nav";
 
 export function SidebarEnterpriseHeader({ isMobile }: { isMobile: boolean }) {
   return (
@@ -45,7 +45,7 @@ export function SidebarEnterpriseHeader({ isMobile }: { isMobile: boolean }) {
                 Select Enterprise Module
               </DropdownMenuLabel>
               <DropdownMenuSeparator className="my-1 bg-border" />
-              {systems.map((sys) => {
+              {systems.map((sys: SystemChild) => {
                 const SysIcon = sys.icon;
                 return (
                   <DropdownMenuItem

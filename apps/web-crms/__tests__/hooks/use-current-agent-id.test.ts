@@ -1,6 +1,6 @@
 import { renderHook } from "@testing-library/react";
 import { useSession } from "next-auth/react";
-import { useCurrentAgentId } from "@/hooks/useCurrentAgentId";
+import { useCurrentAgentId } from "@/hooks/use-current-agent-id";
 
 jest.mock("next-auth/react", () => ({
   useSession: jest.fn(),

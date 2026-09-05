@@ -49,7 +49,7 @@ jest.mock("@/features/campaigns/services/campaigns-api", () => ({
     }
 }));
 
-jest.mock("@/hooks/useSignalR", () => ({
+jest.mock("@/hooks/use-signal-r", () => ({
   useSignalR: () => ({
     isConnected: true,
     sendMessage: jest.fn(),

@@ -12,12 +12,12 @@ import {
 } from "@/components/ui/table";
 import { customerIdentityApi } from "@/features/customers/services/customers-api";
 import { formatName, formatEmail } from "@/lib/format-display";
-import { TableSkeleton } from "@/components/shared/TableSkeleton";
-import { ScrollableTable } from "@/components/shared/ScrollableTable";
+import { TableSkeleton } from "@/components/shared/table-skeleton";
+import { ScrollableTable } from "@/components/shared/scrollable-table";
 import {
   TablePagination,
   useClientPagination,
-} from "@/components/shared/TablePagination";
+} from "@/components/shared/table-pagination";
 import type { CustomerIdentityListItem } from "@/features/customers/types";
 
 export function CustomerListTable() {

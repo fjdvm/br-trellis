@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { CheckCircle2, AlertTriangle, XCircle, RefreshCw } from "lucide-react";
-import { DetailSkeleton } from "@/components/shared/DetailSkeleton";
+import { DetailSkeleton } from "@/components/shared/detail-skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";

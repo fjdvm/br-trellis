@@ -12,8 +12,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { ScrollableTable } from "@/components/shared/ScrollableTable";
-import { TablePagination, type ClientPagination } from "@/components/shared/TablePagination";
+import { ScrollableTable } from "@/components/shared/scrollable-table";
+import { TablePagination, type ClientPagination } from "@/components/shared/table-pagination";
 import { STATUS_BADGE_VARIANT, SOURCE_BADGE_VARIANT, isTerminalStatus } from "@/features/conversations/services/tickets";
 import { formatName, formatEmail } from "@/lib/format-display";
 import type { TicketListItem } from "@/features/conversations/types";

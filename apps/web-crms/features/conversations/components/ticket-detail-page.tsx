@@ -11,14 +11,14 @@ import {
   MessageSquare,
 } from "lucide-react";
 import { ActionButton } from "@/features/conversations/components/action-button";
-import { DetailSkeleton } from "@/components/shared/DetailSkeleton";
-import { BackButton } from "@/components/shared/BackButton";
+import { DetailSkeleton } from "@/components/shared/detail-skeleton";
+import { BackButton } from "@/components/shared/back-button";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { TicketCancelDialog } from "@/features/conversations/components/ticket-cancel-dialog";
 import { conversationTicketsApi } from "@/features/conversations/services/conversations-api";
-import { useCurrentAgentId } from "@/hooks/useCurrentAgentId";
+import { useCurrentAgentId } from "@/hooks/use-current-agent-id";
 import { STATUS_BADGE_VARIANT, SOURCE_BADGE_VARIANT, isActiveStatus, isTerminalStatus } from "@/features/conversations/services/tickets";
 import { formatName, formatEmail } from "@/lib/format-display";
 import type {

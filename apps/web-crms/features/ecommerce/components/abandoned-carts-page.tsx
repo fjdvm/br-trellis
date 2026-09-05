@@ -3,8 +3,8 @@
 import { useCallback, useEffect, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { DataTable, Column } from "@/components/shared/DataTable";
-import { TableSkeleton } from "@/components/shared/TableSkeleton";
+import { DataTable, Column } from "@/components/shared/data-table";
+import { TableSkeleton } from "@/components/shared/table-skeleton";
 import { ecommerceCartsApi } from "@/features/ecommerce/services/ecommerce-api";
 import { useEcommerceSyncStatus } from "@/features/ecommerce/hooks/useEcommerceSyncStatus";
 import { EcommerceConnectPrompt } from "./ecommerce-connect-prompt";

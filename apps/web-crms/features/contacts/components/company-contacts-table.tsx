@@ -11,11 +11,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { ScrollableTable } from "@/components/shared/ScrollableTable";
+import { ScrollableTable } from "@/components/shared/scrollable-table";
 import {
   TablePagination,
   useClientPagination,
-} from "@/components/shared/TablePagination";
+} from "@/components/shared/table-pagination";
 import { formatName, formatEmail } from "@/lib/format-display";
 import type { CompanyContact } from "@/features/contacts/types";
 

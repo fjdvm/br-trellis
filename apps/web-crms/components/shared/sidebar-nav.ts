@@ -35,7 +35,11 @@ export interface NavItem {
   icon: LucideIcon;
 }
 
+export type NavChild = NavItem;
+export type SystemChild = SystemItem;
+
 export interface NavGroup {
+  title?: string;
   name: string;
   icon: LucideIcon;
   children: NavItem[];

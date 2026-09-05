@@ -11,7 +11,7 @@ jest.mock("next/navigation", () => ({
 
 // Real-time hook is covered by its own test; mock it to a no-op here so the
 // rendered ConversationsInbox doesn't open a live SignalR connection.
-jest.mock("@/hooks/useSignalR", () => ({
+jest.mock("@/hooks/use-signal-r", () => ({
   useSignalR: jest.fn(),
 }));
 

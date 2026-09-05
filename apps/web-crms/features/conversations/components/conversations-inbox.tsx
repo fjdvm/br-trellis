@@ -12,9 +12,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { conversationTicketsApi } from "@/features/conversations/services/conversations-api";
-import { useCurrentAgentId } from "@/hooks/useCurrentAgentId";
-import { useRefetchOnFocus } from "@/hooks/useRefetchOnFocus";
-import { useSignalR } from "@/hooks/useSignalR";
+import { useCurrentAgentId } from "@/hooks/use-current-agent-id";
+import { useRefetchOnFocus } from "@/hooks/use-refetch-on-focus";
+import { useSignalR } from "@/hooks/use-signal-r";
 import { isActiveStatus } from "@/features/conversations/services/tickets";
 import type { TicketListItem } from "@/features/conversations/types";
 import { ConversationListItems } from "@/features/conversations/components/conversation-list-items";

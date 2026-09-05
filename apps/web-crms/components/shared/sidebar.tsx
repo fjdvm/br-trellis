@@ -32,10 +32,12 @@ import {
   settingsNavItem,
   settingsChildren,
   systems,
-} from "./SidebarNav";
-import { SidebarProfileFooter } from "./SidebarProfileFooter";
-import { SidebarNavSkeleton } from "./SidebarNavSkeleton";
-import { SidebarEnterpriseHeader } from "./SidebarEnterpriseHeader";
+  type NavGroup,
+  type NavChild,
+} from "./sidebar-nav";
+import { SidebarProfileFooter } from "./sidebar-profile-footer";
+import { SidebarNavSkeleton } from "./sidebar-nav-skeleton";
+import { SidebarEnterpriseHeader } from "./sidebar-enterprise-header";
 
 
 

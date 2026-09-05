@@ -1,5 +1,5 @@
 import { renderHook } from "@testing-library/react";
-import { useRefetchOnFocus } from "@/hooks/useRefetchOnFocus";
+import { useRefetchOnFocus } from "@/hooks/use-refetch-on-focus";
 
 describe("useRefetchOnFocus", () => {
   it("calls refetch when the window regains focus", () => {

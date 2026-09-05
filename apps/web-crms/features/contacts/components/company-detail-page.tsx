@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { Archive, Loader2, Pencil, Users } from "lucide-react";
-import { DetailSkeleton } from "@/components/shared/DetailSkeleton";
+import { DetailSkeleton } from "@/components/shared/detail-skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -27,7 +27,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { companiesApi } from "@/features/contacts/services/companies-api";
-import { BackButton } from "@/components/shared/BackButton";
+import { BackButton } from "@/components/shared/back-button";
 import { formatName, formatEmail } from "@/lib/format-display";
 import { CompanyContactsTable } from "@/features/contacts/components/company-contacts-table";
 import type { CompanyDetail } from "@/features/contacts/types";

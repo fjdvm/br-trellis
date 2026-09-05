@@ -1,5 +1,5 @@
 import { renderHook, act } from "@testing-library/react";
-import { useSignalR } from "@/hooks/useSignalR";
+import { useSignalR } from "@/hooks/use-signal-r";
 import * as signalR from "@microsoft/signalr";
 import type { Message } from "@/features/conversations/types";
 

@@ -2,7 +2,7 @@ import { render, screen, waitFor, act, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MessageThread } from "@/features/conversations/components/message-thread";
 import { conversationMessagesApi } from "@/features/conversations/services/conversations-api";
-import { useSignalR } from "@/hooks/useSignalR";
+import { useSignalR } from "@/hooks/use-signal-r";
 import type { ConversationMessage } from "@/features/conversations/types";
 
 jest.mock("next-auth/react", () => ({
@@ -25,11 +25,12 @@ jest.mock("@/features/conversations/services/conversations-api", () => ({
     }
 }));
 
-// The real-time hook is exercised by its own test (`useSignalR.test.ts`); here
-// it's mocked to a no-op so these component tests don't open a live SignalR
-// connection (which would otherwise hang under fake timers). This mirrors the
+// The real-time hook is exercised by its own test (`use-signal-r.test.ts`); here
+// we mock it so we can push messages on demand without a SignalR connection.
+// `useSignalR` is mocked at module scope so the component gets the mock on initial render.
+// This aligns with `ClaimVisibilityRefetch.test.tsx` and the rest of the
 // spec's testing approach: layer a mocked useSignalR over the crm-client mock.
-jest.mock("@/hooks/useSignalR", () => ({
+jest.mock("@/hooks/use-signal-r", () => ({
   useSignalR: jest.fn(),
 }));
 

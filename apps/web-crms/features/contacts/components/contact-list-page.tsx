@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2, X } from "lucide-react";
-import { TableSkeleton } from "@/components/shared/TableSkeleton";
+import { TableSkeleton } from "@/components/shared/table-skeleton";
 import { ContactListTable } from "@/features/contacts/components/contact-list-table";
 import { AddContactSheet } from "@/features/contacts/components/add-contact-sheet";
 import { Badge } from "@/components/ui/badge";

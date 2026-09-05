@@ -1,7 +1,7 @@
 import React from "react";
 import { render, screen } from "@testing-library/react";
-import { TableSkeleton } from "@/components/shared/TableSkeleton";
-import { DetailSkeleton } from "@/components/shared/DetailSkeleton";
+import { TableSkeleton } from "@/components/shared/table-skeleton";
+import { DetailSkeleton } from "@/components/shared/detail-skeleton";
 
 describe("TableSkeleton", () => {
   it("renders a table loading placeholder", () => {

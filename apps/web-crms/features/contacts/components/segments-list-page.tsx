@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Users } from "lucide-react";
-import { TableSkeleton } from "@/components/shared/TableSkeleton";
+import { TableSkeleton } from "@/components/shared/table-skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -16,12 +16,12 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { segmentsApi } from "@/features/contacts/services/segments-api";
-import { BackButton } from "@/components/shared/BackButton";
-import { ScrollableTable } from "@/components/shared/ScrollableTable";
+import { BackButton } from "@/components/shared/back-button";
+import { ScrollableTable } from "@/components/shared/scrollable-table";
 import {
   TablePagination,
   useClientPagination,
-} from "@/components/shared/TablePagination";
+} from "@/components/shared/table-pagination";
 import { formatName, formatEmail } from "@/lib/format-display";
 import type { SegmentListItem, SegmentMember } from "@/features/contacts/types";
 

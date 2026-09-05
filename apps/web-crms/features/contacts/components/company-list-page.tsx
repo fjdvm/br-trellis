@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Building2 } from "lucide-react";
-import { TableSkeleton } from "@/components/shared/TableSkeleton";
+import { TableSkeleton } from "@/components/shared/table-skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -16,11 +16,11 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { companiesApi } from "@/features/contacts/services/companies-api";
-import { ScrollableTable } from "@/components/shared/ScrollableTable";
+import { ScrollableTable } from "@/components/shared/scrollable-table";
 import {
   TablePagination,
   useClientPagination,
-} from "@/components/shared/TablePagination";
+} from "@/components/shared/table-pagination";
 import { formatName } from "@/lib/format-display";
 import type { CompanyListItem } from "@/features/contacts/types";
 import { NewCompanySheet } from "@/features/contacts/components/new-company-sheet";

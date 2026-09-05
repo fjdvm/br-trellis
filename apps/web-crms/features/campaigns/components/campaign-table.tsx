@@ -18,11 +18,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { ScrollableTable } from "@/components/shared/ScrollableTable";
+import { ScrollableTable } from "@/components/shared/scrollable-table";
 import {
   TablePagination,
   useClientPagination,
-} from "@/components/shared/TablePagination";
+} from "@/components/shared/table-pagination";
 import { CampaignChannelBadge } from "@/features/campaigns/components/campaign-channel-badge";
 import { CampaignStatusBadge } from "@/features/campaigns/components/campaign-status-badge";
 import { campaignsApi } from "@/features/campaigns/services/campaigns-api";

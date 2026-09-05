@@ -12,12 +12,12 @@ import {
 } from "@/components/ui/table";
 import { contactsApi } from "@/features/contacts/services/contacts-api";
 import { formatName, formatEmail } from "@/lib/format-display";
-import { TableSkeleton } from "@/components/shared/TableSkeleton";
-import { ScrollableTable } from "@/components/shared/ScrollableTable";
+import { TableSkeleton } from "@/components/shared/table-skeleton";
+import { ScrollableTable } from "@/components/shared/scrollable-table";
 import {
   TablePagination,
   useClientPagination,
-} from "@/components/shared/TablePagination";
+} from "@/components/shared/table-pagination";
 import type { PendingReviewContact } from "@/features/contacts/types";
 
 export function PendingReviewTable() {

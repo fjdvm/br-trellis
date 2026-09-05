@@ -1,6 +1,6 @@
 import * as React from "react"
 import { cn } from "@/lib/utils"
-import { useAiAutocomplete } from "@/hooks/useAiAutocomplete"
+import { useAiAutocomplete } from "@/hooks/use-ai-autocomplete"
 import { Textarea } from "./textarea"
 
 export interface AiTextareaProps

@@ -2,7 +2,7 @@ import { render, screen, fireEvent, waitFor, act } from "@testing-library/react"
 import userEvent from "@testing-library/user-event";
 import {  ConversationsInbox  } from "@/features/conversations/components/conversations-inbox";
 import { conversationMessagesApi, conversationTicketsApi } from "@/features/conversations/services/conversations-api";
-import { useSignalR } from "@/hooks/useSignalR";
+import { useSignalR } from "@/hooks/use-signal-r";
 import type { TicketListItem } from "@/features/conversations/types";
 
 // Radix/jsdom polyfills consistent with the other conversations suites.
@@ -59,7 +59,7 @@ jest.mock("@/features/conversations/services/conversations-api", () => ({
 // Real-time hook mocked to a no-op (it's covered by its own test). Capturing the
 // options lets the ticket-list-events suite drive its onNewTicketAvailable /
 // onTicketStatusChanged callbacks directly, without a live SignalR connection.
-jest.mock("@/hooks/useSignalR", () => ({
+jest.mock("@/hooks/use-signal-r", () => ({
   useSignalR: jest.fn(),
 }));
 

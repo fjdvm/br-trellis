@@ -2,8 +2,8 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { DataTable, Column } from "@/components/shared/DataTable";
-import { TableSkeleton } from "@/components/shared/TableSkeleton";
+import { DataTable, Column } from "@/components/shared/data-table";
+import { TableSkeleton } from "@/components/shared/table-skeleton";
 import { request } from "@/lib/api/request";
 import { formatName, formatEmail } from "@/lib/format-display";
 import { useEcommerceSyncStatus } from "@/features/ecommerce/hooks/useEcommerceSyncStatus";

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Building2, Loader2, Pencil, Trash2 } from "lucide-react";
-import { DetailSkeleton } from "@/components/shared/DetailSkeleton";
+import { DetailSkeleton } from "@/components/shared/detail-skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { contactsApi } from "@/features/contacts/services/contacts-api";
 import { companiesApi } from "@/features/contacts/services/companies-api";
-import { BackButton } from "@/components/shared/BackButton";
+import { BackButton } from "@/components/shared/back-button";
 import { formatName, formatEmail } from "@/lib/format-display";
 import type { ContactFieldErrors } from "@/features/contacts/schemas/contact-validators";
 import type { ContactDetail } from "@/features/contacts/types";
