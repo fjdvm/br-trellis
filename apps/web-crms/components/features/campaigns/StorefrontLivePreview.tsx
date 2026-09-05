@@ -547,31 +547,40 @@ export function StorefrontLivePreview({
           </div>
 
           {/* ── Email body panel ─────────────────────────────────────── */}
-          {channel === "Email" && (
-            <div className="absolute inset-x-3 bottom-3 top-[110px] z-20 bg-background rounded-lg shadow-xl overflow-hidden text-left flex flex-col border border-border">
-              <div className="p-4 space-y-3 flex-1 overflow-y-auto">
-                <div className="text-sm text-foreground leading-relaxed whitespace-pre-wrap font-sans">
-                  {renderFormattedText(
-                    content.body ||
-                      "Compose your email message body to see it rendered here in real time…"
+          {channel === "Email" && (() => {
+            const isJsonBody =
+              typeof content.body === "string" &&
+              (content.body.trim().startsWith("{") || content.body.trim().startsWith("["));
+
+            return (
+              <div className="absolute inset-x-3 bottom-3 top-[110px] z-20 bg-background rounded-lg shadow-xl overflow-hidden text-left flex flex-col border border-border">
+                <div className="p-4 space-y-3 flex-1 overflow-y-auto">
+                  <div className="text-sm text-foreground leading-relaxed whitespace-pre-wrap font-sans">
+                    {renderFormattedText(
+                      content.body ||
+                        "Compose your email message body to see it rendered here in real time…"
+                    )}
+                  </div>
+                  {!isJsonBody && (content.ctaText || content.ctaUrl) && (
+                    <div className="pt-2">
+                      <button
+                        type="button"
+                        className="py-2 px-4 bg-primary text-primary-foreground text-xs font-semibold rounded-md shadow hover:opacity-90 transition-opacity"
+                      >
+                        {content.ctaText || "Click Here"}
+                      </button>
+                    </div>
                   )}
                 </div>
-                {(content.ctaText || content.ctaUrl) && (
-                  <div className="pt-2">
-                    <button
-                      type="button"
-                      className="py-2 px-4 bg-primary text-primary-foreground text-xs font-semibold rounded-md shadow hover:opacity-90 transition-opacity"
-                    >
-                      {content.ctaText || "Click Here"}
-                    </button>
-                  </div>
-                )}
               </div>
-            </div>
-          )}
+            );
+          })()}
 
           {/* ── Popup overlay ────────────────────────────────────────── */}
           {channel === "Popup" && (() => {
+            const isJsonBody =
+              typeof content.body === "string" &&
+              (content.body.trim().startsWith("{") || content.body.trim().startsWith("["));
             const isVioletFirst = content.themeGradient === "violet-to-light";
             const cardBgClass = isVioletFirst
               ? "bg-gradient-to-br from-violet-950 via-purple-900 to-indigo-700 text-slate-100 border-violet-700/50"
@@ -613,7 +622,7 @@ export function StorefrontLivePreview({
                       content.body || "Your popup body text will appear here as you type…"
                     )}
                   </div>
-                  {(content.ctaText || content.ctaUrl) && (
+                  {!isJsonBody && (content.ctaText || content.ctaUrl) && (
                     <div className="pt-1">
                       <button
                         type="button"
