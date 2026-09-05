@@ -10,11 +10,15 @@ namespace api_crms.Tests.Campaigns;
 
 /// <summary>
 /// Exercises the full real path — not isolated renderer fixtures — for the block
-/// content gap fixed under #166: save a Template via the actual BlockTemplateService
+/// content gap in the #176 epic (#177 BlockTemplate CRUD, #181 Campaign composition
+/// against a BlockTemplate): save a Template via the actual BlockTemplateService
 /// (the same save path the Template Builder UI calls), compose a Campaign that
 /// references it by TemplateId, then confirm the real dispatch and storefront
 /// resolution paths produce real HTML from that Template's blocks, instead of an
-/// empty structural skeleton or raw JSON/markdown.
+/// empty structural skeleton or raw JSON/markdown. Also covers a deliberate
+/// extension beyond #177's "Template Block holds no content" design: a Template's
+/// own Content is a fallback default, with #181's per-Campaign block values still
+/// taking precedence whenever a block is actually customized.
 /// </summary>
 public sealed class TemplateContentEndToEndTests : IDisposable
 {

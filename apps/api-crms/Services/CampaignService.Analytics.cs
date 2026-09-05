@@ -141,10 +141,17 @@ public sealed partial class CampaignService
     }
 
     // The real content source for a Channel: when the Channel content references a
-    // Template (TemplateId), that Template's Blocks are the source of truth (#166) —
+    // Template (TemplateId), that Template's Blocks are the source of truth,
     // falling back to the flat Body field only when no Template is referenced or it
     // no longer exists. Used by both storefront display and Email dispatch so
     // neither one renders a stale/empty structural skeleton.
+    //
+    // TemplateBlock carrying its own Content is a deliberate extension beyond
+    // #177's original design (a Template Block "holds no content" there — all
+    // content was meant to come from #181's per-Campaign block values). Per-Campaign
+    // values (BlockTemplateContentRenderer's contentOverridesJson) still take
+    // precedence whenever actually filled in; a Template's own Content is only the
+    // fallback for a block nobody has customized yet.
     private async Task<string?> ResolveChannelBodyAsync(
         CampaignChannelContent? content,
         CancellationToken cancellationToken)
