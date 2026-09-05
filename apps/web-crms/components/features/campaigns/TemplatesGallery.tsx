@@ -838,9 +838,9 @@ export function TemplatesGallery() {
 
             {/* ────── EMAIL: Drag-and-Drop Builder ────── */}
             {builderChannel === "Email" && (
-              <div className="grid grid-cols-1 md:grid-cols-12 gap-4 flex-1 min-h-0 overflow-y-auto md:overflow-hidden my-4">
-                {/* Palette */}
-                <div className="md:col-span-4 bg-muted/40 border border-border rounded-lg p-4 space-y-4 flex flex-col min-h-0 overflow-y-auto">
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 flex-1 min-h-0 overflow-y-auto lg:overflow-hidden my-4">
+                {/* 1. Palette */}
+                <div className="lg:col-span-3 bg-muted/40 border border-border rounded-lg p-4 space-y-4 flex flex-col min-h-0 overflow-y-auto">
                   <div className="space-y-2">
                     <Label className="text-xs uppercase font-bold text-muted-foreground">
                       Template Settings
@@ -950,7 +950,7 @@ export function TemplatesGallery() {
                   </div>
                 </div>
 
-                {/* Canvas */}
+                {/* 2. Drag and Drop Canvas */}
                 <div
                   onDragOver={(e) => e.preventDefault()}
                   onDrop={(e) => {
@@ -958,9 +958,9 @@ export function TemplatesGallery() {
                     const type = e.dataTransfer.getData("text/plain");
                     if (type) addBlock(type as BlockType);
                   }}
-                  className="md:col-span-8 bg-slate-100 dark:bg-slate-950 border-2 border-dashed border-border rounded-xl p-5 flex flex-col justify-between overflow-y-auto min-h-[380px]"
+                  className="lg:col-span-5 bg-slate-100 dark:bg-slate-950 border-2 border-dashed border-border rounded-xl p-4 flex flex-col justify-between overflow-y-auto min-h-[380px]"
                 >
-                  <div className="space-y-4">
+                  <div className="space-y-3">
                     {/* Canvas Frame Header */}
                     <div className="bg-slate-900 text-slate-200 p-2.5 px-3 rounded-lg border border-slate-800 flex items-center justify-between shadow-xs">
                       <div className="flex items-center gap-2">
@@ -970,17 +970,17 @@ export function TemplatesGallery() {
                           <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
                         </div>
                         <span className="font-mono text-xs text-slate-300 ml-1">
-                          mail.store-app.com/builder/inbox
+                          mail.store-app.com/builder/canvas
                         </span>
                       </div>
                       <span className="text-[10px] uppercase font-mono text-slate-400">
-                        Email Canvas
+                        Block Configurator
                       </span>
                     </div>
 
                     {/* Email envelope wrapper */}
-                    <div className="bg-background border border-border/80 rounded-xl shadow-md overflow-hidden p-5 w-full text-left space-y-3">
-                      <div className="space-y-1.5 text-xs">
+                    <div className="bg-background border border-border/80 rounded-xl shadow-md overflow-hidden p-4 w-full text-left space-y-3">
+                      <div className="space-y-1 text-xs">
                         <div className="font-bold text-foreground">
                           Subject:{" "}
                           <span className="font-normal text-muted-foreground">
@@ -991,22 +991,18 @@ export function TemplatesGallery() {
                           <span className="font-semibold text-foreground">From:</span> Aura Store
                           &lt;newsletter@aurastore.com&gt;
                         </div>
-                        <div className="text-muted-foreground">
-                          <span className="font-semibold text-foreground">To:</span>{" "}
-                          subscriber@example.com
-                        </div>
                       </div>
 
-                      <div className="pt-2 border-b border-dashed border-border pb-3">
-                        <p className="text-[11px] font-mono text-center text-muted-foreground uppercase tracking-wider">
-                          — Drag &amp; drop blocks inside email message body container —
+                      <div className="pt-2 border-b border-dashed border-border pb-2">
+                        <p className="text-[10px] font-mono text-center text-muted-foreground uppercase tracking-wider">
+                          — Drag &amp; drop blocks to configure —
                         </p>
                       </div>
 
                       {blocks.length === 0 ? (
-                        <div className="h-40 flex flex-col items-center justify-center text-muted-foreground text-sm gap-2 border border-dashed border-border/60 rounded-lg">
-                          <GripVertical className="w-8 h-8 opacity-40 animate-bounce" />
-                          <p>Drag and drop elements here to compose your template content</p>
+                        <div className="h-40 flex flex-col items-center justify-center text-muted-foreground text-xs gap-2 border border-dashed border-border/60 rounded-lg">
+                          <GripVertical className="w-6 h-6 opacity-40 animate-bounce" />
+                          <p>Drag and drop elements here to compose content</p>
                         </div>
                       ) : (
                         <div className="space-y-3">
@@ -1023,14 +1019,139 @@ export function TemplatesGallery() {
                     </div>
                   </div>
 
-                  <div className="pt-4 border-t border-border flex justify-end gap-2">
+                  <div className="pt-3 border-t border-border flex justify-end gap-2 mt-3">
                     <Button
                       variant="outline"
+                      size="sm"
                       type="button"
                       onClick={() => addBlock("text")}
                     >
                       + Add Block
                     </Button>
+                  </div>
+                </div>
+
+                {/* 3. Clean Unconfigured Component Preview */}
+                <div className="lg:col-span-4 bg-background border border-border rounded-xl p-4 flex flex-col justify-between overflow-y-auto min-h-[380px] shadow-sm">
+                  <div className="space-y-3">
+                    {/* Header */}
+                    <div className="bg-slate-900 text-slate-200 p-2.5 px-3 rounded-lg border border-slate-800 flex items-center justify-between shadow-xs">
+                      <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-1.5">
+                          <span className="w-2.5 h-2.5 rounded-full bg-red-500" />
+                          <span className="w-2.5 h-2.5 rounded-full bg-amber-500" />
+                          <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
+                        </div>
+                        <span className="font-mono text-xs text-slate-300 ml-1">
+                          Live Render Preview
+                        </span>
+                      </div>
+                      <span className="text-[10px] uppercase font-mono text-emerald-400 font-semibold flex items-center gap-1">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                        Clean Output
+                      </span>
+                    </div>
+
+                    <p className="text-xs text-muted-foreground">
+                      Real-time render of actual components without drag-and-drop handles or configuration toolbars.
+                    </p>
+
+                    {/* Email output card */}
+                    <div className="bg-card border border-border/80 rounded-xl shadow-xs p-4 space-y-3 text-left">
+                      <div className="border-b border-border/60 pb-2 space-y-1">
+                        <h4 className="font-bold text-sm text-foreground">
+                          {builderName || "Campaign Announcement"}
+                        </h4>
+                        <p className="text-[11px] text-muted-foreground">
+                          Aura Store Marketing &lt;newsletter@aurastore.com&gt;
+                        </p>
+                      </div>
+
+                      {blocks.length === 0 ? (
+                        <div className="h-36 flex flex-col items-center justify-center text-muted-foreground text-xs border border-dashed rounded-md p-4 text-center">
+                          No components added yet. Add blocks from the palette to see how they render.
+                        </div>
+                      ) : (
+                        <div className="space-y-3 pt-1">
+                          {blocks.map((block) => {
+                            const alignClass =
+                              block.textAlign === "center"
+                                ? "text-center justify-center items-center"
+                                : block.textAlign === "right"
+                                ? "text-right justify-end items-end"
+                                : "text-left justify-start items-start";
+
+                            const fontStyle = `${block.isBold ? "font-bold" : ""} ${block.isItalic ? "italic" : ""}`.trim();
+
+                            if (block.type === "heading") {
+                              return (
+                                <h3
+                                  key={block.id}
+                                  className={`text-base font-bold text-foreground ${alignClass} ${fontStyle}`}
+                                >
+                                  {block.label || "Heading Title"}
+                                </h3>
+                              );
+                            }
+
+                            if (block.type === "text") {
+                              return (
+                                <p
+                                  key={block.id}
+                                  className={`text-xs text-muted-foreground leading-relaxed whitespace-pre-wrap ${alignClass} ${fontStyle}`}
+                                >
+                                  {block.label || "Paragraph text content will render here."}
+                                </p>
+                              );
+                            }
+
+                            if (block.type === "button") {
+                              return (
+                                <div key={block.id} className={`pt-1 flex ${alignClass}`}>
+                                  <span className="inline-block py-2 px-4 bg-primary text-primary-foreground text-xs font-semibold rounded shadow-xs cursor-pointer hover:opacity-90 transition-opacity">
+                                    {block.label || "CTA Action Button"}
+                                  </span>
+                                </div>
+                              );
+                            }
+
+                            if (block.type === "image") {
+                              return (
+                                <div
+                                  key={block.id}
+                                  className="w-full h-28 bg-muted rounded-lg flex flex-col items-center justify-center text-xs text-muted-foreground font-medium border border-dashed border-border gap-1"
+                                >
+                                  <Image className="w-6 h-6 text-primary opacity-80" />
+                                  <span>{block.label || "Image Component Placeholder"}</span>
+                                </div>
+                              );
+                            }
+
+                            if (block.type === "link") {
+                              return (
+                                <div key={block.id} className={`text-xs text-primary underline font-medium cursor-pointer ${alignClass}`}>
+                                  {block.label || "Text Link Anchor"}
+                                </div>
+                              );
+                            }
+
+                            if (block.type === "carousel") {
+                              return (
+                                <div
+                                  key={block.id}
+                                  className="w-full h-24 bg-muted/70 rounded-lg flex items-center justify-center text-xs text-muted-foreground font-semibold border border-dashed border-border gap-2"
+                                >
+                                  <SlidersHorizontal className="w-5 h-5 text-primary opacity-80" />
+                                  <span>🎠 Carousel ({block.label || "3 Slides"})</span>
+                                </div>
+                              );
+                            }
+
+                            return null;
+                          })}
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
