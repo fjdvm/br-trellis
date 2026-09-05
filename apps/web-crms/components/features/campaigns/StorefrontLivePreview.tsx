@@ -127,7 +127,7 @@ function renderFormattedText(text: string): React.ReactNode {
                       <img
                         src={src}
                         alt={iv?.alt || block.label}
-                        className="w-full h-20 object-cover rounded border border-border"
+                        className="w-full h-20 object-cover rounded"
                       />
                     </div>
                   );
@@ -135,7 +135,7 @@ function renderFormattedText(text: string): React.ReactNode {
                 return (
                   <div
                     key={idx}
-                    className={`w-full h-14 bg-muted/60 rounded flex items-center justify-center text-xs text-muted-foreground font-semibold border border-dashed border-border ${alignClass}`}
+                    className={`w-full h-14 bg-muted/60 rounded flex items-center justify-center text-xs text-muted-foreground font-semibold ${alignClass}`}
                   >
                     📷 {block.label}
                   </div>
@@ -154,7 +154,7 @@ function renderFormattedText(text: string): React.ReactNode {
                           <img
                             src={slide.imageUrl}
                             alt={slide.caption || `Slide ${si + 1}`}
-                            className="w-full h-14 object-cover rounded border border-border"
+                            className="w-full h-14 object-cover rounded"
                           />
                           {slide.caption && (
                             <p className="text-[10px] text-muted-foreground truncate mt-0.5 text-center">
@@ -169,7 +169,7 @@ function renderFormattedText(text: string): React.ReactNode {
                 return (
                   <div
                     key={idx}
-                    className={`w-full h-14 bg-muted/60 rounded flex items-center justify-center text-xs text-muted-foreground font-semibold border border-dashed border-border ${alignClass}`}
+                    className={`w-full h-14 bg-muted/60 rounded flex items-center justify-center text-xs text-muted-foreground font-semibold ${alignClass}`}
                   >
                     🎠 {block.label}
                   </div>
@@ -398,10 +398,10 @@ export function StorefrontLivePreview({
 
           {/* ── Email body panel ─────────────────────────────────────── */}
           {channel === "Email" && (
-            <div className="absolute inset-x-3 bottom-3 top-20 z-20 bg-background border border-border rounded-lg shadow-xl overflow-hidden text-left flex flex-col">
+            <div className="absolute inset-x-3 bottom-3 top-20 z-20 bg-background rounded-lg shadow-xl overflow-hidden text-left flex flex-col">
               <div className="p-4 space-y-3 flex-1 overflow-y-auto">
                 {content.imageUrl && (
-                  <div className="w-full h-32 bg-muted rounded-lg overflow-hidden border border-border">
+                  <div className="w-full h-32 bg-muted rounded-lg overflow-hidden">
                     <img
                       src={content.imageUrl}
                       alt="Email hero"
