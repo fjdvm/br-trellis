@@ -22,7 +22,7 @@ import { TemplateDetailsTab } from "@/features/campaigns/components/template-det
 import { TemplateSourceTab } from "@/features/campaigns/components/template-source-tab";
 import { Code, Eye, FileText, Info, Layers, Sparkles, MoreVertical, Edit3, Trash2 } from "lucide-react";
 
-import type { Template } from "@/types/campaign";
+import type { Template } from "@/features/campaigns/types";
 
 interface TemplatePreviewModalProps {
   template: Template | null;

@@ -1,4 +1,4 @@
-import { createCustomerSchema } from "@/lib/validators/customer-validators";
+import { createCustomerSchema } from "@/features/customers/schemas/customer-validators";
 
 describe("createCustomerSchema", () => {
   const validInput = {

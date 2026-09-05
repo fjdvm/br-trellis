@@ -9,8 +9,8 @@ import { AddContactSheet } from "@/features/contacts/components/add-contact-shee
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { crmClient } from "@/lib/api/crm-client";
-import { filterContactsBySource, type ContactSourceFilter } from "@/lib/contacts";
-import type { ContactListItem } from "@/types/contact";
+import { filterContactsBySource, type ContactSourceFilter } from "@/features/contacts/services/contacts";
+import type { ContactListItem } from "@/features/contacts/types";
 
 /**
  * Optional props that let a screen reuse this component as a pre-filtered

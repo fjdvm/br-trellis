@@ -2,14 +2,14 @@ import React from "react";
 import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { Campaigns } from "@/features/campaigns/components/campaigns";
-import { useCampaigns } from "@/hooks/useCampaigns";
+import { useCampaigns } from "@/features/campaigns/hooks/useCampaigns";
 import { crmClient } from "@/lib/api/crm-client";
-import type { CampaignListItem } from "@/types/campaign";
+import type { CampaignListItem } from "@/features/campaigns/types";
 
 jest.mock("next/navigation", () => ({
   useRouter: () => ({ push: jest.fn() }),
 }));
-jest.mock("@/hooks/useCampaigns", () => ({ useCampaigns: jest.fn() }));
+jest.mock("@/features/campaigns/hooks/useCampaigns", () => ({ useCampaigns: jest.fn() }));
 jest.mock("@/lib/api/crm-client", () => ({
   crmClient: { campaigns: { getEngagementMetrics: jest.fn() } },
 }));

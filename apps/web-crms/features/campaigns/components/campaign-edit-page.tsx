@@ -2,7 +2,7 @@
 
 import { Skeleton } from "@/components/ui/skeleton";
 import { CampaignWizard } from "@/features/campaigns/components/campaign-wizard";
-import { useCampaign } from "@/hooks/useCampaign";
+import { useCampaign } from "@/features/campaigns/hooks/useCampaign";
 
 export function CampaignEditPage({ id }: { id: string }) {
   const { data: campaign, isLoading } = useCampaign(id);

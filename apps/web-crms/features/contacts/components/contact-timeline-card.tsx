@@ -2,7 +2,7 @@
 
 import { Clock } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import type { ContactDetail } from "@/types/contact";
+import type { ContactDetail } from "@/features/contacts/types";
 
 interface ContactTimelineCardProps {
   entries: ContactDetail["timelineEntries"];

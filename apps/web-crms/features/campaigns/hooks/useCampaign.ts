@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { crmClient } from "@/lib/api/crm-client";
-import { Campaign } from "@/types/campaign";
+import { Campaign } from "@/features/campaigns/types";
 
 export function useCampaign(id: string | null) {
   const [data, setData] = useState<Campaign | null>(null);

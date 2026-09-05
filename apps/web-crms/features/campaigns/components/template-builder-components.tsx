@@ -3,7 +3,7 @@ import { Trash2, Bold, Italic, AlignLeft, AlignCenter, AlignRight, Type, Image, 
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import type { BlockType } from "@/lib/template-constraints";
+import type { BlockType } from "@/features/campaigns/services/template-constraints";
 
 export { BannerFixedPreview, BannerBuilderForm, type BannerFields } from "@/features/campaigns/components/banner-builder-components";
 export { PopupFixedPreview, PopupBuilderForm, type PopupFields } from "@/features/campaigns/components/popup-builder-components";

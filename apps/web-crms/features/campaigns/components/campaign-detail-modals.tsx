@@ -9,7 +9,7 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
-import type { Campaign } from "@/types/campaign";
+import type { Campaign } from "@/features/campaigns/types";
 
 interface CampaignDetailModalsProps {
   campaign: Campaign;

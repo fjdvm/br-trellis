@@ -2,9 +2,9 @@ import { renderHook, act, waitFor } from "@testing-library/react";
 import {
   useConversationTickets,
   sortTicketsByActivity,
-} from "@/hooks/useConversationTickets";
+} from "@/features/conversations/hooks/useConversationTickets";
 import { crmClient } from "@/lib/api/crm-client";
-import { TicketListItem } from "@/types/ticket";
+import { TicketListItem } from "@/features/conversations/types";
 
 jest.mock("@/lib/api/crm-client", () => ({
   crmClient: {

@@ -1,5 +1,5 @@
 import React from "react";
-import type { CampaignChannel } from "@/types/campaign";
+import type { CampaignChannel } from "@/features/campaigns/types";
 
 export const CHANNEL_ICON: Record<CampaignChannel, React.ComponentType<{ className?: string }>> = {
   Email: Mail,

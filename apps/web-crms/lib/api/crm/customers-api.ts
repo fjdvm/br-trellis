@@ -11,7 +11,7 @@ import {
   PaginatedResponse,
   CustomerIdentityListItem,
   PendingReviewCustomer,
-} from "@/types/customer";
+} from "@/features/customers/types";
 
 export const customerApi = {
   list: (page = 1, pageSize = 20, customerType?: string, search?: string) => {

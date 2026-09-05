@@ -3,7 +3,7 @@ import userEvent from "@testing-library/user-event";
 import {  ConversationsInbox  } from "@/features/conversations/components/conversations-inbox";
 import { crmClient } from "@/lib/api/crm-client";
 import { useSignalR } from "@/hooks/useSignalR";
-import type { TicketListItem } from "@/types/ticket-list";
+import type { TicketListItem } from "@/features/conversations/types";
 
 // Radix/jsdom polyfills consistent with the other conversations suites.
 beforeAll(() => {

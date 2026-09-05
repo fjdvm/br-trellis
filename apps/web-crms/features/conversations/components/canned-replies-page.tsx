@@ -33,13 +33,13 @@ import {
 } from "@/components/ui/alert-dialog";
 import { ScrollableTable } from "@/components/shared/ScrollableTable";
 import { crmClient } from "@/lib/api/crm-client";
-import { useConversationsCanWrite } from "@/hooks/useConversationsCanWrite";
+import { useConversationsCanWrite } from "@/features/conversations/hooks/useConversationsCanWrite";
 import { NewCannedCategorySheet } from "@/features/conversations/components/new-canned-category-sheet";
 import { CannedReplySheet } from "@/features/conversations/components/canned-reply-sheet";
 import type {
   CannedReplyCategoryListItem,
   CannedReplyListItem,
-} from "@/types/canned-reply";
+} from "@/features/campaigns/types";
 
 /** Sentinel value for the "all categories" option in the filter Select. */
 const ALL_CATEGORIES = "__all__";

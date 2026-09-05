@@ -1,4 +1,4 @@
-import type { ContactListItem } from "@/types/contact";
+import type { ContactListItem } from "@/features/contacts/types";
 
 /**
  * Which origin-slice of the Contacts list a screen shows. `"all"` is the

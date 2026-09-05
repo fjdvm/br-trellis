@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { crmClient } from "@/lib/api/crm-client";
-import { CustomerListItem } from "@/types/customer";
+import { CustomerListItem } from "@/features/customers/types";
 
 interface UseCustomersOptions {
   page?: number;

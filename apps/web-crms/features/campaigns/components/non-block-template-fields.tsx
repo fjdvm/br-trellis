@@ -5,7 +5,7 @@ import {
   RichTextEditorField,
 } from "@/features/campaigns/components/channel-form-fields";
 import type { ChannelContentState } from "@/features/campaigns/components/channel-content-form";
-import type { CampaignChannel } from "@/types/campaign";
+import type { CampaignChannel } from "@/features/campaigns/types";
 
 interface NonBlockTemplateFieldsProps {
   channel: CampaignChannel;

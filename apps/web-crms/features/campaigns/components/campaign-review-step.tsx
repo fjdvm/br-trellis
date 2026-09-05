@@ -1,5 +1,5 @@
 import React from "react";
-import type { SegmentListItem } from "@/types/segment";
+import type { SegmentListItem } from "@/features/contacts/types";
 import type { ScheduleState } from "@/features/campaigns/components/schedule-step";
 
 const NO_SEGMENT = "__none__";

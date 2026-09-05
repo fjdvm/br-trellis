@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useSession } from "next-auth/react";
 import { MessageSquare, Loader2 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { useConversationMessages } from "@/hooks/useConversationMessages";
+import { useConversationMessages } from "@/features/conversations/hooks/useConversationMessages";
 import { useCurrentAgentId } from "@/hooks/useCurrentAgentId";
 import { useSignalR } from "@/hooks/useSignalR";
 import { formatName, formatEmail } from "@/lib/format-display";
@@ -18,8 +18,8 @@ import {
   ConversationActionsMenu,
   type ConversationAction,
 } from "@/features/conversations/components/conversation-actions-menu";
-import { substituteCannedReplyVariables } from "@/lib/canned-reply-substitution";
-import type { TicketStatus } from "@/types/ticket-detail";
+import { substituteCannedReplyVariables } from "@/features/conversations/services/canned-reply-substitution";
+import type { TicketStatus } from "@/features/conversations/types";
 
 interface MessageThreadProps {
   ticketId: string;

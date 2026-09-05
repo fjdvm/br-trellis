@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import { crmClient } from "@/lib/api/crm-client";
-import { isTerminalStatus } from "@/lib/tickets";
-import type { TicketListItem } from "@/types/ticket-list";
+import { isTerminalStatus } from "@/features/conversations/services/tickets";
+import type { TicketListItem } from "@/features/conversations/types";
 
 export function useMarkConversationRead(
   selectedTicketId: string | undefined,

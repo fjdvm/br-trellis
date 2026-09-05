@@ -30,7 +30,7 @@ import { crmClient } from "@/lib/api/crm-client";
 import { BackButton } from "@/components/shared/BackButton";
 import { formatName, formatEmail } from "@/lib/format-display";
 import { CompanyContactsTable } from "@/features/contacts/components/company-contacts-table";
-import type { CompanyDetail } from "@/types/company";
+import type { CompanyDetail } from "@/features/contacts/types";
 import { useRouter } from "next/navigation";
 
 

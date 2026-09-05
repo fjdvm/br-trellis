@@ -10,7 +10,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { crmClient } from "@/lib/api/crm-client";
-import type { CustomerListItem } from "@/types/customer";
+import type { CustomerListItem } from "@/features/customers/types";
 
 export function DeleteCustomerDialog({
   customer,

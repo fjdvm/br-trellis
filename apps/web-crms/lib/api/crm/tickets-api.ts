@@ -1,22 +1,22 @@
 import { request } from "@/lib/api/request";
-import { Message } from "@/types/message";
+import { Message } from "@/features/conversations/types";
 import {
   ConversationMessage,
   PostStaffMessageInput,
-} from "@/types/conversation-message";
+} from "@/features/conversations/types";
 import {
-  Ticket,
-  CreateTicketInput,
+  LegacyTicket as Ticket,
+  LegacyCreateTicketInput as CreateTicketInput,
   PaginatedTicketResponse,
-} from "@/types/ticket";
-import { TicketListItem as ConversationTicketListItem } from "@/types/ticket-list";
+} from "@/features/conversations/types";
+import { TicketListItem as ConversationTicketListItem } from "@/features/conversations/types";
 import {
   TicketDetail,
   ClaimTicketInput,
   ChangeTicketStatusInput,
   SetWaitingOnInput,
   CreateTicketInput as CreateConversationTicketInput,
-} from "@/types/ticket-detail";
+} from "@/features/conversations/types";
 
 export const ticketsApi = {
   list: (page = 1, pageSize = 20, status?: string, assignedToIdOrCustomerId?: string) => {

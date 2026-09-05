@@ -1,5 +1,5 @@
 import { renderHook, waitFor } from "@testing-library/react";
-import { useTickets } from "@/hooks/useTickets";
+import { useTickets } from "@/features/conversations/hooks/useTickets";
 import { crmClient } from "@/lib/api/crm-client";
 
 jest.mock("@/lib/api/crm-client", () => ({

@@ -9,7 +9,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import type { CannedReplyListItem } from "@/types/canned-reply";
+import type { CannedReplyListItem } from "@/features/campaigns/types";
 
 interface CannedReplyPickerProps {
   /** Disabled wherever typing a reply is (e.g. a terminal ticket). */

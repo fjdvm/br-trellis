@@ -1,7 +1,7 @@
 import { renderHook, act, waitFor } from "@testing-library/react";
-import { useConversationMessages } from "@/hooks/useConversationMessages";
+import { useConversationMessages } from "@/features/conversations/hooks/useConversationMessages";
 import { crmClient } from "@/lib/api/crm-client";
-import type { ConversationMessage } from "@/types/conversation-message";
+import type { ConversationMessage } from "@/features/conversations/types";
 
 jest.mock("@/lib/api/crm-client", () => ({
   crmClient: {

@@ -10,9 +10,9 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { TemplateBuilderModalContent } from "@/features/campaigns/components/template-builder-modal-content";
-import type { CampaignChannel } from "@/types/campaign";
+import type { CampaignChannel } from "@/features/campaigns/types";
 import type { TemplateBlock, BannerFields, PopupFields } from "@/features/campaigns/components/template-builder-components";
-import type { ChannelConstraints, BlockType } from "@/lib/template-constraints";
+import type { ChannelConstraints, BlockType } from "@/features/campaigns/services/template-constraints";
 
 export interface TemplateBuilderModalProps {
   showBuilderModal: boolean;

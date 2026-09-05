@@ -9,7 +9,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import type { Template } from "@/types/campaign";
+import type { Template } from "@/features/campaigns/types";
 
 export interface TemplateDeleteModalProps {
   deleteTemplateItem: Template | null;

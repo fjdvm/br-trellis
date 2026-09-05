@@ -1,6 +1,6 @@
 import { Mail, PanelTop, AppWindow } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import type { CampaignChannel } from "@/types/campaign";
+import type { CampaignChannel } from "@/features/campaigns/types";
 
 const CHANNEL_VARIANT: Record<CampaignChannel, React.ComponentProps<typeof Badge>["variant"]> = {
   Email: "info",

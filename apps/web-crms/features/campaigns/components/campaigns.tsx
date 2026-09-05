@@ -24,8 +24,8 @@ import {
 } from "@/components/ui/select";
 import { CampaignTable } from "@/features/campaigns/components/campaign-table";
 import { CampaignQuickStats } from "@/features/campaigns/components/campaign-quick-stats";
-import { useCampaigns } from "@/hooks/useCampaigns";
-import type { CampaignChannel, CampaignStatus } from "@/types/campaign";
+import { useCampaigns } from "@/features/campaigns/hooks/useCampaigns";
+import type { CampaignChannel, CampaignStatus } from "@/features/campaigns/types";
 
 type TabValue = "All" | CampaignStatus;
 type ChannelFilter = "Any" | CampaignChannel;

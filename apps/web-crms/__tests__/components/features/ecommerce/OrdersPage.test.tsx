@@ -23,7 +23,7 @@ jest.mock("@/lib/api/crm-client", () => ({
 }));
 
 // Mock the hook to use our mock
-jest.mock("@/hooks/useEcommerceSyncStatus", () => {
+jest.mock("@/features/ecommerce/hooks/useEcommerceSyncStatus", () => {
   const React = require("react");
   let statusValue: { status: string | null; isLoading: boolean } = { status: null, isLoading: true };
 
@@ -38,7 +38,7 @@ jest.mock("@/hooks/useEcommerceSyncStatus", () => {
   };
 });
 
-const { __setMockStatus } = require("@/hooks/useEcommerceSyncStatus");
+const { __setMockStatus } = require("@/features/ecommerce/hooks/useEcommerceSyncStatus");
 
 describe("OrdersPage", () => {
   beforeEach(() => {

@@ -5,7 +5,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { TicketStatus, TicketWaitingOn, TicketSource } from "@/types/ticket-list";
+import type { TicketStatus, TicketWaitingOn, TicketSource } from "@/features/conversations/types";
 
 const WAITING_ON_OPTIONS: readonly (TicketWaitingOn | "All")[] = [
   "All",

@@ -5,7 +5,7 @@ jest.mock("next-auth/react", () => ({
 import React from "react";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { ConversationList } from "@/features/conversations/components/conversation-list";
-import { TicketListItem } from "@/types/ticket";
+import { TicketListItem } from "@/features/conversations/types";
 
 describe("ConversationList", () => {
   const mockTickets: TicketListItem[] = [

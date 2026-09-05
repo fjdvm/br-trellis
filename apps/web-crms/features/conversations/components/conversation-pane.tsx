@@ -4,8 +4,8 @@ import { useEffect, useState } from "react";
 import { crmClient } from "@/lib/api/crm-client";
 import { MessageThread } from "@/features/conversations/components/message-thread";
 import type { ConversationAction } from "@/features/conversations/components/conversation-actions-menu";
-import { isTerminalStatus } from "@/lib/tickets";
-import type { TicketListItem } from "@/types/ticket-list";
+import { isTerminalStatus } from "@/features/conversations/services/tickets";
+import type { TicketListItem } from "@/features/conversations/types";
 
 export interface ConversationPaneProps {
   ticketId: string;

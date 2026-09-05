@@ -9,7 +9,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import type { Template } from "@/types/campaign";
+import type { Template } from "@/features/campaigns/types";
 
 interface TemplateCardProps {
   template: Template;

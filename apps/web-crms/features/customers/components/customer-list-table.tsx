@@ -18,7 +18,7 @@ import {
   TablePagination,
   useClientPagination,
 } from "@/components/shared/TablePagination";
-import type { CustomerIdentityListItem } from "@/types/customer";
+import type { CustomerIdentityListItem } from "@/features/customers/types";
 
 export function CustomerListTable() {
   const [customers, setCustomers] = useState<CustomerIdentityListItem[]>([]);

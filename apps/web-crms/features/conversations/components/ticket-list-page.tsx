@@ -13,14 +13,14 @@ import { useClientPagination } from "@/components/shared/TablePagination";
 import { useCurrentAgentId } from "@/hooks/useCurrentAgentId";
 import { useRefetchOnFocus } from "@/hooks/useRefetchOnFocus";
 import { NewTicketSheet } from "@/features/conversations/components/new-ticket-sheet";
-import { isTerminalStatus } from "@/lib/tickets";
+import { isTerminalStatus } from "@/features/conversations/services/tickets";
 import { formatName, formatEmail } from "@/lib/format-display";
 import type {
   TicketListItem,
   TicketStatus,
   TicketWaitingOn,
   TicketSource,
-} from "@/types/ticket-list";
+} from "@/features/conversations/types";
 import { TicketTable, type RowPending } from "./ticket-table";
 
 const STATUS_OPTIONS: readonly (TicketStatus | "All")[] = [

@@ -4,10 +4,10 @@ import React from "react";
 import { useRouter } from "next/navigation";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { STATUS_BADGE_VARIANT } from "@/lib/tickets";
-import { formatConversationTime } from "@/lib/format-conversation-time";
+import { STATUS_BADGE_VARIANT } from "@/features/conversations/services/tickets";
+import { formatConversationTime } from "@/features/conversations/lib/format-conversation-time";
 import { formatName, formatEmail } from "@/lib/format-display";
-import type { TicketListItem } from "@/types/ticket-list";
+import type { TicketListItem } from "@/features/conversations/types";
 
 export interface ConversationListItemsProps {
   conversations: TicketListItem[];

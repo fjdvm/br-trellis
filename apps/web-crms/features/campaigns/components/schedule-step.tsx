@@ -9,7 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { ScheduleType } from "@/types/campaign";
+import type { ScheduleType } from "@/features/campaigns/types";
 
 export interface ScheduleState {
   scheduleType: ScheduleType;

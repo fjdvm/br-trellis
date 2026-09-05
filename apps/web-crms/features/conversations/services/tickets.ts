@@ -1,5 +1,5 @@
 import type { BadgeProps } from "@/components/ui/badge";
-import type { TicketStatus, TicketSource } from "@/types/ticket-list";
+import type { TicketStatus, TicketSource } from "@/features/conversations/types";
 
 /**
  * Badge variant per ticket status, shared between the ticket list and detail

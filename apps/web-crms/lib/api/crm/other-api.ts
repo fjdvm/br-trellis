@@ -5,14 +5,14 @@ import {
   CartListItem,
   WorkflowRunListItem,
   EcommerceSyncStatus,
-} from "@/types/ecommerce";
+} from "@/features/ecommerce/types";
 import {
   CompanyListItem,
   CompanyDetail,
   CreateCompanyInput,
   UpdateCompanyInput,
-} from "@/types/company";
-import { SegmentListItem, SegmentMember } from "@/types/segment";
+} from "@/features/contacts/types";
+import { SegmentListItem, SegmentMember } from "@/features/contacts/types";
 import {
   CannedReplyCategoryListItem,
   CannedReplyCategoryDetail,
@@ -22,7 +22,7 @@ import {
   CannedReplyDetail,
   CreateCannedReplyInput,
   UpdateCannedReplyInput,
-} from "@/types/canned-reply";
+} from "@/features/campaigns/types";
 
 export const uploadApi = {
   uploadFile: async (file: File, folder = "general"): Promise<{ url: string }> => {

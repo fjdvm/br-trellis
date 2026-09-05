@@ -2,7 +2,7 @@
 
 import React, { createContext, useCallback, useContext, useEffect, useState } from "react";
 import { crmClient } from "@/lib/api/crm-client";
-import type { EcommerceSyncStatus, EcommerceSyncStatusState } from "@/types/ecommerce";
+import type { EcommerceSyncStatus, EcommerceSyncStatusState } from "@/features/ecommerce/types";
 
 interface EcommerceSyncStatusContextValue {
   status: EcommerceSyncStatusState | null;

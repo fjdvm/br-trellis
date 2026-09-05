@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { crmClient } from "@/lib/api/crm-client";
-import { Customer } from "@/types/customer";
+import { Customer } from "@/features/customers/types";
 
 export function useCustomer(id: string) {
   const [customer, setCustomer] = useState<Customer | null>(null);

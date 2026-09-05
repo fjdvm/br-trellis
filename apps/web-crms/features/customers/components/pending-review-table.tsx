@@ -18,7 +18,7 @@ import {
   TablePagination,
   useClientPagination,
 } from "@/components/shared/TablePagination";
-import type { PendingReviewCustomer } from "@/types/customer";
+import type { PendingReviewCustomer } from "@/features/customers/types";
 
 export function PendingReviewTable() {
   const [pendingReviews, setPendingReviews] = useState<PendingReviewCustomer[]>([]);

@@ -20,7 +20,7 @@ import {
   useClientPagination,
 } from "@/components/shared/TablePagination";
 import { formatName, formatEmail } from "@/lib/format-display";
-import type { ContactListItem } from "@/types/contact";
+import type { ContactListItem } from "@/features/contacts/types";
 
 interface ContactListTableProps {
   contacts: ContactListItem[];

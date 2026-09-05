@@ -8,7 +8,7 @@ import { Ticket } from "lucide-react";
 import { aiClient } from "@/lib/api/ai-client";
 
 // Mock useDashboardHub hook
-jest.mock("@/hooks/useDashboardHub", () => ({
+jest.mock("@/features/dashboard/hooks/useDashboardHub", () => ({
   useDashboardHub: ({ onMetricsUpdated }: any = {}) => {
     const react = require("react");
     const onMetricsUpdatedRef = react.useRef(onMetricsUpdated);

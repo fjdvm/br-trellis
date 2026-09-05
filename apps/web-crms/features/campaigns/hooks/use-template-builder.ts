@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
-import { validateBlockCount, getChannelConstraints, type BlockType, type ChannelConstraints } from "@/lib/template-constraints";
-import type { CampaignChannel, Template } from "@/types/campaign";
+import { validateBlockCount, getChannelConstraints, type BlockType, type ChannelConstraints } from "@/features/campaigns/services/template-constraints";
+import type { CampaignChannel, Template } from "@/features/campaigns/types";
 import type { TemplateBlock, BannerFields, PopupFields } from "@/features/campaigns/components/template-builder-components";
 
 export interface UseTemplateBuilderParams {

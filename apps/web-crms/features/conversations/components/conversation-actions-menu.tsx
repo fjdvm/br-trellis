@@ -17,7 +17,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import type { TicketStatus } from "@/types/ticket-detail";
+import type { TicketStatus } from "@/features/conversations/types";
 
 /**
  * The four lifecycle actions the conversation header's 3-dot menu offers.

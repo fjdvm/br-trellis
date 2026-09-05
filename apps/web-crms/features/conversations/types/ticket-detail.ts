@@ -11,9 +11,9 @@ import type {
   TicketWaitingOn,
   TicketSource,
   TicketListContact,
-} from "@/types/ticket-list";
+} from "./ticket-list";
 
-export type { TicketStatus, TicketWaitingOn, TicketSource } from "@/types/ticket-list";
+export type { TicketStatus, TicketWaitingOn, TicketSource } from "./ticket-list";
 
 export interface TicketDetail {
   id: string;

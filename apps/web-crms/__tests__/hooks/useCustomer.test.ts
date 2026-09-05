@@ -1,7 +1,7 @@
 import { renderHook, waitFor, act } from "@testing-library/react";
-import { useCustomer } from "@/hooks/useCustomer";
+import { useCustomer } from "@/features/customers/hooks/useCustomer";
 import { crmClient } from "@/lib/api/crm-client";
-import type { Customer } from "@/types/customer";
+import type { Customer } from "@/features/customers/types";
 
 jest.mock("@/lib/api/crm-client", () => ({
   crmClient: {

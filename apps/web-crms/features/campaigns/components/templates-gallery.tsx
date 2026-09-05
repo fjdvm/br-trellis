@@ -23,14 +23,14 @@ import {
   type BannerFields,
   type PopupFields,
 } from "@/features/campaigns/components/template-builder-components";
-import { useTemplates } from "@/hooks/useTemplates";
+import { useTemplates } from "@/features/campaigns/hooks/useTemplates";
 import { useTemplateBuilder } from "@/features/campaigns/hooks/use-template-builder";
 import {
   getChannelConstraints,
   validateBlockCount,
   type BlockType,
-} from "@/lib/template-constraints";
-import type { CampaignChannel, Template } from "@/types/campaign";
+} from "@/features/campaigns/services/template-constraints";
+import type { CampaignChannel, Template } from "@/features/campaigns/types";
 
 const CHANNELS: CampaignChannel[] = ["Email", "Banner", "Popup"];
 

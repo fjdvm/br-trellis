@@ -4,7 +4,7 @@ import { CheckCircle2, Mail, PanelTop, AppWindow } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { StorefrontLivePreview } from "@/features/campaigns/components/storefront-live-preview";
-import type { Campaign } from "@/types/campaign";
+import type { Campaign } from "@/features/campaigns/types";
 
 interface CampaignDraftViewProps {
   campaign: Campaign;

@@ -17,7 +17,7 @@ import {
   useClientPagination,
 } from "@/components/shared/TablePagination";
 import { formatName, formatEmail } from "@/lib/format-display";
-import type { CompanyContact } from "@/types/company";
+import type { CompanyContact } from "@/features/contacts/types";
 
 export function CompanyContactsTable({ contacts }: { contacts: CompanyContact[] }) {
 

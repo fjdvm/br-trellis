@@ -9,7 +9,7 @@ import type {
   CampaignChannelContentInput,
   CreateCampaignInput,
   UpdateCampaignInput,
-} from "@/types/campaign";
+} from "@/features/campaigns/types";
 
 const NO_SEGMENT = "__none__";
 

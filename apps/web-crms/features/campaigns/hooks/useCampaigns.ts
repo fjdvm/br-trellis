@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import { crmClient } from "@/lib/api/crm-client";
-import { CampaignListItem } from "@/types/campaign";
+import { CampaignListItem } from "@/features/campaigns/types";
 
 export function useCampaigns(status?: string) {
   const { data: session } = useSession();

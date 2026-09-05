@@ -1,10 +1,10 @@
 import React from "react";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { TicketDetailSheet } from "@/features/tickets/components/ticket-detail-sheet";
-import { useTicket } from "@/hooks/useTicket";
+import { useTicket } from "@/features/conversations/hooks/useTicket";
 import { crmClient } from "@/lib/api/crm-client";
 
-jest.mock("@/hooks/useTicket");
+jest.mock("@/features/conversations/hooks/useTicket");
 jest.mock("@/lib/api/crm-client", () => ({
   crmClient: {
     tickets: {

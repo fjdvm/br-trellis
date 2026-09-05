@@ -19,13 +19,13 @@ import { Card, CardContent } from "@/components/ui/card";
 import { TicketCancelDialog } from "@/features/conversations/components/ticket-cancel-dialog";
 import { crmClient } from "@/lib/api/crm-client";
 import { useCurrentAgentId } from "@/hooks/useCurrentAgentId";
-import { STATUS_BADGE_VARIANT, SOURCE_BADGE_VARIANT, isActiveStatus, isTerminalStatus } from "@/lib/tickets";
+import { STATUS_BADGE_VARIANT, SOURCE_BADGE_VARIANT, isActiveStatus, isTerminalStatus } from "@/features/conversations/services/tickets";
 import { formatName, formatEmail } from "@/lib/format-display";
 import type {
   TicketDetail,
   TicketStatus,
   TicketWaitingOn,
-} from "@/types/ticket-detail";
+} from "@/features/conversations/types";
 import { TicketDetailsSidebar } from "@/features/conversations/components/ticket-details-sidebar";
 
 interface TicketDetailPageProps {

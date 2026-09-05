@@ -21,9 +21,9 @@ import {
 import { crmClient } from "@/lib/api/crm-client";
 import { BackButton } from "@/components/shared/BackButton";
 import { formatName, formatEmail } from "@/lib/format-display";
-import type { ContactFieldErrors } from "@/lib/validators/contact-validators";
-import type { ContactDetail } from "@/types/contact";
-import type { CompanyListItem } from "@/types/company";
+import type { ContactFieldErrors } from "@/features/contacts/schemas/contact-validators";
+import type { ContactDetail } from "@/features/contacts/types";
+import type { CompanyListItem } from "@/features/contacts/types";
 import { ContactEditForm } from "./contact-edit-form";
 import { ContactOrdersCard } from "./contact-orders-card";
 import { ContactTimelineCard } from "./contact-timeline-card";

@@ -8,7 +8,7 @@ import {
   CHANNEL_META,
   ChannelSelectCard,
 } from "@/features/campaigns/components/channel-select-card";
-import type { CampaignChannel } from "@/types/campaign";
+import type { CampaignChannel } from "@/features/campaigns/types";
 
 interface Step1ChannelsProps {
   title: string;

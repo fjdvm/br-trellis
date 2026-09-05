@@ -2,15 +2,15 @@ import React from "react";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { CampaignDetail } from "@/features/campaigns/components/campaign-detail";
-import { useCampaign } from "@/hooks/useCampaign";
+import { useCampaign } from "@/features/campaigns/hooks/useCampaign";
 import { crmClient } from "@/lib/api/crm-client";
-import type { Campaign } from "@/types/campaign";
+import type { Campaign } from "@/features/campaigns/types";
 
 jest.mock("next/navigation", () => ({
   useRouter: () => ({ push: jest.fn() }),
 }));
-jest.mock("@/hooks/useCampaign", () => ({ useCampaign: jest.fn() }));
-jest.mock("@/hooks/useSegments", () => ({ useSegments: jest.fn(() => ({ data: [], isLoading: false })) }));
+jest.mock("@/features/campaigns/hooks/useCampaign", () => ({ useCampaign: jest.fn() }));
+jest.mock("@/features/contacts/hooks/useSegments", () => ({ useSegments: jest.fn(() => ({ data: [], isLoading: false })) }));
 jest.mock("@/lib/api/crm-client", () => ({
   crmClient: { campaigns: { updateStatus: jest.fn(), getAnalytics: jest.fn() } },
 }));

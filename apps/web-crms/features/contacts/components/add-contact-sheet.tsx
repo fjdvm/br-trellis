@@ -28,9 +28,9 @@ import {
   validateContactFields,
   hasErrors,
   type ContactFieldErrors,
-} from "@/lib/validators/contact-validators";
+} from "@/features/contacts/schemas/contact-validators";
 import { Loader2, Plus } from "lucide-react";
-import type { CompanyListItem } from "@/types/company";
+import type { CompanyListItem } from "@/features/contacts/types";
 
 interface AddContactSheetProps {
   onCreated?: () => void;

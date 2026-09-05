@@ -9,7 +9,7 @@ import {
   RichTextEditorField,
 } from "@/features/campaigns/components/channel-form-fields";
 import type { BlockValue, ChannelContentState } from "@/features/campaigns/components/channel-content-form";
-import type { CampaignChannel } from "@/types/campaign";
+import type { CampaignChannel } from "@/features/campaigns/types";
 
 export interface ParsedBlock {
   id: string;

@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Building2 } from "lucide-react";
 import { formatName, formatEmail } from "@/lib/format-display";
-import type { ContactDetail } from "@/types/contact";
+import type { ContactDetail } from "@/features/contacts/types";
 
 interface ContactCoreFieldsCardProps {
   contact: ContactDetail;

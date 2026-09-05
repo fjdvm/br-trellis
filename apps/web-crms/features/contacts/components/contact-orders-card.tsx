@@ -3,7 +3,7 @@
 import { ShoppingBag } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import type { ContactDetail } from "@/types/contact";
+import type { ContactDetail } from "@/features/contacts/types";
 
 interface ContactOrdersCardProps {
   orders: ContactDetail["orders"];

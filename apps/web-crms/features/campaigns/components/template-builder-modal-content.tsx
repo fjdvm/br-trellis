@@ -11,8 +11,8 @@ import {
   type PopupFields,
 } from "@/features/campaigns/components/template-builder-components";
 import { EmailBuilderContent } from "@/features/campaigns/components/email-builder-content";
-import type { BlockType, ChannelConstraints } from "@/lib/template-constraints";
-import type { CampaignChannel } from "@/types/campaign";
+import type { BlockType, ChannelConstraints } from "@/features/campaigns/services/template-constraints";
+import type { CampaignChannel } from "@/features/campaigns/types";
 
 interface TemplateBuilderModalContentProps {
   builderChannel: CampaignChannel;

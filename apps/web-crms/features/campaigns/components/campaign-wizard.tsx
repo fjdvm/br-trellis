@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { useSegments } from "@/hooks/useSegments";
+import { useSegments } from "@/features/contacts/hooks/useSegments";
 import { crmClient } from "@/lib/api/crm-client";
 import { type ChannelContentState } from "@/features/campaigns/components/channel-content-form";
 import {
@@ -19,7 +19,7 @@ import { Step2Audience, SYSTEM_PRESET_SEGMENTS } from "@/features/campaigns/comp
 import { Step3Content } from "@/features/campaigns/components/step3-content";
 import { StepReview } from "@/features/campaigns/components/step-review";
 import { CampaignCancelModal } from "@/features/campaigns/components/campaign-cancel-modal";
-import type { Campaign } from "@/types/campaign";
+import type { Campaign } from "@/features/campaigns/types";
 import {
   useCampaignWizardState,
   NO_SEGMENT,

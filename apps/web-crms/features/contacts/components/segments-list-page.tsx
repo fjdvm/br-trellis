@@ -23,7 +23,7 @@ import {
   useClientPagination,
 } from "@/components/shared/TablePagination";
 import { formatName, formatEmail } from "@/lib/format-display";
-import type { SegmentListItem, SegmentMember } from "@/types/segment";
+import type { SegmentListItem, SegmentMember } from "@/features/contacts/types";
 
 interface SegmentsListPageProps {
   /** When provided, auto-selects the first system-defined segment matching this name */

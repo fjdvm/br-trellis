@@ -1,5 +1,5 @@
 import { renderHook, waitFor } from "@testing-library/react";
-import { useDashboardSummary } from "@/hooks/useDashboardSummary";
+import { useDashboardSummary } from "@/features/dashboard/hooks/useDashboardSummary";
 import { aiClient } from "@/lib/api/ai-client";
 
 jest.mock("@/lib/api/ai-client", () => ({

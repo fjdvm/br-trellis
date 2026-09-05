@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { crmClient } from "@/lib/api/crm-client";
-import type { SegmentListItem } from "@/types/segment";
+import type { SegmentListItem } from "@/features/contacts/types";
 
 export function useSegments() {
   const [data, setData] = useState<SegmentListItem[]>([]);

@@ -2,7 +2,7 @@ import { render, screen, waitFor, act } from "@testing-library/react";
 import { ConversationsInbox } from "@/features/conversations/components/conversations-inbox";
 import { TicketListPage } from "@/features/conversations/components/ticket-list-page";
 import { crmClient } from "@/lib/api/crm-client";
-import type { TicketListItem } from "@/types/ticket-list";
+import type { TicketListItem } from "@/features/conversations/types";
 
 jest.mock("next/navigation", () => ({
   useRouter: () => ({ push: jest.fn() }),

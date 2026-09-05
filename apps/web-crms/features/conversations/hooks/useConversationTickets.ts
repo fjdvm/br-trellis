@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { crmClient } from "@/lib/api/crm-client";
-import { TicketListItem } from "@/types/ticket";
+import { LegacyTicketListItem as TicketListItem } from "@/features/conversations/types";
 
 export function sortTicketsByActivity(items: TicketListItem[]): TicketListItem[] {
   return [...items].sort((a, b) => {
@@ -140,36 +140,25 @@ export function useConversationTickets(initialTicketId?: string) {
     [fetchTickets]
   );
 
-  const markTicketAsRead = useCallback((ticketId: string) => {
-    setTickets((prev) =>
-      prev.map((t) => (t.id === ticketId ? { ...t, unreadMessageCount: 0 } : t))
-    );
-  }, []);
+  const activeTicket = tickets.find((t) => t.id === activeTicketId) || null;
 
-  const removeTicket = useCallback(
-    (ticketId: string) => {
-      setTickets((prev) => {
-        const nextTickets = prev.filter((t) => t.id !== ticketId);
-        if (activeTicketId === ticketId) {
-          setActiveTicketId(nextTickets.length > 0 ? nextTickets[0].id : null);
-        }
-        return nextTickets;
-      });
-    },
-    [activeTicketId]
-  );
+  const filteredTickets = tickets.filter((t) => {
+    if (activeTab === "unread") return (t.unreadMessageCount ?? 0) > 0;
+    if (activeTab === "read") return (t.unreadMessageCount ?? 0) === 0;
+    return true;
+  });
 
   return {
-    tickets,
+    tickets: filteredTickets,
+    allTickets: tickets,
+    activeTicket,
     activeTicketId,
     setActiveTicketId,
     activeTab,
     setActiveTab,
     isLoading,
     error,
-    refetchTickets: fetchTickets,
+    refetch: fetchTickets,
     onMessageActivity,
-    markTicketAsRead,
-    removeTicket,
   };
 }

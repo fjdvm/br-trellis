@@ -3,7 +3,7 @@ import {
   ContactListItem,
   ContactDetail,
   PendingReviewContact as PendingReviewContactType,
-} from "@/types/contact";
+} from "@/features/contacts/types";
 
 export const contactsApi = {
   list: () =>

@@ -1,7 +1,7 @@
 import React from "react";
 import { Badge } from "@/components/ui/badge";
 import { Layers } from "lucide-react";
-import type { Template } from "@/types/campaign";
+import type { Template } from "@/features/campaigns/types";
 
 interface TemplateSourceTabProps {
   template: Template;

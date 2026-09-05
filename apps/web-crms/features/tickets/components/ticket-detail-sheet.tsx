@@ -1,7 +1,7 @@
 import React from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { useTicket } from "@/hooks/useTicket";
+import { useTicket } from "@/features/conversations/hooks/useTicket";
 import { crmClient } from "@/lib/api/crm-client";
 
 export function TicketDetailSheet({

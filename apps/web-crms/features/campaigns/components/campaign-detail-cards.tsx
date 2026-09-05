@@ -5,7 +5,7 @@ import type {
   CampaignAnalytics,
   CampaignChannelContent,
   CampaignDispatchResult,
-} from "@/types/campaign";
+} from "@/features/campaigns/types";
 
 function formatDate(iso?: string | null): string {
   if (!iso) return "—";

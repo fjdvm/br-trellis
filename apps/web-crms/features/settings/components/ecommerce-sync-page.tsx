@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { crmClient } from "@/lib/api/crm-client";
-import type { EcommerceSyncStatus } from "@/types/ecommerce";
+import type { EcommerceSyncStatus } from "@/features/ecommerce/types";
 
 function formatTimestamp(value: string | null): string {
   if (!value) return "Never";

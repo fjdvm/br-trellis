@@ -20,9 +20,9 @@ import { CampaignDetailModals } from "@/features/campaigns/components/campaign-d
 import { crmClient } from "@/lib/api/crm-client";
 
 
-import { useCampaign } from "@/hooks/useCampaign";
-import { useSegments } from "@/hooks/useSegments";
-import type { Campaign, CampaignAnalytics } from "@/types/campaign";
+import { useCampaign } from "@/features/campaigns/hooks/useCampaign";
+import { useSegments } from "@/features/contacts/hooks/useSegments";
+import type { Campaign, CampaignAnalytics } from "@/features/campaigns/types";
 
 export function CampaignDetail({ id }: { id: string }) {
   const router = useRouter();

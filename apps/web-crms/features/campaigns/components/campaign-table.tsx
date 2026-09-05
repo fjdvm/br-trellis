@@ -26,7 +26,7 @@ import {
 import { CampaignChannelBadge } from "@/features/campaigns/components/campaign-channel-badge";
 import { CampaignStatusBadge } from "@/features/campaigns/components/campaign-status-badge";
 import { crmClient } from "@/lib/api/crm-client";
-import type { CampaignEngagementMetrics, CampaignListItem } from "@/types/campaign";
+import type { CampaignEngagementMetrics, CampaignListItem } from "@/features/campaigns/types";
 
 function formatDate(iso: string): string {
   const d = new Date(iso);

@@ -6,7 +6,7 @@ import { DataTable, Column } from "@/components/shared/DataTable";
 import { TableSkeleton } from "@/components/shared/TableSkeleton";
 import { request } from "@/lib/api/request";
 import { formatName, formatEmail } from "@/lib/format-display";
-import { useEcommerceSyncStatus } from "@/hooks/useEcommerceSyncStatus";
+import { useEcommerceSyncStatus } from "@/features/ecommerce/hooks/useEcommerceSyncStatus";
 import { EcommerceConnectPrompt } from "./ecommerce-connect-prompt";
 
 interface ContactLtvItem {

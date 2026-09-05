@@ -6,9 +6,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DataTable, Column } from "@/components/shared/DataTable";
 import { TableSkeleton } from "@/components/shared/TableSkeleton";
 import { crmClient } from "@/lib/api/crm-client";
-import { useEcommerceSyncStatus } from "@/hooks/useEcommerceSyncStatus";
+import { useEcommerceSyncStatus } from "@/features/ecommerce/hooks/useEcommerceSyncStatus";
 import { EcommerceConnectPrompt } from "./ecommerce-connect-prompt";
-import type { OrderListItem } from "@/types/ecommerce";
+import type { OrderListItem } from "@/features/ecommerce/types";
 
 const columns: Column<OrderListItem>[] = [
   {

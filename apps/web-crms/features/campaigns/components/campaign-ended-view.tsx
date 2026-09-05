@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { StorefrontLivePreview } from "@/features/campaigns/components/storefront-live-preview";
-import type { Campaign, CampaignAnalytics } from "@/types/campaign";
+import type { Campaign, CampaignAnalytics } from "@/features/campaigns/types";
 
 interface CampaignEndedViewProps {
   campaign: Campaign;

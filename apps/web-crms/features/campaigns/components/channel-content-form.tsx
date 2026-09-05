@@ -21,8 +21,8 @@ import {
   NonBlockTemplateFields,
 } from "@/features/campaigns/components/channel-form-block-fields";
 import { CHANNEL_ICON, renderFormattedText } from "@/features/campaigns/components/channel-utils";
-import { useTemplates } from "@/hooks/useTemplates";
-import type { CampaignChannel } from "@/types/campaign";
+import { useTemplates } from "@/features/campaigns/hooks/useTemplates";
+import type { CampaignChannel } from "@/features/campaigns/types";
 
 // ---------------------------------------------------------------------------
 // Types

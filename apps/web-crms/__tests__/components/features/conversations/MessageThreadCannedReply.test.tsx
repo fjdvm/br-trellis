@@ -2,8 +2,8 @@ import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MessageThread } from "@/features/conversations/components/message-thread";
 import { crmClient } from "@/lib/api/crm-client";
-import type { ConversationMessage } from "@/types/conversation-message";
-import type { CannedReplyListItem } from "@/types/canned-reply";
+import type { ConversationMessage } from "@/features/conversations/types";
+import type { CannedReplyListItem } from "@/features/campaigns/types";
 
 // The composer resolves {{agent_name}} from the session; keep it fixed here.
 jest.mock("next-auth/react", () => ({

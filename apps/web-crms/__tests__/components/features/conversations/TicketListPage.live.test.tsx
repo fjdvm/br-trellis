@@ -11,7 +11,7 @@
 import { render, screen } from "@testing-library/react";
 import {  TicketListPage  } from "@/features/conversations/components/ticket-list-page";
 import { crmClient } from "@/lib/api/crm-client";
-import type { TicketListItem } from "@/types/ticket-list";
+import type { TicketListItem } from "@/features/conversations/types";
 import liveTickets from "../../../fixtures/live-tickets.json";
 
 jest.mock("next/navigation", () => ({

@@ -6,8 +6,8 @@ import {
   HubConnectionBuilder,
   HttpTransportType,
 } from "@microsoft/signalr";
-import type { ConversationMessage } from "@/types/conversation-message";
-import type { TicketListItem } from "@/types/ticket-list";
+import type { ConversationMessage } from "@/features/conversations/types";
+import type { TicketListItem } from "@/features/conversations/types";
 
 /**
  * The ConversationHub base URL. The browser connects directly to api-crms's

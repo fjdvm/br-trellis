@@ -14,9 +14,9 @@ import {
 } from "@/components/ui/table";
 import { ScrollableTable } from "@/components/shared/ScrollableTable";
 import { TablePagination, type ClientPagination } from "@/components/shared/TablePagination";
-import { STATUS_BADGE_VARIANT, SOURCE_BADGE_VARIANT, isTerminalStatus } from "@/lib/tickets";
+import { STATUS_BADGE_VARIANT, SOURCE_BADGE_VARIANT, isTerminalStatus } from "@/features/conversations/services/tickets";
 import { formatName, formatEmail } from "@/lib/format-display";
-import type { TicketListItem } from "@/types/ticket-list";
+import type { TicketListItem } from "@/features/conversations/types";
 
 export type RowPending = { id: string; action: "claim" | "cancel" } | null;
 

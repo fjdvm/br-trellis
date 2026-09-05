@@ -68,7 +68,7 @@ jest.mock("@/components/ui/sidebar", () => ({
 }));
 
 // Mock the sync status hook
-jest.mock("@/hooks/useEcommerceSyncStatus", () => {
+jest.mock("@/features/ecommerce/hooks/useEcommerceSyncStatus", () => {
   let statusValue = { status: null as string | null, isLoading: true };
   return {
     useEcommerceSyncStatus: () => statusValue,
@@ -79,7 +79,7 @@ jest.mock("@/hooks/useEcommerceSyncStatus", () => {
   };
 });
 
-const { __setMockStatus } = require("@/hooks/useEcommerceSyncStatus");
+const { __setMockStatus } = require("@/features/ecommerce/hooks/useEcommerceSyncStatus");
 
 describe("Sidebar Tickets group (#99 rename)", () => {
   beforeEach(() => {

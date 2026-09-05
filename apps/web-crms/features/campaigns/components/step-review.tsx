@@ -3,8 +3,8 @@
 import {
   SYSTEM_PRESET_SEGMENTS,
 } from "@/features/campaigns/components/step2-audience";
-import type { SegmentListItem } from "@/types/segment";
-import type { CampaignChannel } from "@/types/campaign";
+import type { SegmentListItem } from "@/features/contacts/types";
+import type { CampaignChannel } from "@/features/campaigns/types";
 import type { ScheduleState } from "@/features/campaigns/components/schedule-step";
 
 const NO_SEGMENT = "__none__";

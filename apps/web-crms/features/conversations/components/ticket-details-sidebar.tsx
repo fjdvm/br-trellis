@@ -9,7 +9,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { formatName, formatEmail } from "@/lib/format-display";
-import type { TicketDetail, TicketWaitingOn } from "@/types/ticket-detail";
+import type { TicketDetail, TicketWaitingOn } from "@/features/conversations/types";
 
 const WAITING_ON_OPTIONS: TicketWaitingOn[] = ["Agent", "Customer", "None"];
 

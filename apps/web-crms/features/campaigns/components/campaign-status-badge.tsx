@@ -1,6 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import type { CampaignStatus } from "@/types/campaign";
+import type { CampaignStatus } from "@/features/campaigns/types";
 
 const STATUS_VARIANT: Record<CampaignStatus, React.ComponentProps<typeof Badge>["variant"]> = {
   Draft: "secondary",

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { crmClient } from "@/lib/api/crm-client";
-import { OrderHistory } from "@/types/customer";
+import { OrderHistory } from "@/features/customers/types";
 
 export function useCustomerOrders(customerId: string) {
   const [orders, setOrders] = useState<OrderHistory[]>([]);

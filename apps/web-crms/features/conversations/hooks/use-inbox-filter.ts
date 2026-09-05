@@ -1,6 +1,6 @@
 import { useMemo } from "react";
-import { isActiveStatus } from "@/lib/tickets";
-import type { TicketListItem } from "@/types/ticket-list";
+import { isActiveStatus } from "@/features/conversations/services/tickets";
+import type { TicketListItem } from "@/features/conversations/types";
 import type { InboxFilter } from "@/features/conversations/lib/inbox-types";
 
 export function useInboxFilter(

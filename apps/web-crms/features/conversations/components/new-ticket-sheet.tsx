@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/sheet";
 import { crmClient } from "@/lib/api/crm-client";
 import { formatName, formatEmail } from "@/lib/format-display";
-import type { ContactListItem } from "@/types/contact";
+import type { ContactListItem } from "@/features/contacts/types";
 
 interface NewTicketSheetProps {
   /** Called after a ticket is successfully created (e.g. to refetch the list). */

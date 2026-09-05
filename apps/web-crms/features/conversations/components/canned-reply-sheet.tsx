@@ -26,7 +26,7 @@ import { crmClient } from "@/lib/api/crm-client";
 import type {
   CannedReplyListItem,
   CannedReplyCategoryListItem,
-} from "@/types/canned-reply";
+} from "@/features/campaigns/types";
 
 interface CannedReplySheetProps {
   /** Active categories to choose from. */

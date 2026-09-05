@@ -5,7 +5,7 @@ import { crmClient } from "@/lib/api/crm-client";
 import type {
   ConversationMessage,
   PostStaffMessageInput,
-} from "@/types/conversation-message";
+} from "@/features/conversations/types";
 
 /**
  * Owns fetching, polling, and (feature 4 / #86) optimistic-append state for a

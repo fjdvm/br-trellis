@@ -6,7 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { formatName } from "@/lib/format-display";
 import { cn } from "@/lib/utils";
-import type { ConversationMessage } from "@/types/conversation-message";
+import type { ConversationMessage } from "@/features/conversations/types";
 
 /** Fallback label for a Contact-authored message when the ticket has no linked contact. */
 export const CONTACT_FALLBACK_LABEL = "Customer";

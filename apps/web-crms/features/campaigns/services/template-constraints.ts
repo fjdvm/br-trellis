@@ -1,4 +1,4 @@
-import type { CampaignChannel } from "@/types/campaign";
+import type { CampaignChannel } from "@/features/campaigns/types";
 
 export type BlockType = "carousel" | "image" | "link" | "heading" | "text" | "button";
 

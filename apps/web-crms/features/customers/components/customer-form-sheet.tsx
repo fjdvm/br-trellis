@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/sheet";
 import { crmClient } from "@/lib/api/crm-client";
 
-import type { CustomerType } from "@/types/customer";
+import type { CustomerType } from "@/features/customers/types";
 
 interface CustomerFormSheetProps {
   open: boolean;

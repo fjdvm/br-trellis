@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { crmClient } from "@/lib/api/crm-client";
-import { Template } from "@/types/campaign";
+import { Template } from "@/features/campaigns/types";
 
 export function useTemplates(channel?: string) {
   const [data, setData] = useState<Template[]>([]);

@@ -2,7 +2,7 @@ import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { TicketDetailPage } from "@/features/conversations/components/ticket-detail-page";
 import { crmClient } from "@/lib/api/crm-client";
-import type { TicketDetail } from "@/types/ticket-detail";
+import type { TicketDetail } from "@/features/conversations/types";
 
 // Radix Select relies on pointer-capture and scrollIntoView APIs that jsdom
 // does not implement. Polyfill them so the dropdown can open under test.

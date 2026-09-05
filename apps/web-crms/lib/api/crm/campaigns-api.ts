@@ -8,7 +8,7 @@ import {
   CampaignDispatchResult,
   CampaignEngagementMetrics,
   CampaignAnalytics,
-} from "@/types/campaign";
+} from "@/features/campaigns/types";
 
 export const campaignsApi = {
   list: (status?: string) => {

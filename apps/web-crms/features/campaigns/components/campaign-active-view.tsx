@@ -11,7 +11,7 @@ import { CampaignActiveMetricsHeader } from "@/features/campaigns/components/cam
 
 import { StorefrontLivePreview } from "@/features/campaigns/components/storefront-live-preview";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import type { Campaign, CampaignAnalytics } from "@/types/campaign";
+import type { Campaign, CampaignAnalytics } from "@/features/campaigns/types";
 
 interface CampaignActiveViewProps {
   campaign: Campaign;

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { crmClient } from "@/lib/api/crm-client";
-import { Message } from "@/types/message";
+import { Message } from "@/features/conversations/types";
 
 export function useMessages(ticketId: string | null) {
   const [messages, setMessages] = useState<Message[]>([]);

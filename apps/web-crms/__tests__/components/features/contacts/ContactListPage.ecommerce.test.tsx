@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import { ContactListPage } from "@/features/contacts/components/contact-list-page";
 import { crmClient } from "@/lib/api/crm-client";
-import type { ContactListItem } from "@/types/contact";
+import type { ContactListItem } from "@/features/contacts/types";
 
 const mockPush = jest.fn();
 

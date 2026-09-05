@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { crmClient } from "@/lib/api/crm-client";
-import { TicketListItem, PaginatedTicketResponse } from "@/types/ticket";
+import { LegacyTicketListItem, PaginatedTicketResponse } from "@/features/conversations/types";
 
 export function useTickets(
   page = 1,
@@ -10,7 +10,7 @@ export function useTickets(
   status?: string,
   assignedToIdOrCustomerId?: string
 ) {
-  const [tickets, setTickets] = useState<TicketListItem[]>([]);
+  const [tickets, setTickets] = useState<LegacyTicketListItem[]>([]);
   const [totalCount, setTotalCount] = useState(0);
   const [data, setData] = useState<PaginatedTicketResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -35,13 +35,5 @@ export function useTickets(
     fetchTickets();
   }, [fetchTickets]);
 
-  return {
-    tickets,
-    totalCount,
-    data,
-    isLoading,
-    error,
-    refetch: fetchTickets,
-    setTickets,
-  };
+  return { tickets, totalCount, data, isLoading, error, refetch: fetchTickets };
 }

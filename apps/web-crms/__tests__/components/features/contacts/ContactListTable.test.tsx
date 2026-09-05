@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { ContactListTable } from "@/features/contacts/components/contact-list-table";
-import type { ContactListItem } from "@/types/contact";
+import type { ContactListItem } from "@/features/contacts/types";
 
 jest.mock("next/navigation", () => ({
   useRouter: () => ({

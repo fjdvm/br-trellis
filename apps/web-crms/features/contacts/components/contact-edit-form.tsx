@@ -8,8 +8,8 @@ import {
   validateContactFields,
   hasErrors,
   type ContactFieldErrors,
-} from "@/lib/validators/contact-validators";
-import type { CompanyListItem } from "@/types/company";
+} from "@/features/contacts/schemas/contact-validators";
+import type { CompanyListItem } from "@/features/contacts/types";
 
 interface ContactEditFormProps {
   editName: string;

@@ -1,7 +1,7 @@
 import { renderHook, act } from "@testing-library/react";
 import { useSignalR } from "@/hooks/useSignalR";
 import * as signalR from "@microsoft/signalr";
-import type { Message } from "@/types/message";
+import type { Message } from "@/features/conversations/types";
 
 const mockHandlers: Record<string, Function> = {};
 

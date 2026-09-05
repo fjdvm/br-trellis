@@ -22,7 +22,7 @@ import {
   useClientPagination,
 } from "@/components/shared/TablePagination";
 import { formatName } from "@/lib/format-display";
-import type { CompanyListItem } from "@/types/company";
+import type { CompanyListItem } from "@/features/contacts/types";
 import { NewCompanySheet } from "@/features/contacts/components/new-company-sheet";
 import Link from "next/link";
 

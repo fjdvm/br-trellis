@@ -4,7 +4,7 @@ import {
   ConversationActionsMenu,
   type ConversationAction,
 } from "@/features/conversations/components/conversation-actions-menu";
-import type { TicketStatus } from "@/types/ticket-detail";
+import type { TicketStatus } from "@/features/conversations/types";
 
 // Radix DropdownMenu relies on pointer-capture APIs jsdom does not implement.
 beforeAll(() => {

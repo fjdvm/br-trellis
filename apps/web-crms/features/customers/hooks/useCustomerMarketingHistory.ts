@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { crmClient } from "@/lib/api/crm-client";
-import { MarketingInteraction } from "@/types/customer";
+import { MarketingInteraction } from "@/features/customers/types";
 
 interface UseCustomerMarketingOptions {
   customerId: string;

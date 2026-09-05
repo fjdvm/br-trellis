@@ -13,7 +13,7 @@ import {
   Link as LinkIcon,
 } from "lucide-react";
 import { EmailBlockCard, type TemplateBlock } from "@/features/campaigns/components/template-builder-components";
-import type { BlockType, ChannelConstraints } from "@/lib/template-constraints";
+import type { BlockType, ChannelConstraints } from "@/features/campaigns/services/template-constraints";
 
 interface EmailBuilderContentProps {
   builderName: string;
