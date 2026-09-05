@@ -42,6 +42,8 @@ export function ScheduleStep({
   value: ScheduleState;
   onChange: (patch: Partial<ScheduleState>) => void;
 }) {
+  const isSendNow = value.scheduleType === "SendNow";
+
   return (
     <div className="space-y-lg">
       {emailSelected && (
@@ -49,7 +51,14 @@ export function ScheduleStep({
           <Label htmlFor="schedule-type">Email send</Label>
           <Select
             value={value.scheduleType}
-            onValueChange={(v) => onChange({ scheduleType: v as ScheduleType })}
+            onValueChange={(v) => {
+              const newType = v as ScheduleType;
+              if (newType === "SendNow") {
+                onChange({ scheduleType: newType, startDate: undefined });
+              } else {
+                onChange({ scheduleType: newType });
+              }
+            }}
           >
             <SelectTrigger id="schedule-type" aria-label="Email send">
               <SelectValue />
@@ -64,13 +73,14 @@ export function ScheduleStep({
 
       <div className="flex flex-col md:flex-row gap-md">
         <div className="space-y-sm flex-1">
-          <Label htmlFor="start-date">
+          <Label htmlFor="start-date" className={isSendNow ? "opacity-50" : ""}>
             {hasStorefrontChannel ? "Active window start" : "Scheduled start"}
           </Label>
           <Input
             id="start-date"
             type="datetime-local"
-            value={value.startDate ?? ""}
+            disabled={isSendNow}
+            value={isSendNow ? "" : (value.startDate ?? "")}
             onChange={(e) => onChange({ startDate: e.target.value })}
           />
         </div>
@@ -87,8 +97,9 @@ export function ScheduleStep({
         )}
       </div>
       <p className="text-sm text-muted-foreground">
-        Dates are optional for a draft; a Banner/Popup runs for its active window,
-        and a scheduled Email sends at its start time once launched.
+        {isSendNow
+          ? "The email will be sent immediately upon launching the campaign."
+          : "Dates are optional for a draft; a Banner/Popup runs for its active window, and a scheduled Email sends at its start time once launched."}
       </p>
     </div>
   );
