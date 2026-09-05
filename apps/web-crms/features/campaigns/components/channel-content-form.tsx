@@ -66,12 +66,7 @@ export function ChannelContentForm({
 
   const selectedTemplate = templates.find((t) => t.id === value.templateId);
   const isBlockTemplate = selectedTemplate?.format === "Blocks";
-  const selectedPredefinedId = predefinedTemplates.some((t) => t.id === value.templateId)
-    ? value.templateId ?? ""
-    : "";
-  const selectedBlockTemplateId = blockTemplates.some((t) => t.id === value.templateId)
-    ? value.templateId ?? ""
-    : "";
+  const selectedTemplateId = selectedTemplate ? value.templateId ?? "" : "";
 
   let parsedBlocks: Array<{
     id: string;
@@ -202,32 +197,15 @@ export function ChannelContentForm({
           <h3 className="text-title-lg font-bold text-foreground">{channel} Content</h3>
         </div>
 
-        {/* Pre-defined template picker */}
+        {/* Template picker (pre-defined and custom templates together) */}
         <div className="space-y-sm">
           <Label htmlFor={`${channel}-template`}>Template</Label>
-          <Select value={selectedPredefinedId} onValueChange={handleTemplateSelect}>
+          <Select value={selectedTemplateId} onValueChange={handleTemplateSelect}>
             <SelectTrigger id={`${channel}-template`} aria-label={`${channel} template`}>
               <SelectValue placeholder="Choose a template" />
             </SelectTrigger>
             <SelectContent>
-              {predefinedTemplates.map((t) => (
-                <SelectItem key={t.id} value={t.id}>
-                  {t.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        {/* Custom (Block) template picker */}
-        <div className="space-y-sm">
-          <Label htmlFor={`${channel}-custom-template`}>Custom Template</Label>
-          <Select value={selectedBlockTemplateId} onValueChange={handleTemplateSelect}>
-            <SelectTrigger id={`${channel}-custom-template`} aria-label={`${channel} custom template`}>
-              <SelectValue placeholder="Choose a custom template" />
-            </SelectTrigger>
-            <SelectContent>
-              {blockTemplates.map((t) => (
+              {templates.map((t) => (
                 <SelectItem key={t.id} value={t.id}>
                   {t.name}
                 </SelectItem>

@@ -161,7 +161,7 @@ describe("ChannelContentForm with BlockTemplate", () => {
     expect(screen.getByLabelText("Subject")).toBeInTheDocument();
   });
 
-  it("renders separate pre-defined and custom Template pickers, never merged into one dropdown (#181)", () => {
+  it("renders a single Template picker listing both pre-defined and custom templates", () => {
     render(
       <ChannelContentForm
         channel="Email"
@@ -171,7 +171,7 @@ describe("ChannelContentForm with BlockTemplate", () => {
     );
 
     expect(screen.getByLabelText("Email template")).toBeInTheDocument();
-    expect(screen.getByLabelText("Email custom template")).toBeInTheDocument();
+    expect(screen.queryByLabelText("Email custom template")).not.toBeInTheDocument();
   });
 });
 
