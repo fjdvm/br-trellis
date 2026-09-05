@@ -16,7 +16,7 @@ export function useTemplates(channel?: string) {
         crmClient.blockTemplates.list(channel).catch(() => []),
       ]);
 
-      const blockTemplatesAsTemplates: Template[] = (blockRes ?? []).map((bt) => ({
+      const blockTemplatesAsTemplates: Template[] = (blockRes ?? []).map((bt: import("@/types/block-template").BlockTemplate) => ({
         id: bt.id,
         name: bt.name,
         description: bt.description,
