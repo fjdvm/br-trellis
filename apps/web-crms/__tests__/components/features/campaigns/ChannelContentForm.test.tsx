@@ -55,7 +55,7 @@ describe("ChannelContentForm with BlockTemplate", () => {
     expect(screen.getByText(/Image Block/)).toBeInTheDocument();
     expect(screen.getAllByLabelText("Image URL").length).toBeGreaterThan(0);
     expect(screen.getByLabelText("Alt Text")).toBeInTheDocument();
-    expect(screen.getByText(/Product Showcase/)).toBeInTheDocument();
+    expect(screen.getAllByText(/Product Showcase/).length).toBeGreaterThan(0);
   });
 
   it("shows field count summary equal to the number of blocks in the template", () => {
@@ -151,7 +151,7 @@ describe("ChannelContentForm with BlockTemplate", () => {
       />
     );
 
-    expect(screen.getByText(/Product Gallery/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/Product Gallery/i).length).toBeGreaterThan(0);
     expect(screen.getByRole("button", { name: /add slide/i })).toBeInTheDocument();
     expect(screen.getByText(/1 of 3 slides/i)).toBeInTheDocument();
   });

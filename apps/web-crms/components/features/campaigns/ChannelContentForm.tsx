@@ -254,7 +254,7 @@ export function ChannelContentForm({
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-lg items-start">
       {/* ── Left column: form ── */}
-      <div className="lg:col-span-7 space-y-md rounded-lg border border-border p-lg">
+      <div className="lg:col-span-7 space-y-md p-lg">
         {/* Channel header */}
         <div className="flex items-center gap-2 pb-md border-b border-border">
           <div className="w-8 h-8 rounded bg-muted flex items-center justify-center">
@@ -622,7 +622,7 @@ export function ChannelContentForm({
       </div>
 
       {/* ── Right column: live preview ── */}
-      <div className="lg:col-span-5">
+      <div className="lg:col-span-5 lg:border-l lg:border-border lg:pl-lg">
         <StorefrontLivePreview
           channel={channel}
           content={livePreviewContent}
