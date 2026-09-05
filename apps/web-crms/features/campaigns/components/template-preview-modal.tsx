@@ -20,7 +20,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { StorefrontLivePreview } from "@/features/campaigns/components/storefront-live-preview";
 import { TemplateDetailsTab } from "@/features/campaigns/components/template-details-tab";
 import { TemplateSourceTab } from "@/features/campaigns/components/template-source-tab";
-import { Code, Eye, FileText, Info, Layers, Sparkles, MoreVertical, Edit3, Trash2 } from "lucide-react";
+import { Code, Eye, FileText, Sparkles } from "lucide-react";
 
 import type { Template } from "@/features/campaigns/types";
 
@@ -163,9 +163,21 @@ export function TemplatePreviewModal({
             <div />
           )}
 
-          <Button variant="outline" onClick={() => onOpenChange(false)} className="text-base font-medium px-4 py-2">
-            Close
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" onClick={() => onOpenChange(false)} className="text-base font-medium px-4 py-2">
+              Close
+            </Button>
+            <Button
+              onClick={() => {
+                onOpenChange(false);
+                onUseTemplate(template);
+              }}
+              className="gap-1.5 text-base font-medium px-4 py-2"
+            >
+              <Sparkles className="w-4 h-4" />
+              Use Template
+            </Button>
+          </div>
         </div>
       </DialogContent>
     </Dialog>

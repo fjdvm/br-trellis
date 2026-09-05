@@ -1,6 +1,6 @@
 "use client";
 
-import { Eye, Edit3, Trash2, MoreVertical } from "lucide-react";
+import { Eye, Edit3, Trash2, MoreVertical, Sparkles } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -159,6 +159,16 @@ export function TemplateCard({ template, onPreview, onUse, onEdit, onDelete }: T
           >
             <Eye className="w-3.5 h-3.5" />
             Preview
+          </Button>
+
+          <Button
+            type="button"
+            size="sm"
+            onClick={() => onUse(template)}
+            className="flex-1 gap-1 text-xs"
+          >
+            <Sparkles className="w-3.5 h-3.5" />
+            Use Template
           </Button>
 
           {hasActions && (

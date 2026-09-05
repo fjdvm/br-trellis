@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Mail, PanelTop, AppWindow, Plus, Trash2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -162,6 +162,22 @@ export function ChannelContentForm({
       });
     }
   }
+
+  // Auto-populate a templateId that arrived with no fields set yet, without re-running on reload.
+  useEffect(() => {
+    if (!value.templateId) return;
+    const hasContent = isBlockTemplate
+      ? Boolean(value.blockValues && Object.keys(value.blockValues).length > 0)
+      : channel === "Banner"
+      ? Boolean(value.body)
+      : channel === "Popup"
+      ? Boolean(value.heading || value.body)
+      : Boolean(value.subject || value.body);
+    if (!hasContent) {
+      handleTemplateSelect(value.templateId);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [value.templateId, templates]);
 
   function updateBlockValue(blockId: string, newVal: BlockValue) {
     onChange({

@@ -2,12 +2,14 @@ import React from "react";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { CampaignWizard } from "@/features/campaigns/components/campaign-wizard";
+import { useSearchParams } from "next/navigation";
 import { useTemplates } from "@/features/campaigns/hooks/useTemplates";
 import { useSegments } from "@/features/contacts/hooks/useSegments";
 import { campaignsApi } from "@/features/campaigns/services/campaigns-api";
 
 jest.mock("next/navigation", () => ({
   useRouter: () => ({ push: jest.fn() }),
+  useSearchParams: jest.fn(() => new URLSearchParams()),
 }));
 jest.mock("@/features/campaigns/hooks/useTemplates", () => ({ useTemplates: jest.fn() }));
 jest.mock("@/features/contacts/hooks/useSegments", () => ({ useSegments: jest.fn() }));
@@ -39,6 +41,7 @@ describe("CampaignWizard (Email only, #159)", () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    (useSearchParams as jest.Mock).mockReturnValue(new URLSearchParams());
     (useTemplates as jest.Mock).mockReturnValue({
       data: [emailTemplate],
       predefinedTemplates: [emailTemplate],
@@ -120,5 +123,25 @@ describe("CampaignWizard (Email only, #159)", () => {
     const emailContent = payload.channelContents.find((c: { channel: string }) => c.channel === "Email");
     expect(emailContent.subject).toBe("Big news");
     expect(emailContent.body).toBe("Come shop");
+  });
+
+  it("pre-selects the channel and template carried in ?templateId=&channel= from the Use Template hand-off", async () => {
+    (useSearchParams as jest.Mock).mockReturnValue(
+      new URLSearchParams({ templateId: "tpl-email-1", channel: "Email" })
+    );
+    const user = userEvent.setup({ delay: null });
+    render(<CampaignWizard />);
+
+    const email = screen.getByRole("checkbox", { name: "Email" });
+    expect(email).toHaveAttribute("aria-checked", "true");
+
+    await user.type(screen.getByLabelText(/campaign title/i), "From Template");
+    await user.click(screen.getByRole("button", { name: /next/i }));
+    await waitFor(() => expect(screen.getByTestId("wizard-step-title")).toHaveTextContent("Audience"));
+    await user.type(screen.getByLabelText(/additional emails/i), "vip@x.io");
+    await user.keyboard("{Enter}");
+    await user.click(screen.getByRole("button", { name: /next/i }));
+
+    await waitFor(() => expect(screen.getByLabelText("Subject")).toHaveValue("Simple Announcement"));
   });
 });

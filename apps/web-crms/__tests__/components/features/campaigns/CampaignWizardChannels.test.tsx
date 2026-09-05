@@ -8,6 +8,7 @@ import { campaignsApi } from "@/features/campaigns/services/campaigns-api";
 
 jest.mock("next/navigation", () => ({
   useRouter: () => ({ push: jest.fn() }),
+  useSearchParams: () => new URLSearchParams(),
 }));
 jest.mock("@/features/campaigns/hooks/useTemplates", () => ({ useTemplates: jest.fn() }));
 jest.mock("@/features/contacts/hooks/useSegments", () => ({ useSegments: jest.fn() }));

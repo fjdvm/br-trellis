@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -18,7 +18,7 @@ import { Step2Audience, SYSTEM_PRESET_SEGMENTS } from "@/features/campaigns/comp
 import { Step3Content } from "@/features/campaigns/components/step3-content";
 import { StepReview } from "@/features/campaigns/components/step-review";
 import { CampaignCancelModal } from "@/features/campaigns/components/campaign-cancel-modal";
-import type { Campaign } from "@/features/campaigns/types";
+import type { Campaign, CampaignChannel } from "@/features/campaigns/types";
 import {
   useCampaignWizardState,
   NO_SEGMENT,
@@ -26,8 +26,11 @@ import {
   type Step,
 } from "@/features/campaigns/hooks/use-campaign-wizard-state";
 
+const VALID_CHANNELS: CampaignChannel[] = ["Email", "Banner", "Popup"];
+
 export function CampaignWizard({ existing }: { existing?: Campaign }) {
   const { data: segments } = useSegments();
+  const searchParams = useSearchParams();
 
   const {
     router,
@@ -57,6 +60,18 @@ export function CampaignWizard({ existing }: { existing?: Campaign }) {
     saveDraft,
     saveAndLaunch,
   } = useCampaignWizardState(existing);
+
+  // Pre-select the channel/template carried by the "Use Template" hand-off; never runs when editing.
+  useEffect(() => {
+    if (existing) return;
+    const channelParam = searchParams.get("channel");
+    const templateId = searchParams.get("templateId");
+    if (!templateId || !VALID_CHANNELS.includes(channelParam as CampaignChannel)) return;
+    const channel = channelParam as CampaignChannel;
+    toggleChannel(channel);
+    updateContent(channel, { templateId });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const canProceedPlatform = title.trim().length > 0 && channels.length > 0;
 

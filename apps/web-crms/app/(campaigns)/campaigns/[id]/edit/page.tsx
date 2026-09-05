@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { CampaignEditPage } from "@/features/campaigns/components/campaign-edit-page";
 
 interface PageProps {
@@ -6,5 +7,9 @@ interface PageProps {
 
 export default async function Page({ params }: PageProps) {
   const { id } = await params;
-  return <CampaignEditPage id={id} />;
+  return (
+    <Suspense fallback={null}>
+      <CampaignEditPage id={id} />
+    </Suspense>
+  );
 }

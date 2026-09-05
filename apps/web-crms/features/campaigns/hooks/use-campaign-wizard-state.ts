@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { campaignsApi } from "@/features/campaigns/services/campaigns-api";
 import { toLocalInput, type ScheduleState } from "@/features/campaigns/components/schedule-step";
-import type { ChannelContentState } from "@/features/campaigns/components/channel-content-form";
+import type { BlockValue, ChannelContentState } from "@/features/campaigns/components/channel-content-form";
 import type {
   Campaign,
   CampaignChannel,
@@ -35,16 +35,29 @@ export function useCampaignWizardState(existing?: Campaign) {
   const [contents, setContents] = useState<Record<string, ChannelContentState>>(() => {
     const initial: Record<string, ChannelContentState> = {};
     for (const c of existing?.channelContents ?? []) {
+      // body holds JSON.stringify(blockValues) for block-template content; parse it back on reload.
+      let blockValues: Record<string, BlockValue> | undefined;
+      if (c.body) {
+        try {
+          const parsed = JSON.parse(c.body);
+          if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+            blockValues = parsed as Record<string, BlockValue>;
+          }
+        } catch {
+          // Plain string body (non-block-template content) — leave blockValues unset.
+        }
+      }
       initial[c.channel] = {
         templateId: c.templateId ?? undefined,
         subject: c.subject ?? undefined,
         heading: c.heading ?? undefined,
-        body: c.body ?? undefined,
+        body: blockValues ? undefined : c.body ?? undefined,
         imageUrl: c.imageUrl ?? undefined,
         linkUrl: c.linkUrl ?? undefined,
         ctaText: c.ctaText ?? undefined,
         ctaUrl: c.ctaUrl ?? undefined,
         dismissible: c.dismissible ?? false,
+        blockValues,
       };
     }
     return initial;
