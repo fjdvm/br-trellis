@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Mail;
+using api_crms.Helpers;
 using api_crms.Interfaces;
 
 namespace api_crms.Services;
@@ -32,12 +33,14 @@ public class BrevoMarketingEmailSender(
         var failed = 0;
         var errors = new List<string>();
 
+        var renderedHtml = EmailBodyRenderer.RenderToHtml(htmlBody);
+
         foreach (var recipient in recipients)
         {
             cancellationToken.ThrowIfCancellationRequested();
             try
             {
-                var body = AppendUnsubscribeFooter(htmlBody, recipient, unsubscribeBaseUrl);
+                var body = AppendUnsubscribeFooter(renderedHtml, recipient, unsubscribeBaseUrl);
                 await SendSingleAsync(campaignId, recipient, subject, body, cancellationToken);
                 sent++;
             }
