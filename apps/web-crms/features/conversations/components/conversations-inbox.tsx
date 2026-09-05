@@ -3,8 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { Inbox as InboxIcon, MessagesSquare } from "lucide-react";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
+
 import {
   Select,
   SelectContent,
@@ -16,12 +15,10 @@ import { crmClient } from "@/lib/api/crm-client";
 import { useCurrentAgentId } from "@/hooks/useCurrentAgentId";
 import { useRefetchOnFocus } from "@/hooks/useRefetchOnFocus";
 import { useSignalR } from "@/hooks/useSignalR";
-import { MessageThread } from "@/features/conversations/components/message-thread";
-import type { ConversationAction } from "@/features/conversations/components/conversation-actions-menu";
-import { STATUS_BADGE_VARIANT, isActiveStatus, isTerminalStatus } from "@/lib/tickets";
-import { formatConversationTime } from "@/lib/format-conversation-time";
-import { formatName, formatEmail } from "@/lib/format-display";
+import { isActiveStatus, isTerminalStatus } from "@/lib/tickets";
 import type { TicketListItem } from "@/types/ticket-list";
+import { ConversationListItems } from "@/features/conversations/components/conversation-list-items";
+import { ConversationPane } from "@/features/conversations/components/conversation-pane";
 
 /**
  * The Inbox's conversation filter. The worklist only ever contains active
@@ -69,26 +66,6 @@ function selectedIdFromPathname(pathname: string | null): string | undefined {
   return match?.[1];
 }
 
-/** The thread-list label for a conversation: contact name → email → em dash. */
-function conversationLabel(ticket: TicketListItem): string {
-  return (
-    formatName(ticket.contact?.name) ??
-    formatEmail(ticket.contact?.email) ??
-    "\u2014"
-  );
-}
-
-/** Up-to-two-letter initials for a conversation's avatar (e.g. "Jane Doe" → "JD"). */
-function conversationInitials(ticket: TicketListItem): string {
-  const label = conversationLabel(ticket);
-  if (label === "\u2014") return "?";
-  const parts = label.split(/\s+/).filter(Boolean);
-  const initials = parts
-    .slice(0, 2)
-    .map((p) => p[0]?.toUpperCase() ?? "")
-    .join("");
-  return initials || "?";
-}
 
 /**
  * The messenger-style Conversations Inbox: a split layout with a conversation
@@ -352,59 +329,10 @@ export function ConversationsInbox({
               </p>
             </div>
           ) : (
-            <ul aria-label="Conversations" className="min-w-[280px]">
-              {conversations.map((ticket) => {
-                const isSelected = ticket.id === selectedTicketId;
-                return (
-                  <li key={ticket.id} className="relative">
-                    {/* Accent bar marks the currently-open conversation. */}
-                    {isSelected && (
-                      <span
-                        aria-hidden="true"
-                        className="absolute left-0 top-0 bottom-0 w-1 bg-primary"
-                      />
-                    )}
-                    <button
-                      type="button"
-                      aria-current={isSelected ? "true" : undefined}
-                      onClick={() =>
-                        router.push(`/conversations/inbox/${ticket.id}`)
-                      }
-                      className={`w-full text-left p-md border-b border-border transition-colors flex gap-sm ${
-                        isSelected ? "bg-muted" : "hover:bg-muted/50"
-                      }`}
-                    >
-                      <Avatar className="h-10 w-10">
-                        <AvatarFallback className="text-sm font-semibold">
-                          {conversationInitials(ticket)}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="min-w-0 flex-1">
-                        <div className="flex justify-between items-start gap-2">
-                          <h3 className="text-base font-semibold text-foreground truncate">
-                            {conversationLabel(ticket)}
-                          </h3>
-                          <span className="text-sm text-muted-foreground shrink-0">
-                            {formatConversationTime(ticket.updatedAt)}
-                          </span>
-                        </div>
-                        <p className="text-sm text-muted-foreground truncate mt-xs">
-                          {ticket.subject}
-                        </p>
-                        <div className="flex items-center gap-2 mt-sm">
-                          <Badge variant={STATUS_BADGE_VARIANT[ticket.status]}>
-                            {ticket.status}
-                          </Badge>
-                          {ticket.waitingOn === "Agent" && (
-                            <Badge variant="secondary">Waiting on you</Badge>
-                          )}
-                        </div>
-                      </div>
-                    </button>
-                  </li>
-                );
-              })}
-            </ul>
+            <ConversationListItems
+              conversations={conversations}
+              selectedTicketId={selectedTicketId}
+            />
           )}
         </div>
       </div>
@@ -456,138 +384,3 @@ interface ConversationPaneProps {
   listLoaded: boolean;
 }
 
-/**
- * Wraps the reused `MessageThread` with the same reply-side behavior the ticket
- * detail page has always had: on a successful send, flip the ticket's WaitingOn
- * to Customer. When the open conversation isn't in my loaded list (a deep-linked
- * colleague's ticket), fetch it by id so the composer's terminal lockout and the
- * contact header are accurate.
- */
-function ConversationPane({ ticketId, ticket, listLoaded }: ConversationPaneProps) {
-  const [resolved, setResolved] = useState<TicketListItem | null>(ticket);
-  // True while a lifecycle mutation (status change / unclaim) is in flight, so
-  // the header's 3-dot menu disables itself until the call settles.
-  const [actionBusy, setActionBusy] = useState(false);
-  const [actionError, setActionError] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (ticket) {
-      // The open conversation is one of my worklist rows — use it directly.
-      setResolved(ticket);
-      return;
-    }
-    // Not in my worklist. Wait until the list is known before deep-fetching, so
-    // a worklist row still loading in doesn't trigger a redundant getById.
-    if (!listLoaded) return;
-    let cancelled = false;
-    void (async () => {
-      try {
-        const detail = await crmClient.conversationTickets.getById(ticketId);
-        if (!cancelled) {
-          setResolved({
-            id: detail.id,
-            subject: detail.subject,
-            status: detail.status,
-            waitingOn: detail.waitingOn,
-            source: detail.source,
-            assignedToId: detail.assignedToId,
-            assignedToName: detail.assignedToName,
-            assignedToEmail: detail.assignedToEmail,
-            contactId: detail.contactId,
-            contact: detail.contact,
-            createdAt: detail.createdAt,
-            updatedAt: detail.updatedAt,
-          });
-        }
-      } catch {
-        // Leave `resolved` null; MessageThread still renders its own thread and
-        // surfaces any message-fetch error itself.
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [ticketId, ticket, listLoaded]);
-
-  const isTerminal = resolved ? isTerminalStatus(resolved.status) : false;
-
-  function handleMessageSent() {
-    void crmClient.conversationTickets.setWaitingOn(ticketId, {
-      waitingOn: "Customer",
-    });
-  }
-
-  /**
-   * Run a lifecycle mutation from the header's 3-dot menu. Each action maps to
-   * the same conversationTickets endpoints the ticket detail page uses:
-   * `ongoing`/`complete`/`cancel` change Status; `unclaim` releases ownership.
-   * The returned `TicketDetail` is projected back into the pane's `resolved`
-   * row so the header, composer lockout, and status all update in place — no
-   * refetch needed. The Conversations Inbox list re-syncs via its SignalR
-   * `onTicketStatusChanged` / focus refetch, so a now-terminal or unclaimed
-   * conversation drops out of the worklist on its own.
-   */
-  function handleAction(action: ConversationAction) {
-    setActionBusy(true);
-    setActionError(null);
-    void (async () => {
-      try {
-        const updated =
-          action === "unclaim"
-            ? await crmClient.conversationTickets.unclaim(ticketId)
-            : await crmClient.conversationTickets.changeStatus(ticketId, {
-                status:
-                  action === "ongoing"
-                    ? "Ongoing"
-                    : action === "complete"
-                    ? "Completed"
-                    : "Canceled",
-              });
-        setResolved({
-          id: updated.id,
-          subject: updated.subject,
-          status: updated.status,
-          waitingOn: updated.waitingOn,
-          source: updated.source,
-          assignedToId: updated.assignedToId,
-          assignedToName: updated.assignedToName,
-          assignedToEmail: updated.assignedToEmail,
-          contactId: updated.contactId,
-          contact: updated.contact,
-          createdAt: updated.createdAt,
-          updatedAt: updated.updatedAt,
-        });
-      } catch (err) {
-        setActionError(
-          err instanceof Error ? err.message : "Action failed. Please try again."
-        );
-      } finally {
-        setActionBusy(false);
-      }
-    })();
-  }
-
-  return (
-    <div className="flex h-full min-h-0 flex-col">
-      {actionError && (
-        <p
-          className="px-md pt-md text-base text-destructive shrink-0"
-          role="alert"
-        >
-          {actionError}
-        </p>
-      )}
-      <MessageThread
-        ticketId={ticketId}
-        contactName={resolved?.contact?.name ?? null}
-        contactEmail={resolved?.contact?.email ?? null}
-        ticketSubject={resolved?.subject ?? null}
-        isTerminal={isTerminal}
-        onMessageSent={handleMessageSent}
-        status={resolved?.status}
-        onAction={resolved ? handleAction : undefined}
-        actionBusy={actionBusy}
-      />
-    </div>
-  );
-}

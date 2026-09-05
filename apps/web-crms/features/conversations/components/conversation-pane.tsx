@@ -7,22 +7,45 @@ import type { ConversationAction } from "@/features/conversations/components/con
 import { isTerminalStatus } from "@/lib/tickets";
 import type { TicketListItem } from "@/types/ticket-list";
 
-interface ConversationPaneProps {
+export interface ConversationPaneProps {
   ticketId: string;
+  /**
+   * The ticket row from the loaded list, when the open conversation is one of
+   * my worklist conversations. `null` when deep-linked to a ticket outside my
+   * worklist — the pane then fetches it by id so contact/terminal are correct.
+   */
   ticket: TicketListItem | null;
+  /**
+   * Whether the worklist list has finished loading. The pane waits for this
+   * before deciding to fetch by id, so a worklist conversation opened via
+   * navigation uses its already-loaded row instead of triggering a redundant
+   * `getById` during the list's initial load window.
+   */
   listLoaded: boolean;
 }
 
+/**
+ * Wraps the reused `MessageThread` with the same reply-side behavior the ticket
+ * detail page has always had: on a successful send, flip the ticket's WaitingOn
+ * to Customer. When the open conversation isn't in my loaded list (a deep-linked
+ * colleague's ticket), fetch it by id so the composer's terminal lockout and the
+ * contact header are accurate.
+ */
 export function ConversationPane({ ticketId, ticket, listLoaded }: ConversationPaneProps) {
   const [resolved, setResolved] = useState<TicketListItem | null>(ticket);
+  // True while a lifecycle mutation (status change / unclaim) is in flight, so
+  // the header's 3-dot menu disables itself until the call settles.
   const [actionBusy, setActionBusy] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
 
   useEffect(() => {
     if (ticket) {
+      // The open conversation is one of my worklist rows — use it directly.
       setResolved(ticket);
       return;
     }
+    // Not in my worklist. Wait until the list is known before deep-fetching, so
+    // a worklist row still loading in doesn't trigger a redundant getById.
     if (!listLoaded) return;
     let cancelled = false;
     void (async () => {
@@ -45,7 +68,8 @@ export function ConversationPane({ ticketId, ticket, listLoaded }: ConversationP
           });
         }
       } catch {
-        // Leave `resolved` null
+        // Leave `resolved` null; MessageThread still renders its own thread and
+        // surfaces any message-fetch error itself.
       }
     })();
     return () => {
@@ -61,6 +85,16 @@ export function ConversationPane({ ticketId, ticket, listLoaded }: ConversationP
     });
   }
 
+  /**
+   * Run a lifecycle mutation from the header's 3-dot menu. Each action maps to
+   * the same conversationTickets endpoints the ticket detail page uses:
+   * `ongoing`/`complete`/`cancel` change Status; `unclaim` releases ownership.
+   * The returned `TicketDetail` is projected back into the pane's `resolved`
+   * row so the header, composer lockout, and status all update in place — no
+   * refetch needed. The Conversations Inbox list re-syncs via its SignalR
+   * `onTicketStatusChanged` / focus refetch, so a now-terminal or unclaimed
+   * conversation drops out of the worklist on its own.
+   */
   function handleAction(action: ConversationAction) {
     setActionBusy(true);
     setActionError(null);
