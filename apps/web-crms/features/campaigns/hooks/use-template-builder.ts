@@ -241,12 +241,9 @@ export function useTemplateBuilder({ channel, refetch }: UseTemplateBuilderParam
       setBuilderDescription("");
       refetch();
     } catch (err) {
-      console.warn("Saving template API error — updating local state:", err);
-      setShowBuilderModal(false);
-      setEditingTemplateId(null);
-      setBuilderName("");
-      setBuilderDescription("");
-      refetch();
+      setBuilderError(
+        err instanceof Error ? err.message : "Could not save the template. Please try again."
+      );
     } finally {
       setIsSaving(false);
     }

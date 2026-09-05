@@ -3,7 +3,8 @@ import { templatesApi, blockTemplatesApi } from "@/features/campaigns/services/c
 import { Template, BlockTemplate } from "@/features/campaigns/types";
 
 export function useTemplates(channel?: string) {
-  const [data, setData] = useState<Template[]>([]);
+  const [predefinedTemplates, setPredefinedTemplates] = useState<Template[]>([]);
+  const [blockTemplatesAsTemplates, setBlockTemplatesAsTemplates] = useState<Template[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
@@ -16,17 +17,18 @@ export function useTemplates(channel?: string) {
         blockTemplatesApi.list(channel).catch(() => []),
       ]);
 
-      const blockTemplatesAsTemplates: Template[] = (blockRes ?? []).map((bt: BlockTemplate) => ({
-        id: bt.id,
-        name: bt.name,
-        description: bt.description,
-        content: JSON.stringify(bt.blocks),
-        format: "Blocks",
-        channel: bt.channel,
-        createdAt: bt.createdAt,
-      }));
-
-      setData([...(legacyRes ?? []), ...blockTemplatesAsTemplates]);
+      setPredefinedTemplates(legacyRes ?? []);
+      setBlockTemplatesAsTemplates(
+        (blockRes ?? []).map((bt: BlockTemplate) => ({
+          id: bt.id,
+          name: bt.name,
+          description: bt.description,
+          content: JSON.stringify(bt.blocks),
+          format: "Blocks",
+          channel: bt.channel,
+          createdAt: bt.createdAt,
+        }))
+      );
     } catch (err) {
       setError(err instanceof Error ? err : new Error("Failed to load templates"));
     } finally {
@@ -38,5 +40,14 @@ export function useTemplates(channel?: string) {
     fetchTemplates();
   }, [fetchTemplates]);
 
-  return { data, isLoading, error, refetch: fetchTemplates };
+  const data = [...predefinedTemplates, ...blockTemplatesAsTemplates];
+
+  return {
+    data,
+    predefinedTemplates,
+    blockTemplates: blockTemplatesAsTemplates,
+    isLoading,
+    error,
+    refetch: fetchTemplates,
+  };
 }

@@ -1,5 +1,4 @@
 import React from "react";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   TextField,
   RichTextEditorField,
@@ -22,13 +21,6 @@ export function NonBlockTemplateFields({
     <div className="space-y-md pt-2">
       {channel === "Email" && (
         <>
-          <TextField
-            id={`${channel}-subject`}
-            label="Subject"
-            placeholder="e.g. Exclusive offer just for you"
-            value={value.subject}
-            onChange={(v) => onChange({ subject: v })}
-          />
           <RichTextEditorField
             id={`${channel}-body`}
             label="Body"
@@ -67,15 +59,6 @@ export function NonBlockTemplateFields({
             value={value.linkUrl}
             onChange={(v) => onChange({ linkUrl: v })}
           />
-          <label className="flex items-center gap-2 cursor-pointer">
-            <Checkbox
-              id={`${channel}-dismissible`}
-              aria-label="Dismissible"
-              checked={value.dismissible ?? false}
-              onCheckedChange={(checked) => onChange({ dismissible: checked === true })}
-            />
-            <span className="text-base">Dismissible</span>
-          </label>
         </>
       )}
 

@@ -20,7 +20,13 @@ describe("CampaignWizard — Banner & Popup channels (#160)", () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    (useTemplates as jest.Mock).mockReturnValue({ data: [], isLoading: false, error: null });
+    (useTemplates as jest.Mock).mockReturnValue({
+      data: [],
+      predefinedTemplates: [],
+      blockTemplates: [],
+      isLoading: false,
+      error: null,
+    });
     (useSegments as jest.Mock).mockReturnValue({ data: [], isLoading: false, error: null });
     (campaignsApi.create as jest.Mock).mockResolvedValue({ id: "new" });
   });

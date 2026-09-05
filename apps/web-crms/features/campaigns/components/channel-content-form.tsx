@@ -20,6 +20,7 @@ import {
   BlockTemplateFields,
   NonBlockTemplateFields,
 } from "@/features/campaigns/components/channel-form-block-fields";
+import { ChannelPerSendFields } from "@/features/campaigns/components/channel-per-send-fields";
 import { CHANNEL_ICON } from "@/features/campaigns/helpers/channel-utils";
 import { useTemplates } from "@/features/campaigns/hooks/useTemplates";
 import type { CampaignChannel } from "@/features/campaigns/types";
@@ -56,11 +57,21 @@ export function ChannelContentForm({
   value: ChannelContentState;
   onChange: (patch: Partial<ChannelContentState>) => void;
 }) {
-  const { data: templates } = useTemplates(channel);
+  const { predefinedTemplates, blockTemplates } = useTemplates(channel);
+  const templates = useMemo(
+    () => [...predefinedTemplates, ...blockTemplates],
+    [predefinedTemplates, blockTemplates]
+  );
   const Icon = CHANNEL_ICON[channel];
 
   const selectedTemplate = templates.find((t) => t.id === value.templateId);
   const isBlockTemplate = selectedTemplate?.format === "Blocks";
+  const selectedPredefinedId = predefinedTemplates.some((t) => t.id === value.templateId)
+    ? value.templateId ?? ""
+    : "";
+  const selectedBlockTemplateId = blockTemplates.some((t) => t.id === value.templateId)
+    ? value.templateId ?? ""
+    : "";
 
   let parsedBlocks: Array<{
     id: string;
@@ -175,15 +186,15 @@ export function ChannelContentForm({
           <h3 className="text-title-lg font-bold text-foreground">{channel} Content</h3>
         </div>
 
-        {/* Template picker */}
+        {/* Pre-defined template picker */}
         <div className="space-y-sm">
           <Label htmlFor={`${channel}-template`}>Template</Label>
-          <Select value={value.templateId ?? ""} onValueChange={handleTemplateSelect}>
+          <Select value={selectedPredefinedId} onValueChange={handleTemplateSelect}>
             <SelectTrigger id={`${channel}-template`} aria-label={`${channel} template`}>
               <SelectValue placeholder="Choose a template" />
             </SelectTrigger>
             <SelectContent>
-              {templates.map((t) => (
+              {predefinedTemplates.map((t) => (
                 <SelectItem key={t.id} value={t.id}>
                   {t.name}
                 </SelectItem>
@@ -192,7 +203,25 @@ export function ChannelContentForm({
           </Select>
         </div>
 
-        {/* ── Block template vs Non-block template fields ── */}
+        {/* Custom (Block) template picker */}
+        <div className="space-y-sm">
+          <Label htmlFor={`${channel}-custom-template`}>Custom Template</Label>
+          <Select value={selectedBlockTemplateId} onValueChange={handleTemplateSelect}>
+            <SelectTrigger id={`${channel}-custom-template`} aria-label={`${channel} custom template`}>
+              <SelectValue placeholder="Choose a custom template" />
+            </SelectTrigger>
+            <SelectContent>
+              {blockTemplates.map((t) => (
+                <SelectItem key={t.id} value={t.id}>
+                  {t.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <ChannelPerSendFields channel={channel} value={value} onChange={onChange} />
+
         {isBlockTemplate ? (
           <BlockTemplateFields
             channel={channel}

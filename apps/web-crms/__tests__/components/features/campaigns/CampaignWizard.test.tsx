@@ -39,7 +39,13 @@ describe("CampaignWizard (Email only, #159)", () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    (useTemplates as jest.Mock).mockReturnValue({ data: [emailTemplate], isLoading: false, error: null });
+    (useTemplates as jest.Mock).mockReturnValue({
+      data: [emailTemplate],
+      predefinedTemplates: [emailTemplate],
+      blockTemplates: [],
+      isLoading: false,
+      error: null,
+    });
     (useSegments as jest.Mock).mockReturnValue({ data: [segment], isLoading: false, error: null });
     (campaignsApi.create as jest.Mock).mockResolvedValue({ id: "new-campaign" });
   });

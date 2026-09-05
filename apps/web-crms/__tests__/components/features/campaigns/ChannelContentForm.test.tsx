@@ -28,6 +28,8 @@ describe("ChannelContentForm with BlockTemplate", () => {
     jest.clearAllMocks();
     (useTemplates as jest.Mock).mockReturnValue({
       data: [blockTemplate],
+      predefinedTemplates: [],
+      blockTemplates: [blockTemplate],
       isLoading: false,
       error: null,
     });
@@ -88,6 +90,8 @@ describe("ChannelContentForm with BlockTemplate", () => {
 
     (useTemplates as jest.Mock).mockReturnValue({
       data: [multiHeadingTemplate],
+      predefinedTemplates: [],
+      blockTemplates: [multiHeadingTemplate],
       isLoading: false,
       error: null,
     });
@@ -121,6 +125,8 @@ describe("ChannelContentForm with BlockTemplate", () => {
 
     (useTemplates as jest.Mock).mockReturnValue({
       data: [carouselTemplate],
+      predefinedTemplates: [],
+      blockTemplates: [carouselTemplate],
       isLoading: false,
       error: null,
     });
@@ -139,5 +145,66 @@ describe("ChannelContentForm with BlockTemplate", () => {
     expect(screen.getAllByText(/Product Gallery/i).length).toBeGreaterThan(0);
     expect(screen.getByRole("button", { name: /add slide/i })).toBeInTheDocument();
     expect(screen.getByText(/1 of 3 slides/i)).toBeInTheDocument();
+  });
+
+  it("keeps Subject visible and editable when a Block Template is selected (#181)", () => {
+    const handleChange = jest.fn();
+
+    render(
+      <ChannelContentForm
+        channel="Email"
+        value={{ templateId: "bt-1", subject: "", blockValues: {} }}
+        onChange={handleChange}
+      />
+    );
+
+    expect(screen.getByLabelText("Subject")).toBeInTheDocument();
+  });
+
+  it("renders separate pre-defined and custom Template pickers, never merged into one dropdown (#181)", () => {
+    render(
+      <ChannelContentForm
+        channel="Email"
+        value={{ templateId: "bt-1", blockValues: {} }}
+        onChange={jest.fn()}
+      />
+    );
+
+    expect(screen.getByLabelText("Email template")).toBeInTheDocument();
+    expect(screen.getByLabelText("Email custom template")).toBeInTheDocument();
+  });
+});
+
+describe("ChannelContentForm Banner with BlockTemplate", () => {
+  const bannerBlockTemplate = {
+    id: "bt-banner-1",
+    name: "Promo Banner Layout",
+    channel: "Banner" as const,
+    format: "Blocks" as const,
+    content: JSON.stringify([{ id: "b1", type: "text", label: "Message", order: 1 }]),
+    createdAt: "2026-01-01T00:00:00Z",
+  };
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    (useTemplates as jest.Mock).mockReturnValue({
+      data: [bannerBlockTemplate],
+      predefinedTemplates: [],
+      blockTemplates: [bannerBlockTemplate],
+      isLoading: false,
+      error: null,
+    });
+  });
+
+  it("keeps Dismissible visible and editable when a Block Template is selected (#181)", () => {
+    render(
+      <ChannelContentForm
+        channel="Banner"
+        value={{ templateId: "bt-banner-1", dismissible: true, blockValues: {} }}
+        onChange={jest.fn()}
+      />
+    );
+
+    expect(screen.getByLabelText("Dismissible")).toBeInTheDocument();
   });
 });
