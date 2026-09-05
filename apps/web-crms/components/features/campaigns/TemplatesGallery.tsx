@@ -1050,12 +1050,6 @@ export function TemplatesGallery() {
                         <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                         Clean Output
                       </span>
-                    </div>
-
-                    <p className="text-xs text-muted-foreground">
-                      Real-time render of actual components without drag-and-drop handles or configuration toolbars.
-                    </p>
-
                     {/* Email output card */}
                     <div className="bg-card border border-border/80 rounded-xl shadow-xs p-4 space-y-3 text-left">
                       <div className="border-b border-border/60 pb-2 space-y-1">
