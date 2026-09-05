@@ -469,7 +469,7 @@ export function StorefrontLivePreview({
 
           {/* ── Email body panel ─────────────────────────────────────── */}
           {channel === "Email" && (
-            <div className="absolute inset-x-3 bottom-3 top-20 z-20 bg-background rounded-lg shadow-xl overflow-hidden text-left flex flex-col">
+            <div className="absolute inset-x-3 bottom-3 top-[110px] z-20 bg-background rounded-lg shadow-xl overflow-hidden text-left flex flex-col border border-border">
               <div className="p-4 space-y-3 flex-1 overflow-y-auto">
                 <div className="text-sm text-foreground leading-relaxed whitespace-pre-wrap font-sans">
                   {renderFormattedText(
