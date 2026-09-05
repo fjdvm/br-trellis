@@ -99,6 +99,15 @@ public sealed class CampaignController(ICampaignService campaignService) : Contr
         }
     }
 
+    // Renders arbitrary draft block/body content through the real dispatch renderer
+    // (EmailBodyRenderer), so the composer's live preview shows exactly what would
+    // actually be sent/displayed instead of a separately maintained approximation.
+    [HttpPost("render-preview")]
+    public ActionResult<RenderPreviewResponseDto> RenderPreview(RenderPreviewRequestDto input)
+    {
+        return Ok(new RenderPreviewResponseDto(campaignService.RenderPreviewHtml(input.Content)));
+    }
+
     // --- Cross-service dispatch (api-oos polls these; ADR 0008) ---
 
     // Active Email campaigns due to send now, with resolved recipients + content.

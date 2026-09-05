@@ -18,6 +18,7 @@ export type ChannelPreviewContent = {
 };
 
 import { renderFormattedText } from "@/features/campaigns/components/preview-text-renderer";
+import { useRenderedPreviewHtml } from "@/features/campaigns/hooks/use-rendered-preview-html";
 
 // StorefrontLivePreview
 export function StorefrontLivePreview({
@@ -38,6 +39,11 @@ export function StorefrontLivePreview({
   className?: string;
 }) {
   const [animKey, setAnimKey] = useState(0);
+  // Body content (all three channels) is rendered by the real backend renderer
+  // (EmailBodyRenderer) so this preview can never silently diverge from what
+  // actually gets sent/displayed. Subject/heading stay client-formatted below —
+  // they're plain scalar fields with no block-rendering logic to diverge.
+  const { html: bodyHtml } = useRenderedPreviewHtml(content.body);
 
   return (
     <div className={`space-y-sm ${className}`}>
@@ -148,8 +154,10 @@ export function StorefrontLivePreview({
                     <PanelTop className="w-4 h-4 shrink-0" />
                   )}
                   <div className="text-xs font-medium truncate">
-                    {renderFormattedText(
-                      content.body || "Your promotional banner message will appear here."
+                    {content.body ? (
+                      <span dangerouslySetInnerHTML={{ __html: bodyHtml }} />
+                    ) : (
+                      "Your promotional banner message will appear here."
                     )}
                   </div>
                 </div>
@@ -196,12 +204,16 @@ export function StorefrontLivePreview({
             return (
               <div className="absolute inset-x-3 bottom-3 top-[110px] z-20 bg-background rounded-lg shadow-xl overflow-hidden text-left flex flex-col border border-border">
                 <div className="p-4 space-y-3 flex-1 overflow-y-auto">
-                  <div className="text-sm text-foreground leading-relaxed whitespace-pre-wrap font-sans">
-                    {renderFormattedText(
-                      content.body ||
-                        "Compose your email message body to see it rendered here in real time…"
-                    )}
-                  </div>
+                  {content.body ? (
+                    <div
+                      className="text-sm text-foreground leading-relaxed font-sans"
+                      dangerouslySetInnerHTML={{ __html: bodyHtml }}
+                    />
+                  ) : (
+                    <div className="text-sm text-foreground leading-relaxed whitespace-pre-wrap font-sans">
+                      Compose your email message body to see it rendered here in real time…
+                    </div>
+                  )}
                   {!isJsonBody && (content.ctaText || content.ctaUrl) && (
                     <div className="pt-2">
                       <button
@@ -259,8 +271,10 @@ export function StorefrontLivePreview({
                     {renderFormattedText(content.heading || "Special Announcement")}
                   </h4>
                   <div className={`text-xs leading-relaxed ${bodyClass}`}>
-                    {renderFormattedText(
-                      content.body || "Your popup body text will appear here as you type…"
+                    {content.body ? (
+                      <div dangerouslySetInnerHTML={{ __html: bodyHtml }} />
+                    ) : (
+                      "Your popup body text will appear here as you type…"
                     )}
                   </div>
                   {!isJsonBody && (content.ctaText || content.ctaUrl) && (

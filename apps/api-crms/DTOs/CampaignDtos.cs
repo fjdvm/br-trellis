@@ -94,6 +94,13 @@ public sealed record CampaignDispatchResultDto(
 
 public sealed record MarketingOptOutDto(string Email);
 
+// The composer's live preview asks the real dispatch renderer for HTML instead of
+// reimplementing EmailBodyRenderer client-side, so the preview can never silently
+// diverge from what actually gets sent/displayed.
+public sealed record RenderPreviewRequestDto(string? Content);
+
+public sealed record RenderPreviewResponseDto(string Html);
+
 // The currently-Active Banner/Popup content served to the storefront (#163).
 // Null is represented by a 204/absent response, not this record.
 public sealed record ActiveChannelContentDto(

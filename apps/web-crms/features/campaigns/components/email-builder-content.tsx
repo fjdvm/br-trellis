@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -32,7 +32,7 @@ import {
   useCanvasDroppable,
   type ActiveDragItem,
 } from "@/features/campaigns/components/template-builder-dnd";
-import { renderFormattedText } from "@/features/campaigns/components/preview-text-renderer";
+import { useRenderedPreviewHtml } from "@/features/campaigns/hooks/use-rendered-preview-html";
 import type { BlockType, ChannelConstraints } from "@/features/campaigns/services/template-constraints";
 
 interface EmailBuilderContentProps {
@@ -101,6 +101,28 @@ export function EmailBuilderContent({
   }
 
   const isPaletteDragActive = activeDragItem?.source === "palette";
+
+  // Rendered by the real backend renderer (EmailBodyRenderer) so this preview can
+  // never silently diverge from what a Campaign referencing this Template would
+  // actually send/display.
+  const blocksJson = useMemo(
+    () =>
+      blocks.length === 0
+        ? ""
+        : JSON.stringify(
+            blocks.map((block, index) => ({
+              type: block.type,
+              label: block.label,
+              order: index,
+              textAlign: block.textAlign,
+              isBold: block.isBold,
+              isItalic: block.isItalic,
+              content: block.content,
+            }))
+          ),
+    [blocks]
+  );
+  const { html: blocksHtml } = useRenderedPreviewHtml(blocksJson);
 
   return (
     <DndContext sensors={sensors} collisionDetection={closestCenter} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
@@ -268,21 +290,10 @@ export function EmailBuilderContent({
                   No components added yet. Add blocks from the palette to see how they render.
                 </div>
               ) : (
-                <div className="pt-1 text-xs">
-                  {renderFormattedText(
-                    JSON.stringify(
-                      blocks.map((block, index) => ({
-                        type: block.type,
-                        label: block.label,
-                        order: index,
-                        textAlign: block.textAlign,
-                        isBold: block.isBold,
-                        isItalic: block.isItalic,
-                        content: block.content,
-                      }))
-                    )
-                  )}
-                </div>
+                <div
+                  className="pt-1 text-xs"
+                  dangerouslySetInnerHTML={{ __html: blocksHtml }}
+                />
               )}
             </div>
           </div>

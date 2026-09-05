@@ -48,6 +48,14 @@ export const campaignsApi = {
     request<void>(`/api/v1/campaigns/${id}`, {
       method: "DELETE",
     }),
+  // Renders draft block/body content through the real dispatch renderer
+  // (EmailBodyRenderer) so previews can never silently diverge from what
+  // actually gets sent/displayed.
+  renderPreview: (content: string) =>
+    request<{ html: string }>(`/api/v1/campaigns/render-preview`, {
+      method: "POST",
+      body: JSON.stringify({ content }),
+    }),
 };
 
 export const templatesApi = {
