@@ -1,4 +1,4 @@
-import { Campaigns } from "@/components/features/campaigns/Campaigns";
+import { Campaigns } from "@/features/campaigns/components/campaigns";
 
 interface PageProps {
   searchParams: Promise<{ status?: string }>;

@@ -1,10 +1,25 @@
+
+jest.mock("next/navigation", () => ({
+  useRouter: () => ({ push: jest.fn() }),
+  usePathname: () => "/conversations",
+}));
+jest.mock("next-auth/react", () => ({
+  useSession: () => ({ data: { user: { id: "auth|amelia", name: "Amelia Ward" } }, status: "authenticated" }),
+}));
 import React from "react";
 import { render, screen, waitFor } from "@testing-library/react";
-import { Conversations } from "@/components/features/conversations/Conversations";
+import { ConversationsInbox as Conversations } from "@/features/conversations/components/conversations-inbox";
 import { crmClient } from "@/lib/api/crm-client";
 
 jest.mock("@/lib/api/crm-client", () => ({
   crmClient: {
+    conversationTickets: {
+      list: jest.fn(),
+      getById: jest.fn(),
+      unclaim: jest.fn(),
+      cancel: jest.fn(),
+      updateStatus: jest.fn(),
+    },
     tickets: {
       list: jest.fn(),
       getById: jest.fn(),
@@ -39,21 +54,22 @@ describe("Conversations", () => {
   beforeEach(() => {
     jest.clearAllMocks();
 
-    (crmClient.tickets.list as jest.Mock).mockResolvedValue({
-      items: [
-        {
-          id: "ticket-101",
-          title: "Account locked",
-          status: "Ongoing",
-          customerName: "Charlie Brown",
-          createdAt: "2026-08-01T10:00:00Z",
-          lastMessageAt: "2026-08-01T10:05:00Z",
-          lastMessageContent: "Please unlock my account",
-          unreadMessageCount: 1,
+    (crmClient.conversationTickets.list as jest.Mock).mockResolvedValue([
+      {
+        id: "ticket-101",
+        subject: "Account locked",
+        status: "Ongoing",
+        waitingOn: "Agent",
+        assignedToId: "auth|amelia",
+        contact: {
+          id: "cust-1",
+          name: "Charlie Brown",
+          email: "charlie@example.com",
         },
-      ],
-      totalCount: 1,
-    });
+        createdAt: "2026-08-01T10:00:00Z",
+        updatedAt: "2026-08-01T10:05:00Z",
+      },
+    ]);
 
     (crmClient.tickets.getById as jest.Mock).mockResolvedValue({
       id: "ticket-101",
@@ -102,7 +118,7 @@ describe("Conversations", () => {
     render(<Conversations />);
 
     await waitFor(() => {
-      expect(screen.getByText("Conversations")).toBeInTheDocument();
+      expect(screen.getByText("Inbox")).toBeInTheDocument();
       expect(screen.getAllByText("Charlie Brown").length).toBeGreaterThan(0);
     });
   });

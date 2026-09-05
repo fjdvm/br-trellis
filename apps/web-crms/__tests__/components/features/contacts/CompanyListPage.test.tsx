@@ -1,5 +1,5 @@
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-import { CompanyListPage } from "@/components/features/contacts/CompanyListPage";
+import { CompanyListPage } from "@/features/contacts/components/company-list-page";
 import { crmClient } from "@/lib/api/crm-client";
 
 jest.mock("next/navigation", () => ({

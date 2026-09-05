@@ -1,6 +1,6 @@
 import React from "react";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-import { TicketCreateSheet } from "@/components/features/tickets/TicketCreateSheet";
+import { TicketCreateSheet } from "@/features/tickets/components/ticket-create-sheet";
 import { crmClient } from "@/lib/api/crm-client";
 
 jest.mock("@/lib/api/crm-client", () => ({

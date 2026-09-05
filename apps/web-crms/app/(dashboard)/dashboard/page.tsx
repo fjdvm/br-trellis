@@ -1,4 +1,4 @@
-import { Dashboard } from "@/components/features/dashboard/Dashboard";
+import { Dashboard } from "@/features/dashboard/components/dashboard";
 import { Suspense } from "react";
 
 export default function DashboardPage() {

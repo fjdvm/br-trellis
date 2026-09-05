@@ -1,5 +1,5 @@
 import { render, screen } from "@testing-library/react";
-import { ContactDetailPage } from "@/components/features/contacts/ContactDetailPage";
+import { ContactDetailPage } from "@/features/contacts/components/contact-detail-page";
 import { crmClient } from "@/lib/api/crm-client";
 
 jest.mock("@/lib/api/crm-client", () => ({

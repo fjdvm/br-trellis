@@ -1,6 +1,10 @@
+
+jest.mock("next-auth/react", () => ({
+  useSession: () => ({ data: { user: { id: "auth|amelia", name: "Amelia Ward" } }, status: "authenticated" }),
+}));
 import React from "react";
 import { render, screen, fireEvent } from "@testing-library/react";
-import { ConversationList } from "@/components/features/conversations/ConversationList";
+import { ConversationList } from "@/features/conversations/components/conversation-list";
 import { TicketListItem } from "@/types/ticket";
 
 describe("ConversationList", () => {

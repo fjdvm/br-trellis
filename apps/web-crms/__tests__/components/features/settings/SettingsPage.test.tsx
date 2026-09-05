@@ -1,6 +1,6 @@
 import React from "react";
 import { render, screen, fireEvent, waitFor, act } from "@testing-library/react";
-import { SettingsPage } from "@/components/features/settings/SettingsPage";
+import { SettingsPage } from "@/features/settings/components/settings-page";
 
 // Mock next/navigation
 jest.mock("next/navigation", () => ({

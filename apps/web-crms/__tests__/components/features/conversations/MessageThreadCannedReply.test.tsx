@@ -1,6 +1,6 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { MessageThread } from "@/components/features/conversations/MessageThread";
+import { MessageThread } from "@/features/conversations/components/message-thread";
 import { crmClient } from "@/lib/api/crm-client";
 import type { ConversationMessage } from "@/types/conversation-message";
 import type { CannedReplyListItem } from "@/types/canned-reply";

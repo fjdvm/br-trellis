@@ -1,4 +1,4 @@
-import { TicketDetailPage } from "@/components/features/conversations/TicketDetailPage";
+import { TicketDetailPage } from "@/features/conversations/components/ticket-detail-page";
 
 interface PageProps {
   params: Promise<{ id: string }>;

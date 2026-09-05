@@ -1,6 +1,6 @@
 "use client";
 
-import { ContactListPage } from "@/components/features/contacts/ContactListPage";
+import { ContactListPage } from "@/features/contacts/components/contact-list-page";
 
 export default function Page() {
   return <ContactListPage />;

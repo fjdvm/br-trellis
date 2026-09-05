@@ -1,4 +1,4 @@
-import { CompanyDetailPage } from "@/components/features/contacts/CompanyDetailPage";
+import { CompanyDetailPage } from "@/features/contacts/components/company-detail-page";
 
 interface PageProps {
   params: Promise<{ id: string }>;

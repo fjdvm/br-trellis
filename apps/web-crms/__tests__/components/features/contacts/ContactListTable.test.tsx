@@ -1,5 +1,5 @@
 import { render, screen } from "@testing-library/react";
-import { ContactListTable } from "@/components/features/contacts/ContactListTable";
+import { ContactListTable } from "@/features/contacts/components/contact-list-table";
 import type { ContactListItem } from "@/types/contact";
 
 jest.mock("next/navigation", () => ({

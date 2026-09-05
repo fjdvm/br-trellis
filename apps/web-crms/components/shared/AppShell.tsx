@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { SidebarProvider, useSidebar } from "@/components/ui/sidebar";
 import { Sidebar } from "./Sidebar";
 import { Header } from "./Header";
-import { AskSentraCXPanel } from "@/components/features/dashboard/ask-sentracx-panel";
+import { AskSentraCXPanel } from "@/features/dashboard/components/ask-sentracx-panel";
 import { EcommerceSyncStatusProvider } from "@/hooks/useEcommerceSyncStatus";
 
 function MainContent({ children }: { children: React.ReactNode }) {

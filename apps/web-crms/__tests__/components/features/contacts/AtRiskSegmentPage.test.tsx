@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { SegmentsListPage } from "@/components/features/contacts/SegmentsListPage";
+import { SegmentsListPage } from "@/features/contacts/components/segments-list-page";
 import { crmClient } from "@/lib/api/crm-client";
 
 const mockPush = jest.fn();

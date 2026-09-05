@@ -1,5 +1,5 @@
 import { render, screen, fireEvent, waitFor, within } from "@testing-library/react";
-import { CannedRepliesPage } from "@/components/features/conversations/CannedRepliesPage";
+import { CannedRepliesPage } from "@/features/conversations/components/canned-replies-page";
 import { crmClient } from "@/lib/api/crm-client";
 
 // useSession is overridden per describe via this mutable holder so we can flip

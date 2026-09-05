@@ -1,9 +1,9 @@
 import React from "react";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-import { KpiCard } from "@/components/features/dashboard/kpi-card";
-import { KpiRow } from "@/components/features/dashboard/kpi-row";
-import { LiveStatusStrip } from "@/components/features/dashboard/live-status-strip";
-import { AttentionFeed } from "@/components/features/dashboard/attention-feed";
+import {  KpiCard  } from "@/features/dashboard/components/dashboard";
+import {  KpiRow  } from "@/features/dashboard/components/dashboard";
+import {  LiveStatusStrip  } from "@/features/dashboard/components/dashboard";
+import {  AttentionFeed  } from "@/features/dashboard/components/dashboard";
 import { Ticket } from "lucide-react";
 import { aiClient } from "@/lib/api/ai-client";
 

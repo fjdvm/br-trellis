@@ -1,7 +1,7 @@
 import React from "react";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { CampaignWizard } from "@/components/features/campaigns/CampaignWizard";
+import { CampaignWizard } from "@/features/campaigns/components/campaign-wizard";
 import { useTemplates } from "@/hooks/useTemplates";
 import { useSegments } from "@/hooks/useSegments";
 import { crmClient } from "@/lib/api/crm-client";

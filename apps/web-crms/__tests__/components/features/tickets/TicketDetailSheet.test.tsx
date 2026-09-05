@@ -1,6 +1,6 @@
 import React from "react";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-import { TicketDetailSheet } from "@/components/features/tickets/TicketDetailSheet";
+import { TicketDetailSheet } from "@/features/tickets/components/ticket-detail-sheet";
 import { useTicket } from "@/hooks/useTicket";
 import { crmClient } from "@/lib/api/crm-client";
 

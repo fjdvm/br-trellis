@@ -1,4 +1,4 @@
-import { CampaignDetail } from "@/components/features/campaigns/CampaignDetail";
+import { CampaignDetail } from "@/features/campaigns/components/campaign-detail";
 
 interface PageProps {
   params: Promise<{ id: string }>;

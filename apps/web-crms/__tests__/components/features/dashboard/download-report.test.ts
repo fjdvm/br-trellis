@@ -1,4 +1,4 @@
-import { downloadDashboardReport } from "@/components/features/dashboard/download-report";
+import { downloadDashboardReport } from "@/features/dashboard/components/dashboard";
 
 describe("downloadDashboardReport", () => {
   let createObjectURLMock: jest.Mock;

@@ -9,7 +9,7 @@
  * the DTO shape ever changes.
  */
 import { render, screen } from "@testing-library/react";
-import { TicketListPage } from "@/components/features/conversations/TicketListPage";
+import {  TicketListPage  } from "@/features/conversations/components/ticket-list-page";
 import { crmClient } from "@/lib/api/crm-client";
 import type { TicketListItem } from "@/types/ticket-list";
 import liveTickets from "../../../fixtures/live-tickets.json";

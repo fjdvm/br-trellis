@@ -1,6 +1,6 @@
 import React from "react";
 import { render, screen, waitFor, act } from "@testing-library/react";
-import { OrdersPage } from "@/components/features/ecommerce/OrdersPage";
+import { OrdersPage } from "@/features/ecommerce/components/orders-page";
 
 // Mock next/navigation
 jest.mock("next/navigation", () => ({

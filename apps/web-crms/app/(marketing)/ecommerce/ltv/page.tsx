@@ -1,4 +1,4 @@
-import { CustomerLtvPage } from "@/components/features/ecommerce/CustomerLtvPage";
+import { CustomerLtvPage } from "@/features/ecommerce/components/customer-ltv-page";
 
 export default function Page() {
   return <CustomerLtvPage />;

@@ -1,7 +1,7 @@
 import React from "react";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { ChannelContentForm } from "@/components/features/campaigns/ChannelContentForm";
+import {  ChannelContentForm  } from "@/features/campaigns/components/channel-content-form";
 import { useTemplates } from "@/hooks/useTemplates";
 
 jest.mock("@/hooks/useTemplates", () => ({

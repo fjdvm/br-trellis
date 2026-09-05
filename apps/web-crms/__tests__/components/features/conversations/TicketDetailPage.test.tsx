@@ -1,6 +1,6 @@
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { TicketDetailPage } from "@/components/features/conversations/TicketDetailPage";
+import { TicketDetailPage } from "@/features/conversations/components/ticket-detail-page";
 import { crmClient } from "@/lib/api/crm-client";
 import type { TicketDetail } from "@/types/ticket-detail";
 

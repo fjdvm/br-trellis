@@ -1,7 +1,7 @@
 import React from "react";
 import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { Campaigns } from "@/components/features/campaigns/Campaigns";
+import { Campaigns } from "@/features/campaigns/components/campaigns";
 import { useCampaigns } from "@/hooks/useCampaigns";
 import { crmClient } from "@/lib/api/crm-client";
 import type { CampaignListItem } from "@/types/campaign";

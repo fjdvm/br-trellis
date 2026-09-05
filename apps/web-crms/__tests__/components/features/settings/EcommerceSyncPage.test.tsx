@@ -1,6 +1,6 @@
 import React from "react";
 import { render, screen, waitFor, act } from "@testing-library/react";
-import { EcommerceSyncPage } from "@/components/features/settings/EcommerceSyncPage";
+import { EcommerceSyncPage } from "@/features/settings/components/ecommerce-sync-page";
 
 // Mock next/navigation
 jest.mock("next/navigation", () => ({

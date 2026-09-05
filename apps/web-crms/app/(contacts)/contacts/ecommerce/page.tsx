@@ -1,4 +1,4 @@
-import { ContactListPage } from "@/components/features/contacts/ContactListPage";
+import { ContactListPage } from "@/features/contacts/components/contact-list-page";
 
 /**
  * Ecommerce Contacts is a pre-filtered view of the shared Contact list: every

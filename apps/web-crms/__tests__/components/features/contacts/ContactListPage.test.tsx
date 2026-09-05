@@ -1,6 +1,6 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { ContactListPage } from "@/components/features/contacts/ContactListPage";
+import { ContactListPage } from "@/features/contacts/components/contact-list-page";
 import { crmClient } from "@/lib/api/crm-client";
 import type { ContactListItem } from "@/types/contact";
 

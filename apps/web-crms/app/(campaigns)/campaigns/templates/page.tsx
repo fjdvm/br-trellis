@@ -1,4 +1,4 @@
-import { TemplatesGallery } from "@/components/features/campaigns/TemplatesGallery";
+import { TemplatesGallery } from "@/features/campaigns/components/templates-gallery";
 
 export default function Page() {
   return <TemplatesGallery />;

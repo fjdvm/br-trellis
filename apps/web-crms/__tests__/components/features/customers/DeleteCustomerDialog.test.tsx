@@ -1,7 +1,7 @@
 import React from "react";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { toast } from "sonner";
-import { DeleteCustomerDialog } from "@/components/features/customers/DeleteCustomerDialog";
+import { DeleteCustomerDialog } from "@/features/customers/components/delete-customer-dialog";
 import { crmClient } from "@/lib/api/crm-client";
 import type { CustomerListItem } from "@/types/customer";
 

@@ -1,6 +1,6 @@
 import React from "react";
 import { render, screen } from "@testing-library/react";
-import { DashboardChartSummary } from "@/components/features/dashboard/DashboardChartSummary";
+import { DashboardChartSummary } from "@/features/dashboard/components/dashboard";
 
 describe("DashboardChartSummary", () => {
   describe("workload panel", () => {

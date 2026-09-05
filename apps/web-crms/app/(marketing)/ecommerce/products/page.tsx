@@ -1,4 +1,4 @@
-import { ProductsPage } from "@/components/features/ecommerce/ProductsPage";
+import { ProductsPage } from "@/features/ecommerce/components/products-page";
 
 export default function Page() {
   return <ProductsPage />;

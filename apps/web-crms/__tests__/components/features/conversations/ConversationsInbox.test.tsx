@@ -1,6 +1,6 @@
 import { render, screen, fireEvent, waitFor, act } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { ConversationsInbox } from "@/components/features/conversations/ConversationsInbox";
+import {  ConversationsInbox  } from "@/features/conversations/components/conversations-inbox";
 import { crmClient } from "@/lib/api/crm-client";
 import { useSignalR } from "@/hooks/useSignalR";
 import type { TicketListItem } from "@/types/ticket-list";

@@ -1,11 +1,12 @@
-import { render, screen, waitFor } from "@testing-library/react";
-import { ConversationsInbox } from "@/components/features/conversations/ConversationsInbox";
-import { TicketListPage } from "@/components/features/conversations/TicketListPage";
+import { render, screen, waitFor, act } from "@testing-library/react";
+import { ConversationsInbox } from "@/features/conversations/components/conversations-inbox";
+import { TicketListPage } from "@/features/conversations/components/ticket-list-page";
 import { crmClient } from "@/lib/api/crm-client";
 import type { TicketListItem } from "@/types/ticket-list";
 
 jest.mock("next/navigation", () => ({
   useRouter: () => ({ push: jest.fn() }),
+  usePathname: () => "/conversations/inbox",
 }));
 
 // Real-time hook is covered by its own test; mock it to a no-op here so the
@@ -118,7 +119,9 @@ describe("Claim visibility — client refetch behavior (the real bug)", () => {
     expect(mockedList).toHaveBeenCalledTimes(1);
 
     mockedList.mockResolvedValueOnce([claimedTicket()]);
-    window.dispatchEvent(new Event("focus"));
+    await act(async () => {
+      window.dispatchEvent(new Event("focus"));
+    });
 
     expect(
       await screen.findByText("Cannot access invoice download")

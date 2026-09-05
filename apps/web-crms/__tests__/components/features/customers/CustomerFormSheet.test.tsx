@@ -1,7 +1,7 @@
 import React from "react";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { toast } from "sonner";
-import { CustomerFormSheet } from "@/components/features/customers/CustomerFormSheet";
+import { CustomerFormSheet } from "@/features/customers/components/customer-form-sheet";
 import { crmClient } from "@/lib/api/crm-client";
 
 jest.mock("@/lib/api/crm-client", () => ({

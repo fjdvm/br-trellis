@@ -1,5 +1,5 @@
 import { render, screen } from "@testing-library/react";
-import { CustomerListTable } from "@/components/features/customers/CustomerListTable";
+import { CustomerListTable } from "@/features/customers/components/customer-list-table";
 import { crmClient } from "@/lib/api/crm-client";
 
 jest.mock("@/lib/api/crm-client", () => ({

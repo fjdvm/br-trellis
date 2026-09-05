@@ -1,4 +1,4 @@
-import { CampaignEditPage } from "@/components/features/campaigns/CampaignEditPage";
+import { CampaignEditPage } from "@/features/campaigns/components/campaign-edit-page";
 
 interface PageProps {
   params: Promise<{ id: string }>;

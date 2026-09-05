@@ -1,5 +1,5 @@
 import { render, screen } from "@testing-library/react";
-import { ContactListPage } from "@/components/features/contacts/ContactListPage";
+import { ContactListPage } from "@/features/contacts/components/contact-list-page";
 import { crmClient } from "@/lib/api/crm-client";
 import type { ContactListItem } from "@/types/contact";
 

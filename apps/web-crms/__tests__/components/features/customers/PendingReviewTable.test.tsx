@@ -1,5 +1,5 @@
 import { render, screen } from "@testing-library/react";
-import { PendingReviewTable } from "@/components/features/customers/PendingReviewTable";
+import { PendingReviewTable } from "@/features/customers/components/pending-review-table";
 import { crmClient } from "@/lib/api/crm-client";
 
 jest.mock("@/lib/api/crm-client", () => ({
