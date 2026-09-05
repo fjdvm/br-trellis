@@ -40,7 +40,7 @@ export type ChannelContentState = {
   ctaText?: string;
   ctaUrl?: string;
   dismissible?: boolean;
-  backgroundColor?: string;
+  themeGradient?: "light-to-violet" | "violet-to-light";
   blockValues?: Record<string, BlockValue>;
 };
 
@@ -617,42 +617,50 @@ export function ChannelContentForm({
           className="sticky top-24"
         />
 
-        {/* Color picker for Banner and Popup channels */}
+        {/* Theme Gradient selector for Banner and Popup channels */}
         {(channel === "Banner" || channel === "Popup") && (
           <div className="p-3 bg-muted/30 border border-border rounded-lg space-y-2 text-left">
-            <Label htmlFor={`${channel}-bg-color`} className="text-xs font-semibold text-foreground flex items-center justify-between">
-              <span>{channel} Background Color</span>
-              <span className="font-mono text-[11px] text-muted-foreground uppercase">
-                {value.backgroundColor || (channel === "Banner" ? "#0f172a" : "#ffffff")}
-              </span>
+            <Label className="text-xs font-semibold text-foreground block">
+              {channel} Theme Gradient
             </Label>
-            <div className="flex items-center gap-3">
-              <input
-                id={`${channel}-bg-color`}
-                type="color"
-                value={value.backgroundColor || (channel === "Banner" ? "#0f172a" : "#ffffff")}
-                onChange={(e) => onChange({ backgroundColor: e.target.value })}
-                className="w-9 h-9 rounded cursor-pointer border border-border bg-transparent p-0.5"
-              />
-              <div className="flex items-center gap-1.5 flex-wrap">
-                {(channel === "Banner"
-                  ? ["#0f172a", "#2563eb", "#059669", "#d97706", "#dc2626", "#7c3aed"]
-                  : ["#ffffff", "#f8fafc", "#f1f5f9", "#fef2f2", "#f0fdf4", "#eff6ff"]
-                ).map((preset) => (
-                  <button
-                    key={preset}
-                    type="button"
-                    title={`Select color ${preset}`}
-                    onClick={() => onChange({ backgroundColor: preset })}
-                    style={{ backgroundColor: preset }}
-                    className={`w-6 h-6 rounded-full border ${
-                      (value.backgroundColor || (channel === "Banner" ? "#0f172a" : "#ffffff")) === preset
-                        ? "border-primary ring-2 ring-primary/40 scale-110"
-                        : "border-border/80 hover:scale-105"
-                    } transition-all cursor-pointer`}
-                  />
-                ))}
-              </div>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => onChange({ themeGradient: "light-to-violet" })}
+                className={`p-2.5 rounded-lg border text-left flex flex-col justify-between gap-2 transition-all cursor-pointer ${
+                  (value.themeGradient ?? "light-to-violet") === "light-to-violet"
+                    ? "border-primary ring-2 ring-primary/40 bg-background shadow-xs"
+                    : "border-border bg-card/60 hover:bg-card"
+                }`}
+              >
+                <div className="w-full h-6 rounded bg-gradient-to-r from-violet-100 via-purple-200 to-violet-700 border border-border/40 flex items-center justify-between px-2">
+                  <span className="text-[10px] font-bold text-slate-900">Text</span>
+                  <span className="text-[8px] font-bold text-white uppercase">Violet</span>
+                </div>
+                <div>
+                  <span className="text-xs font-semibold text-foreground block">Light to Violet</span>
+                  <span className="text-[10px] text-muted-foreground block">Light bg · Dark text</span>
+                </div>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => onChange({ themeGradient: "violet-to-light" })}
+                className={`p-2.5 rounded-lg border text-left flex flex-col justify-between gap-2 transition-all cursor-pointer ${
+                  value.themeGradient === "violet-to-light"
+                    ? "border-primary ring-2 ring-primary/40 bg-background shadow-xs"
+                    : "border-border bg-card/60 hover:bg-card"
+                }`}
+              >
+                <div className="w-full h-6 rounded bg-gradient-to-r from-violet-700 via-purple-600 to-indigo-100 border border-border/40 flex items-center justify-between px-2">
+                  <span className="text-[10px] font-bold text-white">Text</span>
+                  <span className="text-[8px] font-bold text-slate-900 uppercase">Light</span>
+                </div>
+                <div>
+                  <span className="text-xs font-semibold text-foreground block">Violet to Light</span>
+                  <span className="text-[10px] text-muted-foreground block">Dark bg · Light text</span>
+                </div>
+              </button>
             </div>
           </div>
         )}

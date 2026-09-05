@@ -14,7 +14,7 @@ export type ChannelPreviewContent = {
   ctaText?: string;
   ctaUrl?: string;
   dismissible?: boolean;
-  backgroundColor?: string;
+  themeGradient?: "light-to-violet" | "violet-to-light";
 };
 
 // ---------------------------------------------------------------------------
@@ -401,45 +401,53 @@ export function StorefrontLivePreview({
           )}
 
           {/* ── Banner strip ─────────────────────────────────────────── */}
-          {channel === "Banner" && (
-            <div
-              key={`banner-${animKey}`}
-              style={{
-                animation: "slideDown 0.6s cubic-bezier(0.16,1,0.3,1) forwards",
-                ...(content.backgroundColor ? { backgroundColor: content.backgroundColor, backgroundImage: "none" } : {}),
-              }}
-              className="w-full bg-gradient-to-r from-primary to-primary/90 text-primary-foreground p-3 px-4 rounded-lg flex items-center justify-between gap-3 shadow-md mb-2"
-            >
-              <div className="flex items-center gap-2.5 overflow-hidden">
-                {content.imageUrl ? (
-                  <img
-                    src={content.imageUrl}
-                    alt="Banner Thumbnail"
-                    className="w-8 h-8 object-cover rounded shrink-0 border border-primary-foreground/20"
-                  />
-                ) : (
-                  <PanelTop className="w-4 h-4 shrink-0" />
-                )}
-                <div className="text-xs font-medium truncate">
-                  {renderFormattedText(
-                    content.body || "Your promotional banner message will appear here."
+          {channel === "Banner" && (() => {
+            const isVioletFirst = content.themeGradient === "violet-to-light";
+            const bannerBgClass = isVioletFirst
+              ? "bg-gradient-to-r from-violet-700 via-purple-600 to-indigo-100 text-white"
+              : "bg-gradient-to-r from-violet-100 via-purple-200 to-violet-700 text-slate-900";
+
+            const linkBgClass = isVioletFirst
+              ? "bg-white/20 text-white hover:bg-white/30"
+              : "bg-slate-900/10 text-slate-950 hover:bg-slate-900/20";
+
+            return (
+              <div
+                key={`banner-${animKey}`}
+                style={{ animation: "slideDown 0.6s cubic-bezier(0.16,1,0.3,1) forwards" }}
+                className={`w-full ${bannerBgClass} p-3 px-4 rounded-lg flex items-center justify-between gap-3 shadow-md mb-2`}
+              >
+                <div className="flex items-center gap-2.5 overflow-hidden">
+                  {content.imageUrl ? (
+                    <img
+                      src={content.imageUrl}
+                      alt="Banner Thumbnail"
+                      className="w-8 h-8 object-cover rounded shrink-0 border border-current/20"
+                    />
+                  ) : (
+                    <PanelTop className="w-4 h-4 shrink-0" />
+                  )}
+                  <div className="text-xs font-medium truncate">
+                    {renderFormattedText(
+                      content.body || "Your promotional banner message will appear here."
+                    )}
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  {content.linkUrl && (
+                    <span className={`text-[11px] font-bold underline ${linkBgClass} px-2 py-1 rounded cursor-pointer`}>
+                      Learn More
+                    </span>
+                  )}
+                  {content.dismissible && (
+                    <button type="button" className="opacity-80 hover:opacity-100 text-xs p-1">
+                      ✕
+                    </button>
                   )}
                 </div>
               </div>
-              <div className="flex items-center gap-2 shrink-0">
-                {content.linkUrl && (
-                  <span className="text-[11px] font-bold underline bg-primary-foreground/10 px-2 py-1 rounded cursor-pointer hover:bg-primary-foreground/20">
-                    Learn More
-                  </span>
-                )}
-                {content.dismissible && (
-                  <button type="button" className="text-primary-foreground/80 text-xs p-1">
-                    ✕
-                  </button>
-                )}
-              </div>
-            </div>
-          )}
+            );
+          })()}
 
           {/* ── Storefront skeleton (background filler) ───────────── */}
           <div className="flex-1 space-y-2 opacity-50 pointer-events-none">
@@ -484,52 +492,62 @@ export function StorefrontLivePreview({
           )}
 
           {/* ── Popup overlay ────────────────────────────────────────── */}
-          {channel === "Popup" && (
-            <div
-              key={`popup-${animKey}`}
-              className="absolute inset-0 z-30 flex items-center justify-center p-3"
-            >
+          {channel === "Popup" && (() => {
+            const isVioletFirst = content.themeGradient === "violet-to-light";
+            const cardBgClass = isVioletFirst
+              ? "bg-gradient-to-br from-violet-950 via-purple-900 to-indigo-700 text-slate-100 border-violet-700/50"
+              : "bg-gradient-to-br from-slate-50 via-violet-50 to-purple-100 text-slate-900 border-violet-200";
+
+            const headingClass = isVioletFirst ? "text-white" : "text-slate-900";
+            const bodyClass = isVioletFirst ? "text-slate-200" : "text-slate-700";
+            const btnClass = isVioletFirst
+              ? "bg-white text-violet-950 hover:bg-slate-100"
+              : "bg-violet-700 text-white hover:bg-violet-800";
+
+            return (
               <div
-                style={{ animation: "fadeInBackdrop 0.4s ease-out forwards" }}
-                className="absolute inset-0 bg-slate-950/60 backdrop-blur-xs"
-              />
-              <div
-                style={{
-                  animation: "popIn 0.5s cubic-bezier(0.175,0.885,0.32,1.275) forwards",
-                  ...(content.backgroundColor ? { backgroundColor: content.backgroundColor } : {}),
-                }}
-                className="relative z-10 w-full bg-card border border-border shadow-2xl rounded-xl p-4 text-center space-y-3"
+                key={`popup-${animKey}`}
+                className="absolute inset-0 z-30 flex items-center justify-center p-3"
               >
-                {content.imageUrl && (
-                  <div className="w-full h-24 bg-muted rounded-lg overflow-hidden">
-                    <img
-                      src={content.imageUrl}
-                      alt="Popup graphic"
-                      className="w-full h-full object-cover"
-                    />
+                <div
+                  style={{ animation: "fadeInBackdrop 0.4s ease-out forwards" }}
+                  className="absolute inset-0 bg-slate-950/60 backdrop-blur-xs"
+                />
+                <div
+                  style={{ animation: "popIn 0.5s cubic-bezier(0.175,0.885,0.32,1.275) forwards" }}
+                  className={`relative z-10 w-full ${cardBgClass} border shadow-2xl rounded-xl p-4 text-center space-y-3`}
+                >
+                  {content.imageUrl && (
+                    <div className="w-full h-24 bg-muted/40 rounded-lg overflow-hidden border border-current/10">
+                      <img
+                        src={content.imageUrl}
+                        alt="Popup graphic"
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  )}
+                  <h4 className={`text-base font-bold tracking-tight ${headingClass}`}>
+                    {renderFormattedText(content.heading || "Special Announcement")}
+                  </h4>
+                  <div className={`text-xs leading-relaxed ${bodyClass}`}>
+                    {renderFormattedText(
+                      content.body || "Your popup body text will appear here as you type…"
+                    )}
                   </div>
-                )}
-                <h4 className="text-base font-bold text-foreground tracking-tight">
-                  {renderFormattedText(content.heading || "Special Announcement")}
-                </h4>
-                <div className="text-xs text-muted-foreground leading-relaxed">
-                  {renderFormattedText(
-                    content.body || "Your popup body text will appear here as you type…"
+                  {(content.ctaText || content.ctaUrl) && (
+                    <div className="pt-1">
+                      <button
+                        type="button"
+                        className={`w-full py-2 px-3 ${btnClass} text-xs font-semibold rounded-lg shadow-sm transition-colors cursor-pointer`}
+                      >
+                        {content.ctaText || "Learn More"}
+                      </button>
+                    </div>
                   )}
                 </div>
-                {(content.ctaText || content.ctaUrl) && (
-                  <div className="pt-1">
-                    <button
-                      type="button"
-                      className="w-full py-2 px-3 bg-primary text-primary-foreground text-xs font-semibold rounded-lg shadow hover:opacity-90 transition-opacity cursor-pointer"
-                    >
-                      {content.ctaText || "Learn More"}
-                    </button>
-                  </div>
-                )}
               </div>
-            </div>
-          )}
+            );
+          })()}
         </div>
       </div>
 
