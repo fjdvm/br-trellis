@@ -1,6 +1,6 @@
 import React from "react";
 import { render, screen, act } from "@testing-library/react";
-import { Sidebar } from "@/components/shared/sidebar";
+import { Sidebar } from "@/components/layout/sidebar";
 
 // Mock next/navigation
 jest.mock("next/navigation", () => ({

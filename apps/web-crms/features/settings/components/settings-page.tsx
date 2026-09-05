@@ -6,7 +6,7 @@ import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Form } from "@/components/ui/form";
-import { accounts } from "@/components/shared/sidebar-nav";
+import { accounts } from "@/components/layout/sidebar-nav";
 import { GeneralSettingsCard } from "./general-settings-card";
 import { NotificationSettingsCard } from "./notification-settings-card";
 import { IntegrationSettingsCard } from "./integration-settings-card";
