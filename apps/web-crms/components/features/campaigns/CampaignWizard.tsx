@@ -409,8 +409,8 @@ export function CampaignWizard({ existing }: { existing?: Campaign }) {
               <Button
                 onClick={goNext}
                 disabled={
-                  (step === "Platform" && !canProceedPlatform) ||
-                  (step === "Audience" && !canProceedAudience)
+                  Boolean((step === "Platform" && !canProceedPlatform) ||
+                  (step === "Audience" && !canProceedAudience))
                 }
                 className="gap-1.5 shadow-sm"
               >
