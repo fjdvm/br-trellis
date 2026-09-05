@@ -1,5 +1,5 @@
-import { TasksFeed } from "@/components/features/tasks-feed";
+import { TasksPage } from "@/features/tasks";
 
-export default function TasksPage() {
-  return <TasksFeed />;
+export default function Page() {
+  return <TasksPage />;
 }

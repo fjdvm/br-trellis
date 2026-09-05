@@ -1,9 +1,9 @@
-import { RedirectToLogin } from "@/components/shared/RedirectToLogin";
+import { RedirectToLogin } from "@/features/auth";
 import { Suspense } from "react";
 
 export const dynamic = "force-dynamic";
 
-export default function SignInPage() {
+export default function Page() {
   return (
     <Suspense fallback={<div className="p-xl font-sans text-body-md text-muted-foreground">Loading...</div>}>
       <RedirectToLogin />
