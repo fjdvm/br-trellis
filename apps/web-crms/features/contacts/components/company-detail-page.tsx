@@ -28,15 +28,12 @@ import {
 } from "@/components/ui/alert-dialog";
 import { crmClient } from "@/lib/api/crm-client";
 import { BackButton } from "@/components/shared/BackButton";
-import { ScrollableTable } from "@/components/shared/ScrollableTable";
-import {
-  TablePagination,
-  useClientPagination,
-} from "@/components/shared/TablePagination";
 import { formatName, formatEmail } from "@/lib/format-display";
+import { CompanyContactsTable } from "@/features/contacts/components/company-contacts-table";
 import type { CompanyDetail } from "@/types/company";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
+
+
 
 interface CompanyDetailPageProps {
   companyId: string;
@@ -75,7 +72,6 @@ export function CompanyDetailPage({ companyId }: CompanyDetailPageProps) {
     void loadCompany();
   }, [loadCompany]);
 
-  const contactsPagination = useClientPagination(company?.contacts ?? []);
 
   function handleStartEdit() {
     if (!company) return;
@@ -232,64 +228,8 @@ export function CompanyDetailPage({ companyId }: CompanyDetailPageProps) {
       )}
 
       {/* Contacts Tab */}
-      <Card className="shadow-none border-border">
-        <CardHeader className="pb-md p-lg">
-          <CardTitle className="text-title-lg font-bold flex items-center gap-2">
-            <Users className="w-5 h-5" />
-            Contacts ({company.contacts.length})
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="p-lg pt-0">
-          {company.contacts.length === 0 ? (
-            <div className="p-xl text-muted-foreground">
-              No contacts assigned to this company.
-            </div>
-          ) : (
-            <>
-            <ScrollableTable>
-              <Table>
-                <TableHeader className="sticky top-0 bg-background z-10">
-                <TableRow>
-                  <TableHead className="min-w-[140px]">Name</TableHead>
-                  <TableHead className="min-w-[180px]">Email</TableHead>
-                  <TableHead className="min-w-[130px]">Phone</TableHead>
-                  <TableHead className="min-w-[100px] text-right">LTV</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {contactsPagination.pageItems.map((contact) => (
-                  <TableRow
-                    key={contact.id}
-                    className="cursor-pointer hover:bg-muted/50"
-                    onClick={() => router.push(`/contacts/${contact.id}`)}
-                  >
-                    <TableCell className="text-base font-medium">
-                      <Link
-                        href={`/contacts/${contact.id}`}
-                        className="hover:underline text-primary"
-                      >
-                        {formatName(contact.name) ?? "—"}
-                      </Link>
-                    </TableCell>
-                    <TableCell className="text-base">
-                      {formatEmail(contact.email) ?? "—"}
-                    </TableCell>
-                    <TableCell className="text-base">
-                      {contact.phone ?? "—"}
-                    </TableCell>
-                    <TableCell className="text-base text-right">
-                      ${contact.lifetimeValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-              </Table>
-            </ScrollableTable>
-            <TablePagination pagination={contactsPagination} itemLabel="contacts" />
-            </>
-          )}
-        </CardContent>
-      </Card>
+      <CompanyContactsTable contacts={company.contacts} />
+
 
       {/* Archive Confirmation */}
       <AlertDialog open={showArchiveDialog} onOpenChange={setShowArchiveDialog}>
