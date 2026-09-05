@@ -5,22 +5,13 @@ using api_crms.Interfaces;
 
 namespace api_crms.Services;
 
-/// <summary>
-/// Sends marketing Email Campaigns via Brevo SMTP (smtp-relay.brevo.com), using
-/// api-crms's own independent <c>Brevo:*</c> configuration (ADR 0009). Mirrors the
-/// structure of api-oos's <c>BrevoEmailSender</c>: an <see cref="SmtpClient"/> per
-/// message, looped once per recipient. Every message sets an <c>X-Mailin-Tag</c>
-/// header carrying the Campaign id so Brevo's engagement webhook can attribute
-/// opens/clicks back to the Campaign.
-///
-/// When credentials are missing every send fails (recorded in the outcome), so the
-/// dispatch result honestly reflects that nothing was delivered rather than silently
-/// reporting success.
-/// </summary>
+/// <summary>Sends marketing Email Campaigns via Brevo SMTP, reusing one connection per dispatch.</summary>
 public class BrevoMarketingEmailSender(
     IConfiguration configuration,
     ILogger<BrevoMarketingEmailSender> logger) : IMarketingEmailSender
 {
+    private const int PacingDelayMilliseconds = 200;
+
     public async Task<MarketingDispatchOutcome> SendCampaignAsync(
         Guid campaignId,
         IReadOnlyList<string> recipients,
@@ -32,31 +23,54 @@ public class BrevoMarketingEmailSender(
         var sent = 0;
         var failed = 0;
         var errors = new List<string>();
-
         var renderedHtml = EmailBodyRenderer.RenderToHtml(htmlBody);
 
-        foreach (var recipient in recipients)
+        SmtpClient client;
+        try
         {
-            cancellationToken.ThrowIfCancellationRequested();
-            try
-            {
-                var body = AppendUnsubscribeFooter(renderedHtml, recipient, unsubscribeBaseUrl);
-                await SendSingleAsync(campaignId, recipient, subject, body, cancellationToken);
-                sent++;
-            }
-            catch (Exception ex)
+            client = CreateClient();
+        }
+        catch (Exception ex)
+        {
+            foreach (var recipient in recipients)
             {
                 failed++;
                 errors.Add($"{recipient}: {ex.Message}");
                 logger.LogWarning(ex, "Campaign {CampaignId} send to {Recipient} failed", campaignId, recipient);
+            }
+            return new MarketingDispatchOutcome(sent, failed, errors);
+        }
+
+        using (client)
+        {
+            for (var i = 0; i < recipients.Count; i++)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                if (i > 0)
+                {
+                    await PaceAsync(cancellationToken);
+                }
+
+                var recipient = recipients[i];
+                try
+                {
+                    var body = AppendUnsubscribeFooter(renderedHtml, recipient, unsubscribeBaseUrl);
+                    await SendSingleAsync(client, campaignId, recipient, subject, body, cancellationToken);
+                    sent++;
+                }
+                catch (Exception ex)
+                {
+                    failed++;
+                    errors.Add($"{recipient}: {ex.Message}");
+                    logger.LogWarning(ex, "Campaign {CampaignId} send to {Recipient} failed", campaignId, recipient);
+                }
             }
         }
 
         return new MarketingDispatchOutcome(sent, failed, errors);
     }
 
-    // Appends a per-recipient unsubscribe link so the opt-out endpoint can identify
-    // who is unsubscribing. Returns the body unchanged when no base URL is configured.
+    // Appends a per-recipient unsubscribe link so the opt-out endpoint can identify who is unsubscribing.
     private static string AppendUnsubscribeFooter(string htmlBody, string recipient, string? unsubscribeBaseUrl)
     {
         if (string.IsNullOrWhiteSpace(unsubscribeBaseUrl))
@@ -69,19 +83,8 @@ public class BrevoMarketingEmailSender(
             $"Don't want these emails? <a href=\"{url}\">Unsubscribe</a>.</p>";
     }
 
-    /// <summary>
-    /// Sends a single Campaign message over Brevo SMTP, tagged with the Campaign id
-    /// via the <c>X-Mailin-Tag</c> header. Virtual so tests can intercept the actual
-    /// network call while still exercising the loop's success/failure accumulation
-    /// and header wiring. Throws when credentials are missing so the outcome reflects
-    /// that recipients weren't delivered.
-    /// </summary>
-    protected virtual async Task SendSingleAsync(
-        Guid campaignId,
-        string toEmail,
-        string subject,
-        string htmlBody,
-        CancellationToken cancellationToken)
+    /// <summary>Builds the shared SMTP connection for one dispatch. Virtual so tests can substitute a fake connection.</summary>
+    protected virtual SmtpClient CreateClient()
     {
         var host = configuration["Brevo:SmtpHost"] ?? "smtp-relay.brevo.com";
         var portStr = configuration["Brevo:SmtpPort"];
@@ -90,27 +93,39 @@ public class BrevoMarketingEmailSender(
 
         var username = configuration["Brevo:Username"];
         var password = configuration["Brevo:Password"];
-        var fromEmail = configuration["Brevo:FromEmail"] ?? "jude.nitram08@gmail.com";
-        var fromName = configuration["Brevo:FromName"] ?? "Bren Raphael's";
 
         if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password))
         {
             throw new InvalidOperationException("Brevo SMTP credentials are not configured.");
         }
 
-        using var client = new SmtpClient(host, port)
+        return new SmtpClient(host, port)
         {
             Credentials = new NetworkCredential(username, password),
             EnableSsl = true,
         };
+    }
+
+    /// <summary>Pacing delay applied between sends. Virtual so tests can skip the real delay.</summary>
+    protected virtual Task PaceAsync(CancellationToken cancellationToken) =>
+        Task.Delay(PacingDelayMilliseconds, cancellationToken);
+
+    /// <summary>Sends a single Campaign message over the shared connection, tagged with the Campaign id.</summary>
+    protected virtual async Task SendSingleAsync(
+        SmtpClient client,
+        Guid campaignId,
+        string toEmail,
+        string subject,
+        string htmlBody,
+        CancellationToken cancellationToken)
+    {
+        var fromEmail = configuration["Brevo:FromEmail"] ?? "jude.nitram08@gmail.com";
+        var fromName = configuration["Brevo:FromName"] ?? "Bren Raphael's";
+
         using var mailMessage = BuildMessage(campaignId, fromEmail, fromName, toEmail, subject, htmlBody);
         await client.SendMailAsync(mailMessage, cancellationToken);
     }
 
-    /// <summary>
-    /// Builds the <see cref="MailMessage"/> for a single Campaign send, including the
-    /// <c>X-Mailin-Tag</c> header carrying the Campaign id.
-    /// </summary>
     private static MailMessage BuildMessage(
         Guid campaignId,
         string fromEmail,
@@ -126,8 +141,7 @@ public class BrevoMarketingEmailSender(
             Body = htmlBody,
             IsBodyHtml = true,
         };
-        // Brevo reads this header as the message's tag; the engagement webhook then
-        // resolves the Campaign id back from it (fixing #164's missing-tag gap).
+        // Brevo reads this header as the message's tag; the engagement webhook resolves the Campaign id from it.
         mailMessage.Headers.Add("X-Mailin-Tag", campaignId.ToString());
         mailMessage.To.Add(new MailAddress(toEmail));
         return mailMessage;

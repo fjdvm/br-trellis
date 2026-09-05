@@ -1,3 +1,4 @@
+using System.Net.Mail;
 using api_crms.Interfaces;
 using api_crms.Services;
 using Microsoft.Extensions.Configuration;
@@ -17,6 +18,9 @@ public sealed class BrevoMarketingEmailSenderTests
     {
         private readonly HashSet<string> _failFor;
         public List<(Guid CampaignId, string To, string Subject, string Body)> Messages { get; } = new();
+        public List<SmtpClient> ClientsUsedForSend { get; } = new();
+        public int CreateClientCallCount { get; private set; }
+        public int PaceCallCount { get; private set; }
 
         public TestSender(HashSet<string> failFor)
             : base(new ConfigurationBuilder().Build(), NullLogger<BrevoMarketingEmailSender>.Instance)
@@ -24,9 +28,22 @@ public sealed class BrevoMarketingEmailSenderTests
             _failFor = failFor;
         }
 
-        protected override Task SendSingleAsync(
-            Guid campaignId, string toEmail, string subject, string htmlBody, CancellationToken cancellationToken)
+        protected override SmtpClient CreateClient()
         {
+            CreateClientCallCount++;
+            return new SmtpClient();
+        }
+
+        protected override Task PaceAsync(CancellationToken cancellationToken)
+        {
+            PaceCallCount++;
+            return Task.CompletedTask;
+        }
+
+        protected override Task SendSingleAsync(
+            SmtpClient client, Guid campaignId, string toEmail, string subject, string htmlBody, CancellationToken cancellationToken)
+        {
+            ClientsUsedForSend.Add(client);
             if (_failFor.Contains(toEmail))
             {
                 throw new InvalidOperationException("smtp rejected");
@@ -103,5 +120,29 @@ public sealed class BrevoMarketingEmailSenderTests
 
         Assert.Equal(0, outcome.SentCount);
         Assert.Equal(2, outcome.FailedCount);
+    }
+
+    [Fact]
+    public async Task SendCampaignAsync_opens_exactly_one_connection_reused_for_every_recipient()
+    {
+        var sender = new TestSender(failFor: new HashSet<string>());
+
+        await sender.SendCampaignAsync(
+            Guid.NewGuid(), new[] { "a@x.io", "b@x.io", "c@x.io" }, "Subject", "<p>Body</p>");
+
+        Assert.Equal(1, sender.CreateClientCallCount);
+        Assert.Equal(3, sender.ClientsUsedForSend.Count);
+        Assert.Single(sender.ClientsUsedForSend.Distinct());
+    }
+
+    [Fact]
+    public async Task SendCampaignAsync_paces_between_sends_only()
+    {
+        var sender = new TestSender(failFor: new HashSet<string>());
+
+        await sender.SendCampaignAsync(
+            Guid.NewGuid(), new[] { "a@x.io", "b@x.io", "c@x.io" }, "Subject", "<p>Body</p>");
+
+        Assert.Equal(2, sender.PaceCallCount);
     }
 }
