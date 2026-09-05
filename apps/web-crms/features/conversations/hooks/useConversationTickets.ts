@@ -148,6 +148,28 @@ export function useConversationTickets(initialTicketId?: string) {
     return true;
   });
 
+  const markTicketAsRead = useCallback((ticketId: string) => {
+    setTickets((prev) =>
+      prev.map((t) =>
+        t.id === ticketId ? { ...t, unreadMessageCount: 0 } : t
+      )
+    );
+  }, []);
+
+  const removeTicket = useCallback(
+    (ticketId: string) => {
+      setTickets((prev) => {
+        const next = prev.filter((t) => t.id !== ticketId);
+        // If the removed ticket was active, switch to the first remaining ticket
+        if (activeTicketId === ticketId) {
+          setActiveTicketId(next.length > 0 ? next[0].id : null);
+        }
+        return next;
+      });
+    },
+    [activeTicketId]
+  );
+
   return {
     tickets: filteredTickets,
     allTickets: tickets,
@@ -160,5 +182,7 @@ export function useConversationTickets(initialTicketId?: string) {
     error,
     refetch: fetchTickets,
     onMessageActivity,
+    markTicketAsRead,
+    removeTicket,
   };
 }

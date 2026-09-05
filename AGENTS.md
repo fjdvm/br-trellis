@@ -75,7 +75,7 @@ export default function Page() {
 
 ## 6. Next.js Components
 
-- Feature component contents go in `components/features/hello-world.tsx`.
+- Feature contents go in `features/<name>/components/`, `features/<name>/actions/` (or `services/`), `features/<name>/hooks/`, `features/<name>/schemas/`, `features/<name>/types.ts`, and `features/<name>/index.ts`.
 - Always use `shadcn/ui` — install components as needed.
 
 ---

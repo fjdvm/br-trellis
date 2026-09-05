@@ -1,6 +1,6 @@
 import React from "react";
 import { Control } from "react-hook-form";
-import type { SettingsFormValues } from "./settings-page";
+import type { SettingsFormValues } from "@/features/settings/types";
 import { Network } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";

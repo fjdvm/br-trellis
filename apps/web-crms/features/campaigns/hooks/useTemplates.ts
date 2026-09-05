@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { crmClient } from "@/lib/api/crm-client";
-import { Template } from "@/features/campaigns/types";
+import { Template, BlockTemplate } from "@/features/campaigns/types";
 
 export function useTemplates(channel?: string) {
   const [data, setData] = useState<Template[]>([]);
@@ -16,7 +16,7 @@ export function useTemplates(channel?: string) {
         crmClient.blockTemplates.list(channel).catch(() => []),
       ]);
 
-      const blockTemplatesAsTemplates: Template[] = (blockRes ?? []).map((bt: import("@/types/block-template").BlockTemplate) => ({
+      const blockTemplatesAsTemplates: Template[] = (blockRes ?? []).map((bt: BlockTemplate) => ({
         id: bt.id,
         name: bt.name,
         description: bt.description,

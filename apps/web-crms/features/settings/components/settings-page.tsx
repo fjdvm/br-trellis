@@ -11,15 +11,8 @@ import { GeneralSettingsCard } from "./general-settings-card";
 import { NotificationSettingsCard } from "./notification-settings-card";
 import { IntegrationSettingsCard } from "./integration-settings-card";
 import { AiSettingsTab } from "./ai-settings-tab";
+import type { SettingsFormValues } from "@/features/settings/types";
 
-export interface SettingsFormValues {
-  systemName: string;
-  slaHours: number;
-  emailAlerts: boolean;
-  weeklyReports: boolean;
-  crmUrl: string;
-  analyticsUrl: string;
-}
 
 export function SettingsPage() {
   const [toastMsg, setToastMsg] = useState<string | null>(null);
