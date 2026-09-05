@@ -286,7 +286,7 @@ export function StorefrontLivePreview({
       </div>
 
       {/* Mock browser window */}
-      <div className="bg-background border border-border rounded-xl shadow-md overflow-hidden min-h-[380px] relative flex flex-col">
+      <div className="bg-background border border-border rounded-xl shadow-md overflow-hidden h-[600px] relative flex flex-col">
         {/* Chrome bar */}
         <div className="bg-slate-900 text-slate-200 px-3 py-2 border-b border-border flex items-center justify-between shrink-0">
           <div className="flex items-center gap-1.5">
