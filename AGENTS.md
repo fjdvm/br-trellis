@@ -43,6 +43,7 @@
 - Don't change the header and sidebar.
 - The `.design-ref/` directory is just a basis for layout and designs.
 - Do not write unnecessary comments (e.g. dashed line dividers like `// -----`, block borders, or redundant section labels). Keep comments meaningful and concise.
+- Comments must be one line max. No multi-line or multi-paragraph comment blocks, and no comments that narrate the current task, issue/ticket number, or fix history — that belongs in the commit message or PR description.
 - Always normalize data on input and format consistently on output:
   - **Input (backend):** Trim whitespace from all string fields. Lowercase emails. Normalize phone numbers to a consistent format. Apply normalization in Services or Validators before persisting.
   - **Input (frontend):** Trim form field values before submitting to the API.
