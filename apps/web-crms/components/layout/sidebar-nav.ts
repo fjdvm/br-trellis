@@ -3,7 +3,6 @@ import {
   Users,
   Building2,
   ListFilter,
-  Target,
   AlertTriangle,
   ShoppingCart,
   ShoppingBag,
@@ -79,7 +78,7 @@ export const dashboardItem: NavItem = {
 export const segmentsItem: NavItem = {
   name: "Segments",
   href: "/contacts/segments",
-  icon: Target,
+  icon: ListFilter,
 };
 
 export const ticketsNavItem: NavItem = {
