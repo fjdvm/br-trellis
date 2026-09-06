@@ -24,7 +24,7 @@ import { STATUS_BADGE_VARIANT, SOURCE_BADGE_VARIANT, isTerminalStatus } from "@/
 import { formatName, formatEmail } from "@/lib/format-display";
 import type { TicketListItem } from "@/features/conversations/types";
 
-export type RowPending = { id: string; action: "claim" | "cancel" } | null;
+export type RowPending = { id: string; action: "claim" | "cancel" | "unclaim" } | null;
 
 function contactLabel(ticket: TicketListItem): string {
   const name = formatName(ticket.contact?.name);
@@ -63,6 +63,7 @@ interface TicketTableProps {
   rowPending: RowPending;
   currentAgentId: string | null;
   onClaim: (ticket: TicketListItem) => void;
+  onUnclaim?: (ticket: TicketListItem) => void;
   onCancelClick: (ticket: TicketListItem) => void;
 }
 
@@ -71,6 +72,7 @@ export function TicketTable({
   rowPending,
   currentAgentId,
   onClaim,
+  onUnclaim,
   onCancelClick,
 }: TicketTableProps) {
   const router = useRouter();
@@ -134,30 +136,10 @@ export function TicketTable({
                     {new Date(ticket.createdAt).toLocaleDateString()}
                   </TableCell>
                   <TableCell className="text-base text-right">
-                    {isTerminal(ticket) ? (
-                      <span className="text-muted-foreground">{"\u2014"}</span>
-                    ) : !canActOnTicket(ticket, currentAgentId) ? (
+                    {isTerminal(ticket) || (!isClaimable(ticket) && !canActOnTicket(ticket, currentAgentId)) ? (
                       <span className="text-muted-foreground">{"\u2014"}</span>
                     ) : (
-                      <div className="flex items-center justify-end gap-2">
-                        {isClaimable(ticket) && (
-                          <Button
-                            size="sm"
-                            aria-label="Claim ticket"
-                            disabled={rowBusy}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              onClaim(ticket);
-                            }}
-                          >
-                            {claimBusy ? (
-                              <Loader2 className="w-4 h-4 animate-spin" />
-                            ) : (
-                              <UserPlus className="w-4 h-4" />
-                            )}
-                            <span className="ml-1">Claim</span>
-                          </Button>
-                        )}
+                      <div className="flex items-center justify-end">
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
                             <Button
@@ -167,7 +149,7 @@ export function TicketTable({
                               disabled={rowBusy}
                               className="h-8 w-8 p-0"
                             >
-                              {cancelBusy ? (
+                              {rowBusy ? (
                                 <Loader2 className="w-4 h-4 animate-spin" />
                               ) : (
                                 <MoreVertical className="w-4 h-4" />
@@ -175,15 +157,39 @@ export function TicketTable({
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent side="right" align="start" sideOffset={8}>
-                            <DropdownMenuItem
-                              className="text-destructive focus:text-destructive cursor-pointer"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                onCancelClick(ticket);
-                              }}
-                            >
-                              <span>Cancel</span>
-                            </DropdownMenuItem>
+                            {isClaimable(ticket) && (
+                              <DropdownMenuItem
+                                className="cursor-pointer"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  onClaim(ticket);
+                                }}
+                              >
+                                Claim
+                              </DropdownMenuItem>
+                            )}
+                            {ticket.assignedToId != null && canActOnTicket(ticket, currentAgentId) && (
+                              <DropdownMenuItem
+                                className="cursor-pointer"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  onUnclaim?.(ticket);
+                                }}
+                              >
+                                Unclaim
+                              </DropdownMenuItem>
+                            )}
+                            {canActOnTicket(ticket, currentAgentId) && (
+                              <DropdownMenuItem
+                                className="text-destructive focus:text-destructive cursor-pointer"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  onCancelClick(ticket);
+                                }}
+                              >
+                                Cancel
+                              </DropdownMenuItem>
+                            )}
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </div>

@@ -166,7 +166,7 @@ export function TicketListPage({
 
   async function runRowMutation(
     id: string,
-    action: "claim" | "cancel",
+    action: "claim" | "cancel" | "unclaim",
     mutate: () => Promise<TicketListItem>
   ) {
     setRowPending({ id, action });
@@ -188,6 +188,18 @@ export function TicketListPage({
         staffEmail: session?.user?.email ?? "",
       })
     );
+  }
+
+  function handleUnclaim(ticket: TicketListItem) {
+    void runRowMutation(ticket.id, "unclaim", async () => {
+      await conversationTicketsApi.unclaim(ticket.id);
+      return {
+        ...ticket,
+        status: "Unclaimed",
+        assignedToId: null,
+        assignedToName: null,
+      };
+    });
   }
 
   function handleCancelConfirmed() {
@@ -307,6 +319,7 @@ export function TicketListPage({
               rowPending={rowPending}
               currentAgentId={currentAgentId}
               onClaim={handleClaim}
+              onUnclaim={handleUnclaim}
               onCancelClick={(t) => setCancelTarget(t)}
             />
           )}

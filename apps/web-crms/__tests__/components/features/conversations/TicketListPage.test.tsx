@@ -406,7 +406,8 @@ describe("TicketListPage", () => {
 
     render(<TicketListPage />);
 
-    fireEvent.click(await screen.findByRole("button", { name: "Claim ticket" }));
+    await userEvent.click(await screen.findByRole("button", { name: "More options" }));
+    await userEvent.click(screen.getByText("Claim"));
 
     await waitFor(() =>
       expect(conversationTicketsApi.claim).toHaveBeenCalledWith("t-1", {
@@ -416,17 +417,12 @@ describe("TicketListPage", () => {
       })
     );
     // Row updates in place from the response body: status badge flips to Claimed
-    // and the Claim button disappears (no full-list refetch).
+    // (no full-list refetch).
     expect(await screen.findByText("Claimed")).toBeInTheDocument();
-    await waitFor(() =>
-      expect(
-        screen.queryByRole("button", { name: "Claim ticket" })
-      ).not.toBeInTheDocument()
-    );
     expect(conversationTicketsApi.list).toHaveBeenCalledTimes(1);
   });
 
-  it("does not navigate when the Claim button is clicked (stopPropagation)", async () => {
+  it("does not navigate when the Claim action is clicked (stopPropagation)", async () => {
     jest
       .mocked(conversationTicketsApi.list)
       .mockResolvedValue([makeTicket({ id: "t-1", status: "Unclaimed" })]);
@@ -436,7 +432,8 @@ describe("TicketListPage", () => {
 
     render(<TicketListPage />);
 
-    fireEvent.click(await screen.findByRole("button", { name: "Claim ticket" }));
+    await userEvent.click(await screen.findByRole("button", { name: "More options" }));
+    await userEvent.click(screen.getByText("Claim"));
 
     await waitFor(() =>
       expect(conversationTicketsApi.claim).toHaveBeenCalled()
