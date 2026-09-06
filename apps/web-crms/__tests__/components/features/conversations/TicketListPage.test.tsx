@@ -120,7 +120,7 @@ describe("TicketListPage", () => {
     await screen.findByText("My claimed ticket");
     // Owner sees Cancel (a Claimed ticket isn't claimable, so no Claim button).
     expect(
-      screen.getByRole("button", { name: "Cancel ticket" })
+      screen.getByRole("button", { name: "More options" })
     ).toBeInTheDocument();
   });
 
@@ -455,7 +455,8 @@ describe("TicketListPage", () => {
 
     render(<TicketListPage />);
 
-    await user.click(await screen.findByRole("button", { name: "Cancel ticket" }));
+    await user.click(await screen.findByRole("button", { name: "More options" }));
+    await user.click(screen.getByText("Cancel"));
 
     // Dialog open; API not called yet.
     expect(conversationTicketsApi.changeStatus).not.toHaveBeenCalled();
