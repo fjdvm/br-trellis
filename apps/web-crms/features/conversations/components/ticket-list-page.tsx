@@ -6,7 +6,13 @@ import { useSession } from "next-auth/react";
 import { Ticket as TicketIcon } from "lucide-react";
 import { TableSkeleton } from "@/components/shared/table-skeleton";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { TicketCancelDialog } from "@/features/conversations/components/ticket-cancel-dialog";
 import { TicketFilters } from "@/features/conversations/components/ticket-filters";
 import { conversationTicketsApi } from "@/features/conversations/services/conversations-api";
@@ -262,22 +268,25 @@ export function TicketListPage({
             />
           </div>
 
-          {/* Primary Filter Tabs: All | Needs Attention (default) | Mine | Closed */}
+          {/* Primary View Dropdown: All | Needs Attention (default) | Mine | Closed */}
           <div className="pt-xs border-t border-border/60">
-            <Tabs
+            <Select
               value={activeTab}
               onValueChange={(val) => {
                 setActiveTab(val as "All" | "Needs Attention" | "Mine" | "Closed");
                 pagination.setPage(1);
               }}
             >
-              <TabsList className="h-9">
-                <TabsTrigger value="All" className="text-xs">All</TabsTrigger>
-                <TabsTrigger value="Needs Attention" className="text-xs">Needs Attention (default)</TabsTrigger>
-                <TabsTrigger value="Mine" className="text-xs">Mine</TabsTrigger>
-                <TabsTrigger value="Closed" className="text-xs">Closed</TabsTrigger>
-              </TabsList>
-            </Tabs>
+              <SelectTrigger className="w-full sm:w-[220px]" aria-label="View filter">
+                <SelectValue placeholder="View" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="All">All</SelectItem>
+                <SelectItem value="Needs Attention">Needs Attention (default)</SelectItem>
+                <SelectItem value="Mine">Mine</SelectItem>
+                <SelectItem value="Closed">Closed</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </CardHeader>
         <CardContent className="p-lg pt-0 space-y-md">
