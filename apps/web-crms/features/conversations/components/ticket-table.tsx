@@ -156,10 +156,15 @@ export function TicketTable({
                               )}
                             </Button>
                           </DropdownMenuTrigger>
-                          <DropdownMenuContent side="right" align="start" sideOffset={8}>
+                          <DropdownMenuContent
+                            side="right"
+                            align="start"
+                            sideOffset={8}
+                            className="border border-border bg-popover text-popover-foreground shadow-md p-1 min-w-[140px]"
+                          >
                             {isClaimable(ticket) && (
                               <DropdownMenuItem
-                                className="cursor-pointer"
+                                className="text-base font-medium cursor-pointer py-2 px-3"
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   onClaim(ticket);
@@ -170,7 +175,7 @@ export function TicketTable({
                             )}
                             {ticket.assignedToId != null && canActOnTicket(ticket, currentAgentId) && (
                               <DropdownMenuItem
-                                className="cursor-pointer"
+                                className="text-base font-medium cursor-pointer py-2 px-3"
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   onUnclaim?.(ticket);
@@ -181,7 +186,7 @@ export function TicketTable({
                             )}
                             {canActOnTicket(ticket, currentAgentId) && (
                               <DropdownMenuItem
-                                className="text-destructive focus:text-destructive cursor-pointer"
+                                className="text-base font-medium text-destructive focus:text-destructive cursor-pointer py-2 px-3"
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   onCancelClick(ticket);

@@ -364,7 +364,7 @@ describe("TicketListPage", () => {
     ).toBeInTheDocument();
   });
 
-  it("shows a Claim button on an Ongoing row with a null assignee", async () => {
+  it("shows a More options button on an Ongoing row with a null assignee", async () => {
     jest.mocked(conversationTicketsApi.list).mockResolvedValue([
       makeTicket({ id: "t-1", status: "Ongoing", assignedToId: null }),
     ]);
@@ -373,11 +373,11 @@ describe("TicketListPage", () => {
 
     await screen.findByText("Cannot log in");
     expect(
-      screen.getByRole("button", { name: "Claim ticket" })
+      screen.getByRole("button", { name: "More options" })
     ).toBeInTheDocument();
   });
 
-  it("hides the Claim button on a Claimed (assigned) row", async () => {
+  it("hides the More options button on a Claimed row assigned to someone else", async () => {
     jest.mocked(conversationTicketsApi.list).mockResolvedValue([
       makeTicket({ id: "t-1", status: "Claimed", assignedToId: "s-1" }),
     ]);
@@ -386,7 +386,7 @@ describe("TicketListPage", () => {
 
     await screen.findByText("Cannot log in");
     expect(
-      screen.queryByRole("button", { name: "Claim ticket" })
+      screen.queryByRole("button", { name: "More options" })
     ).not.toBeInTheDocument();
   });
 
