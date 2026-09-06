@@ -7,7 +7,7 @@ import { Ticket as TicketIcon } from "lucide-react";
 import { TableSkeleton } from "@/components/shared/table-skeleton";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TicketCancelDialog } from "@/features/conversations/components/ticket-cancel-dialog";
-import { TicketFilters } from "@/features/conversations/components/ticket-filters";
+import { TicketFilters, TicketFiltersSourceTabs } from "@/features/conversations/components/ticket-filters";
 import { conversationTicketsApi } from "@/features/conversations/services/conversations-api";
 import { useClientPagination } from "@/components/shared/table-pagination";
 import { useCurrentAgentId } from "@/hooks/use-current-agent-id";
@@ -239,7 +239,7 @@ export function TicketListPage({
       </div>
 
       <Card className="shadow-none border-border">
-        <CardHeader className="pb-md p-lg space-y-md">
+        <CardHeader className="pb-md p-lg space-y-sm">
           <div className="flex flex-col gap-md sm:flex-row sm:items-center sm:justify-between">
             <CardTitle className="text-title-lg font-bold flex items-center gap-2">
               <TicketIcon className="w-5 h-5" />
@@ -267,9 +267,20 @@ export function TicketListPage({
                 setSourceFilter(val);
                 pagination.setPage(1);
               }}
-              showSourceFilter={showSourceFilter}
+              showSourceFilter={false}
             />
           </div>
+          {showSourceFilter && (
+            <div className="flex justify-start pt-xs">
+              <TicketFiltersSourceTabs
+                sourceFilter={sourceFilter}
+                onSourceChange={(val) => {
+                  setSourceFilter(val);
+                  pagination.setPage(1);
+                }}
+              />
+            </div>
+          )}
         </CardHeader>
         <CardContent className="p-lg pt-0 space-y-md">
           {actionError && (

@@ -36,6 +36,31 @@ interface TicketFiltersProps {
   showSourceFilter: boolean;
 }
 
+interface TicketFiltersSourceTabsProps {
+  sourceFilter: TicketSource | "All";
+  onSourceChange: (source: TicketSource | "All") => void;
+}
+
+export function TicketFiltersSourceTabs({
+  sourceFilter,
+  onSourceChange,
+}: TicketFiltersSourceTabsProps) {
+  return (
+    <Tabs
+      value={sourceFilter}
+      onValueChange={(val) => onSourceChange(val as TicketSource | "All")}
+    >
+      <TabsList aria-label="Filter by source">
+        {SOURCE_OPTIONS.map((option) => (
+          <TabsTrigger key={option} value={option}>
+            {option}
+          </TabsTrigger>
+        ))}
+      </TabsList>
+    </Tabs>
+  );
+}
+
 export function TicketFilters({
   viewFilter,
   onViewChange,
@@ -93,18 +118,10 @@ export function TicketFilters({
       </div>
       {showSourceFilter && (
         <div className="flex justify-start">
-          <Tabs
-            value={sourceFilter}
-            onValueChange={(val) => onSourceChange(val as TicketSource | "All")}
-          >
-            <TabsList aria-label="Filter by source">
-              {SOURCE_OPTIONS.map((option) => (
-                <TabsTrigger key={option} value={option}>
-                  {option}
-                </TabsTrigger>
-              ))}
-            </TabsList>
-          </Tabs>
+          <TicketFiltersSourceTabs
+            sourceFilter={sourceFilter}
+            onSourceChange={onSourceChange}
+          />
         </div>
       )}
     </div>
