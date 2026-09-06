@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DataTable, Column } from "@/components/shared/data-table";
 import { TableSkeleton } from "@/components/shared/table-skeleton";
 import { workflowRunsApi } from "@/features/automation/services/workflow-runs-api";
-import type { WorkflowRunListItem } from "@/features/ecommerce/types";
+import type { WorkflowRunListItem } from "@/features/contacts/ecommerce/types";
 
 function getStatusVariant(status: string): "default" | "outline" | "destructive" {
   switch (status) {

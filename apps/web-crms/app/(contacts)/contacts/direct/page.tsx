@@ -1,4 +1,4 @@
-import { ContactListPage } from "@/features/contacts/components/contact-list-page";
+import { ContactListPage } from "@/features/contacts/all/components/contact-list-page";
 
 /**
  * Contacts is a pre-filtered view of the shared Contact list: every Contact

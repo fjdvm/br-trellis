@@ -66,7 +66,7 @@ jest.mock("@/components/ui/sidebar", () => ({
 }));
 
 // Mock the sync status hook
-jest.mock("@/features/ecommerce/hooks/useEcommerceSyncStatus", () => {
+jest.mock("@/features/contacts/ecommerce/hooks/useEcommerceSyncStatus", () => {
   let statusValue = { status: null as string | null, isLoading: true };
   return {
     useEcommerceSyncStatus: () => statusValue,
@@ -77,7 +77,7 @@ jest.mock("@/features/ecommerce/hooks/useEcommerceSyncStatus", () => {
   };
 });
 
-const { __setMockStatus } = require("@/features/ecommerce/hooks/useEcommerceSyncStatus");
+const { __setMockStatus } = require("@/features/contacts/ecommerce/hooks/useEcommerceSyncStatus");
 
 describe("Sidebar Navigation Structure", () => {
   beforeEach(() => {

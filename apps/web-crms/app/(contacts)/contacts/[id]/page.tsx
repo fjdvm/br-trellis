@@ -1,7 +1,7 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import { ContactDetailPage } from "@/features/contacts/components/contact-detail-page";
+import { ContactDetailPage } from "@/features/contacts/contacts/components/contact-detail-page";
 
 export default function Page() {
   const params = useParams();

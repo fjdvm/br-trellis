@@ -1,7 +1,7 @@
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { NewTicketSheet } from "@/features/conversations/components/new-ticket-sheet";
-import { contactsApi } from "@/features/contacts/services/contacts-api";
+import { contactsApi } from "@/features/contacts/contacts/services/contacts-api";
 import { conversationTicketsApi } from "@/features/conversations/services/conversations-api";
 import type { ContactListItem } from "@/features/contacts/types";
 import type { TicketDetail } from "@/features/conversations/types";
@@ -12,7 +12,7 @@ jest.mock("@/features/conversations/services/conversations-api", () => ({
     }
 }));
 
-jest.mock("@/features/contacts/services/contacts-api", () => ({
+jest.mock("@/features/contacts/contacts/services/contacts-api", () => ({
   contactsApi: {
       list: jest.fn(),
     }

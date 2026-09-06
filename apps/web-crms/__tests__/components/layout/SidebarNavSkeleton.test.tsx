@@ -62,7 +62,7 @@ jest.mock("@/components/ui/sidebar", () => ({
 }));
 
 // Mock the sync status hook with a mutable value.
-jest.mock("@/features/ecommerce/hooks/useEcommerceSyncStatus", () => {
+jest.mock("@/features/contacts/ecommerce/hooks/useEcommerceSyncStatus", () => {
   let statusValue = { status: null as string | null, isLoading: true };
   return {
     useEcommerceSyncStatus: () => statusValue,
@@ -73,7 +73,7 @@ jest.mock("@/features/ecommerce/hooks/useEcommerceSyncStatus", () => {
   };
 });
 
-const { __setMockStatus } = require("@/features/ecommerce/hooks/useEcommerceSyncStatus");
+const { __setMockStatus } = require("@/features/contacts/ecommerce/hooks/useEcommerceSyncStatus");
 const { __setMockSession } = require("next-auth/react");
 
 const authenticatedSession = {

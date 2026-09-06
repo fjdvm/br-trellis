@@ -4,7 +4,7 @@ import { useState, useCallback } from "react";
 import { aiClient } from "@/features/dashboard/services/ai-client";
 import { ticketsApi } from "@/features/conversations/services/conversations-api";
 import { campaignsApi } from "@/features/campaigns/services/campaigns-api";
-import { customerApi } from "@/features/customers/services/customers-api";
+import { customerApi } from "@/features/contacts/ecommerce/services/customers-api";
 // Use the legacy TicketListItem that matches the PaginatedTicketResponse returned by ticketsApi.list()
 import type { TicketListItem } from "@/features/conversations/types/ticket";
 import type { Anomaly, TaskItem } from "../types";

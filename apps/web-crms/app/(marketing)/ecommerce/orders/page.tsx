@@ -1,4 +1,4 @@
-import { OrdersPage } from "@/features/ecommerce/components/orders-page";
+import { OrdersPage } from "@/features/contacts/ecommerce/components/orders-page";
 
 export default function Page() {
   return <OrdersPage />;

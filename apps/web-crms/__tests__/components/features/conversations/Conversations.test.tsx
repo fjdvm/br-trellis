@@ -9,7 +9,7 @@ jest.mock("next-auth/react", () => ({
 import React from "react";
 import { render, screen, waitFor } from "@testing-library/react";
 import { ConversationsInbox as Conversations } from "@/features/conversations/components/conversations-inbox";
-import { customerApi } from "@/features/customers/services/customers-api";
+import { customerApi } from "@/features/contacts/ecommerce/services/customers-api";
 import { conversationTicketsApi, messagesApi, ticketsApi } from "@/features/conversations/services/conversations-api";
 import { templatesApi } from "@/features/campaigns/services/campaigns-api";
 
@@ -35,7 +35,7 @@ jest.mock("@/features/conversations/services/conversations-api", () => ({
     }
 }));
 
-jest.mock("@/features/customers/services/customers-api", () => ({
+jest.mock("@/features/contacts/ecommerce/services/customers-api", () => ({
   customerApi: {
       getById: jest.fn(),
       getMarketingHistory: jest.fn(),

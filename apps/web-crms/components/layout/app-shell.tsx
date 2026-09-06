@@ -6,7 +6,7 @@ import { SidebarProvider, useSidebar } from "@/components/ui/sidebar";
 import { Sidebar } from "./sidebar";
 import { Header } from "./header";
 import { AskSentraCXPanel } from "@/features/dashboard/components/ask-sentracx-panel";
-import { EcommerceSyncStatusProvider } from "@/features/ecommerce/hooks/useEcommerceSyncStatus";
+import { EcommerceSyncStatusProvider } from "@/features/contacts/ecommerce/hooks/useEcommerceSyncStatus";
 
 function MainContent({ children }: { children: React.ReactNode }) {
   const { open } = useSidebar();

@@ -10,7 +10,7 @@ jest.mock("next/navigation", () => ({
 
 // Mock CRM API client
 const mockGetSyncStatus = jest.fn();
-jest.mock("@/features/ecommerce/services/ecommerce-api", () => ({
+jest.mock("@/features/contacts/ecommerce/services/ecommerce-api", () => ({
   ecommerceSyncStatusApi: {
       get: () => mockGetSyncStatus(),
     }

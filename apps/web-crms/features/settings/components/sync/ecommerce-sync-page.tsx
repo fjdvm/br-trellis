@@ -6,8 +6,8 @@ import { DetailSkeleton } from "@/components/shared/detail-skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { ecommerceSyncStatusApi } from "@/features/ecommerce/services/ecommerce-api";
-import type { EcommerceSyncStatus } from "@/features/ecommerce/types";
+import { ecommerceSyncStatusApi } from "@/features/contacts/ecommerce/services/ecommerce-api";
+import type { EcommerceSyncStatus } from "@/features/contacts/ecommerce/types";
 
 function formatTimestamp(value: string | null): string {
   if (!value) return "Never";
