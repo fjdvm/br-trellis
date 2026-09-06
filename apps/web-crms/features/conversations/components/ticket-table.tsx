@@ -88,7 +88,7 @@ export function TicketTable({
               <TableHead className="min-w-[180px]">Contact</TableHead>
               <TableHead className="min-w-[160px]">Assigned To</TableHead>
               <TableHead className="min-w-[120px]">Created</TableHead>
-              <TableHead className="min-w-[180px]">Actions</TableHead>
+              <TableHead className="min-w-[120px]" />
             </TableRow>
           </TableHeader>
           <TableBody>
