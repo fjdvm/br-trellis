@@ -4,7 +4,7 @@ ASP.NET Core Web API backend for the `br-online-shop` monorepo built with .NET 1
 
 ## Project Structure (enforced by `dotnet-structure` skill)
 ```
-apps/api-oos/
+services/api-oos/
 ├── Configurations/         → Options classes (bound from appsettings)
 ├── Constants/              → App-wide constants
 ├── Controllers/            → API endpoints (HTTP routing & binding only)
@@ -27,7 +27,7 @@ apps/api-oos/
 
 ## Running the API Locally
 ```bash
-cd apps/api-oos
+cd services/api-oos
 dotnet run
 ```
 - API Base URL: `https://localhost:7004/api`
@@ -42,12 +42,12 @@ dotnet tool install --global dotnet-ef
 
 ### Adding a New Migration
 ```bash
-cd apps/api-oos
+cd services/api-oos
 dotnet ef migrations add <MigrationName> --output-dir Data/Migrations
 ```
 
 ### Updating the Local Database
 ```bash
-cd apps/api-oos
+cd services/api-oos
 dotnet ef database update
 ```

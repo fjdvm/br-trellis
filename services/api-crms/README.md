@@ -6,7 +6,7 @@ plus contact, company, segment, and ecommerce read endpoints.
 ## Running
 
 ```bash
-cd apps/api-crms
+cd services/api-crms
 dotnet run
 ```
 

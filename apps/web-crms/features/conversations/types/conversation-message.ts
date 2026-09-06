@@ -1,7 +1,7 @@
 /**
  * Types for the Conversations ticket message *thread* (feature 4, backed by
  * #66). Mirrors `MessageDto`/`PostMessageDto` from
- * `apps/api-crms/DTOs/MessageDtos.cs` exactly.
+ * `services/api-crms/DTOs/MessageDtos.cs` exactly.
  *
  * Deliberately separate from the legacy `types/message.ts` scaffold, which
  * targets a fictional API (a `senderId` query param, an `isRead`/`markRead`

@@ -1,6 +1,7 @@
 <Solution>
-  <Folder Name="/apps/">
-    <Project Path="apps/api-crms.Tests/api-crms.Tests.csproj" />
-    <Project Path="apps/api-crms/api-crms.csproj" />
+  <Folder Name="/services/">
+    <Project Path="services/api-crms/Tests/api-crms.Tests.csproj" />
+    <Project Path="services/api-crms/api-crms.csproj" />
+    <Project Path="services/api-oos/ApiOos.csproj" />
   </Folder>
 </Solution>

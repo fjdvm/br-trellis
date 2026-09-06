@@ -5,7 +5,7 @@
  * describes a fictional API contract (pagination wrapper, PUT verbs,
  * assignedToId filter, DELETE cancel) that the real `TicketController`
  * (api-crms) does not implement. This file mirrors `TicketListItemDto`
- * exactly, as verified against `apps/api-crms/DTOs/TicketDtos.cs`.
+ * exactly, as verified against `services/api-crms/DTOs/TicketDtos.cs`.
  */
 
 export type TicketStatus = "Unclaimed" | "Claimed" | "Ongoing" | "Completed" | "Canceled";

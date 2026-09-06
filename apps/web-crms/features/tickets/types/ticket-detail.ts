@@ -3,7 +3,7 @@
  * Status transitions — feature 2, backed by #64).
  *
  * Mirrors `TicketDetailDto`, `ClaimTicketDto`, and `ChangeTicketStatusDto`
- * from `apps/api-crms/DTOs/TicketDtos.cs` exactly. Deliberately separate from
+ * from `services/api-crms/DTOs/TicketDtos.cs` exactly. Deliberately separate from
  * the legacy `types/ticket.ts` scaffold, which targets a fictional API.
  */
 import type {
