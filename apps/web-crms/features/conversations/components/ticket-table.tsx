@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { Ticket as TicketIcon, Loader2, UserPlus, MoreVertical, XCircle } from "lucide-react";
+import { Ticket as TicketIcon, Loader2, UserPlus, MoreVertical } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -133,13 +133,13 @@ export function TicketTable({
                   <TableCell className="text-sm text-muted-foreground">
                     {new Date(ticket.createdAt).toLocaleDateString()}
                   </TableCell>
-                  <TableCell className="text-base">
+                  <TableCell className="text-base text-right">
                     {isTerminal(ticket) ? (
                       <span className="text-muted-foreground">{"\u2014"}</span>
                     ) : !canActOnTicket(ticket, currentAgentId) ? (
                       <span className="text-muted-foreground">{"\u2014"}</span>
                     ) : (
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center justify-end gap-2">
                         {isClaimable(ticket) && (
                           <Button
                             size="sm"
@@ -182,7 +182,6 @@ export function TicketTable({
                                 onCancelClick(ticket);
                               }}
                             >
-                              <XCircle className="w-4 h-4 mr-2" />
                               <span>Cancel</span>
                             </DropdownMenuItem>
                           </DropdownMenuContent>
