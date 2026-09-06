@@ -14,6 +14,7 @@ export interface SegmentListItem {
   name: string;
   type: string;
   isSystemDefined: boolean;
+  isArchived?: boolean;
   rule: SegmentRule | null;
   memberCount: number;
 }

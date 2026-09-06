@@ -32,7 +32,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { segmentsApi } from "@/features/contacts/services/segments-api";
+import { segmentsApi } from "../services/segments-api";
 import { BackButton } from "@/components/shared/back-button";
 import { ScrollableTable } from "@/components/shared/scrollable-table";
 import {
@@ -40,8 +40,8 @@ import {
   useClientPagination,
 } from "@/components/shared/table-pagination";
 import { formatName, formatEmail } from "@/lib/format-display";
-import { NewSegmentSheet } from "@/features/contacts/components/new-segment-sheet";
-import type { SegmentListItem, SegmentMember } from "@/features/contacts/types";
+import { NewSegmentSheet } from "./new-segment-sheet";
+import type { SegmentListItem, SegmentMember } from "../types/segment";
 
 interface SegmentsListPageProps {
   /** When provided, auto-selects the first system-defined segment matching this name */

@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { SegmentsListPage } from "@/features/contacts/components/segments-list-page";
-import { segmentsApi } from "@/features/contacts/services/segments-api";
+import { SegmentsListPage } from "@/features/segments/components/segments-list-page";
+import { segmentsApi } from "@/features/segments/services/segments-api";
 
 const mockPush = jest.fn();
 
@@ -11,7 +11,7 @@ jest.mock("next/navigation", () => ({
   }),
 }));
 
-jest.mock("@/features/contacts/services/segments-api", () => ({
+jest.mock("@/features/segments/services/segments-api", () => ({
   segmentsApi: {
       list: jest.fn(),
       getMembers: jest.fn(),

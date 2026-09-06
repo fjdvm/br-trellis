@@ -21,7 +21,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { segmentsApi } from "@/features/contacts/services/segments-api";
+import { segmentsApi } from "../services/segments-api";
+import type { SegmentListItem } from "../types/segment";
 
 interface NewSegmentSheetProps {
   /** Called after a segment is successfully created or updated. */
