@@ -40,6 +40,7 @@ export type ChannelContentState = {
   ctaText?: string;
   ctaUrl?: string;
   dismissible?: boolean;
+  // Banner/Popup mock-preview-only gradient; unrelated to a Block Template's Email Theme.
   themeGradient?: "light-to-violet" | "violet-to-light";
   blockValues?: Record<string, BlockValue>;
 };
@@ -240,7 +241,9 @@ export function ChannelContentForm({
           className="sticky top-24"
         />
 
-        {/* Theme Gradient selector for Banner and Popup channels */}
+        {/* Theme Gradient selector for Banner and Popup channels - mock-preview-only,
+            unrelated to a Block Template's real Email Theme (set in the Template
+            Builder and baked into the actual rendered HTML); do not merge the two. */}
         {(channel === "Banner" || channel === "Popup") && (
           <div className="p-3 bg-muted/30 border border-border rounded-lg space-y-2 text-left">
             <Label className="text-xs font-semibold text-foreground block">

@@ -33,13 +33,23 @@ public sealed class BlockTemplateService(IBlockTemplateRepository repository) : 
             throw new ArgumentException($"Invalid channel '{input.Channel}'.");
         }
 
+        if (channel != CampaignChannel.Email)
+        {
+            throw new ArgumentException("Block Templates can only be created for the Email channel.");
+        }
+
+        if (!Enum.TryParse<EmailTheme>(input.Theme?.Trim(), true, out var theme))
+        {
+            throw new ArgumentException($"Invalid theme '{input.Theme}'.");
+        }
+
         var (isValid, errorMessage) = BlockTemplateValidator.ValidateConstraints(channel, input.Blocks ?? []);
         if (!isValid)
         {
             throw new InvalidOperationException(errorMessage);
         }
 
-        var model = BlockTemplateMapper.ToModel(input, channel);
+        var model = BlockTemplateMapper.ToModel(input, channel, theme);
         var created = await repository.CreateAsync(model, ct);
         return BlockTemplateMapper.ToDto(created);
     }
@@ -62,6 +72,16 @@ public sealed class BlockTemplateService(IBlockTemplateRepository repository) : 
             throw new ArgumentException($"Invalid channel '{input.Channel}'.");
         }
 
+        if (channel != CampaignChannel.Email)
+        {
+            throw new ArgumentException("Block Templates can only be created for the Email channel.");
+        }
+
+        if (!Enum.TryParse<EmailTheme>(input.Theme?.Trim(), true, out var theme))
+        {
+            throw new ArgumentException($"Invalid theme '{input.Theme}'.");
+        }
+
         var (isValid, errorMessage) = BlockTemplateValidator.ValidateConstraints(channel, input.Blocks ?? []);
         if (!isValid)
         {
@@ -71,6 +91,7 @@ public sealed class BlockTemplateService(IBlockTemplateRepository repository) : 
         existing.Name = input.Name.Trim();
         existing.Description = input.Description?.Trim();
         existing.Channel = channel;
+        existing.Theme = theme;
         existing.UpdatedAt = DateTimeOffset.UtcNow;
 
         var newBlocks = (input.Blocks ?? [])

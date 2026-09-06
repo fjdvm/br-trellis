@@ -14,6 +14,7 @@ public static class BlockTemplateMapper
             template.Description,
             template.Channel.ToString(),
             template.IsArchived,
+            template.Theme.ToString(),
             template.CreatedAt,
             template.UpdatedAt,
             template.Blocks
@@ -30,7 +31,7 @@ public static class BlockTemplateMapper
                 .ToList());
     }
 
-    public static BlockTemplate ToModel(CreateBlockTemplateInput input, CampaignChannel channel)
+    public static BlockTemplate ToModel(CreateBlockTemplateInput input, CampaignChannel channel, EmailTheme theme)
     {
         var now = DateTimeOffset.UtcNow;
         var template = new BlockTemplate
@@ -40,6 +41,7 @@ public static class BlockTemplateMapper
             Description = input.Description?.Trim(),
             Channel = channel,
             IsArchived = false,
+            Theme = theme,
             CreatedAt = now,
             UpdatedAt = now,
         };

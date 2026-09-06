@@ -45,7 +45,7 @@ public sealed class MarketingUnsubscribeEndpointTests
         public Task<IReadOnlyList<DueCampaignDto>> GetDueEmailCampaignsAsync(CancellationToken cancellationToken) => throw new NotImplementedException();
         public Task<bool> RecordDispatchResultAsync(Guid id, CampaignDispatchResultDto result, CancellationToken cancellationToken) => throw new NotImplementedException();
         public Task<ActiveChannelContentDto?> GetActiveChannelContentAsync(string channel, CancellationToken cancellationToken) => throw new NotImplementedException();
-        public string RenderPreviewHtml(string? content) => throw new NotImplementedException();
+        public string RenderPreviewHtml(string? content, string? theme = null) => throw new NotImplementedException();
         public Task<IReadOnlyList<Guid>> SweepCampaignLifecycleAsync(CancellationToken cancellationToken) => throw new NotImplementedException();
         public Task<int> DispatchDueEmailCampaignsAsync(CancellationToken cancellationToken) => throw new NotImplementedException();
         public Task<bool> RecordEventAsync(Guid campaignId, CampaignEventDto input, CancellationToken cancellationToken) => throw new NotImplementedException();

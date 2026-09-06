@@ -88,6 +88,8 @@ export interface Template {
   thumbnailUrl?: string | null;
   channel: CampaignChannel;
   createdAt: string;
+  // Only set for Block Templates (Email-only); absent on legacy Html templates.
+  theme?: "VioletToLight" | "LightToViolet";
 }
 
 export interface CampaignDispatchResult {

@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Mail;
+using api_crms.Enums;
 using api_crms.Helpers;
 using api_crms.Interfaces;
 
@@ -18,12 +19,13 @@ public class BrevoMarketingEmailSender(
         string subject,
         string htmlBody,
         string? unsubscribeBaseUrl = null,
+        EmailTheme? theme = null,
         CancellationToken cancellationToken = default)
     {
         var sent = 0;
         var failed = 0;
         var errors = new List<string>();
-        var renderedHtml = EmailBodyRenderer.RenderToHtml(htmlBody);
+        var renderedHtml = EmailBodyRenderer.RenderToHtml(htmlBody, theme: theme);
 
         SmtpClient client;
         try

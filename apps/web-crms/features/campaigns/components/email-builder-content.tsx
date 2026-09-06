@@ -34,12 +34,25 @@ import {
 } from "@/features/campaigns/components/template-builder-dnd";
 import { useRenderedPreviewHtml } from "@/features/campaigns/hooks/use-rendered-preview-html";
 import type { BlockType, ChannelConstraints } from "@/features/campaigns/services/template-constraints";
+import type { EmailTheme } from "@/features/campaigns/types/block-template";
+
+// The exact two stops EmailBodyRenderer uses for the header band, so this
+// swatch preview never drifts from the real rendered gradient.
+const VIOLET_HEX = "#6D28D9";
+const LIGHT_HEX = "#F5F3FF";
+
+const THEME_OPTIONS: { value: EmailTheme; label: string; gradient: string }[] = [
+  { value: "VioletToLight", label: "Violet to Light", gradient: `linear-gradient(to right, ${VIOLET_HEX}, ${LIGHT_HEX})` },
+  { value: "LightToViolet", label: "Light to Violet", gradient: `linear-gradient(to right, ${LIGHT_HEX}, ${VIOLET_HEX})` },
+];
 
 interface EmailBuilderContentProps {
   builderName: string;
   setBuilderName: (v: string) => void;
   builderDescription: string;
   setBuilderDescription: (v: string) => void;
+  builderTheme: EmailTheme;
+  setBuilderTheme: (v: EmailTheme) => void;
   blocks: TemplateBlock[];
   constraints: ChannelConstraints;
   addBlock: (type: BlockType) => void;
@@ -54,6 +67,8 @@ export function EmailBuilderContent({
   setBuilderName,
   builderDescription,
   setBuilderDescription,
+  builderTheme,
+  setBuilderTheme,
   blocks,
   constraints,
   addBlock,
@@ -122,7 +137,7 @@ export function EmailBuilderContent({
           ),
     [blocks]
   );
-  const { html: blocksHtml } = useRenderedPreviewHtml(blocksJson);
+  const { html: blocksHtml } = useRenderedPreviewHtml(blocksJson, builderTheme);
 
   return (
     <DndContext sensors={sensors} collisionDetection={closestCenter} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
@@ -143,6 +158,29 @@ export function EmailBuilderContent({
               value={builderDescription}
               onChange={(e) => setBuilderDescription(e.target.value)}
             />
+          </div>
+
+          <div className="space-y-2 shrink-0">
+            <Label className="text-xs uppercase font-bold text-muted-foreground">
+              Email Theme
+            </Label>
+            <div className="grid grid-cols-2 gap-2">
+              {THEME_OPTIONS.map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  onClick={() => setBuilderTheme(option.value)}
+                  className={`p-2 rounded-lg border text-left flex flex-col gap-1.5 transition-all cursor-pointer ${
+                    builderTheme === option.value
+                      ? "border-primary ring-2 ring-primary/40 bg-background shadow-xs"
+                      : "border-border bg-card/60 hover:bg-card"
+                  }`}
+                >
+                  <div className="w-full h-5 rounded" style={{ background: option.gradient }} />
+                  <span className="text-[11px] font-semibold text-foreground">{option.label}</span>
+                </button>
+              ))}
+            </div>
           </div>
 
           <div className="space-y-2 flex-1 overflow-y-auto">

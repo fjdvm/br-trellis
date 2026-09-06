@@ -105,6 +105,7 @@ export function TemplatePreviewModal({
             <StorefrontLivePreview
               channel={template.channel}
               content={{
+                templateId: isBlockTemplate ? template.id : undefined,
                 subject: template.channel === "Email" ? template.name : undefined,
                 heading: template.channel === "Popup" ? template.name : undefined,
                 body: template.content,

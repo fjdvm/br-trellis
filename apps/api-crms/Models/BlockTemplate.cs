@@ -14,6 +14,9 @@ public sealed class BlockTemplate
 
     public bool IsArchived { get; set; }
 
+    // The fixed gradient treatment applied to the rendered email's header band.
+    public EmailTheme Theme { get; set; } = EmailTheme.VioletToLight;
+
     public DateTimeOffset CreatedAt { get; set; }
 
     public DateTimeOffset UpdatedAt { get; set; }

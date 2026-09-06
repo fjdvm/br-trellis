@@ -3,7 +3,8 @@ import { arrayMove } from "@dnd-kit/sortable";
 import { blockTemplatesApi } from "@/features/campaigns/services/campaigns-api";
 import { validateBlockCount, getChannelConstraints, type BlockType, type ChannelConstraints } from "@/features/campaigns/services/template-constraints";
 import type { CampaignChannel, Template } from "@/features/campaigns/types";
-import type { TemplateBlock, BannerFields, PopupFields } from "@/features/campaigns/components/template-builder-components";
+import type { EmailTheme } from "@/features/campaigns/types/block-template";
+import type { TemplateBlock } from "@/features/campaigns/components/template-builder-components";
 
 export interface UseTemplateBuilderParams {
   channel: CampaignChannel;
@@ -16,6 +17,7 @@ export function useTemplateBuilder({ channel, refetch }: UseTemplateBuilderParam
   const [builderChannel, setBuilderChannel] = useState<CampaignChannel>("Email");
   const [builderName, setBuilderName] = useState("");
   const [builderDescription, setBuilderDescription] = useState("");
+  const [builderTheme, setBuilderTheme] = useState<EmailTheme>("VioletToLight");
   const [builderError, setBuilderError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -24,21 +26,6 @@ export function useTemplateBuilder({ channel, refetch }: UseTemplateBuilderParam
     { id: "2", type: "text", label: "Main Body Text", textAlign: "left" },
     { id: "3", type: "button", label: "Primary Action Button" },
   ]);
-
-  const [bannerFields, setBannerFields] = useState<BannerFields>({
-    message: "",
-    imageUrl: "",
-    linkUrl: "",
-    dismissible: true,
-  });
-
-  const [popupFields, setPopupFields] = useState<PopupFields>({
-    heading: "",
-    body: "",
-    imageUrl: "",
-    ctaText: "",
-    ctaUrl: "",
-  });
 
   const [deleteTemplateItem, setDeleteTemplateItem] = useState<Template | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -49,6 +36,7 @@ export function useTemplateBuilder({ channel, refetch }: UseTemplateBuilderParam
     setEditingTemplateId(null);
     setBuilderName("");
     setBuilderDescription("");
+    setBuilderTheme("VioletToLight");
     setBuilderChannel(channel);
     setBuilderError(null);
     setBlocks([
@@ -56,8 +44,6 @@ export function useTemplateBuilder({ channel, refetch }: UseTemplateBuilderParam
       { id: "2", type: "text", label: "Main Body Text", textAlign: "left" },
       { id: "3", type: "button", label: "Primary Action Button" },
     ]);
-    setBannerFields({ message: "", imageUrl: "", linkUrl: "", dismissible: true });
-    setPopupFields({ heading: "", body: "", imageUrl: "", ctaText: "", ctaUrl: "" });
     setShowBuilderModal(true);
   }
 
@@ -66,54 +52,34 @@ export function useTemplateBuilder({ channel, refetch }: UseTemplateBuilderParam
     setBuilderName(template.name);
     setBuilderDescription(template.description || "");
     setBuilderChannel(template.channel);
+    setBuilderTheme(template.theme ?? "VioletToLight");
     setBuilderError(null);
 
-    if (template.channel === "Email") {
-      let parsedBlocks: TemplateBlock[] = [];
-      if (template.format === "Blocks" && template.content) {
-        try {
-          const raw = JSON.parse(template.content);
-          if (Array.isArray(raw)) {
-            parsedBlocks = raw.map((b: Record<string, unknown>, idx: number) => ({
-              id: (b.id as string) || String(idx + 1),
-              type: b.type as BlockType,
-              label: (b.label as string) || (b.type as string),
-              textAlign: (b.textAlign as "left" | "center" | "right") || "left",
-              isBold: (b.isBold as boolean) ?? false,
-              isItalic: (b.isItalic as boolean) ?? false,
-              content: (b.content as TemplateBlock["content"]) ?? null,
-            }));
-          }
-        } catch (e) {}
-      }
-      setBlocks(
-        parsedBlocks.length > 0
-          ? parsedBlocks
-          : [
-              { id: "1", type: "heading", label: "Hero Title", textAlign: "left" },
-              { id: "2", type: "text", label: "Main Body Text", textAlign: "left" },
-            ]
-      );
+    let parsedBlocks: TemplateBlock[] = [];
+    if (template.format === "Blocks" && template.content) {
+      try {
+        const raw = JSON.parse(template.content);
+        if (Array.isArray(raw)) {
+          parsedBlocks = raw.map((b: Record<string, unknown>, idx: number) => ({
+            id: (b.id as string) || String(idx + 1),
+            type: b.type as BlockType,
+            label: (b.label as string) || (b.type as string),
+            textAlign: (b.textAlign as "left" | "center" | "right") || "left",
+            isBold: (b.isBold as boolean) ?? false,
+            isItalic: (b.isItalic as boolean) ?? false,
+            content: (b.content as TemplateBlock["content"]) ?? null,
+          }));
+        }
+      } catch (e) {}
     }
-
-    if (template.channel === "Banner") {
-      setBannerFields({
-        message: template.content || "",
-        imageUrl: "",
-        linkUrl: "",
-        dismissible: true,
-      });
-    }
-
-    if (template.channel === "Popup") {
-      setPopupFields({
-        heading: template.name,
-        body: template.content || "",
-        imageUrl: "",
-        ctaText: "",
-        ctaUrl: "",
-      });
-    }
+    setBlocks(
+      parsedBlocks.length > 0
+        ? parsedBlocks
+        : [
+            { id: "1", type: "heading", label: "Hero Title", textAlign: "left" },
+            { id: "2", type: "text", label: "Main Body Text", textAlign: "left" },
+          ]
+    );
 
     setShowBuilderModal(true);
   }
@@ -173,11 +139,7 @@ export function useTemplateBuilder({ channel, refetch }: UseTemplateBuilderParam
   function isSaveDisabled() {
     if (isSaving) return true;
     if (!builderName.trim()) return true;
-    if (builderChannel === "Email") return blocks.length === 0;
-    if (builderChannel === "Banner") return !bannerFields.message.trim();
-    if (builderChannel === "Popup")
-      return !popupFields.heading.trim() || !popupFields.body.trim();
-    return false;
+    return blocks.length === 0;
   }
 
   async function handleSaveTemplate() {
@@ -186,64 +148,34 @@ export function useTemplateBuilder({ channel, refetch }: UseTemplateBuilderParam
       return;
     }
 
-    if (builderChannel === "Email" && blocks.length === 0) {
+    if (blocks.length === 0) {
       setBuilderError("Template must contain at least one block.");
       return;
-    }
-    if (builderChannel === "Banner" && !bannerFields.message.trim()) {
-      setBuilderError("Message is required for Banner templates.");
-      return;
-    }
-    if (builderChannel === "Popup") {
-      if (!popupFields.heading.trim() || !popupFields.body.trim()) {
-        setBuilderError("Heading and body message are required for Popup templates.");
-        return;
-      }
     }
 
     setIsSaving(true);
     setBuilderError(null);
 
     try {
-      if (builderChannel === "Email") {
-        const payload = {
-          name: builderName.trim(),
-          description: builderDescription.trim() || undefined,
-          channel: builderChannel,
-          blocks: blocks.map((b, index) => ({
-            type: b.type,
-            label: b.label || `${b.type} block`,
-            order: index,
-            textAlign: b.textAlign || "left",
-            isBold: b.isBold ?? false,
-            isItalic: b.isItalic ?? false,
-            content: b.content ?? null,
-          })),
-        };
-        if (editingTemplateId) {
-          await blockTemplatesApi.update(editingTemplateId, payload);
-        } else {
-          await blockTemplatesApi.create(payload);
-        }
+      const payload = {
+        name: builderName.trim(),
+        description: builderDescription.trim() || undefined,
+        channel: builderChannel,
+        theme: builderTheme,
+        blocks: blocks.map((b, index) => ({
+          type: b.type,
+          label: b.label || `${b.type} block`,
+          order: index,
+          textAlign: b.textAlign || "left",
+          isBold: b.isBold ?? false,
+          isItalic: b.isItalic ?? false,
+          content: b.content ?? null,
+        })),
+      };
+      if (editingTemplateId) {
+        await blockTemplatesApi.update(editingTemplateId, payload);
       } else {
-        const payload = {
-          name: builderName.trim(),
-          description: builderDescription.trim() || undefined,
-          channel: builderChannel,
-          blocks: [] as {
-            type: string;
-            label: string;
-            order: number;
-            textAlign: string;
-            isBold: boolean;
-            isItalic: boolean;
-          }[],
-        };
-        if (editingTemplateId) {
-          await blockTemplatesApi.update(editingTemplateId, payload);
-        } else {
-          await blockTemplatesApi.create(payload);
-        }
+        await blockTemplatesApi.create(payload);
       }
 
       setShowBuilderModal(false);
@@ -269,15 +201,13 @@ export function useTemplateBuilder({ channel, refetch }: UseTemplateBuilderParam
     setBuilderName,
     builderDescription,
     setBuilderDescription,
+    builderTheme,
+    setBuilderTheme,
     builderError,
     setBuilderError,
     isSaving,
     blocks,
     constraints,
-    bannerFields,
-    setBannerFields,
-    popupFields,
-    setPopupFields,
     deleteTemplateItem,
     setDeleteTemplateItem,
     isDeleting,

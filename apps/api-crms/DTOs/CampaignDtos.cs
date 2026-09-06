@@ -83,7 +83,8 @@ public sealed record DueCampaignDto(
     string Title,
     string Subject,
     string Body,
-    IReadOnlyList<string> Recipients);
+    IReadOnlyList<string> Recipients,
+    string? Theme = null);
 
 // The outcome api-oos reports back after a bulk send.
 public sealed record CampaignDispatchResultDto(
@@ -97,7 +98,7 @@ public sealed record MarketingOptOutDto(string Email);
 // The composer's live preview asks the real dispatch renderer for HTML instead of
 // reimplementing EmailBodyRenderer client-side, so the preview can never silently
 // diverge from what actually gets sent/displayed.
-public sealed record RenderPreviewRequestDto(string? Content);
+public sealed record RenderPreviewRequestDto(string? Content, string? Theme = null);
 
 public sealed record RenderPreviewResponseDto(string Html);
 

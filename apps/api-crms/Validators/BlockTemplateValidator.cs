@@ -3,6 +3,8 @@ using api_crms.DTOs;
 
 namespace api_crms.Validators;
 
+// Block Templates are Email-only (BlockTemplateService rejects any other channel
+// before this runs), so the constraints below only ever need to cover Email.
 public static class BlockTemplateValidator
 {
     public static (bool IsValid, string? ErrorMessage) ValidateConstraints(CampaignChannel channel, IReadOnlyList<CreateTemplateBlockInput> blocks)
@@ -49,24 +51,6 @@ public static class BlockTemplateValidator
                 if (headingCount > 3) return (false, "Email templates allow a maximum of 3 heading components.");
                 if (textCount > 3) return (false, "Email templates allow a maximum of 3 text components.");
                 if (buttonCount > 5) return (false, "Email templates allow a maximum of 5 button components.");
-                break;
-
-            case CampaignChannel.Banner:
-                if (carouselCount > 0) return (false, "Banner templates do not allow stacked images components.");
-                if (headingCount > 0) return (false, "Banner templates do not allow heading components.");
-                if (imageCount > 1) return (false, "Banner templates allow a maximum of 1 image component.");
-                if (linkCount > 1) return (false, "Banner templates allow a maximum of 1 link component.");
-                if (textCount > 1) return (false, "Banner templates allow a maximum of 1 text component.");
-                if (buttonCount > 5) return (false, "Banner templates allow a maximum of 5 button components.");
-                break;
-
-            case CampaignChannel.Popup:
-                if (carouselCount > 0) return (false, "Popup templates do not allow stacked images components.");
-                if (imageCount > 1) return (false, "Popup templates allow a maximum of 1 image component.");
-                if (linkCount > 2) return (false, "Popup templates allow a maximum of 2 link components.");
-                if (headingCount > 1) return (false, "Popup templates allow a maximum of 1 heading component.");
-                if (textCount > 1) return (false, "Popup templates allow a maximum of 1 text component.");
-                if (buttonCount > 5) return (false, "Popup templates allow a maximum of 5 button components.");
                 break;
         }
 

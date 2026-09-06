@@ -8,9 +8,6 @@ import { BlockContentEditor } from "@/features/campaigns/components/block-conten
 import type { BlockType } from "@/features/campaigns/services/template-constraints";
 import type { BlockContentValue } from "@/features/campaigns/types/block-template";
 
-export { BannerFixedPreview, BannerBuilderForm, type BannerFields } from "@/features/campaigns/components/banner-builder-components";
-export { PopupFixedPreview, PopupBuilderForm, type PopupFields } from "@/features/campaigns/components/popup-builder-components";
-
 export interface TemplateBlock {
   id: string;
   type: BlockType;

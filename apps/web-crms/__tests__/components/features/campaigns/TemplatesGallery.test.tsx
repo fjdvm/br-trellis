@@ -89,31 +89,20 @@ describe("TemplatesGallery", () => {
     expect(screen.getByText("CTA Button")).toBeInTheDocument();
   });
 
-  it("opens the Banner fixed-layout builder when on the Banner tab", async () => {
+  it("hides the Template Builder button on the Banner tab (Block Templates are Email-only)", async () => {
     const user = userEvent.setup();
     render(<TemplatesGallery />);
 
-    // Switch to Banner tab first
     await user.click(screen.getByRole("tab", { name: /banner/i }));
-    await user.click(screen.getByRole("button", { name: /template builder/i }));
-
-    // Fixed form fields should be visible, no drag-and-drop palette
-    expect(screen.getByLabelText(/message/i)).toBeInTheDocument();
-    expect(screen.queryByText("Draggable Blocks")).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /template builder/i })).not.toBeInTheDocument();
   });
 
-  it("opens the Popup fixed-layout builder when on the Popup tab", async () => {
+  it("hides the Template Builder button on the Popup tab (Block Templates are Email-only)", async () => {
     const user = userEvent.setup();
     render(<TemplatesGallery />);
 
-    // Switch to Popup tab first
     await user.click(screen.getByRole("tab", { name: /popup/i }));
-    await user.click(screen.getByRole("button", { name: /template builder/i }));
-
-    // Fixed form fields should be visible, no drag-and-drop palette
-    expect(screen.getByLabelText(/heading/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/body message/i)).toBeInTheDocument();
-    expect(screen.queryByText("Draggable Blocks")).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /template builder/i })).not.toBeInTheDocument();
   });
 
   it("shows a loading skeleton while templates load", () => {

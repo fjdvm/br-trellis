@@ -18,11 +18,7 @@ import { TemplateCard } from "@/features/campaigns/components/template-card";
 import { TemplatePreviewModal } from "@/features/campaigns/components/template-preview-modal";
 import { TemplateDeleteModal } from "@/features/campaigns/components/template-delete-modal";
 import { TemplateBuilderModal } from "@/features/campaigns/components/template-builder-modal";
-import {
-  type TemplateBlock,
-  type BannerFields,
-  type PopupFields,
-} from "@/features/campaigns/components/template-builder-components";
+import { type TemplateBlock } from "@/features/campaigns/components/template-builder-components";
 import { useTemplates } from "@/features/campaigns/hooks/useTemplates";
 import { useTemplateBuilder } from "@/features/campaigns/hooks/use-template-builder";
 import {
@@ -34,7 +30,7 @@ import type { CampaignChannel, Template } from "@/features/campaigns/types";
 
 const CHANNELS: CampaignChannel[] = ["Email", "Banner", "Popup"];
 
-export type { TemplateBlock, BannerFields, PopupFields };
+export type { TemplateBlock };
 
 function useSafeRouter() {
   try {
@@ -57,20 +53,17 @@ export function TemplatesGallery() {
     showBuilderModal,
     setShowBuilderModal,
     editingTemplateId,
-    builderChannel,
     builderName,
     setBuilderName,
     builderDescription,
     setBuilderDescription,
+    builderTheme,
+    setBuilderTheme,
     builderError,
     setBuilderError,
     isSaving,
     blocks,
     constraints,
-    bannerFields,
-    setBannerFields,
-    popupFields,
-    setPopupFields,
     deleteTemplateItem,
     setDeleteTemplateItem,
     isDeleting,
@@ -107,29 +100,6 @@ export function TemplatesGallery() {
     }
   };
 
-  // ── Builder modal title / description ────────────────────────────────────
-  const builderTitle =
-    builderChannel === "Banner"
-      ? editingTemplateId
-        ? "Edit Banner Template"
-        : "New Banner Template"
-      : builderChannel === "Popup"
-      ? editingTemplateId
-        ? "Edit Popup Template"
-        : "New Popup Template"
-      : editingTemplateId
-      ? "Edit Email Template"
-      : "Drag & Drop Template Builder";
-
-  const builderDialogDescription =
-    builderChannel === "Banner"
-      ? "Define the fixed layout fields for this storefront banner strip."
-      : builderChannel === "Popup"
-      ? "Define the fixed layout fields for this modal popup overlay."
-      : editingTemplateId
-      ? "Modify block structures, labels, and formatting for this email template."
-      : "Drag blocks from the palette on the left into the canvas to build your email template.";
-
   // ── Render ────────────────────────────────────────────────────────────────
   return (
     <div className="w-full min-h-full py-xl px-lg md:px-xl space-y-lg mx-auto">
@@ -144,10 +114,12 @@ export function TemplatesGallery() {
             preview canonical communication patterns.
           </p>
         </div>
-        <Button onClick={handleOpenCreateModal} className="hidden sm:inline-flex gap-2 shrink-0">
-          <PlusCircle className="w-4 h-4" />
-          Template Builder
-        </Button>
+        {channel === "Email" && (
+          <Button onClick={handleOpenCreateModal} className="hidden sm:inline-flex gap-2 shrink-0">
+            <PlusCircle className="w-4 h-4" />
+            Template Builder
+          </Button>
+        )}
       </div>
 
       {error && <div className="p-md text-destructive text-base">{error.message}</div>}
@@ -247,19 +219,16 @@ export function TemplatesGallery() {
         showBuilderModal={showBuilderModal}
         setShowBuilderModal={setShowBuilderModal}
         editingTemplateId={editingTemplateId}
-        builderChannel={builderChannel}
         builderName={builderName}
         setBuilderName={setBuilderName}
         builderDescription={builderDescription}
         setBuilderDescription={setBuilderDescription}
+        builderTheme={builderTheme}
+        setBuilderTheme={setBuilderTheme}
         builderError={builderError}
         setBuilderError={setBuilderError}
         blocks={blocks}
         constraints={constraints}
-        bannerFields={bannerFields}
-        setBannerFields={setBannerFields}
-        popupFields={popupFields}
-        setPopupFields={setPopupFields}
         addBlock={addBlock}
         updateBlock={updateBlock}
         removeBlock={removeBlock}

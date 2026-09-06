@@ -50,11 +50,12 @@ export const campaignsApi = {
     }),
   // Renders draft block/body content through the real dispatch renderer
   // (EmailBodyRenderer) so previews can never silently diverge from what
-  // actually gets sent/displayed.
-  renderPreview: (content: string) =>
+  // actually gets sent/displayed. theme is a sibling of content, never
+  // embedded in it, mirroring EmailBodyRenderer's own wrapContainer/theme split.
+  renderPreview: (content: string, theme?: string) =>
     request<{ html: string }>(`/api/v1/campaigns/render-preview`, {
       method: "POST",
-      body: JSON.stringify({ content }),
+      body: JSON.stringify({ content, theme }),
     }),
 };
 

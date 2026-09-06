@@ -42,6 +42,7 @@ public sealed class TemplateContentEndToEndTests : IDisposable
                 "Summer Sale Template",
                 null,
                 "Email",
+                "VioletToLight",
                 new[]
                 {
                     new CreateTemplateBlockInput("heading", "Hero Title", 0, "center", null, null, "Summer Sale!"),
@@ -72,10 +73,15 @@ public sealed class TemplateContentEndToEndTests : IDisposable
         var send = Assert.Single(sender.Sends);
         Assert.Equal("Big Sale", send.Subject);
 
+        // The Template's own Theme rode along on the dispatch DTO with no explicit
+        // wiring in this test — it's resolved server-side from the referenced
+        // BlockTemplate row, the same lookup that already resolves its Blocks.
+        Assert.Equal(api_crms.Enums.EmailTheme.VioletToLight, send.Theme);
+
         // 4. The Body handed to the sender is exactly what BrevoMarketingEmailSender
         //    would run through EmailBodyRenderer.RenderToHtml in production — render
         //    it the same way and assert on real HTML, not raw JSON/labels.
-        var html = EmailBodyRenderer.RenderToHtml(send.Body);
+        var html = EmailBodyRenderer.RenderToHtml(send.Body, theme: send.Theme);
 
         Assert.Contains("Summer Sale!</h2>", html);
         Assert.Contains("<strong>Save big</strong>", html);
@@ -88,6 +94,14 @@ public sealed class TemplateContentEndToEndTests : IDisposable
         // No structural placeholders and no raw JSON should have leaked through.
         Assert.DoesNotContain("Hero Title", html);
         Assert.DoesNotContain("\"type\":\"heading\"", html);
+
+        // Same theme header band as the dispatched email, drift-proof by construction:
+        // this is the exact same RenderPreviewHtml the composer/Template
+        // Builder/Campaign Detail previews all call for this Template's content.
+        var previewHtml = Service(sender).RenderPreviewHtml(send.Body, send.Theme.ToString());
+        var expectedBand = "background:linear-gradient(to right, #6D28D9, #F5F3FF)";
+        Assert.Contains(expectedBand, html);
+        Assert.Contains(expectedBand, previewHtml);
     }
 
     [Fact]
@@ -114,17 +128,25 @@ public sealed class TemplateContentEndToEndTests : IDisposable
     [Fact]
     public async Task Storefront_popup_resolves_a_referenced_template_to_real_block_html()
     {
-        var template = await CreateBlockTemplateService().CreateAsync(
-            new CreateBlockTemplateInput(
-                "Welcome Popup Template",
-                null,
-                "Popup",
-                new[]
-                {
-                    new CreateTemplateBlockInput("text", "Body Copy", 0, "left", null, null, "Welcome! Enjoy *10% off* your first order."),
-                    new CreateTemplateBlockInput("button", "CTA", 1, null, null, null,
-                        "{\"text\":\"Claim Offer\",\"url\":\"https://example.com/offer\"}"),
-                }),
+        // Block Templates are now Email-only (BlockTemplateService rejects
+        // Popup/Banner on Create/Update), so this Popup row is inserted directly
+        // via the repository to simulate a pre-existing legacy reference — the
+        // resolution/render path must keep working for one even though the UI
+        // and API no longer allow creating new ones.
+        var template = await new BlockTemplateRepository(CreateContext()).CreateAsync(
+            new api_crms.Models.BlockTemplate
+            {
+                Id = Guid.NewGuid(),
+                Name = "Welcome Popup Template",
+                Channel = api_crms.Enums.CampaignChannel.Popup,
+                CreatedAt = DateTimeOffset.UtcNow,
+                UpdatedAt = DateTimeOffset.UtcNow,
+                Blocks =
+                [
+                    new() { Id = Guid.NewGuid(), Type = "text", Label = "Body Copy", Order = 0, TextAlign = "left", Content = "Welcome! Enjoy *10% off* your first order." },
+                    new() { Id = Guid.NewGuid(), Type = "button", Label = "CTA", Order = 1, Content = "{\"text\":\"Claim Offer\",\"url\":\"https://example.com/offer\"}" },
+                ],
+            },
             CancellationToken.None);
 
         var sender = new RecordingMarketingEmailSender();
@@ -151,6 +173,7 @@ public sealed class TemplateContentEndToEndTests : IDisposable
                 "Reusable Announcement",
                 null,
                 "Email",
+                "LightToViolet",
                 new[]
                 {
                     new CreateTemplateBlockInput("heading", "Hero Title", 0, null, null, null, "Default Headline"),
@@ -181,13 +204,18 @@ public sealed class TemplateContentEndToEndTests : IDisposable
         await Service(sender).DispatchDueEmailCampaignsAsync(CancellationToken.None);
 
         var send = Assert.Single(sender.Sends);
-        var html = EmailBodyRenderer.RenderToHtml(send.Body);
+        var html = EmailBodyRenderer.RenderToHtml(send.Body, theme: send.Theme);
 
         Assert.Contains("Custom Headline For This Campaign", html);
         Assert.DoesNotContain("Default Headline", html);
         // The untouched (empty-override) text block falls back to the Template's
         // own default content rather than rendering blank.
         Assert.Contains("Default body copy.", html);
+
+        // The Template's LightToViolet choice (opposite direction/stop order from
+        // the VioletToLight case above) rendered into the actual dispatch HTML.
+        Assert.Equal(api_crms.Enums.EmailTheme.LightToViolet, send.Theme);
+        Assert.Contains("background:linear-gradient(to right, #F5F3FF, #6D28D9)", html);
     }
 
     public void Dispose()

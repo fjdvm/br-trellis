@@ -51,14 +51,15 @@ public sealed partial class CampaignService
 
             var emailContent = campaign.ChannelContents
                 .FirstOrDefault(cc => cc.Channel == CampaignChannel.Email);
-            var body = await ResolveChannelBodyAsync(emailContent, cancellationToken) ?? string.Empty;
+            var (resolvedBody, theme) = await ResolveChannelContentAsync(emailContent, cancellationToken);
 
             due.Add(new DueCampaignDto(
                 campaign.Id,
                 campaign.Title,
                 emailContent?.Subject ?? campaign.Title,
-                body,
-                recipients));
+                resolvedBody ?? string.Empty,
+                recipients,
+                theme?.ToString()));
         }
 
         return due;
@@ -125,7 +126,7 @@ public sealed partial class CampaignService
             return null;
         }
 
-        var body = await ResolveChannelBodyAsync(content, cancellationToken);
+        var (body, _) = await ResolveChannelContentAsync(content, cancellationToken);
         var renderedBody = EmailBodyRenderer.RenderToHtml(body, wrapContainer: false);
 
         return new ActiveChannelContentDto(
@@ -152,7 +153,7 @@ public sealed partial class CampaignService
     // values (BlockTemplateContentRenderer's contentOverridesJson) still take
     // precedence whenever actually filled in; a Template's own Content is only the
     // fallback for a block nobody has customized yet.
-    private async Task<string?> ResolveChannelBodyAsync(
+    private async Task<(string? Body, EmailTheme? Theme)> ResolveChannelContentAsync(
         CampaignChannelContent? content,
         CancellationToken cancellationToken)
     {
@@ -164,11 +165,11 @@ public sealed partial class CampaignService
                 .FirstOrDefaultAsync(t => t.Id == templateId, cancellationToken);
             if (template is not null)
             {
-                return BlockTemplateContentRenderer.ToBlocksJson(template, content.Body);
+                return (BlockTemplateContentRenderer.ToBlocksJson(template, content.Body), template.Theme);
             }
         }
 
-        return content?.Body;
+        return (content?.Body, null);
     }
 
     public async Task<bool> RecordEventAsync(

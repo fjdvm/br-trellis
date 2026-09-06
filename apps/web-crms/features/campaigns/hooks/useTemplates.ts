@@ -19,15 +19,20 @@ export function useTemplates(channel?: string) {
 
       setPredefinedTemplates(legacyRes ?? []);
       setBlockTemplatesAsTemplates(
-        (blockRes ?? []).map((bt: BlockTemplate) => ({
-          id: bt.id,
-          name: bt.name,
-          description: bt.description,
-          content: JSON.stringify(bt.blocks),
-          format: "Blocks",
-          channel: bt.channel,
-          createdAt: bt.createdAt,
-        }))
+        (blockRes ?? [])
+          // Block Templates are Email-only; any Banner/Popup row is legacy data
+          // (archived, or otherwise orphaned) and must not surface in the UI.
+          .filter((bt: BlockTemplate) => bt.channel === "Email")
+          .map((bt: BlockTemplate) => ({
+            id: bt.id,
+            name: bt.name,
+            description: bt.description,
+            content: JSON.stringify(bt.blocks),
+            format: "Blocks",
+            channel: bt.channel,
+            createdAt: bt.createdAt,
+            theme: bt.theme,
+          }))
       );
     } catch (err) {
       setError(err instanceof Error ? err : new Error("Failed to load templates"));

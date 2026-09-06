@@ -105,7 +105,7 @@ public sealed class CampaignController(ICampaignService campaignService) : Contr
     [HttpPost("render-preview")]
     public ActionResult<RenderPreviewResponseDto> RenderPreview(RenderPreviewRequestDto input)
     {
-        return Ok(new RenderPreviewResponseDto(campaignService.RenderPreviewHtml(input.Content)));
+        return Ok(new RenderPreviewResponseDto(campaignService.RenderPreviewHtml(input.Content, input.Theme)));
     }
 
     // --- Cross-service dispatch (api-oos polls these; ADR 0008) ---

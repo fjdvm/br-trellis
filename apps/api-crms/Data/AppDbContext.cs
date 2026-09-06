@@ -749,6 +749,10 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
                 .HasColumnName("channel")
                 .HasConversion<string>();
             t.Property(e => e.IsArchived).HasColumnName("is_archived");
+            t.Property(e => e.Theme)
+                .HasColumnName("theme")
+                .HasConversion<string>()
+                .HasDefaultValue(EmailTheme.VioletToLight);
             t.Property(e => e.CreatedAt).HasColumnName("created_at");
             t.Property(e => e.UpdatedAt).HasColumnName("updated_at");
 

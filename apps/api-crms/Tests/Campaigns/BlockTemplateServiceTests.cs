@@ -22,9 +22,10 @@ public sealed class BlockTemplateServiceTests : IDisposable
         var service = CreateService(context);
 
         var input = new CreateBlockTemplateInput(
-            Name: "Promotional Banner Layout",
+            Name: "Promotional Email Layout",
             Description: "3 structural block layout",
-            Channel: "Banner",
+            Channel: "Email",
+            Theme: "LightToViolet",
             Blocks: new List<CreateTemplateBlockInput>
             {
                 new("text", "Top Subheader", 0, "left", true, false),
@@ -36,8 +37,9 @@ public sealed class BlockTemplateServiceTests : IDisposable
         var created = await service.CreateAsync(input);
 
         Assert.NotEqual(Guid.Empty, created.Id);
-        Assert.Equal("Promotional Banner Layout", created.Name);
-        Assert.Equal("Banner", created.Channel);
+        Assert.Equal("Promotional Email Layout", created.Name);
+        Assert.Equal("Email", created.Channel);
+        Assert.Equal("LightToViolet", created.Theme);
         Assert.Equal(3, created.Blocks.Count);
 
         // Verify direct EF Core database records
@@ -74,10 +76,23 @@ public sealed class BlockTemplateServiceTests : IDisposable
         await using var context = CreateContext();
         var service = CreateService(context);
 
-        await service.CreateAsync(new CreateBlockTemplateInput("Email One", null, "Email", [new("text", "Body", 0, null, null, null)]));
-        var popup = await service.CreateAsync(new CreateBlockTemplateInput("Popup One", null, "Popup", [new("heading", "Title", 0, null, null, null)]));
-        var archivedEmail = await service.CreateAsync(new CreateBlockTemplateInput("Archived Email", null, "Email", [new("text", "Body", 0, null, null, null)]));
+        await service.CreateAsync(new CreateBlockTemplateInput("Email One", null, "Email", "VioletToLight", [new("text", "Body", 0, null, null, null)]));
+        var archivedEmail = await service.CreateAsync(new CreateBlockTemplateInput("Archived Email", null, "Email", "VioletToLight", [new("text", "Body", 0, null, null, null)]));
         await service.ArchiveAsync(archivedEmail.Id);
+
+        // Legacy Popup row inserted directly (bypassing the service, which now
+        // rejects non-Email channels) to mirror pre-existing archived data and
+        // confirm ListAsync's channel filter still excludes it correctly.
+        context.BlockTemplates.Add(new BlockTemplate
+        {
+            Id = Guid.NewGuid(),
+            Name = "Legacy Popup One",
+            Channel = CampaignChannel.Popup,
+            IsArchived = false,
+            CreatedAt = DateTimeOffset.UtcNow,
+            UpdatedAt = DateTimeOffset.UtcNow,
+        });
+        await context.SaveChangesAsync();
 
         var emailTemplates = await service.ListAsync("Email");
         Assert.Single(emailTemplates);
@@ -96,19 +111,64 @@ public sealed class BlockTemplateServiceTests : IDisposable
         await using var context = CreateContext();
         var service = CreateService(context);
 
-        // Banner allows max 1 image block. Sending 2 image blocks must fail.
-        var invalidBannerInput = new CreateBlockTemplateInput(
-            "Invalid Banner",
+        // Email allows max 3 image blocks. Sending 4 image blocks must fail.
+        var invalidEmailInput = new CreateBlockTemplateInput(
+            "Invalid Email",
             null,
-            "Banner",
+            "Email",
+            "VioletToLight",
             [
                 new("image", "Image 1", 0, null, null, null),
-                new("image", "Image 2", 1, null, null, null)
+                new("image", "Image 2", 1, null, null, null),
+                new("image", "Image 3", 2, null, null, null),
+                new("image", "Image 4", 3, null, null, null)
             ]
         );
 
-        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => service.CreateAsync(invalidBannerInput));
-        Assert.Contains("Banner templates allow a maximum of 1 image component", ex.Message);
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => service.CreateAsync(invalidEmailInput));
+        Assert.Contains("Email templates allow a maximum of 3 image component", ex.Message);
+    }
+
+    [Theory]
+    [InlineData("Banner")]
+    [InlineData("Popup")]
+    public async Task CreateAsync_rejects_non_email_channel(string channel)
+    {
+        await using var context = CreateContext();
+        var service = CreateService(context);
+
+        var input = new CreateBlockTemplateInput(
+            "Should Not Save",
+            null,
+            channel,
+            "VioletToLight",
+            [new("text", "Body", 0, null, null, null)]
+        );
+
+        var ex = await Assert.ThrowsAsync<ArgumentException>(() => service.CreateAsync(input));
+        Assert.Contains("Email channel", ex.Message);
+    }
+
+    [Theory]
+    [InlineData("Banner")]
+    [InlineData("Popup")]
+    public async Task UpdateAsync_rejects_non_email_channel(string channel)
+    {
+        await using var context = CreateContext();
+        var service = CreateService(context);
+
+        var created = await service.CreateAsync(new CreateBlockTemplateInput("Email Template", null, "Email", "VioletToLight", [new("text", "Body", 0, null, null, null)]));
+
+        var updateInput = new UpdateBlockTemplateInput(
+            "Email Template",
+            null,
+            channel,
+            "VioletToLight",
+            [new("text", "Body", 0, null, null, null)]
+        );
+
+        var ex = await Assert.ThrowsAsync<ArgumentException>(() => service.UpdateAsync(created.Id, updateInput));
+        Assert.Contains("Email channel", ex.Message);
     }
 
     [Fact]
@@ -117,12 +177,13 @@ public sealed class BlockTemplateServiceTests : IDisposable
         await using var context = CreateContext();
         var service = CreateService(context);
 
-        var created = await service.CreateAsync(new CreateBlockTemplateInput("Initial Layout", null, "Email", [new("text", "Old Text", 0, null, null, null)]));
+        var created = await service.CreateAsync(new CreateBlockTemplateInput("Initial Layout", null, "Email", "VioletToLight", [new("text", "Old Text", 0, null, null, null)]));
 
         var updateInput = new UpdateBlockTemplateInput(
             "Updated Layout",
             "New description",
             "Email",
+            "LightToViolet",
             [
                 new("heading", "New Heading", 0, null, null, null),
                 new("button", "New CTA", 1, null, null, null)
@@ -132,9 +193,28 @@ public sealed class BlockTemplateServiceTests : IDisposable
         var updated = await service.UpdateAsync(created.Id, updateInput);
         Assert.NotNull(updated);
         Assert.Equal("Updated Layout", updated!.Name);
+        Assert.Equal("LightToViolet", updated.Theme);
         Assert.Equal(2, updated.Blocks.Count);
         Assert.Equal("heading", updated.Blocks[0].Type);
         Assert.Equal("button", updated.Blocks[1].Type);
+    }
+
+    [Fact]
+    public async Task CreateAsync_rejects_invalid_theme()
+    {
+        await using var context = CreateContext();
+        var service = CreateService(context);
+
+        var input = new CreateBlockTemplateInput(
+            "Bad Theme",
+            null,
+            "Email",
+            "Rainbow",
+            [new("text", "Body", 0, null, null, null)]
+        );
+
+        var ex = await Assert.ThrowsAsync<ArgumentException>(() => service.CreateAsync(input));
+        Assert.Contains("Invalid theme", ex.Message);
     }
 
     public void Dispose()

@@ -2,6 +2,7 @@ using System.Net;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using api_crms.Enums;
 
 namespace api_crms.Helpers;
 
@@ -12,7 +13,14 @@ public static class EmailBodyRenderer
     private static readonly Regex MarkdownLite = new(@"(\*\*.*?\*\*|\*.*?\*)", RegexOptions.Compiled);
     private static readonly Regex LooksLikeHtml = new(@"<[a-z][\s\S]*>", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
-    public static string RenderToHtml(string? body, bool wrapContainer = true)
+    private const string VioletHex = "#6D28D9";
+    private const string LightHex = "#F5F3FF";
+
+    // theme is a sibling parameter to wrapContainer (never embedded in the body
+    // JSON) so the same header band renders whether this call is a preview
+    // (wrapContainer:false) or the real dispatched email (wrapContainer:true) -
+    // the two must never be able to diverge.
+    public static string RenderToHtml(string? body, bool wrapContainer = true, EmailTheme? theme = null)
     {
         if (string.IsNullOrWhiteSpace(body))
         {
@@ -23,9 +31,11 @@ public static class EmailBodyRenderer
         if (!trimmed.StartsWith("{") && !trimmed.StartsWith("["))
         {
             // Already-authored HTML (e.g. a legacy Html-format template) passes
-            // through untouched. Otherwise this is plain text from the rich-text
-            // editor: encode it and turn its "**bold**"/"*italic*" markers into
-            // real tags so they don't leak as literal asterisks.
+            // through untouched, ignoring wrapContainer/theme same as before -
+            // it's already a complete document, not a set of blocks to dress up.
+            // Otherwise this is plain text from the rich-text editor: encode it
+            // and turn its "**bold**"/"*italic*" markers into real tags so they
+            // don't leak as literal asterisks.
             return LooksLikeHtml.IsMatch(trimmed) ? body : RenderPlainText(body);
         }
 
@@ -39,7 +49,7 @@ public static class EmailBodyRenderer
                 var content = RenderJsonObject(root);
                 if (!string.IsNullOrWhiteSpace(content))
                 {
-                    return wrapContainer ? WrapInEmailContainer(content) : content;
+                    return Finalize(content, wrapContainer, theme);
                 }
             }
             else if (root.ValueKind == JsonValueKind.Array)
@@ -47,7 +57,7 @@ public static class EmailBodyRenderer
                 var content = RenderJsonArray(root);
                 if (!string.IsNullOrWhiteSpace(content))
                 {
-                    return wrapContainer ? WrapInEmailContainer(content) : content;
+                    return Finalize(content, wrapContainer, theme);
                 }
             }
         }
@@ -57,6 +67,21 @@ public static class EmailBodyRenderer
         }
 
         return body;
+    }
+
+    private static string Finalize(string content, bool wrapContainer, EmailTheme? theme)
+    {
+        var themed = theme is { } t ? RenderThemeBand(t) + content : content;
+        return wrapContainer ? WrapInEmailContainer(themed) : themed;
+    }
+
+    // A decorative 64px gradient band, always the first element of the rendered
+    // content - a header treatment only, never a background behind block text,
+    // so it can't fight the block-level colors (#374151/#111827) set below it.
+    private static string RenderThemeBand(EmailTheme theme)
+    {
+        var (start, end) = theme == EmailTheme.VioletToLight ? (VioletHex, LightHex) : (LightHex, VioletHex);
+        return $"<div style=\"height:64px;width:100%;background:linear-gradient(to right, {start}, {end});border-radius:8px 8px 0 0;margin-bottom:16px;\"></div>";
     }
 
     private static string RenderPlainText(string text) => EncodeBodyText(text).Replace("\n", "<br/>");

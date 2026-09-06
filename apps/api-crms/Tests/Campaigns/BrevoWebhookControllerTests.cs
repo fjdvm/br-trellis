@@ -112,6 +112,7 @@ public sealed class BrevoWebhookControllerTests : IDisposable
             string subject,
             string htmlBody,
             string? unsubscribeBaseUrl = null,
+            api_crms.Enums.EmailTheme? theme = null,
             CancellationToken cancellationToken = default)
         {
             return Task.FromResult(new MarketingDispatchOutcome(recipients.Count, 0, Array.Empty<string>()));

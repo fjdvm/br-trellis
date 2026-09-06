@@ -25,6 +25,7 @@ public sealed record BlockTemplateDto(
     string? Description,
     string Channel,
     bool IsArchived,
+    string Theme,
     DateTimeOffset CreatedAt,
     DateTimeOffset UpdatedAt,
     IReadOnlyList<TemplateBlockDto> Blocks);
@@ -33,10 +34,12 @@ public sealed record CreateBlockTemplateInput(
     string Name,
     string? Description,
     string Channel,
+    string Theme,
     IReadOnlyList<CreateTemplateBlockInput> Blocks);
 
 public sealed record UpdateBlockTemplateInput(
     string Name,
     string? Description,
     string Channel,
+    string Theme,
     IReadOnlyList<CreateTemplateBlockInput> Blocks);

@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Mail, PanelTop, AppWindow, ChevronLeft, ChevronRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import type { CampaignChannel } from "@/features/campaigns/types";
 
 export type ChannelPreviewContent = {
+  templateId?: string | null;
   subject?: string | null;
   heading?: string | null;
   body?: string | null;
@@ -14,11 +15,47 @@ export type ChannelPreviewContent = {
   ctaText?: string | null;
   ctaUrl?: string | null;
   dismissible?: boolean | null;
+  // Per-Campaign Banner/Popup gradient picker (channel-content-form.tsx) - a
+  // mock-preview-only cosmetic on this component's own chrome below, never
+  // rendered by the real backend renderer. NOT the same thing as a Template's
+  // Email theme (see emailTheme/useResolvedEmailTheme below) - do not merge
+  // these two despite the similar names/colors.
   themeGradient?: "light-to-violet" | "violet-to-light" | string | null;
 };
 
 import { renderFormattedText } from "@/features/campaigns/components/preview-text-renderer";
 import { useRenderedPreviewHtml } from "@/features/campaigns/hooks/use-rendered-preview-html";
+import { blockTemplatesApi } from "@/features/campaigns/services/campaigns-api";
+
+// A Block Template's real Theme, baked into the real backend-rendered HTML
+// (unlike themeGradient above). Resolved here - once - from the Email
+// channel content's templateId, so every consumer of StorefrontLivePreview
+// (composer, Campaign Detail, Active/Draft/Ended views) shows the same theme
+// header band the actual dispatched email would, with no per-caller wiring.
+function useResolvedEmailTheme(channel: CampaignChannel, templateId?: string | null) {
+  const [theme, setTheme] = useState<string | undefined>(undefined);
+
+  useEffect(() => {
+    if (channel !== "Email" || !templateId) {
+      setTheme(undefined);
+      return;
+    }
+    let cancelled = false;
+    blockTemplatesApi
+      .getById(templateId)
+      .then((t) => {
+        if (!cancelled) setTheme(t.theme);
+      })
+      .catch(() => {
+        if (!cancelled) setTheme(undefined);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [channel, templateId]);
+
+  return theme;
+}
 
 // StorefrontLivePreview
 export function StorefrontLivePreview({
@@ -39,11 +76,12 @@ export function StorefrontLivePreview({
   className?: string;
 }) {
   const [animKey, setAnimKey] = useState(0);
+  const emailTheme = useResolvedEmailTheme(channel, content.templateId);
   // Body content (all three channels) is rendered by the real backend renderer
   // (EmailBodyRenderer) so this preview can never silently diverge from what
   // actually gets sent/displayed. Subject/heading stay client-formatted below —
   // they're plain scalar fields with no block-rendering logic to diverge.
-  const { html: bodyHtml } = useRenderedPreviewHtml(content.body);
+  const { html: bodyHtml } = useRenderedPreviewHtml(content.body, emailTheme);
 
   return (
     <div className={`space-y-sm ${className}`}>
