@@ -270,8 +270,13 @@ export function TicketListPage({
               showSourceFilter={false}
             />
           </div>
+        </CardHeader>
+        <CardContent className="w-full p-lg pt-0 space-y-md">
+          {actionError && (
+            <p className="text-base text-destructive">{actionError}</p>
+          )}
           {showSourceFilter && (
-            <div className="w-full flex justify-start pt-xs">
+            <div className="w-full flex justify-start pb-xs">
               <TicketFiltersSourceTabs
                 sourceFilter={sourceFilter}
                 onSourceChange={(val) => {
@@ -280,11 +285,6 @@ export function TicketListPage({
                 }}
               />
             </div>
-          )}
-        </CardHeader>
-        <CardContent className="w-full p-lg pt-0 space-y-md">
-          {actionError && (
-            <p className="text-base text-destructive">{actionError}</p>
           )}
           {isLoading ? (
             <TableSkeleton columns={7} />
