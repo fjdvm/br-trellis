@@ -140,7 +140,7 @@ export function ConversationActionsMenu({
             )}
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="min-w-[200px] border border-border">
+        <DropdownMenuContent align="end" side="top" sideOffset={8} className="min-w-[200px] border border-border">
           {actions.map((action) => (
             <DropdownMenuItem
               key={action}
