@@ -360,7 +360,7 @@ describe("TicketListPage", () => {
 
     await screen.findByText("Cannot log in");
     expect(
-      screen.getByRole("button", { name: "Claim ticket" })
+      screen.getByRole("button", { name: "More options" })
     ).toBeInTheDocument();
   });
 
