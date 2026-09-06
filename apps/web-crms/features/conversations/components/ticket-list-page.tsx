@@ -238,9 +238,9 @@ export function TicketListPage({
         )}
       </div>
 
-      <Card className="shadow-none border-border">
-        <CardHeader className="pb-md p-lg space-y-sm">
-          <div className="flex flex-col gap-md sm:flex-row sm:items-center sm:justify-between">
+      <Card className="w-full shadow-none border-border">
+        <CardHeader className="w-full pb-md p-lg space-y-sm">
+          <div className="w-full flex flex-col gap-md sm:flex-row sm:items-center sm:justify-between">
             <CardTitle className="text-title-lg font-bold flex items-center gap-2">
               <TicketIcon className="w-5 h-5" />
               {cardTitle}
@@ -271,7 +271,7 @@ export function TicketListPage({
             />
           </div>
           {showSourceFilter && (
-            <div className="flex justify-start pt-xs">
+            <div className="w-full flex justify-start pt-xs">
               <TicketFiltersSourceTabs
                 sourceFilter={sourceFilter}
                 onSourceChange={(val) => {
@@ -282,7 +282,7 @@ export function TicketListPage({
             </div>
           )}
         </CardHeader>
-        <CardContent className="p-lg pt-0 space-y-md">
+        <CardContent className="w-full p-lg pt-0 space-y-md">
           {actionError && (
             <p className="text-base text-destructive">{actionError}</p>
           )}
