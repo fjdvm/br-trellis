@@ -174,7 +174,7 @@ export function TicketTable({
                               )}
                             </Button>
                           </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end" side="top" sideOffset={8}>
+                          <DropdownMenuContent side="right" align="start" sideOffset={8}>
                             <DropdownMenuItem
                               className="text-destructive focus:text-destructive cursor-pointer"
                               onClick={(e) => {
