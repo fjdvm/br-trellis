@@ -171,8 +171,8 @@ describe("SegmentsListPage", () => {
     render(<SegmentsListPage />);
 
     // Click Add Segment button
-    const addButtons = screen.getAllByRole("button", { name: /Add Segment/i });
-    fireEvent.click(addButtons[0]);
+    const addButton = screen.getByRole("button", { name: /Add Segment/i });
+    fireEvent.click(addButton);
 
     // Fill in name
     const nameInput = screen.getByLabelText(/Segment Name/i);

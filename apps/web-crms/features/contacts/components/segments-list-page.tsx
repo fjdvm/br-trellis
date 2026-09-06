@@ -270,9 +270,8 @@ export function SegmentsListPage({
       </div>
 
       <Card className="shadow-none border border-border/60">
-        <CardHeader className="pb-md p-lg flex flex-row items-center justify-between">
+        <CardHeader className="pb-md p-lg">
           <CardTitle className="text-title-lg font-bold">Segments</CardTitle>
-          <NewSegmentSheet onCreated={() => void loadSegments()} />
         </CardHeader>
         <CardContent className="p-lg pt-0 space-y-md">
           <div className="w-full flex justify-start pb-xs">
