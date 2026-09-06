@@ -88,8 +88,8 @@ export function TicketListPage({
   const [actionError, setActionError] = useState<string | null>(null);
   const [rowPending, setRowPending] = useState<RowPending>(null);
   const [cancelTarget, setCancelTarget] = useState<TicketListItem | null>(null);
-  const [activeTab, setActiveTab] = useState<"All" | "Needs Attention" | "Mine" | "Closed">(
-    terminalOnly ? "Closed" : assignedToMe ? "Mine" : "All"
+  const [activeTab, setActiveTab] = useState<"All" | "Needs Attention" | "Closed">(
+    terminalOnly ? "Closed" : "All"
   );
   const [statusFilter, setStatusFilter] = useState<TicketStatus | "All">(
     initialStatusFilter
@@ -218,13 +218,6 @@ export function TicketListPage({
       const nonTerminalCount = tickets.filter((tk) => !isTerminal(tk)).length;
       return nonTerminalCount > 0 ? !isTerminal(t) : true;
     }
-    if (activeTab === "Mine") {
-      if (!currentAgentId) return true;
-      const isMine = (tk: TicketListItem) =>
-        tk.assignedToId === currentAgentId || tk.assignedToName === session?.user?.name;
-      const mineCount = tickets.filter(isMine).length;
-      return mineCount > 0 ? isMine(t) : true;
-    }
     if (activeTab === "Closed") return isTerminal(t);
     return true;
   });
@@ -280,12 +273,12 @@ export function TicketListPage({
             />
           </div>
 
-          {/* Primary View Dropdown: All | Needs Attention (default) | Mine | Closed */}
+          {/* Primary View Dropdown: All | Needs Attention (default) | Closed */}
           <div className="pt-xs border-t border-border/60">
             <Select
               value={activeTab}
               onValueChange={(val) => {
-                setActiveTab(val as "All" | "Needs Attention" | "Mine" | "Closed");
+                setActiveTab(val as "All" | "Needs Attention" | "Closed");
                 pagination.setPage(1);
               }}
             >
@@ -295,7 +288,6 @@ export function TicketListPage({
               <SelectContent>
                 <SelectItem value="All">All</SelectItem>
                 <SelectItem value="Needs Attention">Needs Attention (default)</SelectItem>
-                <SelectItem value="Mine">Mine</SelectItem>
                 <SelectItem value="Closed">Closed</SelectItem>
               </SelectContent>
             </Select>

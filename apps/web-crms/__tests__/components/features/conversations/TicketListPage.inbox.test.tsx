@@ -248,7 +248,9 @@ describe("TicketListPage (Inbox props)", () => {
     render(<TicketListPage {...inboxProps} />);
 
     // Claim works and updates in place.
-    fireEvent.click(await screen.findByRole("button", { name: "Claim ticket" }));
+    const user = userEvent.setup();
+    await user.click(await screen.findByRole("button", { name: "More options" }));
+    await user.click(await screen.findByRole("menuitem", { name: "Claim" }));
     await waitFor(() =>
       expect(conversationTicketsApi.claim).toHaveBeenCalledWith("t-1", {
         staffId: "auth|amelia",
