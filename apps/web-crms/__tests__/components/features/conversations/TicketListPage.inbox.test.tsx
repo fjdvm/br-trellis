@@ -116,7 +116,7 @@ describe("TicketListPage (Inbox props)", () => {
 
     await screen.findByRole("heading", { name: "Inbox" });
     expect(
-      screen.queryByLabelText("Filter by source")
+      screen.queryByRole("tablist", { name: "Filter by source" })
     ).not.toBeInTheDocument();
   });
 

@@ -118,7 +118,7 @@ describe("TicketListPage (My Assigned props)", () => {
 
     await screen.findByRole("heading", { name: "My Assigned" });
     expect(
-      screen.queryByLabelText("Filter by source")
+      screen.queryByRole("tablist", { name: "Filter by source" })
     ).not.toBeInTheDocument();
   });
 

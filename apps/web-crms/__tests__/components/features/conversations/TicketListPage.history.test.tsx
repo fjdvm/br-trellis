@@ -268,8 +268,7 @@ describe("TicketListPage (History props)", () => {
 
     await screen.findByText("No finished tickets yet.");
 
-    await user.click(screen.getByLabelText("Filter by source"));
-    await user.click(await screen.findByRole("option", { name: "Manual" }));
+    await user.click(await screen.findByRole("tab", { name: "Manual" }));
 
     await waitFor(() =>
       expect(conversationTicketsApi.list).toHaveBeenCalledWith(

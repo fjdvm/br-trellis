@@ -289,8 +289,7 @@ describe("TicketListPage", () => {
       )
     );
 
-    await user.click(screen.getByLabelText("Filter by source"));
-    await user.click(await screen.findByRole("option", { name: "Manual" }));
+    await user.click(await screen.findByRole("tab", { name: "Manual" }));
 
     await waitFor(() =>
       expect(conversationTicketsApi.list).toHaveBeenCalledWith(
@@ -312,7 +311,7 @@ describe("TicketListPage", () => {
     expect(await screen.findByText("From email")).toBeInTheDocument();
     // Both Source values render as badges in their rows.
     expect(screen.getByText("Email")).toBeInTheDocument();
-    expect(screen.getByText("Manual")).toBeInTheDocument();
+    expect(screen.getAllByText("Manual").length).toBeGreaterThan(0);
   });
 
   it("renders the Source filter on the default Tickets screen", async () => {
@@ -321,7 +320,7 @@ describe("TicketListPage", () => {
     render(<TicketListPage />);
 
     expect(
-      await screen.findByLabelText("Filter by source")
+      await screen.findByRole("tablist", { name: "Filter by source" })
     ).toBeInTheDocument();
   });
 

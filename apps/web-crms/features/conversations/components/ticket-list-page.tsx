@@ -6,13 +6,6 @@ import { useSession } from "next-auth/react";
 import { Ticket as TicketIcon } from "lucide-react";
 import { TableSkeleton } from "@/components/shared/table-skeleton";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { TicketCancelDialog } from "@/features/conversations/components/ticket-cancel-dialog";
 import { TicketFilters } from "@/features/conversations/components/ticket-filters";
 import { conversationTicketsApi } from "@/features/conversations/services/conversations-api";
@@ -253,6 +246,11 @@ export function TicketListPage({
               {cardTitle}
             </CardTitle>
             <TicketFilters
+              viewFilter={activeTab}
+              onViewChange={(val) => {
+                setActiveTab(val);
+                pagination.setPage(1);
+              }}
               statusFilter={statusFilter}
               statusOptions={statusOptions}
               onStatusChange={(val) => {
@@ -271,26 +269,6 @@ export function TicketListPage({
               }}
               showSourceFilter={showSourceFilter}
             />
-          </div>
-
-          {/* Primary View Dropdown: All | Needs Attention (default) | Closed */}
-          <div className="pt-xs border-t border-border/60">
-            <Select
-              value={activeTab}
-              onValueChange={(val) => {
-                setActiveTab(val as "All" | "Needs Attention" | "Closed");
-                pagination.setPage(1);
-              }}
-            >
-              <SelectTrigger className="w-full sm:w-[220px]" aria-label="View filter">
-                <SelectValue placeholder="View" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="All">All</SelectItem>
-                <SelectItem value="Needs Attention">Needs Attention (default)</SelectItem>
-                <SelectItem value="Closed">Closed</SelectItem>
-              </SelectContent>
-            </Select>
           </div>
         </CardHeader>
         <CardContent className="p-lg pt-0 space-y-md">
