@@ -55,7 +55,7 @@ public interface ICampaignService
     // Renders arbitrary block/body content exactly as the real dispatch/storefront
     // path would (EmailBodyRenderer), so the composer's live preview and the actual
     // sent/displayed output can never silently diverge. Pure/stateless — no DB access.
-    string RenderPreviewHtml(string? content, string? theme = null);
+    string RenderPreviewHtml(string? content);
 
     // Records an open/click engagement event relayed from Brevo via api-oos (#164).
     // Returns false if the campaign doesn't exist.

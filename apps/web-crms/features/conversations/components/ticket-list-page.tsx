@@ -56,8 +56,8 @@ export interface TicketListPageProps {
 }
 
 export function TicketListPage({
-  heading = "All Tickets",
-  description = "Complete history of customer support requests.",
+  heading = "Tickets",
+  description = "Support tickets and customer request registry.",
   cardTitle = "Ticket registry",
   initialStatusFilter = "All",
   statusOptions = STATUS_OPTIONS,
@@ -81,6 +81,9 @@ export function TicketListPage({
   const [actionError, setActionError] = useState<string | null>(null);
   const [rowPending, setRowPending] = useState<RowPending>(null);
   const [cancelTarget, setCancelTarget] = useState<TicketListItem | null>(null);
+  const [activeChip, setActiveChip] = useState<"All" | "Needs Attention" | "Mine" | "Closed">(
+    terminalOnly ? "Closed" : assignedToMe ? "Mine" : "All"
+  );
   const [statusFilter, setStatusFilter] = useState<TicketStatus | "All">(
     initialStatusFilter
   );
@@ -191,12 +194,28 @@ export function TicketListPage({
     );
   }
 
+  const chipFilteredTickets = tickets.filter((t) => {
+    if (activeChip === "Needs Attention") {
+      const nonTerminalCount = tickets.filter((tk) => !isTerminal(tk)).length;
+      return nonTerminalCount > 0 ? !isTerminal(t) : true;
+    }
+    if (activeChip === "Mine") {
+      if (!currentAgentId) return true;
+      const isMine = (tk: TicketListItem) =>
+        tk.assignedToId === currentAgentId || tk.assignedToName === session?.user?.name;
+      const mineCount = tickets.filter(isMine).length;
+      return mineCount > 0 ? isMine(t) : true;
+    }
+    if (activeChip === "Closed") return isTerminal(t);
+    return true;
+  });
+
   const isFilterNarrowed =
     statusFilter !== initialStatusFilter ||
     waitingOnFilter !== initialWaitingOnFilter ||
     sourceFilter !== "All";
 
-  const pagination = useClientPagination(tickets);
+  const pagination = useClientPagination(chipFilteredTickets);
 
   return (
     <div className="w-full min-h-full py-xl px-lg md:px-xl space-y-lg mx-auto">
@@ -215,7 +234,7 @@ export function TicketListPage({
       </div>
 
       <Card className="shadow-none border-border">
-        <CardHeader className="pb-md p-lg">
+        <CardHeader className="pb-md p-lg space-y-md">
           <div className="flex flex-col gap-md sm:flex-row sm:items-center sm:justify-between">
             <CardTitle className="text-title-lg font-bold flex items-center gap-2">
               <TicketIcon className="w-5 h-5" />
@@ -240,6 +259,30 @@ export function TicketListPage({
               }}
               showSourceFilter={showSourceFilter}
             />
+          </div>
+
+          {/* Primary Filter Chips: All | Needs Attention (default) | Mine | Closed */}
+          <div className="flex flex-wrap items-center gap-xs pt-xs border-t border-border/60">
+            {(["All", "Needs Attention", "Mine", "Closed"] as const).map((chip) => {
+              const isActive = activeChip === chip;
+              return (
+                <button
+                  key={chip}
+                  type="button"
+                  onClick={() => {
+                    setActiveChip(chip);
+                    pagination.setPage(1);
+                  }}
+                  className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-colors cursor-pointer border ${
+                    isActive
+                      ? "bg-primary text-primary-foreground border-primary"
+                      : "bg-background text-muted-foreground border-border hover:bg-accent hover:text-foreground"
+                  }`}
+                >
+                  {chip === "Needs Attention" ? "Needs Attention (default)" : chip}
+                </button>
+              );
+            })}
           </div>
         </CardHeader>
         <CardContent className="p-lg pt-0 space-y-md">

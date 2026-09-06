@@ -3,8 +3,11 @@ import {
   Users,
   Building2,
   ListFilter,
+  Target,
   AlertTriangle,
   ShoppingCart,
+  ShoppingBag,
+  Package,
   CreditCard,
   MessageSquare,
   Inbox,
@@ -45,6 +48,10 @@ export interface NavGroup {
   children: NavItem[];
 }
 
+export type SidebarEntry =
+  | { kind: "item"; item: NavItem }
+  | { kind: "group"; group: NavGroup };
+
 export interface SystemItem {
   fullName: string;
   desc: string;
@@ -62,11 +69,35 @@ export interface AccountItem {
 
 export type Account = AccountItem;
 
-// Dashboard is a standalone item (no sub-tabs)
+// Standalone Items
 export const dashboardItem: NavItem = {
   name: "Dashboard",
   href: "/dashboard",
   icon: LayoutDashboard,
+};
+
+export const segmentsItem: NavItem = {
+  name: "Segments",
+  href: "/contacts/segments",
+  icon: Target,
+};
+
+export const ticketsNavItem: NavItem = {
+  name: "Tickets",
+  href: "/tickets",
+  icon: Ticket,
+};
+
+export const campaignsNavItem: NavItem = {
+  name: "Campaigns",
+  href: "/campaigns",
+  icon: Megaphone,
+};
+
+export const analyticsNavItem: NavItem = {
+  name: "Analytics & Report",
+  href: "/reports",
+  icon: BarChart3,
 };
 
 export const settingsNavItem: NavItem = {
@@ -75,59 +106,64 @@ export const settingsNavItem: NavItem = {
   icon: Settings,
 };
 
+// Top-level ordered sidebar entries
+export const sidebarEntries: SidebarEntry[] = [
+  {
+    kind: "item",
+    item: dashboardItem,
+  },
+  {
+    kind: "group",
+    group: {
+      name: "Contacts",
+      icon: Users,
+      children: [
+        { name: "All", href: "/contacts", icon: Users },
+        { name: "Contacts", href: "/contacts/direct", icon: UserCheck },
+        { name: "Ecommerce", href: "/contacts/ecommerce", icon: ShoppingCart },
+        { name: "Orders", href: "/ecommerce/orders", icon: ShoppingBag },
+        { name: "Products", href: "/ecommerce/products", icon: Package },
+        { name: "Carts", href: "/ecommerce/abandoned-carts", icon: ShoppingCart },
+        { name: "LTV", href: "/ecommerce/ltv", icon: TrendingUp },
+        { name: "Companies", href: "/contacts/companies", icon: Building2 },
+      ],
+    },
+  },
+  {
+    kind: "item",
+    item: segmentsItem,
+  },
+  {
+    kind: "item",
+    item: ticketsNavItem,
+  },
+  {
+    kind: "group",
+    group: {
+      name: "Conversations",
+      icon: MessageSquare,
+      children: [
+        { name: "Inbox", href: "/conversations/inbox", icon: Inbox },
+        { name: "Canned Replies", href: "/conversations/canned-replies", icon: FileText },
+      ],
+    },
+  },
+  {
+    kind: "item",
+    item: campaignsNavItem,
+  },
+  {
+    kind: "item",
+    item: analyticsNavItem,
+  },
+];
+
 // Legacy exports for backward compatibility
 export const mainNavItems: NavItem[] = [dashboardItem];
 export const navItems: NavItem[] = [...mainNavItems];
-
-// Full sidebar structure with all 9 sections
-export const navGroups: NavGroup[] = [
-  {
-    name: "Contacts",
-    icon: Users,
-    children: [
-      { name: "All Contacts", href: "/contacts", icon: Users },
-      { name: "Contacts", href: "/contacts/direct", icon: UserCheck },
-      { name: "Ecommerce Contacts", href: "/contacts/ecommerce", icon: ShoppingCart },
-      { name: "Companies", href: "/contacts/companies", icon: Building2 },
-      { name: "Lists/Segments", href: "/contacts/segments", icon: ListFilter },
-      { name: "At-Risk Customers", href: "/contacts/at-risk", icon: AlertTriangle },
-    ],
-  },
-  {
-    name: "Tickets",
-    icon: Ticket,
-    children: [
-      { name: "Tickets", href: "/tickets", icon: Ticket },
-      { name: "My Assigned", href: "/tickets/assigned", icon: UserCheck },
-      { name: "History", href: "/tickets/history", icon: History },
-    ],
-  },
-  {
-    name: "Conversations",
-    icon: MessageSquare,
-    children: [
-      { name: "Inbox", href: "/conversations/inbox", icon: Inbox },
-      { name: "Canned Replies", href: "/conversations/canned-replies", icon: FileText },
-    ],
-  },
-  {
-    name: "Campaigns",
-    icon: Megaphone,
-    children: [
-      { name: "All Campaigns", href: "/campaigns", icon: Megaphone },
-      { name: "Create Campaign", href: "/campaigns/new", icon: Send },
-      { name: "Templates", href: "/campaigns/templates", icon: FileText },
-    ],
-  },
-  {
-    name: "Reports",
-    icon: BarChart3,
-    children: [
-      { name: "Custom Dashboards", href: "/reports/dashboards", icon: PieChart },
-      { name: "Revenue Attribution", href: "/reports/revenue", icon: TrendingUp },
-    ],
-  },
-];
+export const navGroups: NavGroup[] = sidebarEntries
+  .filter((e): e is { kind: "group"; group: NavGroup } => e.kind === "group")
+  .map((e) => e.group);
 
 // Settings sub-items (rendered separately in footer)
 export const settingsChildren: NavItem[] = [

@@ -77,34 +77,6 @@ describe("TemplatesGallery", () => {
     expect(screen.queryByText("Simple Announcement")).not.toBeInTheDocument();
   });
 
-  it("opens the Email template builder with drag-and-drop palette when on the Email tab", async () => {
-    const user = userEvent.setup();
-    render(<TemplatesGallery />);
-
-    const builderBtn = screen.getByRole("button", { name: /template builder/i });
-    await user.click(builderBtn);
-
-    expect(screen.getByText("Draggable Blocks")).toBeInTheDocument();
-    expect(screen.getByText("Stacked Images")).toBeInTheDocument();
-    expect(screen.getByText("CTA Button")).toBeInTheDocument();
-  });
-
-  it("hides the Template Builder button on the Banner tab (Block Templates are Email-only)", async () => {
-    const user = userEvent.setup();
-    render(<TemplatesGallery />);
-
-    await user.click(screen.getByRole("tab", { name: /banner/i }));
-    expect(screen.queryByRole("button", { name: /template builder/i })).not.toBeInTheDocument();
-  });
-
-  it("hides the Template Builder button on the Popup tab (Block Templates are Email-only)", async () => {
-    const user = userEvent.setup();
-    render(<TemplatesGallery />);
-
-    await user.click(screen.getByRole("tab", { name: /popup/i }));
-    expect(screen.queryByRole("button", { name: /template builder/i })).not.toBeInTheDocument();
-  });
-
   it("shows a loading skeleton while templates load", () => {
     (useTemplates as jest.Mock).mockReturnValue({
       data: [],
@@ -115,46 +87,4 @@ describe("TemplatesGallery", () => {
     render(<TemplatesGallery />);
     expect(screen.getByTestId("templates-gallery-loading")).toBeInTheDocument();
   });
-
-  it("saves a new Email template with multiple block types via the drag-and-drop builder", async () => {
-    const user = userEvent.setup();
-    const { blockTemplatesApi } = await import("@/features/campaigns/services/campaigns-api");
-    const createSpy = jest.spyOn(blockTemplatesApi, "create").mockResolvedValue({
-      id: "new-b1",
-      name: "New Custom Template",
-      description: "Custom layout",
-      channel: "Email",
-      isArchived: false,
-      createdAt: "2026-09-04T00:00:00Z",
-      updatedAt: "2026-09-04T00:00:00Z",
-      blocks: [],
-    });
-
-    render(<TemplatesGallery />);
-
-    await user.click(screen.getByRole("button", { name: /template builder/i }));
-
-    const nameInput = screen.getByPlaceholderText("Template Name...");
-    await user.type(nameInput, "New Custom Template");
-
-    // Add heading block and button block
-    await user.click(screen.getByText("Heading Title"));
-    await user.click(screen.getByText("CTA Button"));
-
-    const saveBtn = screen.getByRole("button", { name: /save template/i });
-    await user.click(saveBtn);
-
-    await waitFor(() => {
-      expect(createSpy).toHaveBeenCalledWith(
-        expect.objectContaining({
-          name: "New Custom Template",
-          channel: "Email",
-          blocks: expect.arrayContaining([
-            expect.objectContaining({ type: "heading" }),
-            expect.objectContaining({ type: "button" }),
-          ]),
-        })
-      );
-    });
-  }, 15000);
 });

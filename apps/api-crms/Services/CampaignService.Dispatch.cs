@@ -1,5 +1,4 @@
 using api_crms.DTOs;
-using api_crms.Enums;
 using api_crms.Interfaces;
 
 namespace api_crms.Services;
@@ -37,14 +36,12 @@ public sealed partial class CampaignService
             }
             else
             {
-                EmailTheme? theme = Enum.TryParse<EmailTheme>(campaign.Theme, true, out var t) ? t : null;
                 outcome = await marketingEmailSender.SendCampaignAsync(
                     campaign.Id,
                     campaign.Recipients,
                     campaign.Subject,
                     campaign.Body,
                     dispatchOptions.UnsubscribeBaseUrl,
-                    theme,
                     cancellationToken);
             }
 

@@ -8,8 +8,6 @@ import {
   CampaignDispatchResult,
   CampaignEngagementMetrics,
   CampaignAnalytics,
-  BlockTemplate,
-  CreateBlockTemplateInput,
 } from "@/features/campaigns/types";
 
 export const campaignsApi = {
@@ -48,14 +46,13 @@ export const campaignsApi = {
     request<void>(`/api/v1/campaigns/${id}`, {
       method: "DELETE",
     }),
-  // Renders draft block/body content through the real dispatch renderer
+  // Renders draft body content through the real dispatch renderer
   // (EmailBodyRenderer) so previews can never silently diverge from what
-  // actually gets sent/displayed. theme is a sibling of content, never
-  // embedded in it, mirroring EmailBodyRenderer's own wrapContainer/theme split.
-  renderPreview: (content: string, theme?: string) =>
+  // actually gets sent/displayed.
+  renderPreview: (content: string) =>
     request<{ html: string }>(`/api/v1/campaigns/render-preview`, {
       method: "POST",
-      body: JSON.stringify({ content, theme }),
+      body: JSON.stringify({ content }),
     }),
 };
 
@@ -69,30 +66,4 @@ export const templatesApi = {
   },
   getById: (id: string) =>
     request<Template>(`/api/v1/templates/${id}`),
-};
-
-export const blockTemplatesApi = {
-  list: (channel?: string) => {
-    let url = `/api/v1/block-templates`;
-    if (channel) {
-      url += `?channel=${encodeURIComponent(channel)}`;
-    }
-    return request<BlockTemplate[]>(url);
-  },
-  getById: (id: string) =>
-    request<BlockTemplate>(`/api/v1/block-templates/${id}`),
-  create: (body: CreateBlockTemplateInput) =>
-    request<BlockTemplate>(`/api/v1/block-templates`, {
-      method: "POST",
-      body: JSON.stringify(body),
-    }),
-  update: (id: string, body: CreateBlockTemplateInput) =>
-    request<BlockTemplate>(`/api/v1/block-templates/${id}`, {
-      method: "PUT",
-      body: JSON.stringify(body),
-    }),
-  delete: (id: string) =>
-    request<void>(`/api/v1/block-templates/${id}`, {
-      method: "DELETE",
-    }),
 };

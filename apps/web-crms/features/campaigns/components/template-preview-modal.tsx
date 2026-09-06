@@ -10,12 +10,6 @@ import {
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { StorefrontLivePreview } from "@/features/campaigns/components/storefront-live-preview";
 import { TemplateDetailsTab } from "@/features/campaigns/components/template-details-tab";
@@ -29,8 +23,6 @@ interface TemplatePreviewModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onUseTemplate: (template: Template) => void;
-  onEditTemplate?: (template: Template) => void;
-  onDeleteTemplate?: (template: Template) => void;
 }
 
 export function TemplatePreviewModal({
@@ -38,14 +30,10 @@ export function TemplatePreviewModal({
   open,
   onOpenChange,
   onUseTemplate,
-  onEditTemplate,
-  onDeleteTemplate,
 }: TemplatePreviewModalProps) {
   const [activeTab, setActiveTab] = useState<"preview" | "details" | "source">("preview");
 
   if (!template) return null;
-
-  const isBlockTemplate = template.format === "Blocks";
 
   // Extract double curly brace placeholders (e.g. {{subject}}, {{body}})
   const variables = Array.from(
@@ -105,7 +93,6 @@ export function TemplatePreviewModal({
             <StorefrontLivePreview
               channel={template.channel}
               content={{
-                templateId: isBlockTemplate ? template.id : undefined,
                 subject: template.channel === "Email" ? template.name : undefined,
                 heading: template.channel === "Popup" ? template.name : undefined,
                 body: template.content,
@@ -129,40 +116,7 @@ export function TemplatePreviewModal({
 
         {/* Modal Footer */}
         <div className="flex items-center justify-between pt-3 border-t border-border mt-2">
-          {isBlockTemplate && (onEditTemplate || onDeleteTemplate) ? (
-            <div className="flex items-center gap-2">
-              {onEditTemplate && (
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    onOpenChange(false);
-                    onEditTemplate(template);
-                  }}
-                  className="text-base font-medium px-4 py-2"
-                >
-                  Edit
-                </Button>
-              )}
-              {onDeleteTemplate && (
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    onOpenChange(false);
-                    onDeleteTemplate(template);
-                  }}
-                  className="text-base font-medium px-4 py-2 text-destructive hover:bg-destructive/10 border-border/60"
-                >
-                  Delete
-                </Button>
-              )}
-            </div>
-          ) : (
-            <div />
-          )}
+          <div />
 
           <div className="flex items-center gap-2">
             <Button variant="outline" onClick={() => onOpenChange(false)} className="text-base font-medium px-4 py-2">

@@ -15,7 +15,6 @@ jest.mock("@/features/campaigns/hooks/useTemplates", () => ({ useTemplates: jest
 jest.mock("@/features/contacts/hooks/useSegments", () => ({ useSegments: jest.fn() }));
 jest.mock("@/features/campaigns/services/campaigns-api", () => ({
   campaignsApi: { create: jest.fn(), renderPreview: jest.fn().mockResolvedValue({ html: "" }) },
-  blockTemplatesApi: { getById: jest.fn().mockResolvedValue({ theme: "VioletToLight" }) },
 }));
 
 const emailTemplate = {
@@ -45,8 +44,6 @@ describe("CampaignWizard (Email only, #159)", () => {
     (useSearchParams as jest.Mock).mockReturnValue(new URLSearchParams());
     (useTemplates as jest.Mock).mockReturnValue({
       data: [emailTemplate],
-      predefinedTemplates: [emailTemplate],
-      blockTemplates: [],
       isLoading: false,
       error: null,
     });

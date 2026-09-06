@@ -23,8 +23,6 @@ describe("CampaignWizard — Banner & Popup channels (#160)", () => {
     jest.clearAllMocks();
     (useTemplates as jest.Mock).mockReturnValue({
       data: [],
-      predefinedTemplates: [],
-      blockTemplates: [],
       isLoading: false,
       error: null,
     });

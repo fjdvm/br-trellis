@@ -54,10 +54,6 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
 
     public DbSet<Template> Templates => Set<Template>();
 
-    public DbSet<BlockTemplate> BlockTemplates => Set<BlockTemplate>();
-
-    public DbSet<TemplateBlock> TemplateBlocks => Set<TemplateBlock>();
-
     public DbSet<Campaign> Campaigns => Set<Campaign>();
 
     public DbSet<CampaignChannelContent> CampaignChannelContents => Set<CampaignChannelContent>();
@@ -731,49 +727,6 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
                 .WithMany()
                 .HasForeignKey(e => e.CampaignId)
                 .OnDelete(DeleteBehavior.Cascade);
-        });
-
-        ConfigureBlockTemplate(modelBuilder);
-    }
-
-    private static void ConfigureBlockTemplate(ModelBuilder modelBuilder)
-    {
-        modelBuilder.Entity<BlockTemplate>(t =>
-        {
-            t.ToTable("block_template");
-            t.HasKey(e => e.Id);
-            t.Property(e => e.Id).HasColumnName("id");
-            t.Property(e => e.Name).HasColumnName("name");
-            t.Property(e => e.Description).HasColumnName("description");
-            t.Property(e => e.Channel)
-                .HasColumnName("channel")
-                .HasConversion<string>();
-            t.Property(e => e.IsArchived).HasColumnName("is_archived");
-            t.Property(e => e.Theme)
-                .HasColumnName("theme")
-                .HasConversion<string>()
-                .HasDefaultValue(EmailTheme.VioletToLight);
-            t.Property(e => e.CreatedAt).HasColumnName("created_at");
-            t.Property(e => e.UpdatedAt).HasColumnName("updated_at");
-
-            t.HasMany(e => e.Blocks)
-                .WithOne(b => b.BlockTemplate)
-                .HasForeignKey(b => b.BlockTemplateId)
-                .OnDelete(DeleteBehavior.Cascade);
-        });
-
-        modelBuilder.Entity<TemplateBlock>(b =>
-        {
-            b.ToTable("template_block");
-            b.HasKey(e => e.Id);
-            b.Property(e => e.Id).HasColumnName("id");
-            b.Property(e => e.BlockTemplateId).HasColumnName("block_template_id");
-            b.Property(e => e.Type).HasColumnName("type");
-            b.Property(e => e.Label).HasColumnName("label");
-            b.Property(e => e.Order).HasColumnName("order");
-            b.Property(e => e.TextAlign).HasColumnName("text_align");
-            b.Property(e => e.IsBold).HasColumnName("is_bold");
-            b.Property(e => e.IsItalic).HasColumnName("is_italic");
         });
     }
 }

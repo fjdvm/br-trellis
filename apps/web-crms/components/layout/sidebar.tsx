@@ -27,19 +27,14 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
-  dashboardItem,
-  navGroups,
+  sidebarEntries,
   settingsNavItem,
   settingsChildren,
-  systems,
-  type NavGroup,
-  type NavChild,
+  type SidebarEntry,
 } from "./sidebar-nav";
 import { SidebarProfileFooter } from "./sidebar-profile-footer";
 import { SidebarNavSkeleton } from "./sidebar-nav-skeleton";
 import { SidebarEnterpriseHeader } from "./sidebar-enterprise-header";
-
-
 
 export function Sidebar() {
   const pathname = usePathname();
@@ -82,40 +77,18 @@ export function Sidebar() {
     return null;
   }
 
-  const DashboardIcon = dashboardItem.icon;
-  const isDashboardActive =
-    pathname === dashboardItem.href || pathname === "/";
-
   const SettingsIcon = settingsNavItem.icon;
-  const isSettingsActive = pathname.startsWith("/settings");
 
   const showSettings = !!session?.isSuperUser;
 
-  // Map nav group names to their AppModule permission names in internal-auth-service.
-  // SuperUsers bypass this filter entirely (they see everything).
-  // Groups without a mapping are always shown (no permission check yet).
   const navGroupToModule: Record<string, string> = {
     Contacts: "Customer Profiles",
-    Tickets: "Conversations",
     Conversations: "Conversations",
   };
 
   const crmsPerms = session?.permissions?.CRMS as Record<string, Record<string, boolean>> | undefined;
   const isSuperUser = !!session?.isSuperUser;
 
-  const allowedNavGroups = navGroups.filter((group) => {
-    if (isSuperUser) return true;
-    const moduleName = navGroupToModule[group.name];
-    if (!moduleName) return true; // No permission mapping → always visible
-    return crmsPerms?.[moduleName]?.canRead === true;
-  });
-
-  // Dashboard is gated on the "Dashboard" module permission (unless superuser)
-  const showDashboard = isSuperUser || crmsPerms?.["Dashboard"]?.canRead === true;
-
-  // While the session/permissions are still resolving, the set of visible nav
-  // tabs is unknown. Show a skeleton transition so the nav fades in cleanly
-  // instead of popping/flickering item-by-item.
   const isNavLoading = !mounted || sessionStatus === "loading";
 
   return (
@@ -135,86 +108,99 @@ export function Sidebar() {
               {isNavLoading ? (
                 <SidebarNavSkeleton />
               ) : (
-                <>
-              {/* Dashboard (standalone, no sub-tabs) */}
-              {showDashboard && (
-              <SidebarMenu>
-                <SidebarMenuItem>
-                  <SidebarMenuButton
-                    asChild
-                    isActive={isDashboardActive}
-                    className="w-full flex items-center gap-sm px-sm py-sm rounded-lg text-sm text-foreground transition-colors"
-                  >
-                    <Link href={dashboardItem.href} onClick={handleNavClick}>
-                      <DashboardIcon className="w-4 h-4 shrink-0" />
-                      <span>{dashboardItem.name}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              </SidebarMenu>
-              )}
+                <div className="space-y-xs">
+                  {sidebarEntries.map((entry) => {
+                    if (entry.kind === "item") {
+                      const item = entry.item;
+                      const ItemIcon = item.icon;
+                      const isActive =
+                        item.href === "/dashboard"
+                          ? pathname === "/dashboard" || pathname === "/"
+                          : pathname === item.href || pathname.startsWith(item.href + "/");
 
-              {/* All nav groups (filtered by permissions) */}
-              {allowedNavGroups.map((group) => {
-                const GroupIcon = group.icon;
-                const hasActiveChild = group.children.some(
-                  (child) =>
-                    pathname === child.href ||
-                    pathname.startsWith(child.href + "/")
-                );
-                const isExpanded =
-                  expandedGroups[group.name] ?? hasActiveChild;
-
-                return (
-                  <div key={group.name} className="mt-xs">
-                    <button
-                      onClick={() => {
-                        setExpandedGroups((prev) => ({
-                          ...prev,
-                          [group.name]: !isExpanded,
-                        }));
-                      }}
-                      className="w-full flex items-center gap-sm px-sm py-sm rounded-lg text-sm transition-colors text-foreground hover:bg-sidebar-accent"
-                    >
-                      <GroupIcon className="w-4 h-4 shrink-0" />
-                      <span className="flex-1 text-left">{group.name}</span>
-                      <ChevronRight
-                        className={`w-4 h-4 transition-transform ${
-                          isExpanded ? "rotate-90" : ""
-                        }`}
-                      />
-                    </button>
-                    {isExpanded && (
-                      <div className="ml-[18px] mt-xs border-l-2 border-border pl-md">
-                        <SidebarMenu>
-                          {group.children.map((child) => {
-                            const isChildActive =
-                              pathname === child.href ||
-                              pathname.startsWith(child.href + "/");
-                            return (
-                              <SidebarMenuItem key={child.name}>
-                                <SidebarMenuButton
-                                  asChild
-                                  isActive={isChildActive}
-                                  className="w-full flex items-center gap-sm px-sm py-xs rounded-lg text-sm text-foreground transition-colors"
-                                >
-                                  <Link
-                                    href={child.href}
-                                    onClick={handleNavClick}
-                                  >
-                                    <span>{child.name}</span>
-                                  </Link>
-                                </SidebarMenuButton>
-                              </SidebarMenuItem>
-                            );
-                          })}
+                      return (
+                        <SidebarMenu key={item.name}>
+                          <SidebarMenuItem>
+                            <SidebarMenuButton
+                              asChild
+                              isActive={isActive}
+                              className="w-full flex items-center gap-sm px-sm py-sm rounded-lg text-sm text-foreground transition-colors"
+                            >
+                              <Link href={item.href} onClick={handleNavClick}>
+                                <ItemIcon className="w-4 h-4 shrink-0" />
+                                <span>{item.name}</span>
+                              </Link>
+                            </SidebarMenuButton>
+                          </SidebarMenuItem>
                         </SidebarMenu>
+                      );
+                    }
+
+                    const group = entry.group;
+                    const moduleName = navGroupToModule[group.name];
+                    if (!isSuperUser && moduleName && crmsPerms?.[moduleName]?.canRead !== true) {
+                      return null;
+                    }
+
+                    const GroupIcon = group.icon;
+                    const hasActiveChild = group.children.some(
+                      (child) =>
+                        pathname === child.href ||
+                        pathname.startsWith(child.href + "/")
+                    );
+                    const isExpanded = expandedGroups[group.name] ?? hasActiveChild;
+
+                    return (
+                      <div key={group.name} className="mt-xs">
+                        <button
+                          onClick={() => {
+                            setExpandedGroups((prev) => ({
+                              ...prev,
+                              [group.name]: !isExpanded,
+                            }));
+                          }}
+                          className="w-full flex items-center gap-sm px-sm py-sm rounded-lg text-sm transition-colors text-foreground hover:bg-sidebar-accent"
+                        >
+                          <GroupIcon className="w-4 h-4 shrink-0" />
+                          <span className="flex-1 text-left">{group.name}</span>
+                          <ChevronRight
+                            className={`w-4 h-4 transition-transform ${
+                              isExpanded ? "rotate-90" : ""
+                            }`}
+                          />
+                        </button>
+                        {isExpanded && (
+                          <div className="ml-[18px] mt-xs border-l-2 border-border pl-md">
+                            <SidebarMenu>
+                              {group.children.map((child) => {
+                                const isChildActive =
+                                  pathname === child.href ||
+                                  (child.href !== "/contacts" &&
+                                    pathname.startsWith(child.href + "/"));
+                                return (
+                                  <SidebarMenuItem key={child.name}>
+                                    <SidebarMenuButton
+                                      asChild
+                                      isActive={isChildActive}
+                                      className="w-full flex items-center gap-sm px-sm py-xs rounded-lg text-sm text-foreground transition-colors"
+                                    >
+                                      <Link
+                                        href={child.href}
+                                        onClick={handleNavClick}
+                                      >
+                                        <span>{child.name}</span>
+                                      </Link>
+                                    </SidebarMenuButton>
+                                  </SidebarMenuItem>
+                                );
+                              })}
+                            </SidebarMenu>
+                          </div>
+                        )}
                       </div>
-                    )}
-                  </div>
-                );
-              })}
-                </>
+                    );
+                  })}
+                </div>
               )}
             </SidebarGroupContent>
           </SidebarGroup>

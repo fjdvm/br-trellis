@@ -13,7 +13,6 @@ jest.mock("@/features/campaigns/hooks/useCampaign", () => ({ useCampaign: jest.f
 jest.mock("@/features/contacts/hooks/useSegments", () => ({ useSegments: jest.fn(() => ({ data: [], isLoading: false })) }));
 jest.mock("@/features/campaigns/services/campaigns-api", () => ({
   campaignsApi: { updateStatus: jest.fn(), getAnalytics: jest.fn(), renderPreview: jest.fn().mockResolvedValue({ html: "" }) },
-  blockTemplatesApi: { getById: jest.fn().mockResolvedValue({ theme: "VioletToLight" }) },
 }));
 
 const campaign: Campaign = {

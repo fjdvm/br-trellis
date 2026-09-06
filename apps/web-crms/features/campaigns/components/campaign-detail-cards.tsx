@@ -65,7 +65,18 @@ export function ChannelContentCard({ content }: { content: CampaignChannelConten
         <CardTitle className="text-title-lg font-bold">Content Preview</CardTitle>
         <CampaignChannelBadge channel={content.channel} />
       </CardHeader>
-      <CardContent className="p-lg pt-0 space-y-sm">
+      <CardContent className="p-lg pt-0 space-y-md">
+        {content.subject && (
+          <div className="text-base">
+            <span className="font-semibold text-muted-foreground">Subject: </span>
+            <span className="font-medium text-foreground">{content.subject}</span>
+          </div>
+        )}
+        {content.body && (
+          <div className="text-base text-foreground bg-muted/20 p-md rounded-md border border-border">
+            {content.body}
+          </div>
+        )}
         <StorefrontLivePreview channel={content.channel} content={content} liveBadgeText="LIVE SNAPSHOT" />
       </CardContent>
     </Card>

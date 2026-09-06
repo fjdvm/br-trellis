@@ -123,6 +123,6 @@ describe("Sidebar nav loading skeleton", () => {
 
     expect(screen.queryByTestId("sidebar-nav-skeleton")).not.toBeInTheDocument();
     expect(screen.getByText("Contacts")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /Tickets/ })).toBeInTheDocument();
+    expect(screen.getByText("Tickets")).toBeInTheDocument();
   });
 });

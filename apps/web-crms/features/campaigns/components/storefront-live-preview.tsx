@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Mail, PanelTop, AppWindow, ChevronLeft, ChevronRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import type { CampaignChannel } from "@/features/campaigns/types";
@@ -17,45 +17,12 @@ export type ChannelPreviewContent = {
   dismissible?: boolean | null;
   // Per-Campaign Banner/Popup gradient picker (channel-content-form.tsx) - a
   // mock-preview-only cosmetic on this component's own chrome below, never
-  // rendered by the real backend renderer. NOT the same thing as a Template's
-  // Email theme (see emailTheme/useResolvedEmailTheme below) - do not merge
-  // these two despite the similar names/colors.
+  // rendered by the real backend renderer.
   themeGradient?: "light-to-violet" | "violet-to-light" | string | null;
 };
 
 import { renderFormattedText } from "@/features/campaigns/components/preview-text-renderer";
 import { useRenderedPreviewHtml } from "@/features/campaigns/hooks/use-rendered-preview-html";
-import { blockTemplatesApi } from "@/features/campaigns/services/campaigns-api";
-
-// A Block Template's real Theme, baked into the real backend-rendered HTML
-// (unlike themeGradient above). Resolved here - once - from the Email
-// channel content's templateId, so every consumer of StorefrontLivePreview
-// (composer, Campaign Detail, Active/Draft/Ended views) shows the same theme
-// header band the actual dispatched email would, with no per-caller wiring.
-function useResolvedEmailTheme(channel: CampaignChannel, templateId?: string | null) {
-  const [theme, setTheme] = useState<string | undefined>(undefined);
-
-  useEffect(() => {
-    if (channel !== "Email" || !templateId) {
-      setTheme(undefined);
-      return;
-    }
-    let cancelled = false;
-    blockTemplatesApi
-      .getById(templateId)
-      .then((t) => {
-        if (!cancelled) setTheme(t.theme);
-      })
-      .catch(() => {
-        if (!cancelled) setTheme(undefined);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [channel, templateId]);
-
-  return theme;
-}
 
 // StorefrontLivePreview
 export function StorefrontLivePreview({
@@ -76,12 +43,11 @@ export function StorefrontLivePreview({
   className?: string;
 }) {
   const [animKey, setAnimKey] = useState(0);
-  const emailTheme = useResolvedEmailTheme(channel, content.templateId);
   // Body content (all three channels) is rendered by the real backend renderer
   // (EmailBodyRenderer) so this preview can never silently diverge from what
   // actually gets sent/displayed. Subject/heading stay client-formatted below —
   // they're plain scalar fields with no block-rendering logic to diverge.
-  const { html: bodyHtml } = useRenderedPreviewHtml(content.body, emailTheme);
+  const { html: bodyHtml } = useRenderedPreviewHtml(content.body);
 
   return (
     <div className={`space-y-sm ${className}`}>
@@ -234,44 +200,35 @@ export function StorefrontLivePreview({
           </div>
 
           {/* ── Email body panel ─────────────────────────────────────── */}
-          {channel === "Email" && (() => {
-            const isJsonBody =
-              typeof content.body === "string" &&
-              (content.body.trim().startsWith("{") || content.body.trim().startsWith("["));
-
-            return (
-              <div className="absolute inset-x-3 bottom-3 top-[110px] z-20 bg-background rounded-lg shadow-xl overflow-hidden text-left flex flex-col border border-border">
-                <div className="p-4 space-y-3 flex-1 overflow-y-auto">
-                  {content.body ? (
-                    <div
-                      className="text-sm text-foreground leading-relaxed font-sans"
-                      dangerouslySetInnerHTML={{ __html: bodyHtml }}
-                    />
-                  ) : (
-                    <div className="text-sm text-foreground leading-relaxed whitespace-pre-wrap font-sans">
-                      Compose your email message body to see it rendered here in real time…
-                    </div>
-                  )}
-                  {!isJsonBody && (content.ctaText || content.ctaUrl) && (
-                    <div className="pt-2">
-                      <button
-                        type="button"
-                        className="py-2 px-4 bg-primary text-primary-foreground text-xs font-semibold rounded-md shadow hover:opacity-90 transition-opacity"
-                      >
-                        {content.ctaText || "Click Here"}
-                      </button>
-                    </div>
-                  )}
-                </div>
+          {channel === "Email" && (
+            <div className="absolute inset-x-3 bottom-3 top-[110px] z-20 bg-background rounded-lg shadow-xl overflow-hidden text-left flex flex-col border border-border">
+              <div className="p-4 space-y-3 flex-1 overflow-y-auto">
+                {content.body ? (
+                  <div
+                    className="text-sm text-foreground leading-relaxed font-sans"
+                    dangerouslySetInnerHTML={{ __html: bodyHtml }}
+                  />
+                ) : (
+                  <div className="text-sm text-foreground leading-relaxed whitespace-pre-wrap font-sans">
+                    Compose your email message body to see it rendered here in real time…
+                  </div>
+                )}
+                {(content.ctaText || content.ctaUrl) && (
+                  <div className="pt-2">
+                    <button
+                      type="button"
+                      className="py-2 px-4 bg-primary text-primary-foreground text-xs font-semibold rounded-md shadow hover:opacity-90 transition-opacity"
+                    >
+                      {content.ctaText || "Click Here"}
+                    </button>
+                  </div>
+                )}
               </div>
-            );
-          })()}
+            </div>
+          )}
 
           {/* ── Popup overlay ────────────────────────────────────────── */}
           {channel === "Popup" && (() => {
-            const isJsonBody =
-              typeof content.body === "string" &&
-              (content.body.trim().startsWith("{") || content.body.trim().startsWith("["));
             const isVioletFirst = content.themeGradient === "violet-to-light";
             const cardBgClass = isVioletFirst
               ? "bg-gradient-to-br from-violet-950 via-purple-900 to-indigo-700 text-slate-100 border-violet-700/50"
@@ -315,7 +272,7 @@ export function StorefrontLivePreview({
                       "Your popup body text will appear here as you type…"
                     )}
                   </div>
-                  {!isJsonBody && (content.ctaText || content.ctaUrl) && (
+                  {(content.ctaText || content.ctaUrl) && (
                     <div className="pt-1">
                       <button
                         type="button"

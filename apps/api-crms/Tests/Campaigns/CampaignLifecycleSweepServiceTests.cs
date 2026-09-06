@@ -121,7 +121,7 @@ public sealed class CampaignLifecycleSweepServiceTests
         public Task<ActiveChannelContentDto?> GetActiveChannelContentAsync(string channel, CancellationToken cancellationToken)
             => throw new NotImplementedException();
 
-        public string RenderPreviewHtml(string? content, string? theme = null)
+        public string RenderPreviewHtml(string? content)
             => throw new NotImplementedException();
 
         public Task<bool> RecordEventAsync(Guid campaignId, CampaignEventDto input, CancellationToken cancellationToken)

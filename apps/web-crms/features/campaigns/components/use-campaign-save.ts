@@ -39,16 +39,12 @@ export function useCampaignSave({
   function buildChannelContents(): CampaignChannelContentInput[] {
     return channels.map((channel) => {
       const c = contents[channel] ?? {};
-      const body =
-        c.blockValues && Object.keys(c.blockValues).length > 0
-          ? JSON.stringify(c.blockValues)
-          : (c.body ?? null);
       return {
         channel,
         templateId: c.templateId ?? null,
         subject: c.subject ?? null,
         heading: c.heading ?? null,
-        body,
+        body: c.body ?? null,
         imageUrl: c.imageUrl ?? null,
         linkUrl: c.linkUrl ?? null,
         ctaText: c.ctaText ?? null,

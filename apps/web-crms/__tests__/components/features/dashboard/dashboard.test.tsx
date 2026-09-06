@@ -1,9 +1,14 @@
 import React from "react";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-import {  KpiCard  } from "@/features/dashboard/components/dashboard";
-import {  KpiRow  } from "@/features/dashboard/components/dashboard";
-import {  LiveStatusStrip  } from "@/features/dashboard/components/dashboard";
-import {  AttentionFeed  } from "@/features/dashboard/components/dashboard";
+
+jest.mock("next-auth/react", () => ({
+  useSession: () => ({ data: { user: { name: "Agent" } }, status: "authenticated" }),
+}));
+jest.mock("next/navigation", () => ({
+  useRouter: () => ({ push: jest.fn() }),
+}));
+
+import { KpiCard, KpiRow, LiveStatusStrip, AttentionFeed } from "@/features/dashboard/components/dashboard";
 import { Ticket } from "lucide-react";
 import { aiClient } from "@/features/dashboard/services/ai-client";
 

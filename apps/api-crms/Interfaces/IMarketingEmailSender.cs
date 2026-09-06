@@ -1,5 +1,3 @@
-using api_crms.Enums;
-
 namespace api_crms.Interfaces;
 
 /// <summary>
@@ -28,7 +26,6 @@ public interface IMarketingEmailSender
         string subject,
         string htmlBody,
         string? unsubscribeBaseUrl = null,
-        EmailTheme? theme = null,
         CancellationToken cancellationToken = default);
 }
 

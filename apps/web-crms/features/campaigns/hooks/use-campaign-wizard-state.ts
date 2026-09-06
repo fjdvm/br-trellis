@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { campaignsApi } from "@/features/campaigns/services/campaigns-api";
 import { toLocalInput, type ScheduleState } from "@/features/campaigns/components/schedule-step";
-import type { BlockValue, ChannelContentState } from "@/features/campaigns/components/channel-content-form";
+import type { ChannelContentState } from "@/features/campaigns/components/channel-content-form";
 import type {
   Campaign,
   CampaignChannel,
@@ -35,29 +35,16 @@ export function useCampaignWizardState(existing?: Campaign) {
   const [contents, setContents] = useState<Record<string, ChannelContentState>>(() => {
     const initial: Record<string, ChannelContentState> = {};
     for (const c of existing?.channelContents ?? []) {
-      // body holds JSON.stringify(blockValues) for block-template content; parse it back on reload.
-      let blockValues: Record<string, BlockValue> | undefined;
-      if (c.body) {
-        try {
-          const parsed = JSON.parse(c.body);
-          if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
-            blockValues = parsed as Record<string, BlockValue>;
-          }
-        } catch {
-          // Plain string body (non-block-template content) — leave blockValues unset.
-        }
-      }
       initial[c.channel] = {
         templateId: c.templateId ?? undefined,
         subject: c.subject ?? undefined,
         heading: c.heading ?? undefined,
-        body: blockValues ? undefined : c.body ?? undefined,
+        body: c.body ?? undefined,
         imageUrl: c.imageUrl ?? undefined,
         linkUrl: c.linkUrl ?? undefined,
         ctaText: c.ctaText ?? undefined,
         ctaUrl: c.ctaUrl ?? undefined,
         dismissible: c.dismissible ?? false,
-        blockValues,
       };
     }
     return initial;
@@ -101,15 +88,12 @@ export function useCampaignWizardState(existing?: Campaign) {
   function buildChannelContents(): CampaignChannelContentInput[] {
     return channels.map((channel) => {
       const c = contents[channel] ?? {};
-      const body = c.blockValues && Object.keys(c.blockValues).length > 0
-        ? JSON.stringify(c.blockValues)
-        : (c.body ?? null);
       return {
         channel,
         templateId: c.templateId ?? null,
         subject: c.subject ?? null,
         heading: c.heading ?? null,
-        body,
+        body: c.body ?? null,
         imageUrl: c.imageUrl ?? null,
         linkUrl: c.linkUrl ?? null,
         ctaText: c.ctaText ?? null,

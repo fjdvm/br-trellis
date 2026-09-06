@@ -2,8 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Search, PlusCircle } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -16,21 +15,10 @@ import {
 } from "@/components/ui/select";
 import { TemplateCard } from "@/features/campaigns/components/template-card";
 import { TemplatePreviewModal } from "@/features/campaigns/components/template-preview-modal";
-import { TemplateDeleteModal } from "@/features/campaigns/components/template-delete-modal";
-import { TemplateBuilderModal } from "@/features/campaigns/components/template-builder-modal";
-import { type TemplateBlock } from "@/features/campaigns/components/template-builder-components";
 import { useTemplates } from "@/features/campaigns/hooks/useTemplates";
-import { useTemplateBuilder } from "@/features/campaigns/hooks/use-template-builder";
-import {
-  getChannelConstraints,
-  validateBlockCount,
-  type BlockType,
-} from "@/features/campaigns/services/template-constraints";
 import type { CampaignChannel, Template } from "@/features/campaigns/types";
 
 const CHANNELS: CampaignChannel[] = ["Email", "Banner", "Popup"];
-
-export type { TemplateBlock };
 
 function useSafeRouter() {
   try {
@@ -43,40 +31,11 @@ function useSafeRouter() {
 // Main TemplatesGallery
 export function TemplatesGallery() {
   const router = useSafeRouter();
-  const { data: templates, isLoading, error, refetch } = useTemplates();
+  const { data: templates, isLoading, error } = useTemplates();
   const [channel, setChannel] = useState<CampaignChannel>("Email");
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState<"name" | "updated">("name");
   const [previewTemplate, setPreviewTemplate] = useState<Template | null>(null);
-
-  const {
-    showBuilderModal,
-    setShowBuilderModal,
-    editingTemplateId,
-    builderName,
-    setBuilderName,
-    builderDescription,
-    setBuilderDescription,
-    builderTheme,
-    setBuilderTheme,
-    builderError,
-    setBuilderError,
-    isSaving,
-    blocks,
-    constraints,
-    deleteTemplateItem,
-    setDeleteTemplateItem,
-    isDeleting,
-    handleOpenCreateModal,
-    handleEditTemplate,
-    handleDeleteConfirm,
-    addBlock,
-    updateBlock,
-    removeBlock,
-    reorderBlocks,
-    isSaveDisabled,
-    handleSaveTemplate,
-  } = useTemplateBuilder({ channel, refetch });
 
   const filteredTemplates = useMemo(() => {
     let list = templates.filter((t) => {
@@ -114,12 +73,6 @@ export function TemplatesGallery() {
             preview canonical communication patterns.
           </p>
         </div>
-        {channel === "Email" && (
-          <Button onClick={handleOpenCreateModal} className="hidden sm:inline-flex gap-2 shrink-0">
-            <PlusCircle className="w-4 h-4" />
-            Template Builder
-          </Button>
-        )}
       </div>
 
       {error && <div className="p-md text-destructive text-base">{error.message}</div>}
@@ -184,10 +137,6 @@ export function TemplatesGallery() {
                       template={t}
                       onPreview={(tpl) => setPreviewTemplate(tpl)}
                       onUse={handleUseTemplate}
-                      onEdit={t.format === "Blocks" ? handleEditTemplate : undefined}
-                      onDelete={
-                        t.format === "Blocks" ? (tpl) => setDeleteTemplateItem(tpl) : undefined
-                      }
                     />
                   ))}
                 </div>
@@ -197,45 +146,12 @@ export function TemplatesGallery() {
         </Tabs>
       )}
 
-      {/* ── Delete Confirmation Modal ── */}
-      <TemplateDeleteModal
-        deleteTemplateItem={deleteTemplateItem}
-        setDeleteTemplateItem={setDeleteTemplateItem}
-        handleDeleteConfirm={handleDeleteConfirm}
-        isDeleting={isDeleting}
-      />
-
       {/* ── Preview Dialog ── */}
       <TemplatePreviewModal
         template={previewTemplate}
         open={Boolean(previewTemplate)}
         onOpenChange={(open) => !open && setPreviewTemplate(null)}
         onUseTemplate={handleUseTemplate}
-        onEditTemplate={handleEditTemplate}
-        onDeleteTemplate={(tpl) => setDeleteTemplateItem(tpl)}
-      />
-
-      <TemplateBuilderModal
-        showBuilderModal={showBuilderModal}
-        setShowBuilderModal={setShowBuilderModal}
-        editingTemplateId={editingTemplateId}
-        builderName={builderName}
-        setBuilderName={setBuilderName}
-        builderDescription={builderDescription}
-        setBuilderDescription={setBuilderDescription}
-        builderTheme={builderTheme}
-        setBuilderTheme={setBuilderTheme}
-        builderError={builderError}
-        setBuilderError={setBuilderError}
-        blocks={blocks}
-        constraints={constraints}
-        addBlock={addBlock}
-        updateBlock={updateBlock}
-        removeBlock={removeBlock}
-        reorderBlocks={reorderBlocks}
-        handleSaveTemplate={handleSaveTemplate}
-        isSaveDisabled={isSaveDisabled}
-        isSaving={isSaving}
       />
     </div>
   );

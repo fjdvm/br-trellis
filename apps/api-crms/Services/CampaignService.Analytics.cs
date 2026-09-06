@@ -51,15 +51,13 @@ public sealed partial class CampaignService
 
             var emailContent = campaign.ChannelContents
                 .FirstOrDefault(cc => cc.Channel == CampaignChannel.Email);
-            var (resolvedBody, theme) = await ResolveChannelContentAsync(emailContent, cancellationToken);
 
             due.Add(new DueCampaignDto(
                 campaign.Id,
                 campaign.Title,
                 emailContent?.Subject ?? campaign.Title,
-                resolvedBody ?? string.Empty,
-                recipients,
-                theme?.ToString()));
+                emailContent?.Body ?? string.Empty,
+                recipients));
         }
 
         return due;
@@ -126,8 +124,7 @@ public sealed partial class CampaignService
             return null;
         }
 
-        var (body, _) = await ResolveChannelContentAsync(content, cancellationToken);
-        var renderedBody = EmailBodyRenderer.RenderToHtml(body, wrapContainer: false);
+        var renderedBody = EmailBodyRenderer.RenderToHtml(content.Body);
 
         return new ActiveChannelContentDto(
             match.Id,
@@ -139,37 +136,6 @@ public sealed partial class CampaignService
             content.CtaText,
             content.CtaUrl,
             content.Dismissible);
-    }
-
-    // The real content source for a Channel: when the Channel content references a
-    // Template (TemplateId), that Template's Blocks are the source of truth,
-    // falling back to the flat Body field only when no Template is referenced or it
-    // no longer exists. Used by both storefront display and Email dispatch so
-    // neither one renders a stale/empty structural skeleton.
-    //
-    // TemplateBlock carrying its own Content is a deliberate extension beyond
-    // #177's original design (a Template Block "holds no content" there — all
-    // content was meant to come from #181's per-Campaign block values). Per-Campaign
-    // values (BlockTemplateContentRenderer's contentOverridesJson) still take
-    // precedence whenever actually filled in; a Template's own Content is only the
-    // fallback for a block nobody has customized yet.
-    private async Task<(string? Body, EmailTheme? Theme)> ResolveChannelContentAsync(
-        CampaignChannelContent? content,
-        CancellationToken cancellationToken)
-    {
-        if (content?.TemplateId is { } templateId)
-        {
-            var template = await dbContext.BlockTemplates
-                .Include(t => t.Blocks)
-                .AsNoTracking()
-                .FirstOrDefaultAsync(t => t.Id == templateId, cancellationToken);
-            if (template is not null)
-            {
-                return (BlockTemplateContentRenderer.ToBlocksJson(template, content.Body), template.Theme);
-            }
-        }
-
-        return (content?.Body, null);
     }
 
     public async Task<bool> RecordEventAsync(

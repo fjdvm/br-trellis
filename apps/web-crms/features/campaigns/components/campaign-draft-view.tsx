@@ -118,6 +118,15 @@ export function CampaignDraftView({
                   </Badge>
                 </div>
 
+                <div className="space-y-xs text-sm">
+                  {cc.subject && (
+                    <p className="font-semibold text-foreground">Subject: {cc.subject}</p>
+                  )}
+                  {cc.body && (
+                    <p className="text-muted-foreground">{cc.body}</p>
+                  )}
+                </div>
+
                 <StorefrontLivePreview
                   channel={cc.channel}
                   content={cc}

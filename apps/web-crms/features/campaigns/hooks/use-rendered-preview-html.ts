@@ -11,12 +11,7 @@ const DEBOUNCE_MS = 350;
 // independently maintained rendering implementation that can silently drift.
 // The last successful render is kept on screen while a new one is in flight,
 // so typing doesn't flicker the preview to blank/stale content.
-//
-// theme is passed straight through to the same endpoint (a sibling of
-// content, mirroring EmailBodyRenderer's own theme parameter) so every
-// consumer of this hook renders the exact same header band the real
-// dispatched email would.
-export function useRenderedPreviewHtml(content: string | null | undefined, theme?: string) {
+export function useRenderedPreviewHtml(content: string | null | undefined) {
   const [html, setHtml] = useState("");
   const [loading, setLoading] = useState(false);
   const requestIdRef = useRef(0);
@@ -31,7 +26,7 @@ export function useRenderedPreviewHtml(content: string | null | undefined, theme
     const timer = setTimeout(() => {
       setLoading(true);
       campaignsApi
-        .renderPreview(trimmed, theme)
+        .renderPreview(trimmed)
         .then((result) => {
           if (requestIdRef.current === requestId) {
             setHtml(result.html);
@@ -48,7 +43,7 @@ export function useRenderedPreviewHtml(content: string | null | undefined, theme
     }, DEBOUNCE_MS);
 
     return () => clearTimeout(timer);
-  }, [trimmed, theme]);
+  }, [trimmed]);
 
   // Content cleared entirely (not just still debouncing) — nothing to show,
   // regardless of a previous render still sitting in state.

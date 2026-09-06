@@ -6,6 +6,7 @@ module.exports = {
   },
   moduleNameMapper: {
     "^@/(.*)$": "<rootDir>/$1",
+    "^next-auth/react$": "<rootDir>/__mocks__/next-auth-react.ts",
     "\\.(css|less|scss|sass)$": "identity-obj-proxy",
   },
 };

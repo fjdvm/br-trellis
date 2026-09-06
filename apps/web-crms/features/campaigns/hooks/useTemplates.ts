@@ -1,10 +1,9 @@
 import { useState, useEffect, useCallback } from "react";
-import { templatesApi, blockTemplatesApi } from "@/features/campaigns/services/campaigns-api";
-import { Template, BlockTemplate } from "@/features/campaigns/types";
+import { templatesApi } from "@/features/campaigns/services/campaigns-api";
+import { Template } from "@/features/campaigns/types";
 
 export function useTemplates(channel?: string) {
-  const [predefinedTemplates, setPredefinedTemplates] = useState<Template[]>([]);
-  const [blockTemplatesAsTemplates, setBlockTemplatesAsTemplates] = useState<Template[]>([]);
+  const [data, setData] = useState<Template[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
@@ -12,28 +11,8 @@ export function useTemplates(channel?: string) {
     setIsLoading(true);
     setError(null);
     try {
-      const [legacyRes, blockRes] = await Promise.all([
-        templatesApi.list(channel).catch(() => []),
-        blockTemplatesApi.list(channel).catch(() => []),
-      ]);
-
-      setPredefinedTemplates(legacyRes ?? []);
-      setBlockTemplatesAsTemplates(
-        (blockRes ?? [])
-          // Block Templates are Email-only; any Banner/Popup row is legacy data
-          // (archived, or otherwise orphaned) and must not surface in the UI.
-          .filter((bt: BlockTemplate) => bt.channel === "Email")
-          .map((bt: BlockTemplate) => ({
-            id: bt.id,
-            name: bt.name,
-            description: bt.description,
-            content: JSON.stringify(bt.blocks),
-            format: "Blocks",
-            channel: bt.channel,
-            createdAt: bt.createdAt,
-            theme: bt.theme,
-          }))
-      );
+      const templates = await templatesApi.list(channel);
+      setData(templates ?? []);
     } catch (err) {
       setError(err instanceof Error ? err : new Error("Failed to load templates"));
     } finally {
@@ -45,12 +24,8 @@ export function useTemplates(channel?: string) {
     fetchTemplates();
   }, [fetchTemplates]);
 
-  const data = [...predefinedTemplates, ...blockTemplatesAsTemplates];
-
   return {
     data,
-    predefinedTemplates,
-    blockTemplates: blockTemplatesAsTemplates,
     isLoading,
     error,
     refetch: fetchTemplates,

@@ -1,13 +1,8 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
-import { Mail, PanelTop, AppWindow, Plus, Trash2 } from "lucide-react";
-import { Input } from "@/components/ui/input";
+import { useEffect } from "react";
+import { Mail, PanelTop, AppWindow } from "lucide-react";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Badge } from "@/components/ui/badge";
 import {
   Select,
   SelectContent,
@@ -16,19 +11,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { StorefrontLivePreview } from "@/features/campaigns/components/storefront-live-preview";
-import {
-  BlockTemplateFields,
-  NonBlockTemplateFields,
-} from "@/features/campaigns/components/channel-form-block-fields";
+import { NonBlockTemplateFields } from "@/features/campaigns/components/non-block-template-fields";
 import { ChannelPerSendFields } from "@/features/campaigns/components/channel-per-send-fields";
 import { CHANNEL_ICON } from "@/features/campaigns/helpers/channel-utils";
 import { useTemplates } from "@/features/campaigns/hooks/useTemplates";
 import type { CampaignChannel } from "@/features/campaigns/types";
-import type { BlockContentValue } from "@/features/campaigns/types/block-template";
 
 // Types
-
-export type BlockValue = BlockContentValue;
 
 export type ChannelContentState = {
   templateId?: string;
@@ -40,12 +29,9 @@ export type ChannelContentState = {
   ctaText?: string;
   ctaUrl?: string;
   dismissible?: boolean;
-  // Banner/Popup mock-preview-only gradient; unrelated to a Block Template's Email Theme.
+  // Banner/Popup mock-preview-only gradient; unrelated to any Template rendering.
   themeGradient?: "light-to-violet" | "violet-to-light";
-  blockValues?: Record<string, BlockValue>;
 };
-
-import { useLivePreviewContent } from "@/features/campaigns/components/use-live-preview-content";
 
 // ChannelContentForm
 
@@ -58,49 +44,13 @@ export function ChannelContentForm({
   value: ChannelContentState;
   onChange: (patch: Partial<ChannelContentState>) => void;
 }) {
-  const { predefinedTemplates, blockTemplates } = useTemplates(channel);
-  const templates = useMemo(
-    () => [...predefinedTemplates, ...blockTemplates],
-    [predefinedTemplates, blockTemplates]
-  );
+  const { data: templates } = useTemplates(channel);
   const Icon = CHANNEL_ICON[channel];
 
   const selectedTemplate = templates.find((t) => t.id === value.templateId);
-  const isBlockTemplate = selectedTemplate?.format === "Blocks";
   const selectedTemplateId = selectedTemplate ? value.templateId ?? "" : "";
 
-  let parsedBlocks: Array<{
-    id: string;
-    type: string;
-    label: string;
-    textAlign?: "left" | "center" | "right";
-    isBold?: boolean;
-    isItalic?: boolean;
-    order?: number;
-  }> = [];
-
-  if (isBlockTemplate && selectedTemplate?.content) {
-    try {
-      const raw = JSON.parse(selectedTemplate.content);
-      if (Array.isArray(raw)) {
-        parsedBlocks = raw
-          .map((b: Record<string, unknown>, idx: number) => ({
-            id: (b.id as string) || `block-${idx}`,
-            type: (b.type as string) || "text",
-            label: (b.label as string) || (b.type as string) || `Block ${idx + 1}`,
-            textAlign: (b.textAlign as "left" | "center" | "right") || undefined,
-            isBold: (b.isBold as boolean) ?? undefined,
-            isItalic: (b.isItalic as boolean) ?? undefined,
-            order: (b.order as number) ?? idx,
-          }))
-          .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
-      }
-    } catch {
-      parsedBlocks = [];
-    }
-  }
-
-  // When a template is selected, initialise blockValues for every block
+  // When a template is selected, seed the channel's fields from its content.
   function handleTemplateSelect(templateId: string) {
     const selected = templates.find((t) => t.id === templateId);
     if (!selected) {
@@ -108,34 +58,7 @@ export function ChannelContentForm({
       return;
     }
 
-    if (selected.format === "Blocks") {
-      let blocks: Array<{ id: string; type: string; order?: number }> = [];
-      try {
-        const raw = JSON.parse(selected.content);
-        if (Array.isArray(raw)) {
-          blocks = raw.map((b: Record<string, unknown>, idx: number) => ({
-            id: (b.id as string) || `block-${idx}`,
-            type: (b.type as string) || "text",
-            order: (b.order as number) ?? idx,
-          }));
-        }
-      } catch { /**/ }
-
-      const initialBlockValues: Record<string, BlockValue> = {};
-      blocks.forEach((block) => {
-        if (block.type === "button" || block.type === "link") {
-          initialBlockValues[block.id] = { text: "", url: "" };
-        } else if (block.type === "image") {
-          initialBlockValues[block.id] = { url: "", alt: "" };
-        } else if (block.type === "carousel") {
-          initialBlockValues[block.id] = [{ imageUrl: "", caption: "", linkUrl: "" }];
-        } else {
-          initialBlockValues[block.id] = "";
-        }
-      });
-
-      onChange({ templateId, blockValues: initialBlockValues });
-    } else if (channel === "Email") {
+    if (channel === "Email") {
       onChange({
         templateId,
         subject: value.subject || selected.name,
@@ -162,29 +85,17 @@ export function ChannelContentForm({
   // Auto-populate a templateId that arrived with no fields set yet, without re-running on reload.
   useEffect(() => {
     if (!value.templateId) return;
-    const hasContent = isBlockTemplate
-      ? Boolean(value.blockValues && Object.keys(value.blockValues).length > 0)
-      : channel === "Banner"
-      ? Boolean(value.body)
-      : channel === "Popup"
-      ? Boolean(value.heading || value.body)
-      : Boolean(value.subject || value.body);
+    const hasContent =
+      channel === "Banner"
+        ? Boolean(value.body)
+        : channel === "Popup"
+        ? Boolean(value.heading || value.body)
+        : Boolean(value.subject || value.body);
     if (!hasContent) {
       handleTemplateSelect(value.templateId);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value.templateId, templates]);
-
-  function updateBlockValue(blockId: string, newVal: BlockValue) {
-    onChange({
-      blockValues: {
-        ...(value.blockValues ?? {}),
-        [blockId]: newVal,
-      },
-    });
-  }
-
-  const livePreviewContent = useLivePreviewContent(isBlockTemplate, parsedBlocks, value);
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-lg items-stretch">
@@ -198,7 +109,7 @@ export function ChannelContentForm({
           <h3 className="text-title-lg font-bold text-foreground">{channel} Content</h3>
         </div>
 
-        {/* Template picker (pre-defined and custom templates together) */}
+        {/* Template picker */}
         <div className="space-y-sm">
           <Label htmlFor={`${channel}-template`}>Template</Label>
           <Select value={selectedTemplateId} onValueChange={handleTemplateSelect}>
@@ -217,33 +128,18 @@ export function ChannelContentForm({
 
         <ChannelPerSendFields channel={channel} value={value} onChange={onChange} />
 
-        {isBlockTemplate ? (
-          <BlockTemplateFields
-            channel={channel}
-            parsedBlocks={parsedBlocks}
-            value={value}
-            updateBlockValue={updateBlockValue}
-          />
-        ) : (
-          <NonBlockTemplateFields
-            channel={channel}
-            value={value}
-            onChange={onChange}
-          />
-        )}
+        <NonBlockTemplateFields channel={channel} value={value} onChange={onChange} />
       </div>
 
       {/* ── Right column: live preview ── */}
       <div className="lg:col-span-5 lg:border-l lg:border-border lg:pl-lg py-lg space-y-4">
         <StorefrontLivePreview
           channel={channel}
-          content={livePreviewContent}
+          content={value}
           className="sticky top-24"
         />
 
-        {/* Theme Gradient selector for Banner and Popup channels - mock-preview-only,
-            unrelated to a Block Template's real Email Theme (set in the Template
-            Builder and baked into the actual rendered HTML); do not merge the two. */}
+        {/* Theme Gradient selector for Banner and Popup channels - mock-preview-only. */}
         {(channel === "Banner" || channel === "Popup") && (
           <div className="p-3 bg-muted/30 border border-border rounded-lg space-y-2 text-left">
             <Label className="text-xs font-semibold text-foreground block">
