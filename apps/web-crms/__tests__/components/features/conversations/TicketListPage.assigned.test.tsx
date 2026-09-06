@@ -317,8 +317,9 @@ describe("TicketListPage (My Assigned props)", () => {
     render(<TicketListPage {...assignedProps} />);
 
     await user.click(
-      await screen.findByRole("button", { name: "Cancel ticket" })
+      await screen.findByRole("button", { name: "More options" })
     );
+    await user.click(screen.getByText("Cancel"));
 
     // Dialog gates the call: nothing sent until the user confirms.
     expect(conversationTicketsApi.changeStatus).not.toHaveBeenCalled();

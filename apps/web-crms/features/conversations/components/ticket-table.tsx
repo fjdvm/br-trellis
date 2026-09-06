@@ -1,9 +1,15 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { Ticket as TicketIcon, Loader2, UserPlus, XCircle } from "lucide-react";
+import { Ticket as TicketIcon, Loader2, UserPlus, MoreVertical, XCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   Table,
   TableBody,
@@ -152,23 +158,35 @@ export function TicketTable({
                             <span className="ml-1">Claim</span>
                           </Button>
                         )}
-                        <Button
-                          size="sm"
-                          variant="destructive"
-                          aria-label="Cancel ticket"
-                          disabled={rowBusy}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onCancelClick(ticket);
-                          }}
-                        >
-                          {cancelBusy ? (
-                            <Loader2 className="w-4 h-4 animate-spin" />
-                          ) : (
-                            <XCircle className="w-4 h-4" />
-                          )}
-                          <span className="ml-1">Cancel</span>
-                        </Button>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              aria-label="More options"
+                              disabled={rowBusy}
+                              className="h-8 w-8 p-0"
+                            >
+                              {cancelBusy ? (
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                              ) : (
+                                <MoreVertical className="w-4 h-4" />
+                              )}
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem
+                              className="text-destructive focus:text-destructive cursor-pointer"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onCancelClick(ticket);
+                              }}
+                            >
+                              <XCircle className="w-4 h-4 mr-2" />
+                              <span>Cancel</span>
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </div>
                     )}
                   </TableCell>
