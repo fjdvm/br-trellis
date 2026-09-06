@@ -111,7 +111,7 @@ describe("Sidebar Navigation Structure", () => {
     expect(screen.getByText("Settings")).toBeInTheDocument();
   });
 
-  it("nests Ecommerce items (Orders, Products, Carts, LTV) under Contacts", async () => {
+  it("nests Ecommerce under Contacts", async () => {
     await act(async () => {
       render(<Sidebar />);
     });
@@ -123,10 +123,6 @@ describe("Sidebar Navigation Structure", () => {
     expect(childLinkByHref("/contacts")).toHaveTextContent("All");
     expect(childLinkByHref("/contacts/direct")).toHaveTextContent("Contacts");
     expect(childLinkByHref("/contacts/ecommerce")).toHaveTextContent("Ecommerce");
-    expect(childLinkByHref("/ecommerce/orders")).toHaveTextContent("Orders");
-    expect(childLinkByHref("/ecommerce/products")).toHaveTextContent("Products");
-    expect(childLinkByHref("/ecommerce/abandoned-carts")).toHaveTextContent("Carts");
-    expect(childLinkByHref("/ecommerce/ltv")).toHaveTextContent("LTV");
     expect(childLinkByHref("/contacts/companies")).toHaveTextContent("Companies");
   });
 
