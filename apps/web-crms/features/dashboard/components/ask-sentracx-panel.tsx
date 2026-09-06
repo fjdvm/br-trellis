@@ -1,6 +1,1 @@
-"use client";
-
-// TODO: Implement the floating AI chat panel
-export function AskSentraCXPanel() {
-  return null;
-}
+export * from "./ai/ask-sentracx-panel";

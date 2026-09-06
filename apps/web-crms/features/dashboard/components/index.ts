@@ -1,3 +1,3 @@
-export * from "./ask-sentracx-panel";
-export * from "./dashboard";
-export * from "./dashboard-chart-summary";
+export * from "./overview";
+export * from "./ai";
+export * from "./tasks";

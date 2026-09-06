@@ -1,3 +1,5 @@
+"use client";
+
 import { useState, useCallback } from "react";
 import { aiClient } from "@/features/dashboard/services/ai-client";
 import { ticketsApi } from "@/features/conversations/services/conversations-api";

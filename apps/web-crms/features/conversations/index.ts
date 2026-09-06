@@ -1,1 +1,11 @@
 export * from "./components";
+export * from "./services/conversations-api";
+export * from "./services/canned-reply-substitution";
+export * from "./hooks/useConversationMessages";
+export * from "./hooks/useConversationsCanWrite";
+export * from "./hooks/useMessages";
+export * from "./types/conversation-message";
+export * from "./types/message";
+export { useTickets, useTicket, useConversationTickets } from "@/features/tickets";
+export { ticketsApi } from "@/features/tickets";
+export type { Ticket, TicketDetail, TicketListItem } from "@/features/tickets";
