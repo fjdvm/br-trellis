@@ -9,6 +9,7 @@ export * from "./contact-orders-card";
 export * from "./contact-tabs";
 export * from "./contact-timeline-card";
 export * from "./new-company-sheet";
+export * from "./new-segment-sheet";
 export * from "./pending-review-page";
 export * from "./pending-review-table";
 export * from "./segments-list-page";

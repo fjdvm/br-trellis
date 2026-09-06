@@ -2,11 +2,28 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Users } from "lucide-react";
+import { ArrowLeft, Users, MoreVertical } from "lucide-react";
 import { TableSkeleton } from "@/components/shared/table-skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import {
   Table,
   TableBody,
@@ -23,6 +40,7 @@ import {
   useClientPagination,
 } from "@/components/shared/table-pagination";
 import { formatName, formatEmail } from "@/lib/format-display";
+import { NewSegmentSheet } from "@/features/contacts/components/new-segment-sheet";
 import type { SegmentListItem, SegmentMember } from "@/features/contacts/types";
 
 interface SegmentsListPageProps {
@@ -46,6 +64,16 @@ export function SegmentsListPage({
   const [segments, setSegments] = useState<SegmentListItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Filter state for All / Dynamic / Static / Archive
+  const [segmentTypeFilter, setSegmentTypeFilter] = useState<
+    "All" | "Dynamic" | "Static" | "Archive"
+  >("All");
+
+  // Edit and Delete dialog state
+  const [editingSegment, setEditingSegment] = useState<SegmentListItem | null>(null);
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [deletingSegment, setDeletingSegment] = useState<SegmentListItem | null>(null);
 
   // Membership view state
   const [selectedSegment, setSelectedSegment] = useState<SegmentListItem | null>(null);
@@ -73,7 +101,6 @@ export function SegmentsListPage({
       setSegments(result);
       setError(null);
 
-      // If preSelectedSegmentName is provided, auto-select that segment
       if (preSelectedSegmentName) {
         const target = result.find(
           (s) => s.name === preSelectedSegmentName && s.isSystemDefined
@@ -109,8 +136,41 @@ export function SegmentsListPage({
     router.push(`/contacts/${member.id}`);
   }, [router]);
 
+  const handleToggleArchive = useCallback(async (segment: SegmentListItem) => {
+    const nextIsArchived = !segment.isArchived;
+    setSegments((prev) =>
+      prev.map((s) => (s.id === segment.id ? { ...s, isArchived: nextIsArchived } : s))
+    );
+    try {
+      await segmentsApi.update(segment.id, { isArchived: nextIsArchived });
+    } catch {
+      // Keep optimistic local state
+    }
+  }, []);
+
+  const handleDeleteConfirmed = useCallback(async (id: string) => {
+    setDeletingSegment(null);
+    setSegments((prev) => prev.filter((s) => s.id !== id));
+    try {
+      await segmentsApi.delete(id);
+    } catch {
+      // Keep optimistic local state
+    }
+  }, []);
+
+  const filteredSegments = segments.filter((s) => {
+    if (segmentTypeFilter === "Archive") {
+      return s.isArchived === true;
+    }
+    if (s.isArchived) return false;
+
+    if (segmentTypeFilter === "Dynamic") return s.type === "Dynamic";
+    if (segmentTypeFilter === "Static") return s.type === "Static";
+    return true;
+  });
+
   const membersPagination = useClientPagination(members);
-  const segmentsPagination = useClientPagination(segments);
+  const segmentsPagination = useClientPagination(filteredSegments);
 
   // Membership view
   if (selectedSegment) {
@@ -197,25 +257,46 @@ export function SegmentsListPage({
   // Segments list view
   return (
     <div className="w-full min-h-full py-xl px-lg md:px-xl space-y-lg mx-auto">
-      <div className="space-y-sm">
-        <h1 className="text-headline-md font-bold tracking-tight text-foreground">
-          Lists &amp; Segments
-        </h1>
-        <p className="text-body-md text-muted-foreground">
-          Customer segments and groupings for targeting.
-        </p>
+      <div className="flex flex-col gap-md sm:flex-row sm:items-start sm:justify-between">
+        <div className="space-y-sm">
+          <h1 className="text-headline-md font-bold tracking-tight text-foreground">
+            Lists &amp; Segments
+          </h1>
+          <p className="text-body-md text-muted-foreground">
+            Customer segments and groupings for targeting.
+          </p>
+        </div>
+        <NewSegmentSheet onCreated={() => void loadSegments()} />
       </div>
 
-      <Card className="shadow-none border-border">
-        <CardHeader className="pb-md p-lg">
+      <Card className="shadow-none border border-border/60">
+        <CardHeader className="pb-md p-lg flex flex-row items-center justify-between">
           <CardTitle className="text-title-lg font-bold">Segments</CardTitle>
+          <NewSegmentSheet onCreated={() => void loadSegments()} />
         </CardHeader>
         <CardContent className="p-lg pt-0 space-y-md">
+          <div className="w-full flex justify-start pb-xs">
+            <Tabs
+              value={segmentTypeFilter}
+              onValueChange={(val) => {
+                setSegmentTypeFilter(val as any);
+                segmentsPagination.setPage(1);
+              }}
+            >
+              <TabsList aria-label="Filter segments by type">
+                <TabsTrigger value="All">All</TabsTrigger>
+                <TabsTrigger value="Dynamic">Dynamic</TabsTrigger>
+                <TabsTrigger value="Static">Static</TabsTrigger>
+                <TabsTrigger value="Archive">Archive</TabsTrigger>
+              </TabsList>
+            </Tabs>
+          </div>
+
           {isLoading ? (
             <TableSkeleton columns={4} />
           ) : error ? (
             <div className="p-xl text-destructive">{error}</div>
-          ) : segments.length === 0 ? (
+          ) : filteredSegments.length === 0 ? (
             <div className="p-xl text-muted-foreground">No segments found.</div>
           ) : (
             <>
@@ -223,7 +304,7 @@ export function SegmentsListPage({
                 {segmentsPagination.pageItems.map((segment) => (
                   <Card
                     key={segment.id}
-                    className="shadow-none border-border hover:border-primary/50 transition-colors cursor-pointer flex flex-col justify-between"
+                    className="shadow-none border border-border/60 hover:border-primary/50 transition-colors cursor-pointer flex flex-col justify-between"
                     onClick={() => void handleViewMembers(segment)}
                   >
                     <CardHeader className="p-lg pb-sm space-y-sm">
@@ -233,6 +314,9 @@ export function SegmentsListPage({
                             {segment.name}
                             {segment.isSystemDefined && (
                               <Badge variant="secondary">System</Badge>
+                            )}
+                            {segment.isArchived && (
+                              <Badge variant="outline">Archived</Badge>
                             )}
                           </CardTitle>
                           <div className="flex items-center gap-2">
@@ -245,17 +329,61 @@ export function SegmentsListPage({
                             </span>
                           </div>
                         </div>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            void handleViewMembers(segment);
-                          }}
-                          title="View members"
-                        >
-                          <Users className="w-4 h-4" />
-                        </Button>
+                        <div className="flex items-center gap-1">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              void handleViewMembers(segment);
+                            }}
+                            title="View members"
+                          >
+                            <Users className="w-4 h-4" />
+                          </Button>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                aria-label="Segment options"
+                                className="h-8 w-8 p-0"
+                              >
+                                <MoreVertical className="w-4 h-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-[140px]">
+                              <DropdownMenuItem
+                                className="cursor-pointer text-base font-medium py-2 px-3"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setEditingSegment(segment);
+                                  setIsEditOpen(true);
+                                }}
+                              >
+                                Edit
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                className="cursor-pointer text-base font-medium py-2 px-3"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  void handleToggleArchive(segment);
+                                }}
+                              >
+                                {segment.isArchived ? "Unarchive" : "Archive"}
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                className="cursor-pointer text-base font-medium text-destructive focus:text-destructive py-2 px-3"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setDeletingSegment(segment);
+                                }}
+                              >
+                                Delete
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </div>
                       </div>
                     </CardHeader>
                     <CardContent className="p-lg pt-0 space-y-xs">
@@ -285,6 +413,42 @@ export function SegmentsListPage({
           )}
         </CardContent>
       </Card>
+
+      <NewSegmentSheet
+        open={isEditOpen}
+        onOpenChange={setIsEditOpen}
+        segmentToEdit={editingSegment}
+        onCreated={() => void loadSegments()}
+      />
+
+      <AlertDialog
+        open={deletingSegment !== null}
+        onOpenChange={(open) => {
+          if (!open) setDeletingSegment(null);
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Segment</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete &quot;{deletingSegment?.name}&quot;? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => {
+                if (deletingSegment) {
+                  void handleDeleteConfirmed(deletingSegment.id);
+                }
+              }}
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
