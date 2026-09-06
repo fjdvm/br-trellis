@@ -6,6 +6,7 @@ import { useSession } from "next-auth/react";
 import { Ticket as TicketIcon } from "lucide-react";
 import { TableSkeleton } from "@/components/shared/table-skeleton";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TicketCancelDialog } from "@/features/conversations/components/ticket-cancel-dialog";
 import { TicketFilters } from "@/features/conversations/components/ticket-filters";
 import { conversationTicketsApi } from "@/features/conversations/services/conversations-api";
@@ -81,7 +82,7 @@ export function TicketListPage({
   const [actionError, setActionError] = useState<string | null>(null);
   const [rowPending, setRowPending] = useState<RowPending>(null);
   const [cancelTarget, setCancelTarget] = useState<TicketListItem | null>(null);
-  const [activeChip, setActiveChip] = useState<"All" | "Needs Attention" | "Mine" | "Closed">(
+  const [activeTab, setActiveTab] = useState<"All" | "Needs Attention" | "Mine" | "Closed">(
     terminalOnly ? "Closed" : assignedToMe ? "Mine" : "All"
   );
   const [statusFilter, setStatusFilter] = useState<TicketStatus | "All">(
@@ -194,19 +195,19 @@ export function TicketListPage({
     );
   }
 
-  const chipFilteredTickets = tickets.filter((t) => {
-    if (activeChip === "Needs Attention") {
+  const tabFilteredTickets = tickets.filter((t) => {
+    if (activeTab === "Needs Attention") {
       const nonTerminalCount = tickets.filter((tk) => !isTerminal(tk)).length;
       return nonTerminalCount > 0 ? !isTerminal(t) : true;
     }
-    if (activeChip === "Mine") {
+    if (activeTab === "Mine") {
       if (!currentAgentId) return true;
       const isMine = (tk: TicketListItem) =>
         tk.assignedToId === currentAgentId || tk.assignedToName === session?.user?.name;
       const mineCount = tickets.filter(isMine).length;
       return mineCount > 0 ? isMine(t) : true;
     }
-    if (activeChip === "Closed") return isTerminal(t);
+    if (activeTab === "Closed") return isTerminal(t);
     return true;
   });
 
@@ -215,7 +216,7 @@ export function TicketListPage({
     waitingOnFilter !== initialWaitingOnFilter ||
     sourceFilter !== "All";
 
-  const pagination = useClientPagination(chipFilteredTickets);
+  const pagination = useClientPagination(tabFilteredTickets);
 
   return (
     <div className="w-full min-h-full py-xl px-lg md:px-xl space-y-lg mx-auto">
@@ -261,28 +262,22 @@ export function TicketListPage({
             />
           </div>
 
-          {/* Primary Filter Chips: All | Needs Attention (default) | Mine | Closed */}
-          <div className="flex flex-wrap items-center gap-xs pt-xs border-t border-border/60">
-            {(["All", "Needs Attention", "Mine", "Closed"] as const).map((chip) => {
-              const isActive = activeChip === chip;
-              return (
-                <button
-                  key={chip}
-                  type="button"
-                  onClick={() => {
-                    setActiveChip(chip);
-                    pagination.setPage(1);
-                  }}
-                  className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-colors cursor-pointer border ${
-                    isActive
-                      ? "bg-primary text-primary-foreground border-primary"
-                      : "bg-background text-muted-foreground border-border hover:bg-accent hover:text-foreground"
-                  }`}
-                >
-                  {chip === "Needs Attention" ? "Needs Attention (default)" : chip}
-                </button>
-              );
-            })}
+          {/* Primary Filter Tabs: All | Needs Attention (default) | Mine | Closed */}
+          <div className="pt-xs border-t border-border/60">
+            <Tabs
+              value={activeTab}
+              onValueChange={(val) => {
+                setActiveTab(val as "All" | "Needs Attention" | "Mine" | "Closed");
+                pagination.setPage(1);
+              }}
+            >
+              <TabsList className="h-9">
+                <TabsTrigger value="All" className="text-xs">All</TabsTrigger>
+                <TabsTrigger value="Needs Attention" className="text-xs">Needs Attention (default)</TabsTrigger>
+                <TabsTrigger value="Mine" className="text-xs">Mine</TabsTrigger>
+                <TabsTrigger value="Closed" className="text-xs">Closed</TabsTrigger>
+              </TabsList>
+            </Tabs>
           </div>
         </CardHeader>
         <CardContent className="p-lg pt-0 space-y-md">
