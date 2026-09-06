@@ -131,12 +131,12 @@ describe("TicketListPage (My Assigned props)", () => {
     ).not.toBeInTheDocument();
   });
 
-  it("performs the initial fetch with All/All (no server-side assignee filter)", async () => {
+  it("performs the initial fetch with Unclaimed/All (no server-side assignee filter)", async () => {
     render(<TicketListPage {...assignedProps} />);
 
     await waitFor(() =>
       expect(conversationTicketsApi.list).toHaveBeenCalledWith(
-        "All",
+        "Unclaimed",
         "All",
         "All"
       )

@@ -99,12 +99,12 @@ describe("TicketListPage (Inbox props)", () => {
     expect(screen.getByText("My Queue")).toBeInTheDocument();
   });
 
-  it("performs the initial fetch with WaitingOn=Agent (Status defaults to All)", async () => {
+  it("performs the initial fetch with WaitingOn=Agent (Status defaults to Unclaimed)", async () => {
     render(<TicketListPage {...inboxProps} />);
 
     await waitFor(() =>
       expect(conversationTicketsApi.list).toHaveBeenCalledWith(
-        "All",
+        "Unclaimed",
         "Agent",
         "All"
       )
@@ -178,7 +178,7 @@ describe("TicketListPage (Inbox props)", () => {
 
     await waitFor(() =>
       expect(conversationTicketsApi.list).toHaveBeenCalledWith(
-        "All",
+        "Unclaimed",
         "Customer",
         "All"
       )

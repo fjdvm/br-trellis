@@ -59,7 +59,7 @@ export function TicketListPage({
   heading = "Tickets",
   description = "Support tickets and customer request registry.",
   cardTitle = "Ticket registry",
-  initialStatusFilter = "All",
+  initialStatusFilter = "Unclaimed",
   statusOptions = STATUS_OPTIONS,
   initialWaitingOnFilter = "All",
   initialSourceFilter = "All",
@@ -70,7 +70,7 @@ export function TicketListPage({
   showSourceFilter = true,
   showNewTicketButton = true,
   emptyMessage = "No tickets found.",
-  filteredEmptyMessage = "No tickets match the selected filters.",
+  filteredEmptyMessage = "None",
 }: TicketListPageProps = {}) {
   const router = useRouter();
   const { data: session } = useSession();
@@ -81,8 +81,8 @@ export function TicketListPage({
   const [actionError, setActionError] = useState<string | null>(null);
   const [rowPending, setRowPending] = useState<RowPending>(null);
   const [cancelTarget, setCancelTarget] = useState<TicketListItem | null>(null);
-  const [activeTab, setActiveTab] = useState<"All" | "Needs Attention" | "Closed">(
-    terminalOnly ? "Closed" : "All"
+  const [activeTab, setActiveTab] = useState<"All" | "Urgent" | "Closed">(
+    terminalOnly ? "Closed" : "Urgent"
   );
   const [statusFilter, setStatusFilter] = useState<TicketStatus | "All">(
     initialStatusFilter
@@ -207,7 +207,7 @@ export function TicketListPage({
   }
 
   const tabFilteredTickets = tickets.filter((t) => {
-    if (activeTab === "Needs Attention") {
+    if (activeTab === "Urgent") {
       const nonTerminalCount = tickets.filter((tk) => !isTerminal(tk)).length;
       return nonTerminalCount > 0 ? !isTerminal(t) : true;
     }
@@ -282,6 +282,10 @@ export function TicketListPage({
           ) : tickets.length === 0 ? (
             <div className="p-xl text-muted-foreground">
               {isFilterNarrowed ? filteredEmptyMessage : emptyMessage}
+            </div>
+          ) : tabFilteredTickets.length === 0 ? (
+            <div className="p-xl text-muted-foreground">
+              {filteredEmptyMessage}
             </div>
           ) : (
             <TicketTable

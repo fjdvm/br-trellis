@@ -9,7 +9,8 @@
  * the DTO shape ever changes.
  */
 import { render, screen } from "@testing-library/react";
-import {  TicketListPage  } from "@/features/conversations/components/ticket-list-page";
+import userEvent from "@testing-library/user-event";
+import { TicketListPage } from "@/features/conversations/components/ticket-list-page";
 import { conversationTicketsApi } from "@/features/conversations/services/conversations-api";
 import type { TicketListItem } from "@/features/conversations/types";
 import liveTickets from "../../../fixtures/live-tickets.json";
@@ -40,6 +41,13 @@ jest.mock("@/features/conversations/services/conversations-api", () => ({
 }));
 
 describe("TicketListPage against live API payload", () => {
+  beforeAll(() => {
+    if (!Element.prototype.hasPointerCapture) Element.prototype.hasPointerCapture = () => false;
+    if (!Element.prototype.setPointerCapture) Element.prototype.setPointerCapture = () => {};
+    if (!Element.prototype.releasePointerCapture) Element.prototype.releasePointerCapture = () => {};
+    if (!Element.prototype.scrollIntoView) Element.prototype.scrollIntoView = () => {};
+  });
+
   beforeEach(() => {
     jest.clearAllMocks();
   });
@@ -50,7 +58,11 @@ describe("TicketListPage against live API payload", () => {
       .mocked(conversationTicketsApi.list)
       .mockResolvedValue(liveTickets as unknown as TicketListItem[]);
 
-    render(<TicketListPage />);
+    render(<TicketListPage initialStatusFilter="All" />);
+
+    const user = userEvent.setup({ pointerEventsCheck: 0 });
+    await user.click(screen.getByLabelText("View filter"));
+    await user.click(await screen.findByRole("option", { name: "All" }));
 
     // All 5 seeded subjects render.
     expect(

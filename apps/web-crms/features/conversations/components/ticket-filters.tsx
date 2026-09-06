@@ -21,7 +21,7 @@ const SOURCE_OPTIONS: readonly (TicketSource | "All")[] = [
   "Ecommerce",
 ];
 
-export type PrimaryViewOption = "All" | "Needs Attention" | "Closed";
+export type PrimaryViewOption = "All" | "Urgent" | "Closed";
 
 interface TicketFiltersProps {
   viewFilter?: PrimaryViewOption;
@@ -49,59 +49,63 @@ export function TicketFilters({
   showSourceFilter,
 }: TicketFiltersProps) {
   return (
-    <div className="flex flex-wrap items-center gap-sm">
-      {viewFilter && onViewChange && (
-        <Select
-          value={viewFilter}
-          onValueChange={(val) => onViewChange(val as PrimaryViewOption)}
-        >
-          <SelectTrigger className="w-full sm:w-[220px]" aria-label="View filter">
-            <SelectValue placeholder="View" />
+    <div className="w-full flex flex-col gap-sm">
+      <div className="flex flex-wrap items-center justify-start sm:justify-end gap-sm">
+        {viewFilter && onViewChange && (
+          <Select
+            value={viewFilter}
+            onValueChange={(val) => onViewChange(val as PrimaryViewOption)}
+          >
+            <SelectTrigger className="w-full sm:w-[220px]" aria-label="View filter">
+              <SelectValue placeholder="View" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="All">All</SelectItem>
+              <SelectItem value="Urgent">Urgent (default)</SelectItem>
+              <SelectItem value="Closed">Closed</SelectItem>
+            </SelectContent>
+          </Select>
+        )}
+        <Select value={statusFilter} onValueChange={(val) => onStatusChange(val as TicketStatus | "All")}>
+          <SelectTrigger className="w-full sm:w-[160px]" aria-label="Filter by status">
+            <SelectValue placeholder="Status" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="All">All</SelectItem>
-            <SelectItem value="Needs Attention">Needs Attention (default)</SelectItem>
-            <SelectItem value="Closed">Closed</SelectItem>
+            {statusOptions.map((option) => (
+              <SelectItem key={option} value={option}>
+                {option === "All" ? "All statuses" : option}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
-      )}
-      <Select value={statusFilter} onValueChange={(val) => onStatusChange(val as TicketStatus | "All")}>
-        <SelectTrigger className="w-full sm:w-[160px]" aria-label="Filter by status">
-          <SelectValue placeholder="Status" />
-        </SelectTrigger>
-        <SelectContent>
-          {statusOptions.map((option) => (
-            <SelectItem key={option} value={option}>
-              {option === "All" ? "All statuses" : option}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-      <Select value={waitingOnFilter} onValueChange={(val) => onWaitingOnChange(val as TicketWaitingOn | "All")}>
-        <SelectTrigger className="w-full sm:w-[170px]" aria-label="Filter by waiting on">
-          <SelectValue placeholder="Waiting On" />
-        </SelectTrigger>
-        <SelectContent>
-          {WAITING_ON_OPTIONS.map((option) => (
-            <SelectItem key={option} value={option}>
-              {option === "All" ? "All (waiting on)" : option}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-      {showSourceFilter && (
-        <Tabs
-          value={sourceFilter}
-          onValueChange={(val) => onSourceChange(val as TicketSource | "All")}
-        >
-          <TabsList aria-label="Filter by source">
-            {SOURCE_OPTIONS.map((option) => (
-              <TabsTrigger key={option} value={option}>
-                {option === "All" ? "All sources" : option}
-              </TabsTrigger>
+        <Select value={waitingOnFilter} onValueChange={(val) => onWaitingOnChange(val as TicketWaitingOn | "All")}>
+          <SelectTrigger className="w-full sm:w-[170px]" aria-label="Filter by waiting on">
+            <SelectValue placeholder="Waiting On" />
+          </SelectTrigger>
+          <SelectContent>
+            {WAITING_ON_OPTIONS.map((option) => (
+              <SelectItem key={option} value={option}>
+                {option === "All" ? "All (waiting on)" : option}
+              </SelectItem>
             ))}
-          </TabsList>
-        </Tabs>
+          </SelectContent>
+        </Select>
+      </div>
+      {showSourceFilter && (
+        <div className="flex justify-start">
+          <Tabs
+            value={sourceFilter}
+            onValueChange={(val) => onSourceChange(val as TicketSource | "All")}
+          >
+            <TabsList aria-label="Filter by source">
+              {SOURCE_OPTIONS.map((option) => (
+                <TabsTrigger key={option} value={option}>
+                  {option}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </Tabs>
+        </div>
       )}
     </div>
   );

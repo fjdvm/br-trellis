@@ -15,6 +15,7 @@ export default function Page() {
       heading="History"
       description="Completed and canceled tickets across the whole team."
       cardTitle="Finished Tickets"
+      initialStatusFilter="All"
       terminalOnly
       statusOptions={["All", "Completed", "Canceled"]}
       showNewTicketButton={false}

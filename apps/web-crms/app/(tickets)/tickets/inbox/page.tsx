@@ -12,6 +12,7 @@ export default function Page() {
       heading="Triage Queue"
       description="Tickets waiting on an agent's response."
       cardTitle="My Queue"
+      initialStatusFilter="All"
       initialWaitingOnFilter="Agent"
       excludeTerminal
       showSourceFilter={false}

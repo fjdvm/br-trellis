@@ -145,7 +145,7 @@ describe("TicketListPage", () => {
     expect(await screen.findByText("Cannot log in")).toBeInTheDocument();
     expect(screen.getByText("Refund request")).toBeInTheDocument();
     // Status badges
-    expect(screen.getByText("Unclaimed")).toBeInTheDocument();
+    expect(screen.getAllByText("Unclaimed").length).toBeGreaterThan(0);
     expect(screen.getByText("Ongoing")).toBeInTheDocument();
     // Contact: formatName title-cases, formatEmail lowercases fallback
     expect(screen.getByText("Jane Doe")).toBeInTheDocument();
@@ -222,11 +222,11 @@ describe("TicketListPage", () => {
 
     // Open the Status filter and pick a value.
     await user.click(screen.getByLabelText("Filter by status"));
-    await user.click(await screen.findByRole("option", { name: "Unclaimed" }));
+    await user.click(await screen.findByRole("option", { name: "Claimed" }));
 
     await waitFor(() =>
       expect(
-        screen.getByText("No tickets match the selected filters.")
+        screen.getByText("None")
       ).toBeInTheDocument()
     );
   });
@@ -238,7 +238,7 @@ describe("TicketListPage", () => {
     render(<TicketListPage />);
 
     await waitFor(() =>
-      expect(conversationTicketsApi.list).toHaveBeenCalledWith("All", "All", "All")
+      expect(conversationTicketsApi.list).toHaveBeenCalledWith("Unclaimed", "All", "All")
     );
 
     await user.click(screen.getByLabelText("Filter by status"));
@@ -260,7 +260,7 @@ describe("TicketListPage", () => {
     render(<TicketListPage />);
 
     await waitFor(() =>
-      expect(conversationTicketsApi.list).toHaveBeenCalledWith("All", "All", "All")
+      expect(conversationTicketsApi.list).toHaveBeenCalledWith("Unclaimed", "All", "All")
     );
 
     await user.click(screen.getByLabelText("Filter by waiting on"));
@@ -268,7 +268,7 @@ describe("TicketListPage", () => {
 
     await waitFor(() =>
       expect(conversationTicketsApi.list).toHaveBeenCalledWith(
-        "All",
+        "Unclaimed",
         "Customer",
         "All"
       )
@@ -283,7 +283,7 @@ describe("TicketListPage", () => {
 
     await waitFor(() =>
       expect(conversationTicketsApi.list).toHaveBeenCalledWith(
-        "All",
+        "Unclaimed",
         "All",
         "All"
       )
@@ -293,7 +293,7 @@ describe("TicketListPage", () => {
 
     await waitFor(() =>
       expect(conversationTicketsApi.list).toHaveBeenCalledWith(
-        "All",
+        "Unclaimed",
         "All",
         "Manual"
       )

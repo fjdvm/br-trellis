@@ -73,6 +73,7 @@ const historyProps = {
   heading: "History",
   description: "Completed and canceled tickets across the whole team.",
   cardTitle: "Finished Tickets",
+  initialStatusFilter: "All" as const,
   terminalOnly: true,
   statusOptions: ["All", "Completed", "Canceled"] as const,
   showNewTicketButton: false,

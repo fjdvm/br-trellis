@@ -13,6 +13,7 @@ export default function Page() {
       heading="My Assigned"
       description="Tickets assigned to you."
       cardTitle="Assigned to Me"
+      initialStatusFilter="All"
       assignedToMe
       showSourceFilter={false}
       showNewTicketButton={false}
