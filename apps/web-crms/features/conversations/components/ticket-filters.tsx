@@ -16,7 +16,6 @@ const WAITING_ON_OPTIONS: readonly (TicketWaitingOn | "All")[] = [
 
 const SOURCE_OPTIONS: readonly (TicketSource | "All")[] = [
   "All",
-  "Email",
   "Manual",
   "Ecommerce",
 ];
