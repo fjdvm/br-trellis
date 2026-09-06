@@ -1056,9 +1056,13 @@ public static class SeedData
                 Description = "A clean, single-column email for product news and general announcements.",
                 Channel = CampaignChannel.Email,
                 Format = TemplateFormat.Html,
-                Content = "<div style=\"font-family:sans-serif;max-width:600px;margin:0 auto;\">"
-                    + "<h1>{{subject}}</h1><p>{{body}}</p>"
-                    + "<p style=\"font-size:12px;color:#888;\"><a href=\"{{unsubscribe_url}}\">Unsubscribe</a></p></div>",
+                Content = "<div style=\"font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;max-width:600px;margin:0 auto;background:#ffffff;\">"
+                    + "<div style=\"padding:40px 32px 24px;text-align:center;\">"
+                    + "<h1 style=\"margin:0;font-size:24px;line-height:1.3;font-weight:700;color:#111827;\">{{subject}}</h1></div>"
+                    + "<div style=\"padding:0 32px 32px;\">"
+                    + "<p style=\"margin:0;font-size:16px;line-height:1.6;color:#374151;text-align:left;\">{{body}}</p></div>"
+                    + "<div style=\"padding:20px 32px;border-top:1px solid #e5e7eb;text-align:center;\">"
+                    + "<p style=\"margin:0;font-size:12px;color:#9ca3af;\"><a href=\"{{unsubscribe_url}}\" style=\"color:#9ca3af;text-decoration:underline;\">Unsubscribe</a></p></div></div>",
                 ThumbnailUrl = "/templates/email-simple-announcement.png",
                 CreatedAt = createdAt,
             },
@@ -1069,10 +1073,13 @@ public static class SeedData
                 Description = "A bold promotional email with a hero image and prominent call to action.",
                 Channel = CampaignChannel.Email,
                 Format = TemplateFormat.Html,
-                Content = "<div style=\"font-family:sans-serif;max-width:600px;margin:0 auto;\">"
-                    + "<img src=\"{{image_url}}\" alt=\"\" style=\"width:100%;\"/>"
-                    + "<h1>{{subject}}</h1><p>{{body}}</p>"
-                    + "<p style=\"font-size:12px;color:#888;\"><a href=\"{{unsubscribe_url}}\">Unsubscribe</a></p></div>",
+                Content = "<div style=\"font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;max-width:600px;margin:0 auto;background:#ffffff;border:1px solid #e5e7eb;border-radius:12px;overflow:hidden;\">"
+                    + "<img src=\"{{image_url}}\" alt=\"\" style=\"width:100%;display:block;\"/>"
+                    + "<div style=\"padding:32px;text-align:center;\">"
+                    + "<h1 style=\"margin:0 0 16px;font-size:26px;line-height:1.3;font-weight:800;color:#6d28d9;\">{{subject}}</h1>"
+                    + "<p style=\"margin:0;font-size:16px;line-height:1.6;color:#374151;\">{{body}}</p></div>"
+                    + "<div style=\"padding:20px 32px;border-top:1px solid #e5e7eb;text-align:center;\">"
+                    + "<p style=\"margin:0;font-size:12px;color:#9ca3af;\"><a href=\"{{unsubscribe_url}}\" style=\"color:#9ca3af;text-decoration:underline;\">Unsubscribe</a></p></div></div>",
                 ThumbnailUrl = "/templates/email-promotional-offer.png",
                 CreatedAt = createdAt,
             },
