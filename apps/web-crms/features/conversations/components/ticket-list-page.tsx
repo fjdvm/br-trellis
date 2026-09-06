@@ -7,7 +7,10 @@ import { Ticket as TicketIcon } from "lucide-react";
 import { TableSkeleton } from "@/components/shared/table-skeleton";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TicketCancelDialog } from "@/features/conversations/components/ticket-cancel-dialog";
-import { TicketFilters, TicketFiltersSourceTabs } from "@/features/conversations/components/ticket-filters";
+import {
+  TicketFilters,
+  TicketFiltersSourceTabs,
+} from "@/features/conversations/components/ticket-filters";
 import { conversationTicketsApi } from "@/features/conversations/services/conversations-api";
 import { useClientPagination } from "@/components/shared/table-pagination";
 import { useCurrentAgentId } from "@/hooks/use-current-agent-id";
@@ -82,14 +85,14 @@ export function TicketListPage({
   const [rowPending, setRowPending] = useState<RowPending>(null);
   const [cancelTarget, setCancelTarget] = useState<TicketListItem | null>(null);
   const [activeTab, setActiveTab] = useState<"All" | "Urgent" | "Closed">(
-    terminalOnly ? "Closed" : "Urgent"
+    terminalOnly ? "Closed" : "Urgent",
   );
   const [statusFilter, setStatusFilter] = useState<TicketStatus | "All">(
-    initialStatusFilter
+    initialStatusFilter,
   );
-  const [waitingOnFilter, setWaitingOnFilter] = useState<TicketWaitingOn | "All">(
-    initialWaitingOnFilter
-  );
+  const [waitingOnFilter, setWaitingOnFilter] = useState<
+    TicketWaitingOn | "All"
+  >(initialWaitingOnFilter);
   const [sourceFilter, setSourceFilter] = useState<TicketSource | "All">("All");
 
   const applyResultFilter = useCallback(
@@ -116,30 +119,35 @@ export function TicketListPage({
       session?.user?.id,
       session?.user?.name,
       session?.user?.username,
-    ]
+    ],
   );
 
-  const loadTickets = useCallback(async (options?: { background?: boolean }) => {
-    if (!options?.background) {
-      setIsLoading(true);
-    }
-    try {
-      const result = await conversationTicketsApi.list(
-        statusFilter,
-        waitingOnFilter,
-        sourceFilter
-      );
-      const filtered = applyResultFilter(result);
-      setTickets(filtered);
-      setError(null);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to load tickets.");
-    } finally {
+  const loadTickets = useCallback(
+    async (options?: { background?: boolean }) => {
       if (!options?.background) {
-        setIsLoading(false);
+        setIsLoading(true);
       }
-    }
-  }, [statusFilter, waitingOnFilter, sourceFilter, applyResultFilter]);
+      try {
+        const result = await conversationTicketsApi.list(
+          statusFilter,
+          waitingOnFilter,
+          sourceFilter,
+        );
+        const filtered = applyResultFilter(result);
+        setTickets(filtered);
+        setError(null);
+      } catch (err) {
+        setError(
+          err instanceof Error ? err.message : "Unable to load tickets.",
+        );
+      } finally {
+        if (!options?.background) {
+          setIsLoading(false);
+        }
+      }
+    },
+    [statusFilter, waitingOnFilter, sourceFilter, applyResultFilter],
+  );
 
   useEffect(() => {
     void loadTickets();
@@ -160,7 +168,7 @@ export function TicketListPage({
   async function runRowMutation(
     id: string,
     action: "claim" | "cancel" | "unclaim",
-    mutate: () => Promise<TicketListItem>
+    mutate: () => Promise<TicketListItem>,
   ) {
     setRowPending({ id, action });
     setActionError(null);
@@ -179,7 +187,7 @@ export function TicketListPage({
         staffId: currentAgentId ?? "",
         staffName: session?.user?.name ?? "",
         staffEmail: session?.user?.email ?? "",
-      })
+      }),
     );
   }
 
@@ -202,7 +210,7 @@ export function TicketListPage({
     void runRowMutation(ticket.id, "cancel", () =>
       conversationTicketsApi.changeStatus(ticket.id, {
         status: "Canceled",
-      })
+      }),
     );
   }
 
@@ -229,9 +237,7 @@ export function TicketListPage({
           <h1 className="text-headline-md font-bold tracking-tight text-foreground">
             {heading}
           </h1>
-          <p className="text-body-md text-muted-foreground">
-            {description}
-          </p>
+          <p className="text-body-md text-muted-foreground">{description}</p>
         </div>
         {showNewTicketButton && (
           <NewTicketSheet onCreated={() => void loadTickets()} />
@@ -241,7 +247,7 @@ export function TicketListPage({
       <Card className="w-full shadow-none border-border">
         <CardHeader className="w-full pb-md p-lg space-y-sm">
           <div className="w-full flex flex-col gap-md sm:flex-row sm:items-center sm:justify-between">
-            <CardTitle className="text-title-lg font-bold flex items-center gap-2">
+            <CardTitle className="text-title-lg w-full font-bold flex items-center gap-2">
               <TicketIcon className="w-5 h-5" />
               {cardTitle}
             </CardTitle>

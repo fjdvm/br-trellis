@@ -210,7 +210,7 @@ export function SegmentsListPage({
         <CardHeader className="pb-md p-lg">
           <CardTitle className="text-title-lg font-bold">Segments</CardTitle>
         </CardHeader>
-        <CardContent className="p-lg pt-0">
+        <CardContent className="p-lg pt-0 space-y-md">
           {isLoading ? (
             <TableSkeleton columns={4} />
           ) : error ? (
@@ -219,70 +219,68 @@ export function SegmentsListPage({
             <div className="p-xl text-muted-foreground">No segments found.</div>
           ) : (
             <>
-            <ScrollableTable>
-              <Table>
-                <TableHeader className="sticky top-0 bg-background z-10">
-                  <TableRow>
-                    <TableHead className="min-w-[160px]">Name</TableHead>
-                    <TableHead className="min-w-[100px]">Type</TableHead>
-                    <TableHead className="min-w-[200px]">Rule</TableHead>
-                    <TableHead className="min-w-[100px]">Members</TableHead>
-                    <TableHead className="min-w-[60px]" />
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {segmentsPagination.pageItems.map((segment) => (
-                    <TableRow key={segment.id}>
-                      <TableCell className="text-base font-medium">
-                        {segment.name}
-                        {segment.isSystemDefined && (
-                          <Badge variant="secondary" className="ml-2">
-                            System
-                          </Badge>
-                        )}
-                      </TableCell>
-                      <TableCell className="text-base">
-                        <Badge variant={segment.type === "Dynamic" ? "info" : "default"}>
-                          {segment.type}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex flex-wrap gap-sm">
-                          {segment.rule ? (
-                            <>
-                              <Badge variant="outline">
-                                {segment.rule.matchMode === "MatchAll" ? "All" : "Any"}
-                              </Badge>
-                              {segment.rule.conditions.map((condition, idx) => (
-                                <Badge key={idx} variant="secondary">
-                                  {condition.field} {condition.operator} {condition.value}
-                                </Badge>
-                              ))}
-                            </>
-                          ) : (
-                            <span className="text-sm text-muted-foreground">Manual membership</span>
-                          )}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-md">
+                {segmentsPagination.pageItems.map((segment) => (
+                  <Card
+                    key={segment.id}
+                    className="shadow-none border-border hover:border-primary/50 transition-colors cursor-pointer flex flex-col justify-between"
+                    onClick={() => void handleViewMembers(segment)}
+                  >
+                    <CardHeader className="p-lg pb-sm space-y-sm">
+                      <div className="flex items-start justify-between gap-sm">
+                        <div className="space-y-xs">
+                          <CardTitle className="text-title-md font-bold flex items-center gap-2">
+                            {segment.name}
+                            {segment.isSystemDefined && (
+                              <Badge variant="secondary">System</Badge>
+                            )}
+                          </CardTitle>
+                          <div className="flex items-center gap-2">
+                            <Badge variant={segment.type === "Dynamic" ? "info" : "default"}>
+                              {segment.type}
+                            </Badge>
+                            <span className="text-base text-muted-foreground flex items-center gap-1">
+                              <Users className="w-4 h-4" />
+                              <span>{segment.memberCount}</span> members
+                            </span>
+                          </div>
                         </div>
-                      </TableCell>
-                      <TableCell className="text-base">
-                        {segment.memberCount}
-                      </TableCell>
-                      <TableCell>
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => void handleViewMembers(segment)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            void handleViewMembers(segment);
+                          }}
                           title="View members"
                         >
                           <Users className="w-4 h-4" />
                         </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </ScrollableTable>
-            <TablePagination pagination={segmentsPagination} itemLabel="segments" />
+                      </div>
+                    </CardHeader>
+                    <CardContent className="p-lg pt-0 space-y-xs">
+                      <p className="text-sm font-medium text-muted-foreground">Rules</p>
+                      <div className="flex flex-wrap gap-sm">
+                        {segment.rule ? (
+                          <>
+                            <Badge variant="outline">
+                              {segment.rule.matchMode === "MatchAll" ? "All" : "Any"}
+                            </Badge>
+                            {segment.rule.conditions.map((condition, idx) => (
+                              <Badge key={idx} variant="secondary">
+                                {condition.field} {condition.operator} {condition.value}
+                              </Badge>
+                            ))}
+                          </>
+                        ) : (
+                          <span className="text-base text-muted-foreground">Manual membership</span>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+              <TablePagination pagination={segmentsPagination} itemLabel="segments" />
             </>
           )}
         </CardContent>
