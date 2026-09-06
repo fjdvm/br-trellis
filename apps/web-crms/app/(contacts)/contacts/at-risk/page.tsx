@@ -1,4 +1,4 @@
-import { SegmentsListPage } from "@/features/contacts/components/segments-list-page";
+import { SegmentsListPage } from "@/features/segments";
 
 export default function Page() {
   return <SegmentsListPage preSelectedSegmentName="At-Risk Customers" />;

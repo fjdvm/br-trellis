@@ -10,7 +10,7 @@ jest.mock("next/navigation", () => ({
   useRouter: () => ({ push: jest.fn() }),
 }));
 jest.mock("@/features/campaigns/hooks/useCampaign", () => ({ useCampaign: jest.fn() }));
-jest.mock("@/features/contacts/hooks/useSegments", () => ({ useSegments: jest.fn(() => ({ data: [], isLoading: false })) }));
+jest.mock("@/features/segments/hooks/useSegments", () => ({ useSegments: jest.fn(() => ({ data: [], isLoading: false })) }));
 jest.mock("@/features/campaigns/services/campaigns-api", () => ({
   campaignsApi: { updateStatus: jest.fn(), getAnalytics: jest.fn(), renderPreview: jest.fn().mockResolvedValue({ html: "" }) },
 }));

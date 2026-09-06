@@ -12,6 +12,4 @@ export * from "./hooks/useCustomer";
 export * from "./hooks/useCustomerOrders";
 export * from "./hooks/useCustomerMarketingHistory";
 export * from "./hooks/useEcommerceSyncStatus";
-export { useSegments } from "@/features/segments/hooks/useSegments";
-export { segmentsApi } from "@/features/segments/services/segments-api";
-export type { SegmentListItem, SegmentCondition, SegmentRule, SegmentMember } from "@/features/segments/types/segment";
+

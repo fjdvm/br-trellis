@@ -23,7 +23,7 @@ import {
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AudienceLedgerCard } from "@/features/campaigns/components/audience-ledger-card";
 import { ManualEmailInput } from "@/features/campaigns/components/manual-email-input";
-import type { SegmentListItem } from "@/features/contacts/types";
+import type { SegmentListItem } from "@/features/segments";
 import { useAudienceCounts } from "@/features/campaigns/hooks/useAudienceCounts";
 
 const NO_SEGMENT = "__none__";

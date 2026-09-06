@@ -3,7 +3,7 @@
 import {
   SYSTEM_PRESET_SEGMENTS,
 } from "@/features/campaigns/components/step2-audience";
-import type { SegmentListItem } from "@/features/contacts/types";
+import type { SegmentListItem } from "@/features/segments";
 import type { CampaignChannel } from "@/features/campaigns/types";
 import type { ScheduleState } from "@/features/campaigns/components/schedule-step";
 

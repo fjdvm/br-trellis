@@ -4,7 +4,7 @@ import userEvent from "@testing-library/user-event";
 import { CampaignWizard } from "@/features/campaigns/components/campaign-wizard";
 import { useSearchParams } from "next/navigation";
 import { useTemplates } from "@/features/campaigns/hooks/useTemplates";
-import { useSegments } from "@/features/contacts/hooks/useSegments";
+import { useSegments } from "@/features/segments/hooks/useSegments";
 import { campaignsApi } from "@/features/campaigns/services/campaigns-api";
 
 jest.mock("next/navigation", () => ({
@@ -12,7 +12,7 @@ jest.mock("next/navigation", () => ({
   useSearchParams: jest.fn(() => new URLSearchParams()),
 }));
 jest.mock("@/features/campaigns/hooks/useTemplates", () => ({ useTemplates: jest.fn() }));
-jest.mock("@/features/contacts/hooks/useSegments", () => ({ useSegments: jest.fn() }));
+jest.mock("@/features/segments/hooks/useSegments", () => ({ useSegments: jest.fn() }));
 jest.mock("@/features/campaigns/services/campaigns-api", () => ({
   campaignsApi: { create: jest.fn(), renderPreview: jest.fn().mockResolvedValue({ html: "" }) },
 }));

@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { useSegments } from "@/features/contacts/hooks/useSegments";
+import { useSegments } from "@/features/segments/hooks/useSegments";
 import { type ChannelContentState } from "@/features/campaigns/components/channel-content-form";
 import {
   ScheduleStep,

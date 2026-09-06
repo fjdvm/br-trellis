@@ -1,3 +1,3 @@
 export * from "./types/company";
 export * from "./types/contact";
-export * from "./types/segment";
+export * from "@/features/segments/types/segment";

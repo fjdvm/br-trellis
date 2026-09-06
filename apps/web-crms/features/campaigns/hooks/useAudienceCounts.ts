@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { segmentsApi } from "@/features/contacts/services/segments-api";
+import { segmentsApi } from "@/features/segments";
 
 export interface AudienceCounts {
   all: number;

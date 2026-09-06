@@ -1,6 +1,8 @@
+"use client";
+
 import { useState, useEffect, useCallback } from "react";
-import { segmentsApi } from "@/features/contacts/services/segments-api";
-import type { SegmentListItem } from "@/features/contacts/types";
+import { segmentsApi } from "../services/segments-api";
+import type { SegmentListItem } from "../types/segment";
 
 export function useSegments() {
   const [data, setData] = useState<SegmentListItem[]>([]);

@@ -1,5 +1,5 @@
 import { request } from "@/lib/api/request";
-import { SegmentListItem, SegmentMember } from "@/features/contacts/types";
+import type { SegmentListItem, SegmentMember } from "../types/segment";
 
 export interface CreateSegmentInput {
   name: string;
