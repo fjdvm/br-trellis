@@ -1,18 +1,18 @@
 import React from "react";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { CampaignWizard } from "@/features/campaigns/components/campaign-wizard";
-import { useTemplates } from "@/features/campaigns/hooks/useTemplates";
+import { CampaignWizard } from "@/features/campaigns";
+import { useTemplates } from "@/features/campaigns";
 import { useSegments } from "@/features/segments/hooks/useSegments";
-import { campaignsApi } from "@/features/campaigns/services/campaigns-api";
+import { campaignsApi } from "@/features/campaigns";
 
 jest.mock("next/navigation", () => ({
   useRouter: () => ({ push: jest.fn() }),
   useSearchParams: () => new URLSearchParams(),
 }));
-jest.mock("@/features/campaigns/hooks/useTemplates", () => ({ useTemplates: jest.fn() }));
+jest.mock("@/features/campaigns", () => ({ useTemplates: jest.fn() }));
 jest.mock("@/features/segments/hooks/useSegments", () => ({ useSegments: jest.fn() }));
-jest.mock("@/features/campaigns/services/campaigns-api", () => ({
+jest.mock("@/features/campaigns", () => ({
   campaignsApi: { create: jest.fn() }
 }));
 

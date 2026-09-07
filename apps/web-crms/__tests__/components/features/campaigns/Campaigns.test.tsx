@@ -1,16 +1,16 @@
 import React from "react";
 import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { Campaigns } from "@/features/campaigns/components/campaigns";
-import { useCampaigns } from "@/features/campaigns/hooks/useCampaigns";
-import { campaignsApi } from "@/features/campaigns/services/campaigns-api";
+import { Campaigns } from "@/features/campaigns";
+import { useCampaigns } from "@/features/campaigns";
+import { campaignsApi } from "@/features/campaigns";
 import type { CampaignListItem } from "@/features/campaigns/types";
 
 jest.mock("next/navigation", () => ({
   useRouter: () => ({ push: jest.fn() }),
 }));
-jest.mock("@/features/campaigns/hooks/useCampaigns", () => ({ useCampaigns: jest.fn() }));
-jest.mock("@/features/campaigns/services/campaigns-api", () => ({
+jest.mock("@/features/campaigns", () => ({ useCampaigns: jest.fn() }));
+jest.mock("@/features/campaigns", () => ({
   campaignsApi: { campaigns: { getEngagementMetrics: jest.fn() }, getEngagementMetrics: jest.fn() },
 }));
 

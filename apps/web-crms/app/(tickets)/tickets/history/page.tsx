@@ -1,4 +1,4 @@
-import { TicketListPage } from "@/features/conversations/components/ticket-list-page";
+import { TicketListPage } from "@/features/tickets";
 
 /**
  * History is a team-wide, terminal-only view built on the shared Tickets list:

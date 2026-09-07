@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { ticketsApi } from "@/features/conversations/services/conversations-api";
-import { LegacyTicketListItem as TicketListItem } from "@/features/conversations/types";
+import { ticketsApi } from "@/features/conversations/inbox/services/conversations-api";
+import { LegacyTicketListItem as TicketListItem } from "../types";
 
 export function sortTicketsByActivity(items: TicketListItem[]): TicketListItem[] {
   return [...items].sort((a, b) => {

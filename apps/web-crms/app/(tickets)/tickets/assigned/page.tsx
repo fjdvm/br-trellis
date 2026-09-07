@@ -1,4 +1,4 @@
-import { TicketListPage } from "@/features/conversations/components/ticket-list-page";
+import { TicketListPage } from "@/features/tickets";
 
 /**
  * My Assigned is an ownership view built on the shared Tickets list: it filters

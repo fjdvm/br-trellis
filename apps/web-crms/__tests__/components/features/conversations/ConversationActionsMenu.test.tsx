@@ -3,7 +3,7 @@ import userEvent from "@testing-library/user-event";
 import {
   ConversationActionsMenu,
   type ConversationAction,
-} from "@/features/conversations/components/conversation-actions-menu";
+} from "@/features/conversations";
 import type { TicketStatus } from "@/features/conversations/types";
 
 // Radix DropdownMenu relies on pointer-capture APIs jsdom does not implement.

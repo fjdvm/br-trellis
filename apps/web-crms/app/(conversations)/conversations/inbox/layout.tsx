@@ -1,4 +1,4 @@
-import { ConversationsInbox } from "@/features/conversations/components/conversations-inbox";
+import { ConversationsInbox } from "@/features/conversations";
 
 /**
  * Shared layout for the Conversations Inbox and its open-conversation route

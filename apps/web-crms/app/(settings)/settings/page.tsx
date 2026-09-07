@@ -1,4 +1,4 @@
-import { SettingsPage } from "@/features/settings/components/settings-page";
+import { SettingsPage } from "@/features/settings";
 
 export default function SettingsPageRoute() {
   return <SettingsPage />;

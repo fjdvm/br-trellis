@@ -15,7 +15,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { contactsApi } from "@/features/contacts/contacts/services/contacts-api";
-import { conversationTicketsApi } from "@/features/conversations/services/conversations-api";
+import { conversationTicketsApi } from "@/features/conversations";
 import { formatName, formatEmail } from "@/lib/format-display";
 import type { ContactListItem } from "@/features/contacts/types";
 

@@ -1,4 +1,4 @@
-import { CannedRepliesPage } from "@/features/conversations/components/canned-replies-page";
+import { CannedRepliesPage } from "@/features/conversations";
 
 export default function Page() {
   return <CannedRepliesPage />;

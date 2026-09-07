@@ -1,12 +1,12 @@
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { NewTicketSheet } from "@/features/conversations/components/new-ticket-sheet";
+import { NewTicketSheet } from "@/features/tickets";
 import { contactsApi } from "@/features/contacts/contacts/services/contacts-api";
-import { conversationTicketsApi } from "@/features/conversations/services/conversations-api";
+import { conversationTicketsApi } from "@/features/conversations";
 import type { ContactListItem } from "@/features/contacts/types";
 import type { TicketDetail } from "@/features/conversations/types";
 
-jest.mock("@/features/conversations/services/conversations-api", () => ({
+jest.mock("@/features/conversations", () => ({
   conversationTicketsApi: {
       create: jest.fn(),
     }

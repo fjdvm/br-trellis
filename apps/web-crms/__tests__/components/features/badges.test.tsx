@@ -1,7 +1,7 @@
 import React from "react";
 import { render, screen } from "@testing-library/react";
-import { CampaignChannelBadge } from "@/features/campaigns/components/campaign-channel-badge";
-import { CampaignStatusBadge } from "@/features/campaigns/components/campaign-status-badge";
+import { CampaignChannelBadge } from "@/features/campaigns";
+import { CampaignStatusBadge } from "@/features/campaigns";
 
 describe("Campaign badge components", () => {
   it("renders CampaignChannelBadge for Email, Banner and Popup", () => {

@@ -1,7 +1,7 @@
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { TicketDetailPage } from "@/features/conversations/components/ticket-detail-page";
-import { conversationMessagesApi, conversationTicketsApi } from "@/features/conversations/services/conversations-api";
+import { TicketDetailPage } from "@/features/tickets";
+import { conversationMessagesApi, conversationTicketsApi } from "@/features/conversations";
 import type { TicketDetail } from "@/features/conversations/types";
 
 // Radix Select relies on pointer-capture and scrollIntoView APIs that jsdom
@@ -40,7 +40,7 @@ jest.mock("next-auth/react", () => ({
   }),
 }));
 
-jest.mock("@/features/conversations/services/conversations-api", () => ({
+jest.mock("@/features/conversations", () => ({
   conversationTicketsApi: {
       getById: jest.fn(),
       claim: jest.fn(),

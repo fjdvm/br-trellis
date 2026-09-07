@@ -1,7 +1,7 @@
 import React from "react";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { Step2Audience } from "@/features/campaigns/components/step2-audience";
+import { Step2Audience } from "@/features/campaigns";
 
 const mockSegment = {
   id: "seg-1",

@@ -6,24 +6,24 @@ import { useSession } from "next-auth/react";
 import { Ticket as TicketIcon } from "lucide-react";
 import { TableSkeleton } from "@/components/shared/table-skeleton";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { TicketCancelDialog } from "@/features/conversations/components/ticket-cancel-dialog";
+import { TicketCancelDialog } from "./ticket-cancel-dialog";
 import {
   TicketFilters,
   TicketFiltersSourceTabs,
-} from "@/features/conversations/components/ticket-filters";
-import { conversationTicketsApi } from "@/features/conversations/services/conversations-api";
+} from "./ticket-filters";
+import { conversationTicketsApi } from "@/features/conversations";
 import { useClientPagination } from "@/components/shared/table-pagination";
 import { useCurrentAgentId } from "@/hooks/use-current-agent-id";
 import { useRefetchOnFocus } from "@/hooks/use-refetch-on-focus";
-import { NewTicketSheet } from "@/features/conversations/components/new-ticket-sheet";
-import { isTerminalStatus } from "@/features/conversations/services/tickets";
+import { NewTicketSheet } from "./new-ticket-sheet";
+import { isTerminalStatus } from "../services/tickets";
 import { formatName, formatEmail } from "@/lib/format-display";
 import type {
   TicketListItem,
   TicketStatus,
   TicketWaitingOn,
   TicketSource,
-} from "@/features/conversations/types";
+} from "../types";
 import { TicketTable, type RowPending } from "./ticket-table";
 
 const STATUS_OPTIONS: readonly (TicketStatus | "All")[] = [

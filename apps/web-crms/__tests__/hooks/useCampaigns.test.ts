@@ -1,12 +1,12 @@
 import { renderHook, waitFor } from "@testing-library/react";
-import { useCampaigns } from "@/features/campaigns/hooks/useCampaigns";
-import { campaignsApi } from "@/features/campaigns/services/campaigns-api";
+import { useCampaigns } from "@/features/campaigns";
+import { campaignsApi } from "@/features/campaigns";
 
 jest.mock("next-auth/react", () => ({
   useSession: jest.fn(() => ({ data: null, status: "unauthenticated" })),
 }));
 
-jest.mock("@/features/campaigns/services/campaigns-api", () => ({
+jest.mock("@/features/campaigns", () => ({
   campaignsApi: {
       list: jest.fn(),
     }

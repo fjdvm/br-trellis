@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { CampaignEditPage } from "@/features/campaigns/components/campaign-edit-page";
+import { CampaignEditPage } from "@/features/campaigns";
 
 interface PageProps {
   params: Promise<{ id: string }>;

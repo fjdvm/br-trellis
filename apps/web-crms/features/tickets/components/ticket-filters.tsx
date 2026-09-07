@@ -6,7 +6,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import type { TicketStatus, TicketWaitingOn, TicketSource } from "@/features/conversations/types";
+import type { TicketStatus, TicketWaitingOn, TicketSource } from "@/features/tickets";
 
 const WAITING_ON_OPTIONS: readonly (TicketWaitingOn | "All")[] = [
   "All",

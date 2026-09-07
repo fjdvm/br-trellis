@@ -1,4 +1,4 @@
-import { TicketListPage } from "@/features/conversations/components/ticket-list-page";
+import { TicketListPage } from "@/features/tickets";
 
 export default function Page() {
   return <TicketListPage />;

@@ -1,17 +1,17 @@
 import React from "react";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { CampaignDetail } from "@/features/campaigns/components/campaign-detail";
-import { useCampaign } from "@/features/campaigns/hooks/useCampaign";
-import { campaignsApi } from "@/features/campaigns/services/campaigns-api";
+import { CampaignDetail } from "@/features/campaigns";
+import { useCampaign } from "@/features/campaigns";
+import { campaignsApi } from "@/features/campaigns";
 import type { Campaign } from "@/features/campaigns/types";
 
 jest.mock("next/navigation", () => ({
   useRouter: () => ({ push: jest.fn() }),
 }));
-jest.mock("@/features/campaigns/hooks/useCampaign", () => ({ useCampaign: jest.fn() }));
+jest.mock("@/features/campaigns", () => ({ useCampaign: jest.fn() }));
 jest.mock("@/features/segments/hooks/useSegments", () => ({ useSegments: jest.fn(() => ({ data: [], isLoading: false })) }));
-jest.mock("@/features/campaigns/services/campaigns-api", () => ({
+jest.mock("@/features/campaigns", () => ({
   campaignsApi: { updateStatus: jest.fn(), getAnalytics: jest.fn(), renderPreview: jest.fn().mockResolvedValue({ html: "" }) },
 }));
 

@@ -1,4 +1,4 @@
-import { formatConversationTime } from "@/features/conversations/lib/format-conversation-time";
+import { formatConversationTime } from "@/features/conversations/helpers/format-conversation-time";
 
 describe("formatConversationTime", () => {
   it("returns empty string for invalid date", () => {

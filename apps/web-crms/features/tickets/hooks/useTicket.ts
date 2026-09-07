@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { ticketsApi } from "@/features/conversations/services/conversations-api";
-import { LegacyTicket as Ticket } from "@/features/conversations/types";
+import { ticketsApi } from "@/features/conversations/inbox/services/conversations-api";
+import { LegacyTicket as Ticket } from "../types";
 
 export function useTicket(id: string | null) {
   const [ticket, setTicket] = useState<Ticket | null>(null);

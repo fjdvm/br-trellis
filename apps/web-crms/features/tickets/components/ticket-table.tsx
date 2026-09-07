@@ -20,9 +20,9 @@ import {
 } from "@/components/ui/table";
 import { ScrollableTable } from "@/components/shared/scrollable-table";
 import { TablePagination, type ClientPagination } from "@/components/shared/table-pagination";
-import { STATUS_BADGE_VARIANT, SOURCE_BADGE_VARIANT, isTerminalStatus } from "@/features/conversations/services/tickets";
+import { STATUS_BADGE_VARIANT, SOURCE_BADGE_VARIANT, isTerminalStatus } from "../services/tickets";
 import { formatName, formatEmail } from "@/lib/format-display";
-import type { TicketListItem } from "@/features/conversations/types";
+import type { TicketListItem } from "../types";
 
 export type RowPending = { id: string; action: "claim" | "cancel" | "unclaim" } | null;
 

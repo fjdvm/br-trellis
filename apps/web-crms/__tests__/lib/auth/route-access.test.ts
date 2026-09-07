@@ -45,7 +45,7 @@ describe("route-access policy (deny at the boundary)", () => {
     });
 
     it("marks super-admin-only sections as super-only", () => {
-      for (const p of ["/settings", "/ecommerce", "/automation", "/contacts/segments"]) {
+      for (const p of ["/settings", "/ecommerce", "/contacts/segments"]) {
         expect(resolveRouteAccess(p)).toEqual({ kind: "super-only" });
       }
     });

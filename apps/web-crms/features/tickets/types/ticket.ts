@@ -1,9 +1,9 @@
-export type TicketStatus = "Unclaimed" | "Claimed" | "Ongoing" | "Completed" | "Canceled" | string;
+export type LegacyTicketStatus = "Unclaimed" | "Claimed" | "Ongoing" | "Completed" | "Canceled" | string;
 
-export interface TicketListItem {
+export interface LegacyTicketListItem {
   id: string;
   title: string;
-  status: TicketStatus;
+  status: LegacyTicketStatus;
   customerName: string;
   unreadMessageCount?: number;
   assignedToName?: string | null;
@@ -13,7 +13,7 @@ export interface TicketListItem {
   lastMessageContent?: string | null;
 }
 
-export interface Ticket extends TicketListItem {
+export interface LegacyTicket extends LegacyTicketListItem {
   description: string;
   imageUrl?: string | null;
   customerId: string;
@@ -23,14 +23,14 @@ export interface Ticket extends TicketListItem {
   sentiment?: string;
 }
 
-export interface CreateTicketInput {
+export interface LegacyCreateTicketInput {
   title: string;
   description: string;
   imageUrl?: string;
 }
 
 export interface PaginatedTicketResponse {
-  items: TicketListItem[];
+  items: LegacyTicketListItem[];
   page: number;
   pageSize: number;
   totalCount: number;

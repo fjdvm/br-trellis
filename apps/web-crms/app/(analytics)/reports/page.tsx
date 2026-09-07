@@ -1,4 +1,4 @@
-import { AnalyticsReportPage } from "@/features/reports/components/analytics-report-page";
+import { AnalyticsReportPage } from "@/features/analytics-report";
 import { Suspense } from "react";
 
 export default function Page() {

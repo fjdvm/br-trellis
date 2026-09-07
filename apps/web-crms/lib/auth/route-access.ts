@@ -50,9 +50,6 @@ export function resolveRouteAccess(pathname: string): RouteAccessRule {
   if (pathname.startsWith("/ecommerce")) {
     return { kind: "super-only" };
   }
-  if (pathname.startsWith("/automation")) {
-    return { kind: "super-only" };
-  }
   if (pathname.startsWith("/contacts/segments")) {
     return { kind: "super-only" };
   }

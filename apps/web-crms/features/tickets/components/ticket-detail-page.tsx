@@ -10,23 +10,23 @@ import {
   XCircle,
   MessageSquare,
 } from "lucide-react";
-import { ActionButton } from "@/features/conversations/components/action-button";
+import { ActionButton } from "@/features/conversations";
 import { DetailSkeleton } from "@/components/shared/detail-skeleton";
 import { BackButton } from "@/components/shared/back-button";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { TicketCancelDialog } from "@/features/conversations/components/ticket-cancel-dialog";
-import { conversationTicketsApi } from "@/features/conversations/services/conversations-api";
+import { TicketCancelDialog } from "./ticket-cancel-dialog";
+import { conversationTicketsApi } from "@/features/conversations";
 import { useCurrentAgentId } from "@/hooks/use-current-agent-id";
-import { STATUS_BADGE_VARIANT, SOURCE_BADGE_VARIANT, isActiveStatus, isTerminalStatus } from "@/features/conversations/services/tickets";
+import { STATUS_BADGE_VARIANT, SOURCE_BADGE_VARIANT, isActiveStatus, isTerminalStatus } from "../services/tickets";
 import { formatName, formatEmail } from "@/lib/format-display";
 import type {
   TicketDetail,
   TicketStatus,
   TicketWaitingOn,
-} from "@/features/conversations/types";
-import { TicketDetailsSidebar } from "@/features/conversations/components/ticket-details-sidebar";
+} from "../types/ticket-detail";
+import { TicketDetailsSidebar } from "./ticket-details-sidebar";
 
 interface TicketDetailPageProps {
   ticketId: string;

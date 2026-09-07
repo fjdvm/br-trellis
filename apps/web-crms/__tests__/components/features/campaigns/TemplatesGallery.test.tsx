@@ -1,11 +1,11 @@
 import React from "react";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import {  TemplatesGallery  } from "@/features/campaigns/components/templates-gallery";
-import { useTemplates } from "@/features/campaigns/hooks/useTemplates";
+import {  TemplatesGallery  } from "@/features/campaigns";
+import { useTemplates } from "@/features/campaigns";
 import type { Template } from "@/features/campaigns/types";
 
-jest.mock("@/features/campaigns/hooks/useTemplates", () => ({ useTemplates: jest.fn() }));
+jest.mock("@/features/campaigns", () => ({ useTemplates: jest.fn() }));
 
 const templates: Template[] = [
   {

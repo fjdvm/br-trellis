@@ -1,4 +1,4 @@
-import { TicketListPage } from "@/features/conversations/components/ticket-list-page";
+import { TicketListPage } from "@/features/tickets";
 
 /**
  * Triage Queue is a pre-filtered view of the shared Tickets list: it opens on
