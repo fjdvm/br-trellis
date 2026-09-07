@@ -2,21 +2,12 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Building2 } from "lucide-react";
+import { Building2, Calendar, Users } from "lucide-react";
 import { TableSkeleton } from "@/components/shared/table-skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { companiesApi } from "@/features/contacts/companies/services/companies-api";
-import { ScrollableTable } from "@/components/shared/scrollable-table";
 import {
   TablePagination,
   useClientPagination,
@@ -41,7 +32,7 @@ export function CompanyListPage() {
       setError(null);
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : "Unable to load companies."
+        err instanceof Error ? err.message : "Unable to load companies.",
       );
     } finally {
       setIsLoading(false);
@@ -84,7 +75,7 @@ export function CompanyListPage() {
             All Companies
           </CardTitle>
         </CardHeader>
-        <CardContent className="p-lg pt-0">
+        <CardContent className="p-lg pt-0 space-y-md">
           {isLoading ? (
             <TableSkeleton columns={4} />
           ) : error ? (
@@ -95,46 +86,62 @@ export function CompanyListPage() {
             </div>
           ) : (
             <>
-            <ScrollableTable>
-              <Table>
-              <TableHeader className="sticky top-0 bg-background z-10">
-                <TableRow>
-                  <TableHead className="min-w-[160px]">Name</TableHead>
-                  <TableHead className="min-w-[120px]">Buyer Type</TableHead>
-                  <TableHead className="min-w-[100px] text-right">Members</TableHead>
-                  <TableHead className="min-w-[120px]">Created</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-md">
                 {pagination.pageItems.map((company) => (
-                  <TableRow
+                  <Card
                     key={company.id}
-                    className="cursor-pointer hover:bg-muted/50"
-                    onClick={() => router.push(`/contacts/companies/${company.id}`)}
+                    className="shadow-none border border-border/70 hover:border-primary/50 hover:bg-muted/30 transition-all cursor-pointer flex flex-col justify-between"
+                    onClick={() =>
+                      router.push(`/contacts/companies/${company.id}`)
+                    }
                   >
-                    <TableCell className="text-base font-medium">
-                      <Link
-                        href={`/contacts/companies/${company.id}`}
-                        className="hover:underline text-primary"
-                      >
-                        {formatName(company.name)}
-                      </Link>
-                    </TableCell>
-                    <TableCell className="text-base">
-                      <Badge variant="secondary">{company.buyerType}</Badge>
-                    </TableCell>
-                    <TableCell className="text-base text-right">
-                      {company.memberCount}
-                    </TableCell>
-                    <TableCell className="text-sm text-muted-foreground">
-                      {new Date(company.createdAt).toLocaleDateString()}
-                    </TableCell>
-                  </TableRow>
+                    <CardHeader className="p-md sm:p-lg pb-xs space-y-xs">
+                      <div className="flex items-start justify-between gap-sm">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center font-bold text-foreground shrink-0 border border-border">
+                            <Building2 className="w-5 h-5 text-muted-foreground" />
+                          </div>
+                          <div>
+                            <CardTitle className="text-base font-bold">
+                              <Link
+                                href={`/contacts/companies/${company.id}`}
+                                className="hover:underline text-foreground"
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                {formatName(company.name)}
+                              </Link>
+                            </CardTitle>
+                            <Badge variant="secondary" className="mt-1">
+                              {company.buyerType}
+                            </Badge>
+                          </div>
+                        </div>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="p-md sm:p-lg pt-sm space-y-sm text-base">
+                      <div className="flex items-center justify-between border-t border-border/60 pt-sm">
+                        <span className="text-muted-foreground flex items-center gap-1.5 text-base">
+                          <Users className="w-4 h-4" />
+                          Members
+                        </span>
+                        <span className="font-semibold text-foreground">
+                          {company.memberCount}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between text-sm text-muted-foreground">
+                        <span className="flex items-center gap-1.5">
+                          <Calendar className="w-4 h-4" />
+                          Created
+                        </span>
+                        <span>
+                          {new Date(company.createdAt).toLocaleDateString()}
+                        </span>
+                      </div>
+                    </CardContent>
+                  </Card>
                 ))}
-              </TableBody>
-              </Table>
-            </ScrollableTable>
-            <TablePagination pagination={pagination} itemLabel="companies" />
+              </div>
+              <TablePagination pagination={pagination} itemLabel="companies" />
             </>
           )}
         </CardContent>
