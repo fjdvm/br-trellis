@@ -1,3 +1,5 @@
+"use client";
+
 import { useState, useEffect, useCallback } from "react";
 import { templatesApi } from "@/features/campaigns/services/campaigns-api";
 import { Template } from "@/features/campaigns/types";

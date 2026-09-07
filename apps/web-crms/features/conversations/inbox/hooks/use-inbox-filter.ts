@@ -1,3 +1,5 @@
+"use client";
+
 import { useMemo } from "react";
 import { isActiveStatus } from "@/features/tickets";
 import type { TicketListItem } from "@/features/tickets";

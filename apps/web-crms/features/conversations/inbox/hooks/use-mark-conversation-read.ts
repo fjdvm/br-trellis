@@ -1,3 +1,5 @@
+"use client";
+
 import { useEffect, useRef } from "react";
 import { conversationTicketsApi } from "../services/conversations-api";
 import { isTerminalStatus, TicketListItem } from "@/features/tickets";
