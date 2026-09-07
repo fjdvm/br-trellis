@@ -10,7 +10,7 @@ import {
   XCircle,
   MessageSquare,
 } from "lucide-react";
-import { ActionButton } from "@/features/conversations";
+import { ActionButton } from "../../../features/conversations/inbox/components/action-button";
 import { DetailSkeleton } from "@/components/shared/detail-skeleton";
 import { BackButton } from "@/components/shared/back-button";
 import { Badge } from "@/components/ui/badge";
